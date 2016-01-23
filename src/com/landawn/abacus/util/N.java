@@ -161,6 +161,15 @@ import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IndexedBooleanConsumer;
+import com.landawn.abacus.util.function.IndexedByteConsumer;
+import com.landawn.abacus.util.function.IndexedCharConsumer;
+import com.landawn.abacus.util.function.IndexedConsumer;
+import com.landawn.abacus.util.function.IndexedDoubleConsumer;
+import com.landawn.abacus.util.function.IndexedFloatConsumer;
+import com.landawn.abacus.util.function.IndexedIntConsumer;
+import com.landawn.abacus.util.function.IndexedLongConsumer;
+import com.landawn.abacus.util.function.IndexedShortConsumer;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -2218,7 +2227,7 @@ public final class N {
                     propEntity = N.getPropValue(propEntity, inlinePropGetMethodQueue.get(i));
 
                     if (propEntity == null) {
-                        return (T) N.defaultValue(inlinePropGetMethodQueue.get(len - 1).getReturnType());
+                        return (T) N.defaultValueOf(inlinePropGetMethodQueue.get(len - 1).getReturnType());
                     }
                 }
 
@@ -2241,7 +2250,7 @@ public final class N {
         setPropValue(entity, propName, propValue, false);
     }
 
-    public static void setPropValue(final Object entity, final String propName, final Object propValue, final boolean ignoreUnknownProperty) {
+    static void setPropValue(final Object entity, final String propName, final Object propValue, final boolean ignoreUnknownProperty) {
         Method setMethod = getPropSetMethod(entity.getClass(), propName);
 
         if (setMethod == null) {
@@ -2409,7 +2418,7 @@ public final class N {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T defaultValue(final Class<T> cls) {
+    public static <T> T defaultValueOf(final Class<T> cls) {
         return (T) N.getType(cls).defaultValue();
     }
 
@@ -2498,7 +2507,7 @@ public final class N {
      */
     @SuppressWarnings("unchecked")
     public static <T> T valueOf(final Class<T> targetClass, final String str) {
-        return (str == null) ? defaultValue(targetClass) : (T) N.getType(targetClass).valueOf(str);
+        return (str == null) ? defaultValueOf(targetClass) : (T) N.getType(targetClass).valueOf(str);
     }
 
     static <T> T valueOf(final Class<T> targetClass, final byte[] bytes) {
@@ -4712,7 +4721,7 @@ public final class N {
     @SuppressWarnings("unchecked")
     public static <T> T as(final Class<T> targetClass, final Object obj) {
         if (obj == null) {
-            return defaultValue(targetClass);
+            return defaultValueOf(targetClass);
         }
 
         final Class<?> srcPropClass = obj.getClass();
@@ -6985,7 +6994,7 @@ public final class N {
      * @param entity2
      * @return
      */
-    public static Map<String, List<Object>> difference(final Object entity1, final Object entity2) {
+    public static Map<String, List<Object>> differenceOf(final Object entity1, final Object entity2) {
         if (entity1.getClass().equals(entity2.getClass()) == false) {
             throw new IllegalArgumentException(entity1.getClass() + " and " + entity2.getClass() + " are different classes");
         }
@@ -7005,6 +7014,39 @@ public final class N {
 
             if (N.equals(propValue1, propValue2) == false) {
                 res.put(entry.getKey(), Arrays.asList(propValue1, propValue2));
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * Compares two same type entities and returns the properties which have the same values.
+     * 
+     * @param entity1
+     * @param entity2
+     * @return
+     */
+    public static Map<String, Object> commonProperties(final Object entity1, final Object entity2) {
+        if (entity1.getClass().equals(entity2.getClass()) == false) {
+            throw new IllegalArgumentException(entity1.getClass() + " and " + entity2.getClass() + " are different classes");
+        }
+
+        if (N.isEntity(entity1.getClass()) == false) {
+            throw new IllegalArgumentException(entity1.getClass() + " is not entity");
+        }
+
+        final Map<String, Object> res = N.newHashMap();
+        final Map<String, Method> methodList = getPropGetMethodList(entity1.getClass());
+        Object propValue1 = null;
+        Object propValue2 = null;
+
+        for (Map.Entry<String, Method> entry : methodList.entrySet()) {
+            propValue1 = N.getPropValue(entity1, entry.getValue());
+            propValue2 = N.getPropValue(entity2, entry.getValue());
+
+            if (N.equals(propValue1, propValue2)) {
+                res.put(entry.getKey(), propValue1);
             }
         }
 
@@ -16748,7 +16790,7 @@ public final class N {
      * @return
      */
     public static <T, U> T[] copyOf(final U[] original, final int newLength, final Class<? extends T[]> newType) {
-        final T[] copy = ((Object) newType == (Object) Object[].class) ? (T[]) new Object[newLength] : (T[]) N.newArray(newType.getComponentType(), newLength);
+        final T[] copy = Object[].class.equals(newType) ? (T[]) new Object[newLength] : (T[]) N.newArray(newType.getComponentType(), newLength);
 
         if (N.notNullOrEmpty(original)) {
             copy(original, 0, copy, 0, Math.min(original.length, newLength));
@@ -16773,6 +16815,34 @@ public final class N {
     }
 
     /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static boolean[] copyOfRange(final boolean[] original, final int from, final int to, final int step) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final boolean[] copy = new boolean[newLength];
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
+        return copy;
+    }
+
+    /**
      * @see Arrays#copyOfRange(char[], int, int)
      *
      * @param original
@@ -16784,6 +16854,34 @@ public final class N {
         final int newLength = to - from;
         final char[] copy = new char[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
+        return copy;
+    }
+
+    /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static char[] copyOfRange(final char[] original, final int from, final int to, final int step) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final char[] copy = new char[newLength];
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
         return copy;
     }
 
@@ -16803,6 +16901,34 @@ public final class N {
     }
 
     /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static byte[] copyOfRange(final byte[] original, final int from, final int to, final int step) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final byte[] copy = new byte[newLength];
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
+        return copy;
+    }
+
+    /**
      * @see Arrays#copyOfRange(short[], int, int)
      *
      * @param original
@@ -16814,6 +16940,34 @@ public final class N {
         final int newLength = to - from;
         final short[] copy = new short[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
+        return copy;
+    }
+
+    /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static short[] copyOfRange(final short[] original, final int from, final int to, final int step) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final short[] copy = new short[newLength];
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
         return copy;
     }
 
@@ -16833,6 +16987,34 @@ public final class N {
     }
 
     /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static int[] copyOfRange(final int[] original, final int from, final int to, final int step) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final int[] copy = new int[newLength];
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
+        return copy;
+    }
+
+    /**
      * @see Arrays#copyOfRange(long[], int, int)
      *
      * @param original
@@ -16844,6 +17026,34 @@ public final class N {
         final int newLength = to - from;
         final long[] copy = new long[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
+        return copy;
+    }
+
+    /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static long[] copyOfRange(final long[] original, final int from, final int to, final int step) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final long[] copy = new long[newLength];
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
         return copy;
     }
 
@@ -16863,6 +17073,34 @@ public final class N {
     }
 
     /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static float[] copyOfRange(final float[] original, final int from, final int to, final int step) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final float[] copy = new float[newLength];
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
+        return copy;
+    }
+
+    /**
      * @see Arrays#copyOfRange(double[], int, int)
      *
      * @param original
@@ -16878,6 +17116,34 @@ public final class N {
     }
 
     /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static double[] copyOfRange(final double[] original, final int from, final int to, final int step) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final double[] copy = new double[newLength];
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
+        return copy;
+    }
+
+    /**
      * @see Arrays#copyOfRange(T[], int, int)
      * @param original
      * @param from
@@ -16886,6 +17152,19 @@ public final class N {
      */
     public static <T> T[] copyOfRange(final T[] original, final int from, final int to) {
         return copyOfRange(original, from, to, (Class<T[]>) original.getClass());
+    }
+
+    /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static <T> T[] copyOfRange(final T[] original, final int from, final int to, final int step) {
+        return copyOfRange(original, from, to, step, (Class<T[]>) original.getClass());
     }
 
     /**
@@ -16899,8 +17178,36 @@ public final class N {
      */
     public static <T, U> T[] copyOfRange(final U[] original, final int from, final int to, final Class<? extends T[]> newType) {
         final int newLength = to - from;
-        final T[] copy = ((Object) newType == (Object) Object[].class) ? (T[]) new Object[newLength] : (T[]) N.newArray(newType.getComponentType(), newLength);
+        final T[] copy = Object[].class.equals(newType) ? (T[]) new Object[newLength] : (T[]) N.newArray(newType.getComponentType(), newLength);
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
+        return copy;
+    }
+
+    /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param original
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static <T> T[] copyOfRange(final T[] original, final int from, final int to, final int step, final Class<? extends T[]> newType) {
+        if (step < 1) {
+            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+        }
+
+        if (step == 1) {
+            return copyOfRange(original, from, to, newType);
+        }
+
+        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
+        final T[] copy = Object[].class.equals(newType) ? (T[]) new Object[newLength] : (T[]) N.newArray(newType.getComponentType(), newLength);
+
+        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+            copy[i] = original[j];
+        }
+
         return copy;
     }
 
@@ -19400,15 +19707,15 @@ public final class N {
      * </p>
      *
      * <pre>
-     * N.difference(null, null) = ""
-     * N.difference("", "") = ""
-     * N.difference("", "abc") = "abc"
-     * N.difference("abc", "") = ""
-     * N.difference("abc", "abc") = ""
-     * N.difference("abc", "ab") = ""
-     * N.difference("ab", "abxyz") = "xyz"
-     * N.difference("abcde", "abxyz") = "xyz"
-     * N.difference("abcde", "xyz") = "xyz"
+     * N.differenceOf(null, null) = ""
+     * N.differenceOf("", "") = ""
+     * N.differenceOf("", "abc") = "abc"
+     * N.differenceOf("abc", "") = ""
+     * N.differenceOf("abc", "abc") = ""
+     * N.differenceOf("abc", "ab") = ""
+     * N.differenceOf("ab", "abxyz") = "xyz"
+     * N.differenceOf("abcde", "abxyz") = "xyz"
+     * N.differenceOf("abcde", "xyz") = "xyz"
      * </pre>
      *
      * @param a
@@ -19418,7 +19725,7 @@ public final class N {
      * @return the portion of str2 where it differs from str1; returns the empty
      *         String if they are equal or both null/empty
      */
-    public static String difference(final String a, final String b) {
+    public static String differenceOf(final String a, final String b) {
         if (a == b || N.isNullOrEmpty(b)) {
             return N.EMPTY_STRING;
         }
@@ -20705,9 +21012,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20717,15 +21026,17 @@ public final class N {
             return;
         }
 
-        for (boolean e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20745,9 +21056,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20757,15 +21070,17 @@ public final class N {
             return;
         }
 
-        for (char e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20785,9 +21100,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20797,15 +21114,17 @@ public final class N {
             return;
         }
 
-        for (byte e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20825,9 +21144,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20837,15 +21158,17 @@ public final class N {
             return;
         }
 
-        for (short e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20865,9 +21188,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20877,15 +21202,17 @@ public final class N {
             return;
         }
 
-        for (int e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20905,9 +21232,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20917,15 +21246,17 @@ public final class N {
             return;
         }
 
-        for (long e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20945,9 +21276,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20957,15 +21290,17 @@ public final class N {
             return;
         }
 
-        for (float e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20985,9 +21320,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20997,15 +21334,17 @@ public final class N {
             return;
         }
 
-        for (double e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21025,9 +21364,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21037,15 +21378,17 @@ public final class N {
             return;
         }
 
-        for (T e : a) {
-            action.accept(e);
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i]);
         }
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21065,9 +21408,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param c
      * @param action
@@ -21083,9 +21428,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param c
      * @param fromIndex
@@ -21115,9 +21462,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param m
      * @param action
@@ -21133,9 +21482,11 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
      * 
      * @param m
      * @param fromIndex
@@ -21157,6 +21508,506 @@ public final class N {
             }
 
             action.accept(e);
+
+            if (idx >= toIndex) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static void forEach(final boolean[] a, final IndexedBooleanConsumer action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static void forEach(final boolean[] a, final int fromIndex, final int toIndex, final IndexedBooleanConsumer action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static void forEach(final char[] a, final IndexedCharConsumer action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static void forEach(final char[] a, final int fromIndex, final int toIndex, final IndexedCharConsumer action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static void forEach(final byte[] a, final IndexedByteConsumer action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static void forEach(final byte[] a, final int fromIndex, final int toIndex, final IndexedByteConsumer action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static void forEach(final short[] a, final IndexedShortConsumer action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static void forEach(final short[] a, final int fromIndex, final int toIndex, final IndexedShortConsumer action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static void forEach(final int[] a, final IndexedIntConsumer action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static void forEach(final int[] a, final int fromIndex, final int toIndex, final IndexedIntConsumer action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static void forEach(final long[] a, final IndexedLongConsumer action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static void forEach(final long[] a, final int fromIndex, final int toIndex, final IndexedLongConsumer action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static void forEach(final float[] a, final IndexedFloatConsumer action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static void forEach(final float[] a, final int fromIndex, final int toIndex, final IndexedFloatConsumer action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static void forEach(final double[] a, final IndexedDoubleConsumer action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static void forEach(final double[] a, final int fromIndex, final int toIndex, final IndexedDoubleConsumer action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param action
+     */
+    public static <T> void forEach(final T[] a, final IndexedConsumer<T> action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<T> action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i], i);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param c
+     * @param action
+     */
+    public static <E, T extends Collection<E>> void forEach(final T c, final IndexedConsumer<E> action) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        forEach(c, 0, c.size(), action);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static <E, T extends Collection<E>> void forEach(final T c, final int fromIndex, final int toIndex, final IndexedConsumer<E> action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+            return;
+        }
+
+        int idx = 0;
+
+        for (E e : c) {
+            if (idx++ < fromIndex) {
+                continue;
+            }
+
+            action.accept(e, idx);
+
+            if (idx >= toIndex) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param m
+     * @param action
+     */
+    public static <K, V, T extends Map<K, V>> void forEach(final T m, final IndexedConsumer<Map.Entry<K, V>> action) {
+        if (N.isNullOrEmpty(m)) {
+            return;
+        }
+
+        forEach(m, 0, m.size(), action);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The tradtional for loop is still recommended in regular programming.
+     * 
+     * @param m
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static <K, V, T extends Map<K, V>> void forEach(final T m, final int fromIndex, final int toIndex, final IndexedConsumer<Map.Entry<K, V>> action) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
+            return;
+        }
+
+        int idx = 0;
+
+        for (Map.Entry<K, V> e : m.entrySet()) {
+            if (idx++ < fromIndex) {
+                continue;
+            }
+
+            action.accept(e, idx);
 
             if (idx >= toIndex) {
                 break;
@@ -23766,10 +24617,42 @@ public final class N {
             return new ArrayList<boolean[]>();
         }
 
-        final List<boolean[]> res = new ArrayList<boolean[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<boolean[]> res = new ArrayList<boolean[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static List<boolean[]> split(final boolean[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<boolean[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<boolean[]> res = new ArrayList<boolean[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -23792,10 +24675,42 @@ public final class N {
             return new ArrayList<char[]>();
         }
 
-        final List<char[]> res = new ArrayList<char[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<char[]> res = new ArrayList<char[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static List<char[]> split(final char[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<char[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<char[]> res = new ArrayList<char[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -23818,10 +24733,42 @@ public final class N {
             return new ArrayList<byte[]>();
         }
 
-        final List<byte[]> res = new ArrayList<byte[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<byte[]> res = new ArrayList<byte[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static List<byte[]> split(final byte[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<byte[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<byte[]> res = new ArrayList<byte[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -23844,10 +24791,42 @@ public final class N {
             return new ArrayList<short[]>();
         }
 
-        final List<short[]> res = new ArrayList<short[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<short[]> res = new ArrayList<short[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static List<short[]> split(final short[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<short[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<short[]> res = new ArrayList<short[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -23870,10 +24849,42 @@ public final class N {
             return new ArrayList<int[]>();
         }
 
-        final List<int[]> res = new ArrayList<int[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<int[]> res = new ArrayList<int[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static List<int[]> split(final int[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<int[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<int[]> res = new ArrayList<int[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -23896,10 +24907,42 @@ public final class N {
             return new ArrayList<long[]>();
         }
 
-        final List<long[]> res = new ArrayList<long[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<long[]> res = new ArrayList<long[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static List<long[]> split(final long[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<long[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<long[]> res = new ArrayList<long[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -23922,10 +24965,42 @@ public final class N {
             return new ArrayList<float[]>();
         }
 
-        final List<float[]> res = new ArrayList<float[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<float[]> res = new ArrayList<float[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static List<float[]> split(final float[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<float[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<float[]> res = new ArrayList<float[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -23948,10 +25023,42 @@ public final class N {
             return new ArrayList<double[]>();
         }
 
-        final List<double[]> res = new ArrayList<double[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<double[]> res = new ArrayList<double[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static List<double[]> split(final double[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<double[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<double[]> res = new ArrayList<double[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -23974,10 +25081,42 @@ public final class N {
             return new ArrayList<T[]>();
         }
 
-        final List<T[]> res = new ArrayList<T[]>(a.length % size == 0 ? a.length / size : (a.length / size) + 1);
+        final int len = a.length;
+        final List<T[]> res = new ArrayList<T[]>(len % size == 0 ? len / size : (len / size) + 1);
 
-        for (int from = 0, len = a.length; from < len; from += size) {
-            res.add(copyOfRange(a, from, from <= len - size ? from + size : len));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * or an empty List if the specified array is null or empty.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static <T> List<T[]> split(final T[] a, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<T[]>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<T[]> res = new ArrayList<T[]>(len % size == 0 ? len / size : (len / size) + 1);
+
+        for (int from = fromIndex; from < toIndex; from += size) {
+            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
         }
 
         return res;
@@ -24000,22 +25139,76 @@ public final class N {
             return new ArrayList<T>();
         }
 
-        final List<T> res = new ArrayList<T>(c.size() % size == 0 ? c.size() / size : (c.size() / size) + 1);
+        final int len = c.size();
+        final List<T> res = new ArrayList<T>(len % size == 0 ? len / size : (len / size) + 1);
 
         if (c instanceof List) {
             final List<E> list = (List<E>) c;
 
-            for (int from = 0, len = c.size(); from < len; from += size) {
-                res.add((T) list.subList(from, from <= len - size ? from + size : len));
+            for (int from = 0, toIndex = c.size(); from < toIndex; from += size) {
+                res.add((T) list.subList(from, from <= toIndex - size ? from + size : toIndex));
             }
         } else {
-            final Iterator<E> it = c.iterator();
+            final Iterator<E> iter = c.iterator();
 
-            for (int from = 0, len = c.size(); from < len; from += size) {
+            for (int from = 0, toIndex = c.size(); from < toIndex; from += size) {
                 final T subList = (T) N.newInstance(c.getClass());
 
-                for (int i = from, to = from <= len - size ? from + size : len; i < to; i++) {
-                    subList.add(it.next());
+                for (int i = from, to = from <= toIndex - size ? from + size : toIndex; i < to; i++) {
+                    subList.add(iter.next());
+                }
+
+                res.add(subList);
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub lists of a collection, each of the same size (the final list may be smaller).
+     * or an empty List if the specified collection is null or empty. The order of elements in the original collection is kept
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static <E, T extends Collection<E>> List<T> split(final T c, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<T> res = new ArrayList<T>(len % size == 0 ? len / size : (len / size) + 1);
+
+        if (c instanceof List) {
+            final List<E> list = (List<E>) c;
+
+            for (int from = fromIndex; from < toIndex; from += size) {
+                res.add((T) list.subList(from, from <= toIndex - size ? from + size : toIndex));
+            }
+        } else {
+            final Iterator<E> iter = c.iterator();
+
+            for (int from = 0; from < toIndex; from += size) {
+                if (from < fromIndex) {
+                    iter.next();
+                    from++;
+                    continue;
+                }
+
+                final T subList = (T) N.newInstance(c.getClass());
+
+                for (int i = from, to = from <= toIndex - size ? from + size : toIndex; i < to; i++) {
+                    subList.add(iter.next());
                 }
 
                 res.add(subList);
@@ -24042,15 +25235,62 @@ public final class N {
             return new ArrayList<T>();
         }
 
-        final List<T> res = new ArrayList<T>(m.size() % size == 0 ? m.size() / size : (m.size() / size) + 1);
-        final Iterator<Map.Entry<K, V>> it = m.entrySet().iterator();
+        final int len = m.size();
+        final List<T> res = new ArrayList<T>(len % size == 0 ? len / size : (len / size) + 1);
+        final Iterator<Map.Entry<K, V>> iter = m.entrySet().iterator();
 
-        for (int from = 0, len = m.size(); from < len; from += size) {
+        for (int from = 0, toIndex = m.size(); from < toIndex; from += size) {
             final T subMap = (T) N.newInstance(m.getClass());
             Map.Entry<K, V> entry = null;
 
-            for (int i = from, to = from <= len - size ? from + size : len; i < to; i++) {
-                entry = it.next();
+            for (int i = from, to = from <= toIndex - size ? from + size : toIndex; i < to; i++) {
+                entry = iter.next();
+                subMap.put(entry.getKey(), entry.getValue());
+            }
+
+            res.add(subMap);
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive sub maps of a map, each of the same size (the final list may be smaller).
+     * or an empty Map if the specified collection is null or empty. The order of entries in the original Map is kept
+     * 
+     * @param m
+     * @param fromIndex
+     * @param toIndex
+     * @param size
+     * @return
+     */
+    public static <K, V, T extends Map<K, V>> List<T> split(final T m, final int fromIndex, final int toIndex, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        checkFromToIndex(fromIndex, toIndex);
+
+        if (N.isNullOrEmpty(m)) {
+            return new ArrayList<T>();
+        }
+
+        final int len = toIndex - fromIndex;
+        final List<T> res = new ArrayList<T>(len % size == 0 ? len / size : (len / size) + 1);
+        final Iterator<Map.Entry<K, V>> iter = m.entrySet().iterator();
+
+        for (int from = 0; from < toIndex; from += size) {
+            if (from < fromIndex) {
+                from++;
+                iter.next();
+                continue;
+            }
+
+            final T subMap = (T) N.newInstance(m.getClass());
+            Map.Entry<K, V> entry = null;
+
+            for (int i = from, to = from <= toIndex - size ? from + size : toIndex; i < to; i++) {
+                entry = iter.next();
                 subMap.put(entry.getKey(), entry.getValue());
             }
 
@@ -32254,7 +33494,7 @@ public final class N {
         }
 
         final Class<?> cls = unwrap(a.getClass());
-        final Object defaultValue = valueForNull == null ? N.defaultValue(cls.getComponentType()) : valueForNull;
+        final Object defaultValue = valueForNull == null ? N.defaultValueOf(cls.getComponentType()) : valueForNull;
         final Integer enumInt = CLASS_TYPE_ENUM.get(cls);
 
         if (enumInt == null) {

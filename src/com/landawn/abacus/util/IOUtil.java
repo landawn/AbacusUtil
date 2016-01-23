@@ -513,14 +513,14 @@ public final class IOUtil {
         return readBytes(file, Integer.MAX_VALUE);
     }
 
-    public static byte[] readBytes(final File file, final int length) {
+    public static byte[] readBytes(final File file, final int maxLen) {
         final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
         InputStream is = null;
 
         try {
             is = openFile(outputZipFile, file);
 
-            return readBytes(is, length);
+            return readBytes(is, maxLen);
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
@@ -533,8 +533,8 @@ public final class IOUtil {
         return readBytes(is, Integer.MAX_VALUE);
     }
 
-    public static byte[] readBytes(final InputStream is, final int length) {
-        if (length == 0) {
+    public static byte[] readBytes(final InputStream is, final int maxLen) {
+        if (maxLen == 0) {
             return N.EMPTY_BYTE_ARRAY;
         }
 
@@ -546,7 +546,7 @@ public final class IOUtil {
         int count = 0;
 
         try {
-            while (totalCount < length && EOF != (count = read(is, buf, 0, Math.min(length - totalCount, bufLength)))) {
+            while (totalCount < maxLen && EOF != (count = read(is, buf, 0, Math.min(maxLen - totalCount, bufLength)))) {
                 if (count == bufLength) {
                     if (os == null) {
                         os = ObjectFactory.createByteArrayOutputStream();
@@ -574,18 +574,18 @@ public final class IOUtil {
         return readChars(file, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final File file, final int length) {
-        return readChars(file, length, null);
+    public static char[] readChars(final File file, final int maxLen) {
+        return readChars(file, maxLen, null);
     }
 
-    public static char[] readChars(final File file, final int length, final Charset encoding) {
+    public static char[] readChars(final File file, final int maxLen, final Charset encoding) {
         final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
         InputStream is = null;
 
         try {
             is = openFile(outputZipFile, file);
 
-            return readChars(is, length, encoding);
+            return readChars(is, maxLen, encoding);
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
@@ -598,17 +598,17 @@ public final class IOUtil {
         return readChars(is, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final InputStream is, final int length) {
-        return readChars(is, length, null);
+    public static char[] readChars(final InputStream is, final int maxLen) {
+        return readChars(is, maxLen, null);
     }
 
-    public static char[] readChars(final InputStream is, final int length, final Charset encoding) {
+    public static char[] readChars(final InputStream is, final int maxLen, final Charset encoding) {
         Reader reader = null;
 
         // try {
         reader = createReader(is, encoding);
 
-        return readChars(reader, length);
+        return readChars(reader, maxLen);
 
         // } finally {
         // // close(reader);
@@ -619,8 +619,8 @@ public final class IOUtil {
         return readChars(reader, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final Reader reader, final int length) {
-        if (length == 0) {
+    public static char[] readChars(final Reader reader, final int maxLen) {
+        if (maxLen == 0) {
             return N.EMPTY_CHAR_ARRAY;
         }
 
@@ -632,7 +632,7 @@ public final class IOUtil {
         int count = 0;
 
         try {
-            while (totalCount < length && EOF != (count = read(reader, buf, 0, Math.min(length - totalCount, bufLength)))) {
+            while (totalCount < maxLen && EOF != (count = read(reader, buf, 0, Math.min(maxLen - totalCount, bufLength)))) {
                 if (count == bufLength) {
                     if (sb == null) {
                         sb = ObjectFactory.createStringBuilder();
@@ -666,12 +666,12 @@ public final class IOUtil {
         return readString(file, Integer.MAX_VALUE);
     }
 
-    public static String readString(final File file, final int length) {
-        return readString(file, length, null);
+    public static String readString(final File file, final int maxLen) {
+        return readString(file, maxLen, null);
     }
 
-    public static String readString(final File file, final int length, final Charset encoding) {
-        final char[] chs = readChars(file, length, encoding);
+    public static String readString(final File file, final int maxLen, final Charset encoding) {
+        final char[] chs = readChars(file, maxLen, encoding);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
@@ -680,12 +680,12 @@ public final class IOUtil {
         return readString(is, Integer.MAX_VALUE);
     }
 
-    public static String readString(final InputStream is, final int length) {
-        return readString(is, length, null);
+    public static String readString(final InputStream is, final int maxLen) {
+        return readString(is, maxLen, null);
     }
 
-    public static String readString(final InputStream is, final int length, final Charset encoding) {
-        final char[] chs = readChars(is, length, encoding);
+    public static String readString(final InputStream is, final int maxLen, final Charset encoding) {
+        final char[] chs = readChars(is, maxLen, encoding);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
@@ -694,8 +694,8 @@ public final class IOUtil {
         return readString(reader, Integer.MAX_VALUE);
     }
 
-    public static String readString(final Reader reader, final int length) {
-        final char[] chs = readChars(reader, length);
+    public static String readString(final Reader reader, final int maxLen) {
+        final char[] chs = readChars(reader, maxLen);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }

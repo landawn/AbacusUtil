@@ -1902,8 +1902,8 @@ public final class JdbcUtil {
             final Queue<Object[]> rowQueue = new ConcurrentLinkedQueue<Object[]>();
             final MutableBoolean isReadDone = new MutableBoolean(false);
             final MutableBoolean isParseDone = new MutableBoolean(false);
-            final Handle<Throwable> exceptionHolder = new Handle<Throwable>();
-            final Handle<String> errorMessageHolder = new Handle<String>();
+            final Handle<Throwable> exceptionHandle = new Handle<Throwable>();
+            final Handle<String> errorMessageHandle = new Handle<String>();
 
             asyncExecutor.execute(new Runnable() {
                 @Override
@@ -1922,8 +1922,8 @@ public final class JdbcUtil {
                             }
                         }
                     } catch (Throwable e) {
-                        errorMessageHolder.setValue("### Failed to parse at row: " + row + ". " + AbacusException.getErrorMsg(e));
-                        exceptionHolder.setValue(e);
+                        errorMessageHandle.setValue("### Failed to parse at row: " + row + ". " + AbacusException.getErrorMsg(e));
+                        exceptionHandle.setValue(e);
                     } finally {
                         isParseDone.setTrue();
                     }
@@ -1944,9 +1944,9 @@ public final class JdbcUtil {
                 N.sleep(10);
             }
 
-            if (exceptionHolder.getValue() != null) {
-                logger.error(errorMessageHolder.getValue());
-                throw new AbacusException(errorMessageHolder.getValue(), exceptionHolder.getValue());
+            if (exceptionHandle.getValue() != null) {
+                logger.error(errorMessageHandle.getValue());
+                throw new AbacusException(errorMessageHandle.getValue(), exceptionHandle.getValue());
             }
         } else {
             while (count-- > 0 && iter.hasNext()) {
