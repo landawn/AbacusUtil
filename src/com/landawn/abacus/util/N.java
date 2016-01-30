@@ -106,6 +106,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -2847,290 +2851,290 @@ public final class N {
         }
     }
 
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @return
-    //     */
-    //    public static IntStream streamOf(final char[] a) {
-    //        return streamOf(a, 0, a.length);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static IntStream streamOf(final char[] a, final int fromIndex, final int toIndex) {
-    //        final int[] values = new int[toIndex - fromIndex];
-    //
-    //        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-    //            values[i] = a[j];
-    //        }
-    //
-    //        return new IntStreamImpl(values);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @return
-    //     */
-    //    public static IntStream streamOf(final byte[] a) {
-    //        return streamOf(a, 0, a.length);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static IntStream streamOf(final byte[] a, final int fromIndex, final int toIndex) {
-    //        final int[] values = new int[toIndex - fromIndex];
-    //
-    //        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-    //            values[i] = a[j];
-    //        }
-    //
-    //        return new IntStreamImpl(values);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @return
-    //     */
-    //    public static IntStream streamOf(final short[] a) {
-    //        return streamOf(a, 0, a.length);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static IntStream streamOf(final short[] a, final int fromIndex, final int toIndex) {
-    //        final int[] values = new int[toIndex - fromIndex];
-    //
-    //        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-    //            values[i] = a[j];
-    //        }
-    //
-    //        return new IntStreamImpl(values);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @return
-    //     */
-    //    public static IntStream streamOf(final int[] a) {
-    //        return streamOf(a, 0, a.length);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static IntStream streamOf(final int[] a, final int fromIndex, final int toIndex) {
-    //        return new IntStreamImpl(a, fromIndex, toIndex);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>LongStream</code>.
-    //     *
-    //     * @param a
-    //     * @return
-    //     */
-    //    public static LongStream streamOf(final long[] a) {
-    //        return streamOf(a, 0, a.length);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>LongStream</code>.
-    //     *
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static LongStream streamOf(final long[] a, final int fromIndex, final int toIndex) {
-    //        return new LongStreamImpl(a, fromIndex, toIndex);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @return
-    //     */
-    //    public static DoubleStream streamOf(final float[] a) {
-    //        return streamOf(a, 0, a.length);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-    //     *
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static DoubleStream streamOf(final float[] a, final int fromIndex, final int toIndex) {
-    //        final double[] values = new double[toIndex - fromIndex];
-    //
-    //        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-    //            values[i] = a[j];
-    //        }
-    //
-    //        return new DoubleStreamImpl(values);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>DoubleStream</code>.
-    //     *
-    //     * @param a
-    //     * @return
-    //     */
-    //    public static DoubleStream streamOf(final double[] a) {
-    //        return streamOf(a, 0, a.length);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>DoubleStream</code>.
-    //     *
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static DoubleStream streamOf(final double[] a, final int fromIndex, final int toIndex) {
-    //        return new DoubleStreamImpl(a, fromIndex, toIndex);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>Stream</code>.
-    //     *
-    //     * @param a
-    //     * @return
-    //     */
-    //    public static <T> Stream<T> streamOf(final T[] a) {
-    //        return streamOf(a, 0, a.length);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>Stream</code>.
-    //     *
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static <T> Stream<T> streamOf(final T[] a, final int fromIndex, final int toIndex) {
-    //        return new ArrayStream<T>(a, fromIndex, toIndex);
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>Stream</code>.
-    //     *
-    //     * @param c
-    //     * @return
-    //     */
-    //    public static <T> Stream<T> streamOf(final Collection<T> c) {
-    //        return streamOf(c, 0, c.size());
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>Stream</code>.
-    //     * 
-    //     * @param c
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static <T> Stream<T> streamOf(final Collection<T> c, int fromIndex, int toIndex) {
-    //        if (fromIndex < 0 || toIndex < fromIndex || toIndex > c.size()) {
-    //            throw new IllegalArgumentException("fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ") is invalid");
-    //        }
-    //
-    //        // return new CollectionStream<T>(c);
-    //        // return new ArrayStream<T>((T[]) c.toArray()); // faster
-    //
-    //        if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
-    //            T[] array = null;
-    //
-    //            try {
-    //                array = (T[]) listElementDataField.get(c);
-    //            } catch (Exception e) {
-    //                // ignore;
-    //                isListElementDataFieldGettable = false;
-    //            }
-    //
-    //            if (array != null) {
-    //                return streamOf(array, fromIndex, toIndex);
-    //            }
-    //        }
-    //
-    //        if (fromIndex == 0 && toIndex == c.size()) {
-    //            return (c.size() > 10 && (c.size() < 1000 || (c.size() < 100000 && c instanceof ArrayList))) ? streamOf((T[]) c.toArray()) : c.stream();
-    //        } else {
-    //            final T[] a = (T[]) new Object[toIndex - fromIndex];
-    //            final Iterator<T> iter = c.iterator();
-    //
-    //            while (fromIndex-- > 0) {
-    //                iter.next();
-    //            }
-    //
-    //            final int len = a.length;
-    //            int i = 0;
-    //
-    //            while (i < len) {
-    //                a[i] = iter.next();
-    //                i++;
-    //            }
-    //
-    //            return streamOf(a);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>Stream</code>.
-    //     *
-    //     * @param m
-    //     * @return
-    //     */
-    //    public static <K, V> Stream<Map.Entry<K, V>> streamOf(final Map<K, V> m) {
-    //        return streamOf(m, 0, m.size());
-    //    }
-    //
-    //    /**
-    //     * Returns a sequential, stateful and immutable <code>Stream</code>.
-    //     * 
-    //     * @param m
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public static <K, V> Stream<Map.Entry<K, V>> streamOf(final Map<K, V> m, final int fromIndex, final int toIndex) {
-    //        return streamOf(m.entrySet(), fromIndex, toIndex);
-    //    }
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static IntStream streamOf(final char[] a) {
+        return streamOf(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static IntStream streamOf(final char[] a, final int fromIndex, final int toIndex) {
+        final int[] values = new int[toIndex - fromIndex];
+
+        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
+            values[i] = a[j];
+        }
+
+        return new IntStreamImpl(values);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static IntStream streamOf(final byte[] a) {
+        return streamOf(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static IntStream streamOf(final byte[] a, final int fromIndex, final int toIndex) {
+        final int[] values = new int[toIndex - fromIndex];
+
+        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
+            values[i] = a[j];
+        }
+
+        return new IntStreamImpl(values);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static IntStream streamOf(final short[] a) {
+        return streamOf(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static IntStream streamOf(final short[] a, final int fromIndex, final int toIndex) {
+        final int[] values = new int[toIndex - fromIndex];
+
+        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
+            values[i] = a[j];
+        }
+
+        return new IntStreamImpl(values);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static IntStream streamOf(final int[] a) {
+        return streamOf(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static IntStream streamOf(final int[] a, final int fromIndex, final int toIndex) {
+        return new IntStreamImpl(a, fromIndex, toIndex);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>LongStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static LongStream streamOf(final long[] a) {
+        return streamOf(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>LongStream</code>.
+     *
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static LongStream streamOf(final long[] a, final int fromIndex, final int toIndex) {
+        return new LongStreamImpl(a, fromIndex, toIndex);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static DoubleStream streamOf(final float[] a) {
+        return streamOf(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     *
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static DoubleStream streamOf(final float[] a, final int fromIndex, final int toIndex) {
+        final double[] values = new double[toIndex - fromIndex];
+
+        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
+            values[i] = a[j];
+        }
+
+        return new DoubleStreamImpl(values);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>DoubleStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static DoubleStream streamOf(final double[] a) {
+        return streamOf(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>DoubleStream</code>.
+     *
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static DoubleStream streamOf(final double[] a, final int fromIndex, final int toIndex) {
+        return new DoubleStreamImpl(a, fromIndex, toIndex);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static <T> Stream<T> streamOf(final T[] a) {
+        return streamOf(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     *
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T> Stream<T> streamOf(final T[] a, final int fromIndex, final int toIndex) {
+        return new ArrayStream<T>(a, fromIndex, toIndex);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     *
+     * @param c
+     * @return
+     */
+    public static <T> Stream<T> streamOf(final Collection<T> c) {
+        return streamOf(c, 0, c.size());
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T> Stream<T> streamOf(final Collection<T> c, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < fromIndex || toIndex > c.size()) {
+            throw new IllegalArgumentException("fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ") is invalid");
+        }
+
+        // return new CollectionStream<T>(c);
+        // return new ArrayStream<T>((T[]) c.toArray()); // faster
+
+        if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
+            T[] array = null;
+
+            try {
+                array = (T[]) listElementDataField.get(c);
+            } catch (Exception e) {
+                // ignore;
+                isListElementDataFieldGettable = false;
+            }
+
+            if (array != null) {
+                return streamOf(array, fromIndex, toIndex);
+            }
+        }
+
+        if (fromIndex == 0 && toIndex == c.size()) {
+            return (c.size() > 10 && (c.size() < 1000 || (c.size() < 100000 && c instanceof ArrayList))) ? streamOf((T[]) c.toArray()) : c.stream();
+        } else {
+            final T[] a = (T[]) new Object[toIndex - fromIndex];
+            final Iterator<T> iter = c.iterator();
+
+            while (fromIndex-- > 0) {
+                iter.next();
+            }
+
+            final int len = a.length;
+            int i = 0;
+
+            while (i < len) {
+                a[i] = iter.next();
+                i++;
+            }
+
+            return streamOf(a);
+        }
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     *
+     * @param m
+     * @return
+     */
+    public static <K, V> Stream<Map.Entry<K, V>> streamOf(final Map<K, V> m) {
+        return streamOf(m, 0, m.size());
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     * 
+     * @param m
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <K, V> Stream<Map.Entry<K, V>> streamOf(final Map<K, V> m, final int fromIndex, final int toIndex) {
+        return streamOf(m.entrySet(), fromIndex, toIndex);
+    }
 
     /**
      * Method newInstance.
@@ -33604,13 +33608,11 @@ public final class N {
         return asyncExecutor.execute(command);
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T> Future<T>[] asyncExecute(final Callable... commands) {
+    public static <T> Future<T>[] asyncExecute(final Callable<T>... commands) {
         return asyncExecutor.execute(commands);
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T> List<Future<T>> asyncExecute(final Collection<? extends Callable> commands) {
+    public static <T> List<Future<T>> asyncExecute(final Collection<? extends Callable<T>> commands) {
         return asyncExecutor.execute(commands);
     }
 

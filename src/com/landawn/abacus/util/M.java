@@ -362,228 +362,36 @@ final class M {
     }
 
     // ============================= Java 8 and above
-    //    static void parallelSort(final int[] a) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a);
-    //    }
-    //
-    //    static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a, fromIndex, toIndex);
-    //    }
-    //
-    //    static void parallelSort(final long[] a) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a);
-    //    }
-    //
-    //    static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a, fromIndex, toIndex);
-    //    }
-    //
-    //    static void parallelSort(final float[] a) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a);
-    //    }
-    //
-    //    static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a, fromIndex, toIndex);
-    //    }
-    //
-    //    static void parallelSort(final double[] a) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a);
-    //    }
-    //
-    //    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a, fromIndex, toIndex);
-    //    }
-    //
-    //    static <T extends Comparable<? super T>> void parallelSort(T[] a) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a);
-    //    }
-    //
-    //    static <T extends Comparable<? super T>> void parallelSort(T[] a, int fromIndex, int toIndex) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a, fromIndex, toIndex);
-    //    }
-    //
-    //    static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a, cmp);
-    //    }
-    //
-    //    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return;
-    //        }
-    //
-    //        Arrays.parallelSort(a, fromIndex, toIndex, cmp);
-    //    }
-
     static void parallelSort(final int[] a) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        parallelSort(a, 0, a.length);
+        Arrays.parallelSort(a);
     }
 
     static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        final int len = toIndex - fromIndex;
-
-        if (len < MIN_ARRAY_SORT_GRAN) {
-            sort(a, fromIndex, toIndex);
-            return;
-        }
-
-        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-        final int[][] subArrays = new int[CPU_CORES][];
-
-        for (int i = 0; i < CPU_CORES; i++) {
-            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-        }
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Handle<Throwable> errorHolder = new Handle<Throwable>();
-
-        for (final int[] tmp : subArrays) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (errorHolder.getValue() != null) {
-                            return;
-                        }
-
-                        Arrays.sort(tmp);
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        parallelMergeSort(a, fromIndex, subArrays);
+        Arrays.parallelSort(a, fromIndex, toIndex);
     }
 
-    static void parallelSort(final long[] array) {
-        if (N.isNullOrEmpty(array)) {
+    static void parallelSort(final long[] a) {
+        if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        parallelSort(array, 0, array.length);
+        Arrays.parallelSort(a);
     }
 
     static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        final int len = toIndex - fromIndex;
-
-        if (len < MIN_ARRAY_SORT_GRAN) {
-            sort(a, fromIndex, toIndex);
-            return;
-        }
-
-        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-        final long[][] subArrays = new long[CPU_CORES][];
-
-        for (int i = 0; i < CPU_CORES; i++) {
-            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-        }
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Handle<Throwable> errorHolder = new Handle<Throwable>();
-
-        for (final long[] tmp : subArrays) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (errorHolder.getValue() != null) {
-                            return;
-                        }
-
-                        Arrays.sort(tmp);
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        parallelMergeSort(a, fromIndex, subArrays);
+        Arrays.parallelSort(a, fromIndex, toIndex);
     }
 
     static void parallelSort(final float[] a) {
@@ -591,139 +399,47 @@ final class M {
             return;
         }
 
-        parallelSort(a, 0, a.length);
+        Arrays.parallelSort(a);
     }
 
     static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return;
-        }
-
-        final int len = toIndex - fromIndex;
-
-        if (len < MIN_ARRAY_SORT_GRAN) {
-            sort(a, fromIndex, toIndex);
-            return;
-        }
-
-        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-        final float[][] subArrays = new float[CPU_CORES][];
-
-        for (int i = 0; i < CPU_CORES; i++) {
-            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-        }
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Handle<Throwable> errorHolder = new Handle<Throwable>();
-
-        for (final float[] tmp : subArrays) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (errorHolder.getValue() != null) {
-                            return;
-                        }
-
-                        Arrays.sort(tmp);
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        parallelMergeSort(a, fromIndex, subArrays);
-    }
-
-    static void parallelSort(final double[] array) {
-        if (N.isNullOrEmpty(array)) {
-            return;
-        }
-
-        parallelSort(array, 0, array.length);
-    }
-
-    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return;
-        }
-
-        final int len = toIndex - fromIndex;
-
-        if (len < MIN_ARRAY_SORT_GRAN) {
-            sort(a, fromIndex, toIndex);
-            return;
-        }
-
-        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-        final double[][] subArrays = new double[CPU_CORES][];
-
-        for (int i = 0; i < CPU_CORES; i++) {
-            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-        }
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Handle<Throwable> errorHolder = new Handle<Throwable>();
-
-        for (final double[] tmp : subArrays) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (errorHolder.getValue() != null) {
-                            return;
-                        }
-
-                        Arrays.sort(tmp);
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        parallelMergeSort(a, fromIndex, subArrays);
-    }
-
-    static <T extends Comparable<? super T>> void parallelSort(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        parallelSort(a, 0, a.length);
+        Arrays.parallelSort(a, fromIndex, toIndex);
     }
 
-    static <T extends Comparable<? super T>> void parallelSort(final T[] a, final int fromIndex, final int toIndex) {
-        parallelSort(a, fromIndex, toIndex, null);
+    static void parallelSort(final double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        Arrays.parallelSort(a);
+    }
+
+    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        Arrays.parallelSort(a, fromIndex, toIndex);
+    }
+
+    static <T extends Comparable<? super T>> void parallelSort(T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        Arrays.parallelSort(a);
+    }
+
+    static <T extends Comparable<? super T>> void parallelSort(T[] a, int fromIndex, int toIndex) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        Arrays.parallelSort(a, fromIndex, toIndex);
     }
 
     static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
@@ -731,64 +447,348 @@ final class M {
             return;
         }
 
-        parallelSort(a, 0, a.length, cmp);
+        Arrays.parallelSort(a, cmp);
     }
 
     static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        N.checkFromToIndex(fromIndex, toIndex);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        final int len = toIndex - fromIndex;
-
-        if (len < MIN_ARRAY_SORT_GRAN) {
-            sort(a, fromIndex, toIndex, cmp);
-            return;
-        }
-
-        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-        final T[][] subArrays = N.newArray(a.getClass(), CPU_CORES);
-
-        for (int i = 0; i < CPU_CORES; i++) {
-            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-        }
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Handle<Throwable> errorHolder = new Handle<Throwable>();
-
-        for (final T[] tmp : subArrays) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (errorHolder.getValue() != null) {
-                            return;
-                        }
-
-                        Arrays.sort(tmp, cmp);
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        parallelMergeSort(a, fromIndex, subArrays, cmp);
+        Arrays.parallelSort(a, fromIndex, toIndex, cmp);
     }
+
+    //    static void parallelSort(final int[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        parallelSort(a, 0, a.length);
+    //    }
+    //
+    //    static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
+    //        N.checkFromToIndex(fromIndex, toIndex);
+    //
+    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+    //            return;
+    //        }
+    //
+    //        final int len = toIndex - fromIndex;
+    //
+    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //            sort(a, fromIndex, toIndex);
+    //            return;
+    //        }
+    //
+    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+    //        final int[][] subArrays = new int[CPU_CORES][];
+    //
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
+    //        }
+    //
+    //        final AtomicInteger activeThreadNum = new AtomicInteger();
+    //        final Handle<Throwable> errorHolder = new Handle<Throwable>();
+    //
+    //        for (final int[] tmp : subArrays) {
+    //            activeThreadNum.incrementAndGet();
+    //
+    //            parallelSortExecutor.execute(new Runnable() {
+    //                @Override
+    //                public void run() {
+    //                    try {
+    //                        if (errorHolder.getValue() != null) {
+    //                            return;
+    //                        }
+    //
+    //                        Arrays.sort(tmp);
+    //                    } catch (Throwable e) {
+    //                        errorHolder.setValue(e);
+    //                    } finally {
+    //                        activeThreadNum.decrementAndGet();
+    //                    }
+    //                }
+    //            });
+    //        }
+    //
+    //        while (activeThreadNum.get() > 0) {
+    //            N.sleep(10);
+    //        }
+    //
+    //        if (errorHolder.getValue() != null) {
+    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        }
+    //
+    //        parallelMergeSort(a, fromIndex, subArrays);
+    //    }
+    //
+    //    static void parallelSort(final long[] array) {
+    //        if (N.isNullOrEmpty(array)) {
+    //            return;
+    //        }
+    //
+    //        parallelSort(array, 0, array.length);
+    //    }
+    //
+    //    static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
+    //        N.checkFromToIndex(fromIndex, toIndex);
+    //
+    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+    //            return;
+    //        }
+    //
+    //        final int len = toIndex - fromIndex;
+    //
+    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //            sort(a, fromIndex, toIndex);
+    //            return;
+    //        }
+    //
+    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+    //        final long[][] subArrays = new long[CPU_CORES][];
+    //
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
+    //        }
+    //
+    //        final AtomicInteger activeThreadNum = new AtomicInteger();
+    //        final Handle<Throwable> errorHolder = new Handle<Throwable>();
+    //
+    //        for (final long[] tmp : subArrays) {
+    //            activeThreadNum.incrementAndGet();
+    //
+    //            parallelSortExecutor.execute(new Runnable() {
+    //                @Override
+    //                public void run() {
+    //                    try {
+    //                        if (errorHolder.getValue() != null) {
+    //                            return;
+    //                        }
+    //
+    //                        Arrays.sort(tmp);
+    //                    } catch (Throwable e) {
+    //                        errorHolder.setValue(e);
+    //                    } finally {
+    //                        activeThreadNum.decrementAndGet();
+    //                    }
+    //                }
+    //            });
+    //        }
+    //
+    //        while (activeThreadNum.get() > 0) {
+    //            N.sleep(10);
+    //        }
+    //
+    //        if (errorHolder.getValue() != null) {
+    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        }
+    //
+    //        parallelMergeSort(a, fromIndex, subArrays);
+    //    }
+    //
+    //    static void parallelSort(final float[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        parallelSort(a, 0, a.length);
+    //    }
+    //
+    //    static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
+    //        N.checkFromToIndex(fromIndex, toIndex);
+    //
+    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+    //            return;
+    //        }
+    //
+    //        final int len = toIndex - fromIndex;
+    //
+    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //            sort(a, fromIndex, toIndex);
+    //            return;
+    //        }
+    //
+    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+    //        final float[][] subArrays = new float[CPU_CORES][];
+    //
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
+    //        }
+    //
+    //        final AtomicInteger activeThreadNum = new AtomicInteger();
+    //        final Handle<Throwable> errorHolder = new Handle<Throwable>();
+    //
+    //        for (final float[] tmp : subArrays) {
+    //            activeThreadNum.incrementAndGet();
+    //
+    //            parallelSortExecutor.execute(new Runnable() {
+    //                @Override
+    //                public void run() {
+    //                    try {
+    //                        if (errorHolder.getValue() != null) {
+    //                            return;
+    //                        }
+    //
+    //                        Arrays.sort(tmp);
+    //                    } catch (Throwable e) {
+    //                        errorHolder.setValue(e);
+    //                    } finally {
+    //                        activeThreadNum.decrementAndGet();
+    //                    }
+    //                }
+    //            });
+    //        }
+    //
+    //        while (activeThreadNum.get() > 0) {
+    //            N.sleep(10);
+    //        }
+    //
+    //        if (errorHolder.getValue() != null) {
+    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        }
+    //
+    //        parallelMergeSort(a, fromIndex, subArrays);
+    //    }
+    //
+    //    static void parallelSort(final double[] array) {
+    //        if (N.isNullOrEmpty(array)) {
+    //            return;
+    //        }
+    //
+    //        parallelSort(array, 0, array.length);
+    //    }
+    //
+    //    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
+    //        N.checkFromToIndex(fromIndex, toIndex);
+    //
+    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+    //            return;
+    //        }
+    //
+    //        final int len = toIndex - fromIndex;
+    //
+    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //            sort(a, fromIndex, toIndex);
+    //            return;
+    //        }
+    //
+    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+    //        final double[][] subArrays = new double[CPU_CORES][];
+    //
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
+    //        }
+    //
+    //        final AtomicInteger activeThreadNum = new AtomicInteger();
+    //        final Handle<Throwable> errorHolder = new Handle<Throwable>();
+    //
+    //        for (final double[] tmp : subArrays) {
+    //            activeThreadNum.incrementAndGet();
+    //
+    //            parallelSortExecutor.execute(new Runnable() {
+    //                @Override
+    //                public void run() {
+    //                    try {
+    //                        if (errorHolder.getValue() != null) {
+    //                            return;
+    //                        }
+    //
+    //                        Arrays.sort(tmp);
+    //                    } catch (Throwable e) {
+    //                        errorHolder.setValue(e);
+    //                    } finally {
+    //                        activeThreadNum.decrementAndGet();
+    //                    }
+    //                }
+    //            });
+    //        }
+    //
+    //        while (activeThreadNum.get() > 0) {
+    //            N.sleep(10);
+    //        }
+    //
+    //        if (errorHolder.getValue() != null) {
+    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        }
+    //
+    //        parallelMergeSort(a, fromIndex, subArrays);
+    //    }
+    //
+    //    static <T extends Comparable<? super T>> void parallelSort(final T[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        parallelSort(a, 0, a.length);
+    //    }
+    //
+    //    static <T extends Comparable<? super T>> void parallelSort(final T[] a, final int fromIndex, final int toIndex) {
+    //        parallelSort(a, fromIndex, toIndex, null);
+    //    }
+    //
+    //    static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        parallelSort(a, 0, a.length, cmp);
+    //    }
+    //
+    //    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    //        N.checkFromToIndex(fromIndex, toIndex);
+    //
+    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+    //            return;
+    //        }
+    //
+    //        final int len = toIndex - fromIndex;
+    //
+    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //            sort(a, fromIndex, toIndex, cmp);
+    //            return;
+    //        }
+    //
+    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+    //        final T[][] subArrays = N.newArray(a.getClass(), CPU_CORES);
+    //
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
+    //        }
+    //
+    //        final AtomicInteger activeThreadNum = new AtomicInteger();
+    //        final Handle<Throwable> errorHolder = new Handle<Throwable>();
+    //
+    //        for (final T[] tmp : subArrays) {
+    //            activeThreadNum.incrementAndGet();
+    //
+    //            parallelSortExecutor.execute(new Runnable() {
+    //                @Override
+    //                public void run() {
+    //                    try {
+    //                        if (errorHolder.getValue() != null) {
+    //                            return;
+    //                        }
+    //
+    //                        Arrays.sort(tmp, cmp);
+    //                    } catch (Throwable e) {
+    //                        errorHolder.setValue(e);
+    //                    } finally {
+    //                        activeThreadNum.decrementAndGet();
+    //                    }
+    //                }
+    //            });
+    //        }
+    //
+    //        while (activeThreadNum.get() > 0) {
+    //            N.sleep(10);
+    //        }
+    //
+    //        if (errorHolder.getValue() != null) {
+    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        }
+    //
+    //        parallelMergeSort(a, fromIndex, subArrays, cmp);
+    //    }
 
     static <T extends Comparable<? super T>> void parallelSort(final List<? extends T> c) {
         if (N.isNullOrEmpty(c)) {

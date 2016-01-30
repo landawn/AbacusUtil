@@ -3091,7 +3091,7 @@ public final class IOUtil {
                 for (final File subSubFile : IOUtil.listFiles(subFile, true, true)) {
                     parseFile(subSubFile, offsetForAll, countForAll, inParallel, lineParser);
 
-                    if (countForAll.intValue() <= 0) {
+                    if (countForAll.longValue() <= 0) {
                         break;
                     }
                 }
@@ -3099,7 +3099,7 @@ public final class IOUtil {
                 parseFile(subFile, offsetForAll, countForAll, inParallel, lineParser);
             }
 
-            if (countForAll.intValue() <= 0) {
+            if (countForAll.longValue() <= 0) {
                 break;
             }
         }
