@@ -61,8 +61,8 @@ public final class Pair<L, R> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((left == null) ? 0 : left.hashCode());
-        result = prime * result + ((right == null) ? 0 : right.hashCode());
+        result = prime * result + N.hashCode(left);
+        result = prime * result + N.hashCode(right);
         return result;
     }
 
@@ -83,6 +83,6 @@ public final class Pair<L, R> {
 
     @Override
     public String toString() {
-        return "{left=" + left + ", right=" + right + "}";
+        return "{left=" + N.toString(left) + ", right=" + N.toString(right) + "}";
     }
 }

@@ -1017,16 +1017,16 @@ public final class CSVUtil {
                             typeArray[i] = type;
 
                             if (type.isSerializable()) {
-                                type.writeCharacters(bw, value, config);
+                                type.writeCharacter(bw, value, config);
                             } else {
-                                type.writeCharacters(bw, jsonParser.serialize(value, config), config);
+                                type.writeCharacter(bw, jsonParser.serialize(value, config), config);
                             }
                         }
                     } else {
                         if (type.isSerializable()) {
-                            type.writeCharacters(bw, type.get(dc, i), config);
+                            type.writeCharacter(bw, type.get(dc, i), config);
                         } else {
-                            strType.writeCharacters(bw, jsonParser.serialize(type.get(dc, i), config), config);
+                            strType.writeCharacter(bw, jsonParser.serialize(type.get(dc, i), config), config);
                         }
                     }
                 }

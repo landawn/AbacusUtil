@@ -917,6 +917,21 @@ public final class N {
         BUILT_IN_TYPE.put(FloatList.class.getCanonicalName(), FloatList.class);
         BUILT_IN_TYPE.put(DoubleList.class.getCanonicalName(), DoubleList.class);
 
+        BUILT_IN_TYPE.put(MutableBoolean.class.getCanonicalName(), MutableBoolean.class);
+        BUILT_IN_TYPE.put(MutableChar.class.getCanonicalName(), MutableChar.class);
+        BUILT_IN_TYPE.put(MutableByte.class.getCanonicalName(), MutableByte.class);
+        BUILT_IN_TYPE.put(MutableShort.class.getCanonicalName(), MutableShort.class);
+        BUILT_IN_TYPE.put(MutableInt.class.getCanonicalName(), MutableInt.class);
+        BUILT_IN_TYPE.put(MutableLong.class.getCanonicalName(), MutableLong.class);
+        BUILT_IN_TYPE.put(MutableFloat.class.getCanonicalName(), MutableFloat.class);
+        BUILT_IN_TYPE.put(MutableDouble.class.getCanonicalName(), MutableDouble.class);
+
+        BUILT_IN_TYPE.put(Fraction.class.getCanonicalName(), Fraction.class);
+        BUILT_IN_TYPE.put(Range.class.getCanonicalName(), Range.class);
+        BUILT_IN_TYPE.put(Duration.class.getCanonicalName(), Duration.class);
+        BUILT_IN_TYPE.put(Pair.class.getCanonicalName(), Pair.class);
+        BUILT_IN_TYPE.put(Triple.class.getCanonicalName(), Triple.class);
+
         BUILT_IN_TYPE.put(BiMap.class.getCanonicalName(), BiMap.class);
         BUILT_IN_TYPE.put(Multimap.class.getCanonicalName(), Multimap.class);
         BUILT_IN_TYPE.put(Multiset.class.getCanonicalName(), Multiset.class);

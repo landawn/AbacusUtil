@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,7 +38,6 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -102,8 +100,8 @@ public final class IOUtil {
                 deMethod.setAccessible(true);
 
                 char[] chars = "abc".toCharArray();
-                byte[] bytes = N.invokeMethod(enMethod, Charsets.UTF_8, chars, 1, 1);
-                char[] chars2 = N.invokeMethod(deMethod, Charsets.UTF_8, bytes, 0, bytes.length);
+                byte[] bytes = N.invokeMethod(enMethod, Charsets.DEFAULT, chars, 1, 1);
+                char[] chars2 = N.invokeMethod(deMethod, Charsets.DEFAULT, bytes, 0, bytes.length);
 
                 if (chars2.length == 1 && chars2[0] == 'b') {
                     encodeMethod = enMethod;
@@ -456,7 +454,7 @@ public final class IOUtil {
     }
 
     public static byte[] chars2Bytes(final char[] chars) {
-        return chars2Bytes(chars, Charsets.UTF_8);
+        return chars2Bytes(chars, Charsets.DEFAULT);
     }
 
     public static byte[] chars2Bytes(final char[] chars, final Charset charset) {
@@ -464,7 +462,7 @@ public final class IOUtil {
     }
 
     public static byte[] chars2Bytes(final char[] chars, final int offset, final int len, Charset charset) {
-        charset = charset == null ? Charsets.UTF_8 : charset;
+        charset = charset == null ? Charsets.DEFAULT : charset;
 
         if (stringEncodeMethod == null) {
             return new String(chars, offset, len).getBytes(charset);
@@ -474,7 +472,7 @@ public final class IOUtil {
     }
 
     public static char[] bytes2Chars(final byte[] bytes) {
-        return bytes2Chars(bytes, Charsets.UTF_8);
+        return bytes2Chars(bytes, Charsets.DEFAULT);
     }
 
     public static char[] bytes2Chars(final byte[] bytes, final Charset charset) {
@@ -482,7 +480,7 @@ public final class IOUtil {
     }
 
     public static char[] bytes2Chars(final byte bytes[], final int offset, final int len, Charset charset) {
-        charset = charset == null ? Charsets.UTF_8 : charset;
+        charset = charset == null ? Charsets.DEFAULT : charset;
 
         if (stringDecodeMethod == null) {
             return new String(bytes, offset, len, charset).toCharArray();
@@ -492,20 +490,32 @@ public final class IOUtil {
     }
 
     public static InputStream string2InputStream(final String str) {
-        return string2InputStream(str, Charsets.UTF_8);
+        return string2InputStream(str, Charsets.DEFAULT);
     }
 
     public static InputStream string2InputStream(final String str, Charset charset) {
-        charset = charset == null ? Charsets.UTF_8 : charset;
+        if (str == null) {
+            throw new IllegalArgumentException("The input String can't be null.");
+        }
+
+        charset = charset == null ? Charsets.DEFAULT : charset;
 
         return new ByteArrayInputStream(str.getBytes(charset));
     }
 
     public static Reader string2Reader(final String str) {
+        if (str == null) {
+            throw new IllegalArgumentException("The input String can't be null.");
+        }
+
         return new StringReader(str);
     }
 
     public static Writer stringBuilder2Writer(final StringBuilder sb) {
+        if (sb == null) {
+            throw new IllegalArgumentException("The input StringBuilder can't be null.");
+        }
+
         return new StringWriter(sb);
     }
 
@@ -575,7 +585,7 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final File file, final int maxLen) {
-        return readChars(file, maxLen, null);
+        return readChars(file, maxLen, Charsets.DEFAULT);
     }
 
     public static char[] readChars(final File file, final int maxLen, final Charset encoding) {
@@ -599,10 +609,12 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final InputStream is, final int maxLen) {
-        return readChars(is, maxLen, null);
+        return readChars(is, maxLen, Charsets.DEFAULT);
     }
 
-    public static char[] readChars(final InputStream is, final int maxLen, final Charset encoding) {
+    public static char[] readChars(final InputStream is, final int maxLen, Charset encoding) {
+        encoding = encoding == null ? Charsets.DEFAULT : encoding;
+
         Reader reader = null;
 
         // try {
@@ -667,7 +679,7 @@ public final class IOUtil {
     }
 
     public static String readString(final File file, final int maxLen) {
-        return readString(file, maxLen, null);
+        return readString(file, maxLen, Charsets.DEFAULT);
     }
 
     public static String readString(final File file, final int maxLen, final Charset encoding) {
@@ -681,7 +693,7 @@ public final class IOUtil {
     }
 
     public static String readString(final InputStream is, final int maxLen) {
-        return readString(is, maxLen, null);
+        return readString(is, maxLen, Charsets.DEFAULT);
     }
 
     public static String readString(final InputStream is, final int maxLen, final Charset encoding) {
@@ -705,7 +717,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final File file, final int lineOffset) {
-        return readLine(file, lineOffset, null);
+        return readLine(file, lineOffset, Charsets.DEFAULT);
     }
 
     public static String readLine(final File file, final int lineOffset, final Charset encoding) {
@@ -729,7 +741,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final InputStream is, final int lineOffset) {
-        return readLine(is, lineOffset, null);
+        return readLine(is, lineOffset, Charsets.DEFAULT);
     }
 
     public static String readLine(final InputStream is, final int lineOffset, final Charset encoding) {
@@ -766,7 +778,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final File file, final int offset, final int count) {
-        return readLines(file, offset, count, null);
+        return readLines(file, offset, count, Charsets.DEFAULT);
     }
 
     public static List<String> readLines(final File file, final int offset, final int count, final Charset encoding) {
@@ -790,7 +802,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final InputStream is, final int offset, final int count) {
-        return readLines(is, offset, count, null);
+        return readLines(is, offset, count, Charsets.DEFAULT);
     }
 
     public static List<String> readLines(final InputStream is, final int offset, final int count, final Charset encoding) {
@@ -798,7 +810,7 @@ public final class IOUtil {
     }
 
     private static InputStreamReader createReader(final InputStream is, final Charset encoding) {
-        return encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding);
+        return encoding == null ? new InputStreamReader(is, Charsets.DEFAULT) : new InputStreamReader(is, encoding);
     }
 
     public static List<String> readLines(final Reader reader) {
@@ -839,7 +851,7 @@ public final class IOUtil {
      * @see #lineIterator(File, String)
      */
     public static LineIterator lineIterator(final File file) {
-        return lineIterator(file, null);
+        return lineIterator(file, Charsets.DEFAULT);
     }
 
     /**
@@ -860,7 +872,7 @@ public final class IOUtil {
      *     /// do something with line
      *   }
      * } finally {
-     *   IOUtil.closeQuietly(iterator);
+     *   closeQuietly(iterator);
      * }
      * </pre>
      * <p>
@@ -905,13 +917,13 @@ public final class IOUtil {
      * The recommended usage pattern is:
      * <pre>
      * try {
-     *   LineIterator it = IOUtil.lineIterator(stream, charset);
+     *   LineIterator it = lineIterator(stream, charset);
      *   while (it.hasNext()) {
      *     String line = it.nextLine();
      *     /// do something with line
      *   }
      * } finally {
-     *   IOUtil.closeQuietly(stream);
+     *   closeQuietly(stream);
      * }
      * </pre>
      *
@@ -939,13 +951,13 @@ public final class IOUtil {
      * The recommended usage pattern is:
      * <pre>
      * try {
-     *   LineIterator it = IOUtil.lineIterator(reader);
+     *   LineIterator it = lineIterator(reader);
      *   while (it.hasNext()) {
      *     String line = it.nextLine();
      *     /// do something with line
      *   }
      * } finally {
-     *   IOUtil.closeQuietly(reader);
+     *   closeQuietly(reader);
      * }
      * </pre>
      *
@@ -1289,6 +1301,54 @@ public final class IOUtil {
         }
     }
 
+    public static void write(final Writer writer, final boolean b) throws IOException {
+        write(writer, b, false);
+    }
+
+    public static void write(final Writer writer, final boolean b, final boolean flush) throws IOException {
+        writer.write(N.stringOf(b));
+
+        if (flush) {
+            writer.flush();
+        }
+    }
+
+    public static void write(final Writer writer, final char c) throws IOException {
+        write(writer, c, false);
+    }
+
+    public static void write(final Writer writer, final char c, final boolean flush) throws IOException {
+        writer.write(c);
+
+        if (flush) {
+            writer.flush();
+        }
+    }
+
+    public static void write(final Writer writer, final byte b) throws IOException {
+        write(writer, b, false);
+    }
+
+    public static void write(final Writer writer, final byte b, final boolean flush) throws IOException {
+        writer.write(N.stringOf(b));
+
+        if (flush) {
+            writer.flush();
+        }
+    }
+
+    public static void write(final Writer writer, final short s) throws IOException {
+        write(writer, s, false);
+    }
+
+    public static void write(final Writer writer, final short s, final boolean flush) throws IOException {
+        writer.write(N.stringOf(s));
+
+        if (flush) {
+            writer.flush();
+        }
+    }
+
     public static void write(final Writer writer, final int i) throws IOException {
         write(writer, i, false);
     }
@@ -1338,7 +1398,17 @@ public final class IOUtil {
     }
 
     public static void write(final File out, final String str) {
-        write(out, N.getCharsForReadOnly(str));
+        write(out, str, Charsets.DEFAULT);
+    }
+
+    public static void write(final File out, final String str, Charset charset) {
+        charset = charset == null ? Charsets.DEFAULT : charset;
+
+        if (str == null) {
+            write(out, chars2Bytes(N.NULL_CHAR_ARRAY, charset));
+        } else {
+            write(out, str.getBytes(charset));
+        }
     }
 
     public static void write(final OutputStream out, final String str) {
@@ -1350,14 +1420,14 @@ public final class IOUtil {
     }
 
     public static void write(final OutputStream out, final String str, final boolean flush) {
-        write(out, str, Charsets.UTF_8, flush);
+        write(out, str, Charsets.DEFAULT, flush);
     }
 
     public static void write(final OutputStream out, final String str, Charset charset, final boolean flush) {
-        charset = charset == null ? Charsets.UTF_8 : charset;
+        charset = charset == null ? Charsets.DEFAULT : charset;
 
         try {
-            out.write(str.getBytes(charset));
+            out.write(str == null ? chars2Bytes(N.NULL_CHAR_ARRAY, charset) : str.getBytes(charset));
 
             if (flush) {
                 out.flush();
@@ -1372,7 +1442,7 @@ public final class IOUtil {
     }
 
     public static void write(final Writer out, final String str, final boolean flush) {
-        write(out, N.getCharsForReadOnly(str), flush);
+        write(out, str == null ? N.NULL_CHAR_ARRAY : N.getCharsForReadOnly(str), flush);
     }
 
     public static void write(final File out, final byte[] bytes) {
@@ -1428,20 +1498,11 @@ public final class IOUtil {
     }
 
     public static void write(final File out, final char[] chars, final int offset, final int len) {
-        Writer writer = null;
+        write(out, chars, offset, len, Charsets.DEFAULT);
+    }
 
-        try {
-            writer = new FileWriter(out);
-
-            write(writer, chars, offset, len);
-
-            writer.flush();
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        } finally {
-            close(writer);
-        }
-
+    public static void write(final File out, final char[] chars, final int offset, final int len, final Charset charset) {
+        write(out, chars2Bytes(chars, offset, len, charset));
     }
 
     public static void write(final OutputStream out, final char[] chars) {
@@ -1449,7 +1510,7 @@ public final class IOUtil {
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len) {
-        write(out, chars, offset, len, Charsets.UTF_8);
+        write(out, chars, offset, len, Charsets.DEFAULT);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset) {
@@ -1461,7 +1522,7 @@ public final class IOUtil {
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final boolean flush) {
-        write(out, chars, offset, len, Charsets.UTF_8, flush);
+        write(out, chars, offset, len, Charsets.DEFAULT, flush);
     }
 
     public static void write(final OutputStream out, final char[] chars, final int offset, final int len, final Charset charset, final boolean flush) {
@@ -1938,10 +1999,10 @@ public final class IOUtil {
     }
 
     public static void copy(final File srcFile, final File destDir) {
-        copy(srcFile, destDir, null, true);
+        copy(srcFile, destDir, true, null);
     }
 
-    public static void copy(File srcFile, File destDir, final FilenameFilter filter, final boolean preserveFileDate) {
+    public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final FileFilter filter) {
         if (!srcFile.exists()) {
             throw new AbacusIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
@@ -1965,24 +2026,15 @@ public final class IOUtil {
 
         if (srcFile.isDirectory()) {
             try {
-                // Cater for destination being directory within the source
-                // directory (see IO-141)
-                List<String> exclusionList = null;
-
-                if (destDir.getCanonicalPath().startsWith(srcFile.getCanonicalPath())) {
-                    File[] subFiles = (filter == null) ? srcFile.listFiles() : srcFile.listFiles(filter);
-
-                    if (N.notNullOrEmpty(subFiles)) {
-                        exclusionList = new ArrayList<String>(subFiles.length);
-
-                        for (File subFile : subFiles) {
-                            File copiedFile = new File(destDir, subFile.getName());
-                            exclusionList.add(copiedFile.getCanonicalPath());
-                        }
-                    }
+                final String destCanonicalPath = destDir.getCanonicalPath();
+                final String srcCanonicalPath = srcFile.getCanonicalPath();
+                if (destCanonicalPath.startsWith(srcCanonicalPath)
+                        && (destCanonicalPath.charAt(srcCanonicalPath.length()) == '/' || destCanonicalPath.charAt(srcCanonicalPath.length()) == '\\')) {
+                    throw new AbacusIOException("Failed to copy due to target directory: " + destDir.getCanonicalPath() + " is in the source directory: "
+                            + srcFile.getCanonicalPath());
                 }
 
-                doCopyDirectory(srcFile, destDir, filter, preserveFileDate, exclusionList);
+                doCopyDirectory(srcFile, destDir, preserveFileDate, filter);
             } catch (IOException e) {
                 throw new AbacusIOException(e);
             }
@@ -2010,20 +2062,19 @@ public final class IOUtil {
      *            the validated source directory, must not be {@code null}
      * @param destDir
      *            the validated destination directory, must not be {@code null}
-     * @param filter
-     *            the filter to apply, null means copy all directories and files
      * @param preserveFileDate
      *            whether to preserve the file date
+     * @param filter
+     *            the filter to apply, null means copy all directories and files
      * @param exclusionList
      *            List of files and directories to exclude from the copy, may be null
      * @throws IOException
      *             if an error occurs
      * @since 1.1
      */
-    private static void doCopyDirectory(final File srcDir, final File destDir, final FilenameFilter filter, final boolean preserveFileDate,
-            final List<String> exclusionList) throws IOException {
+    private static void doCopyDirectory(final File srcDir, final File destDir, final boolean preserveFileDate, final FileFilter filter) throws IOException {
         // recurse
-        File[] subFiles = (filter == null) ? srcDir.listFiles() : srcDir.listFiles(filter);
+        List<File> subFiles = (filter == null) ? listFiles(srcDir) : listFiles(srcDir, false, filter);
 
         if (subFiles == null) { // null if abstract pathname does not denote a
                                 // directory, or if an I/O error occurs
@@ -2046,13 +2097,10 @@ public final class IOUtil {
 
         for (File subFile : subFiles) {
             File dstFile = new File(destDir, subFile.getName());
-
-            if ((exclusionList == null) || !exclusionList.contains(subFile.getCanonicalPath())) {
-                if (subFile.isDirectory()) {
-                    doCopyDirectory(subFile, dstFile, filter, preserveFileDate, exclusionList);
-                } else {
-                    doCopyFile(subFile, dstFile, preserveFileDate);
-                }
+            if (subFile.isDirectory()) {
+                doCopyDirectory(subFile, dstFile, preserveFileDate, filter);
+            } else {
+                doCopyFile(subFile, dstFile, preserveFileDate);
             }
         }
 
@@ -2106,7 +2154,7 @@ public final class IOUtil {
         }
 
         if (srcFile.length() != destFile.length()) {
-            delete(destFile);
+            deleteAllIfExists(destFile);
             throw new AbacusIOException("Failed to copy full contents from '" + srcFile + "' to '" + destFile + "'");
         }
 
@@ -2148,13 +2196,63 @@ public final class IOUtil {
         }
     }
 
+    public static boolean delete(final File file, FileFilter filter) {
+        if (filter == null) {
+            return deleteAllIfExists(file);
+        }
+
+        if ((file == null) || !file.exists() || !filter.accept(file.getParentFile(), file)) {
+            return false;
+        }
+
+        if (file.isDirectory()) {
+            final File[] files = file.listFiles();
+
+            if (N.notNullOrEmpty(files)) {
+                for (File subFile : files) {
+                    if (subFile == null) {
+                        continue;
+                    }
+
+                    if (filter.accept(file, subFile)) {
+                        if (subFile.isFile()) {
+                            if (subFile.delete() == false) {
+                                return false;
+                            }
+                        } else {
+                            if (deleteAllIfExists(subFile) == false) {
+                                return false;
+                            }
+                        }
+                    } else {
+                        if (subFile.isDirectory()) {
+                            if (delete(subFile, filter) == false) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return file.delete();
+    }
+
+    public static boolean deleteIfExists(final File file) {
+        if ((file == null) || !file.exists()) {
+            return false;
+        }
+
+        return file.delete();
+    }
+
     /**
      * Deletes the file/directory. If file is a directory, delete it and all sub-directories.
      *
      * @param file
      * @return true if the file is deleted successfully, otherwise false if the file is null or doesn't exist, or can't be deleted.
      */
-    public static boolean delete(final File file) {
+    public static boolean deleteAllIfExists(final File file) {
         if ((file == null) || !file.exists()) {
             return false;
         }
@@ -2168,12 +2266,33 @@ public final class IOUtil {
                         continue;
                     }
 
-                    delete(subFile);
+                    if (subFile.isFile()) {
+                        if (subFile.delete() == false) {
+                            return false;
+                        }
+                    } else {
+                        if (deleteAllIfExists(subFile) == false) {
+                            return false;
+                        }
+                    }
                 }
             }
         }
 
         return file.delete();
+    }
+
+    /**
+     * 
+     * @param file
+     * @return <code>false</code> if file exists or failed to create new file.
+     */
+    public static boolean createIfNotExists(final File file) {
+        try {
+            return file.exists() ? false : file.createNewFile();
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
     }
 
     public static void zip(final File sourceFile, final File targetFile) {
@@ -2424,7 +2543,7 @@ public final class IOUtil {
      * @param destFile
      * @return the total bytes have been merged into the destination file.
      */
-    public static long merge(final List<File> sourceFiles, final File destFile) {
+    public static long merge(final Collection<File> sourceFiles, final File destFile) {
         final byte[] buf = ObjectFactory.createByteArrayBuffer();
 
         long totalCount = 0;
@@ -2549,7 +2668,7 @@ public final class IOUtil {
         return list(path, false, false);
     }
 
-    public static List<String> list(File path, final boolean excludeDirectory, final boolean recursively) {
+    public static List<String> list(File path, final boolean recursively, final boolean excludeDirectory) {
         List<String> files = N.newArrayList();
 
         if (!path.exists()) {
@@ -2573,7 +2692,7 @@ public final class IOUtil {
                 }
 
                 if (recursively) {
-                    files.addAll(list(file, excludeDirectory, recursively));
+                    files.addAll(list(file, recursively, excludeDirectory));
                 }
             }
         }
@@ -2581,7 +2700,7 @@ public final class IOUtil {
         return files;
     }
 
-    public static List<String> list(File path, final FileFilter filter, final boolean recursively) {
+    public static List<String> list(File path, final boolean recursively, final FileFilter filter) {
         List<String> files = N.newArrayList();
 
         if (!path.exists()) {
@@ -2602,7 +2721,7 @@ public final class IOUtil {
             }
 
             if (recursively && file.isDirectory()) {
-                files.addAll(list(file, filter, recursively));
+                files.addAll(list(file, recursively, filter));
             }
         }
 
@@ -2613,7 +2732,7 @@ public final class IOUtil {
         return listFiles(path, false, false);
     }
 
-    public static List<File> listFiles(final File path, final boolean excludeDirectory, final boolean recursively) {
+    public static List<File> listFiles(final File path, final boolean recursively, final boolean excludeDirectory) {
         List<File> files = N.newArrayList();
 
         if (!path.exists()) {
@@ -2635,7 +2754,7 @@ public final class IOUtil {
                 }
 
                 if (recursively) {
-                    files.addAll(listFiles(file, excludeDirectory, recursively));
+                    files.addAll(listFiles(file, recursively, excludeDirectory));
                 }
             }
         }
@@ -2643,7 +2762,7 @@ public final class IOUtil {
         return files;
     }
 
-    public static List<File> listFiles(final File path, final FileFilter filter, final boolean recursively) {
+    public static List<File> listFiles(final File path, final boolean recursively, final FileFilter filter) {
         List<File> files = N.newArrayList();
 
         if (!path.exists()) {
@@ -2662,7 +2781,7 @@ public final class IOUtil {
             }
 
             if (recursively && file.isDirectory()) {
-                files.addAll(listFiles(file, filter, recursively));
+                files.addAll(listFiles(file, recursively, filter));
             }
         }
 
@@ -2699,7 +2818,7 @@ public final class IOUtil {
         return files;
     }
 
-    public static List<File> listDirectories(final File path, final FileFilter filter, final boolean recursively) {
+    public static List<File> listDirectories(final File path, final boolean recursively, final FileFilter filter) {
         List<File> files = N.newArrayList();
 
         if (!path.exists()) {
@@ -2719,7 +2838,7 @@ public final class IOUtil {
                 }
 
                 if (recursively) {
-                    files.addAll(listDirectories(file, filter, recursively));
+                    files.addAll(listDirectories(file, recursively, filter));
                 }
             }
         }
@@ -2756,7 +2875,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
-            IOUtil.close(is);
+            close(is);
         }
     }
 
@@ -2791,7 +2910,7 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
-            IOUtil.close(is);
+            close(is);
         }
     }
 
@@ -2811,9 +2930,11 @@ public final class IOUtil {
      * @throws NullPointerException if the parameter is null
      */
     public static File toFile(final URL url) {
-        String filename = url.getFile().replace('/', File.separatorChar);
-        filename = decodeUrl(filename);
-        return new File(filename);
+        if (url.getProtocol().equals("file") == false) {
+            throw new IllegalArgumentException("URL could not be converted to a File: " + url);
+        }
+
+        return new File(decodeUrl(url.getFile().replace('/', File.separatorChar)));
     }
 
     /**
@@ -2884,32 +3005,33 @@ public final class IOUtil {
      * @since 1.1
      */
     public static File[] toFiles(final URL[] urls) {
-        if (urls == null || urls.length == 0) {
+        if (N.isNullOrEmpty(urls)) {
             return new File[0];
         }
+
         final File[] files = new File[urls.length];
+
         for (int i = 0; i < urls.length; i++) {
-            final URL url = urls[i];
-            if (url != null) {
-                if (url.getProtocol().equals("file") == false) {
-                    throw new IllegalArgumentException("URL could not be converted to a File: " + url);
-                }
-                files[i] = toFile(url);
-            }
+            files[i] = toFile(urls[i]);
         }
+
         return files;
     }
 
-    /**
-     * Converts each of an array of <code>File</code> to a <code>URL</code>.
-     * <p>
-     * Returns an array of the same size as the input.
-     *
-     * @param file  the files to convert, must not be {@code null}
-     * @return an array of URLs matching the input
-     * @throws AbacusIOException if a file cannot be converted
-     * @throws NullPointerException if the parameter is null
-     */
+    public static List<File> toFiles(final Collection<URL> urls) {
+        if (N.isNullOrEmpty(urls)) {
+            return N.newArrayList();
+        }
+
+        final List<File> files = N.newArrayList(urls.size());
+
+        for (URL url : urls) {
+            files.add(toFile(url));
+        }
+
+        return files;
+    }
+
     public static URL toURL(final File file) {
         try {
             return file.toURI().toURL();
@@ -2918,18 +3040,8 @@ public final class IOUtil {
         }
     }
 
-    /**
-     * Converts each of an array of <code>File</code> to a <code>URL</code>.
-     * <p>
-     * Returns an array of the same size as the input.
-     *
-     * @param files  the files to convert, must not be {@code null}
-     * @return an array of URLs matching the input
-     * @throws AbacusIOException if a file cannot be converted
-     * @throws NullPointerException if the parameter is null
-     */
     public static URL[] toURLs(final File[] files) {
-        if (files == null || files.length == 0) {
+        if (N.isNullOrEmpty(files)) {
             return new URL[0];
         }
 
@@ -2946,6 +3058,24 @@ public final class IOUtil {
         return urls;
     }
 
+    public static List<URL> toURLs(final Collection<File> files) {
+        if (N.isNullOrEmpty(files)) {
+            return N.newArrayList();
+        }
+
+        final List<URL> urls = N.newArrayList(files.size());
+
+        try {
+            for (File file : files) {
+                urls.add(file.toURI().toURL());
+            }
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+
+        return urls;
+    }
+
     /**
      * Update the last modified time of the file to system current time if the specified file exists.
      *
@@ -2954,31 +3084,6 @@ public final class IOUtil {
      */
     public static boolean touch(final File file) {
         return file.exists() && file.setLastModified(System.currentTimeMillis());
-    }
-
-    /**
-     * 
-     * @param filePath
-     * @return <code>false</code> if file exists or failed to create new file.
-     */
-    public static boolean createFileIfNotExists(String filePath) {
-        final File file = new File(filePath);
-
-        try {
-            return file.exists() ? false : file.createNewFile();
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        }
-    }
-
-    /**
-     * 
-     * @param filePath
-     * @return <code>false</code> if file not exists or failed to delete the file.
-     */
-    public static boolean deleteFileIfExists(String filePath) {
-        final File file = new File(filePath);
-        return file.exists() ? file.delete() : false;
     }
 
     /**
@@ -3028,7 +3133,7 @@ public final class IOUtil {
      * @param lineParser always remember to handle line <code>null</code>
      */
     public static void parse(final File file, final long lineOffset, final long count, final boolean inParallel, final Consumer<String> lineParser) {
-        parse(file.isDirectory() ? IOUtil.listFiles(file, true, true) : N.asList(file), lineOffset, count, inParallel, lineParser);
+        parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, inParallel, lineParser);
     }
 
     /**
@@ -3088,7 +3193,7 @@ public final class IOUtil {
 
         for (final File subFile : files) {
             if (subFile.isDirectory()) {
-                for (final File subSubFile : IOUtil.listFiles(subFile, true, true)) {
+                for (final File subSubFile : listFiles(subFile, true, true)) {
                     parseFile(subSubFile, offsetForAll, countForAll, inParallel, lineParser);
 
                     if (countForAll.longValue() <= 0) {
@@ -3128,7 +3233,7 @@ public final class IOUtil {
      * @param lineParser always remember to handle line <code>null</code>
      */
     public static void parse(final File file, final int threadNum, final boolean inParallel, final Consumer<String> lineParser) {
-        parse(file.isDirectory() ? IOUtil.listFiles(file, true, true) : N.asList(file), threadNum, inParallel, lineParser);
+        parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), threadNum, inParallel, lineParser);
     }
 
     /**
@@ -3162,7 +3267,7 @@ public final class IOUtil {
 
         for (final File subFile : files) {
             if (subFile.isDirectory()) {
-                for (final File subSubFile : IOUtil.listFiles(subFile, true, true)) {
+                for (final File subSubFile : listFiles(subFile, true, true)) {
                     final Runnable cmd = new Runnable() {
                         @Override
                         public void run() {
@@ -3179,6 +3284,7 @@ public final class IOUtil {
                 }
             } else {
                 final Runnable cmd = new Runnable() {
+
                     @Override
                     public void run() {
                         try {
@@ -3197,9 +3303,14 @@ public final class IOUtil {
         while (activeThreadNum.get() > 0) {
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {
+            } catch (
+
+            InterruptedException e)
+
+            {
                 logger.warn(e.getMessage());
             }
+
         }
     }
 
@@ -3215,8 +3326,8 @@ public final class IOUtil {
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
-            IOUtil.closeQuietly(is);
-            IOUtil.closeQuietly(outputZipFile.getValue());
+            closeQuietly(is);
+            closeQuietly(outputZipFile.getValue());
         }
     }
 

@@ -73,9 +73,9 @@ public final class Triple<L, M, R> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((left == null) ? 0 : left.hashCode());
-        result = prime * result + ((middle == null) ? 0 : middle.hashCode());
-        result = prime * result + ((right == null) ? 0 : right.hashCode());
+        result = prime * result + N.hashCode(left);
+        result = prime * result + N.hashCode(middle);
+        result = prime * result + N.hashCode(right);
         return result;
     }
 
@@ -85,7 +85,7 @@ public final class Triple<L, M, R> {
             return true;
         }
 
-        if (obj instanceof Triple) {
+        if (obj instanceof Pair) {
             final Triple<L, M, R> other = (Triple<L, M, R>) obj;
 
             return N.equals(left, other.left) && N.equals(middle, other.middle) && N.equals(right, other.right);
@@ -96,6 +96,6 @@ public final class Triple<L, M, R> {
 
     @Override
     public String toString() {
-        return "{left=" + left + ", middle=" + middle + ", right=" + right + "}";
+        return "{left=" + N.toString(left) + ", middle=" + N.toString(middle) + ", right=" + N.toString(right) + "}";
     }
 }

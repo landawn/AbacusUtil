@@ -131,8 +131,7 @@ public final class AsyncExecutor {
         return future;
     }
 
-    @SuppressWarnings("rawtypes")
-    public <T> Future<T>[] execute(final Callable... commands) {
+    public <T> Future<T>[] execute(final Callable<T>... commands) {
         final Future<T>[] results = new Future[commands.length];
 
         for (int i = 0, len = commands.length; i < len; i++) {
@@ -146,8 +145,7 @@ public final class AsyncExecutor {
         return results;
     }
 
-    @SuppressWarnings("rawtypes")
-    public <T> List<Future<T>> execute(final Collection<? extends Callable> commands) {
+    public <T> List<Future<T>> execute(final Collection<? extends Callable<T>> commands) {
         final List<Future<T>> results = N.newArrayList(commands.size());
 
         for (Callable<T> cmd : commands) {

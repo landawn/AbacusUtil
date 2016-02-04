@@ -98,18 +98,13 @@ public final class Profiler {
         return run(instance, methodList, args, null, null, null, null, threadNum, 0, loopNum, 0, roundNum);
     }
 
-    public static MultiLoopsStatistics run(final Object instance, final Method method, final Object arg, final Method setUpForMethod,
-            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final int threadDelay,
-            final int loopNum, final int loopDelay, final int roundNum) {
-        return run(instance, N.asList(method), ((arg == null) ? null : N.asList(arg)), setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop,
-                threadNum, threadDelay, loopNum, loopDelay, roundNum);
-    }
-
     /**
+     * Run performance test for the specified <code>method</code> with the specified <code>threadNum</code> and <code>loopNum</code> for each thread.
+     * The performance test will be repeatly execute times specified by <code>roundNum</code>. 
      * 
-     * @param instance it can be null if methods in the specified <code>methodList</code> are static methods
-     * @param methodList
-     * @param args the size of <code>args</code> can be 0, 1, or same size with <code>threadNum. It's the input argument for every loop in each thread.
+     * @param instance
+     * @param method
+     * @param arg
      * @param setUpForMethod
      * @param tearDownForMethod
      * @param setUpForLoop
@@ -121,9 +116,34 @@ public final class Profiler {
      * @param roundNum
      * @return
      */
+    public static MultiLoopsStatistics run(final Object instance, final Method method, final Object arg, final Method setUpForMethod,
+            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final long threadDelay,
+            final int loopNum, final long loopDelay, final int roundNum) {
+        return run(instance, N.asList(method), ((arg == null) ? null : N.asList(arg)), setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop,
+                threadNum, threadDelay, loopNum, loopDelay, roundNum);
+    }
+
+    /**
+     * Run performance test for the specified <code>methodList</code> with the specified <code>threadNum</code> and <code>loopNum</code> for each thread.
+     * The performance test will be repeatly execute times specified by <code>roundNum</code>. 
+     * 
+     * @param instance it can be null if methods in the specified <code>methodList</code> are static methods
+     * @param methodList
+     * @param args the size of <code>args</code> can be 0, 1, or same size with <code>threadNum. It's the input argument for every loop in each thread.
+     * @param setUpForMethod
+     * @param tearDownForMethod
+     * @param setUpForLoop
+     * @param tearDownForLoop
+     * @param threadNum
+     * @param threadDelay
+     * @param loopNum loops run by each thread.
+     * @param loopDelay
+     * @param roundNum
+     * @return
+     */
     public static MultiLoopsStatistics run(final Object instance, final List<Method> methodList, final List<?> args, final Method setUpForMethod,
-            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final int threadDelay,
-            final int loopNum, final int loopDelay, final int roundNum) {
+            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final long threadDelay,
+            final int loopNum, final long loopDelay, final int roundNum) {
 
         if (roundNum == 1) {
             return run(instance, methodList, args, setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop, threadNum, threadDelay, loopNum,
@@ -146,8 +166,8 @@ public final class Profiler {
     }
 
     private static MultiLoopsStatistics run(final Object instance, final List<Method> methodList, final List<?> args, final Method setUpForMethod,
-            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final int threadDelay,
-            final int loopNum, final int loopDelay) {
+            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final long threadDelay,
+            final int loopNum, final long loopDelay) {
         if (N.isNullOrEmpty(methodList) || (methodList.get(0) == null)) {
             throw new IllegalArgumentException("Methods can't be null");
         }
@@ -209,7 +229,7 @@ public final class Profiler {
     }
 
     private static void runLoops(final Object instance, final List<Method> methodList, final Object threadArg, final Method setUpForMethod,
-            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int loopNum, final int loopDelay,
+            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int loopNum, final long loopDelay,
             final List<LoopStatistics> loopStatisticsList, final PrintStream ps) {
         for (int loopIndex = 0; loopIndex < loopNum; loopIndex++) {
             if (setUpForLoop != null) {
