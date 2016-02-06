@@ -1999,9 +1999,21 @@ public final class IOUtil {
     }
 
     public static void copy(final File srcFile, final File destDir) {
-        copy(srcFile, destDir, true, null);
+        copy(srcFile, destDir, true);
     }
 
+    public static void copy(final File srcFile, final File destDir, final boolean preserveFileDate) {
+        copy(srcFile, destDir, preserveFileDate, null);
+    }
+
+    /**
+     * Copy the specified <code>scrFile</code> if it's a file or its sub files/directories if it's a directory to the target <code>destDir</code> with the specified <code>filter</code>
+     * 
+     * @param srcFile
+     * @param destDir
+     * @param preserveFileDate
+     * @param filter
+     */
     public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final FileFilter filter) {
         if (!srcFile.exists()) {
             throw new AbacusIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
@@ -2017,23 +2029,29 @@ public final class IOUtil {
             }
         }
 
+        if (destDir.canWrite() == false) {
+            throw new AbacusIOException("Destination '" + destDir + "' cannot be written to");
+        }
+
+        String destCanonicalPath = null;
+        String srcCanonicalPath = null;
         try {
             srcFile = srcFile.getCanonicalFile();
             destDir = destDir.getCanonicalFile();
+            destCanonicalPath = destDir.getCanonicalPath();
+            srcCanonicalPath = srcFile.getCanonicalPath();
         } catch (IOException e) {
             throw new AbacusIOException(e);
         }
 
         if (srcFile.isDirectory()) {
-            try {
-                final String destCanonicalPath = destDir.getCanonicalPath();
-                final String srcCanonicalPath = srcFile.getCanonicalPath();
-                if (destCanonicalPath.startsWith(srcCanonicalPath)
-                        && (destCanonicalPath.charAt(srcCanonicalPath.length()) == '/' || destCanonicalPath.charAt(srcCanonicalPath.length()) == '\\')) {
-                    throw new AbacusIOException("Failed to copy due to target directory: " + destDir.getCanonicalPath() + " is in the source directory: "
-                            + srcFile.getCanonicalPath());
-                }
+            if (destCanonicalPath.startsWith(srcCanonicalPath) && (destCanonicalPath.length() == srcCanonicalPath.length()
+                    || destCanonicalPath.charAt(srcCanonicalPath.length()) == '/' || destCanonicalPath.charAt(srcCanonicalPath.length()) == '\\')) {
+                throw new AbacusIOException(
+                        "Failed to copy due to the target directory: " + destCanonicalPath + " is in or same as the source directory: " + srcCanonicalPath);
+            }
 
+            try {
                 doCopyDirectory(srcFile, destDir, preserveFileDate, filter);
             } catch (IOException e) {
                 throw new AbacusIOException(e);
@@ -2073,34 +2091,38 @@ public final class IOUtil {
      * @since 1.1
      */
     private static void doCopyDirectory(final File srcDir, final File destDir, final boolean preserveFileDate, final FileFilter filter) throws IOException {
-        // recurse
-        List<File> subFiles = (filter == null) ? listFiles(srcDir) : listFiles(srcDir, false, filter);
-
-        if (subFiles == null) { // null if abstract pathname does not denote a
-                                // directory, or if an I/O error occurs
-            throw new IOException("Failed to list contents of " + srcDir);
-        }
-
         if (destDir.exists()) {
-            if (destDir.isDirectory() == false) {
+            if (destDir.isFile()) {
                 throw new IOException("Destination '" + destDir + "' exists but is not a directory");
             }
         } else {
-            if (!destDir.mkdirs() && !destDir.isDirectory()) {
+            if (!destDir.mkdirs()) {
                 throw new IOException("Destination '" + destDir + "' directory cannot be created");
             }
         }
 
-        if (destDir.canWrite() == false) {
-            throw new IOException("Destination '" + destDir + "' cannot be written to");
+        final File[] subFiles = srcDir.listFiles();
+
+        if (N.isNullOrEmpty(subFiles)) {
+            return;
         }
 
         for (File subFile : subFiles) {
-            File dstFile = new File(destDir, subFile.getName());
-            if (subFile.isDirectory()) {
-                doCopyDirectory(subFile, dstFile, preserveFileDate, filter);
-            } else {
-                doCopyFile(subFile, dstFile, preserveFileDate);
+            if (subFile == null) {
+                continue;
+            }
+
+            if (filter == null || filter.accept(srcDir, subFile)) {
+                final File dest = new File(destDir, subFile.getName());
+
+                if (subFile.isDirectory()) {
+                    doCopyDirectory(subFile, dest, preserveFileDate, null);
+                } else {
+                    doCopyFile(subFile, dest, preserveFileDate);
+                }
+            } else if (subFile.isDirectory()) {
+                final File dest = new File(destDir, subFile.getName());
+                doCopyDirectory(subFile, dest, preserveFileDate, filter);
             }
         }
 
@@ -2196,48 +2218,12 @@ public final class IOUtil {
         }
     }
 
-    public static boolean delete(final File file, FileFilter filter) {
-        if (filter == null) {
-            return deleteAllIfExists(file);
-        }
-
-        if ((file == null) || !file.exists() || !filter.accept(file.getParentFile(), file)) {
-            return false;
-        }
-
-        if (file.isDirectory()) {
-            final File[] files = file.listFiles();
-
-            if (N.notNullOrEmpty(files)) {
-                for (File subFile : files) {
-                    if (subFile == null) {
-                        continue;
-                    }
-
-                    if (filter.accept(file, subFile)) {
-                        if (subFile.isFile()) {
-                            if (subFile.delete() == false) {
-                                return false;
-                            }
-                        } else {
-                            if (deleteAllIfExists(subFile) == false) {
-                                return false;
-                            }
-                        }
-                    } else {
-                        if (subFile.isDirectory()) {
-                            if (delete(subFile, filter) == false) {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return file.delete();
-    }
-
+    /**
+     * Delete the specified file (or directory).
+     * 
+     * @param file
+     * @return true if the file is deleted successfully, otherwise false if the file is null or doesn't exist, or can't be deleted.
+     */
     public static boolean deleteIfExists(final File file) {
         if ((file == null) || !file.exists()) {
             return false;
@@ -2247,7 +2233,7 @@ public final class IOUtil {
     }
 
     /**
-     * Deletes the file/directory. If file is a directory, delete it and all sub-directories.
+     * Delete the specified file and all its sub files/directories if it's a directory.
      *
      * @param file
      * @return true if the file is deleted successfully, otherwise false if the file is null or doesn't exist, or can't be deleted.
@@ -2280,6 +2266,61 @@ public final class IOUtil {
         }
 
         return file.delete();
+    }
+
+    public static boolean deleteFiles(final File dir) {
+        return deleteFiles(dir, null);
+    }
+
+    /**
+     * Delete the specifield <code>dir</code> if it's a file or its sub files/directories if it's a directory with the specified filter.
+     * 
+     * @param dir
+     * @param filter
+     * @return
+     */
+    public static boolean deleteFiles(final File dir, FileFilter filter) {
+        if ((dir == null) || !dir.exists()) {
+            return false;
+        }
+
+        if (dir.isDirectory()) {
+            final File[] files = dir.listFiles();
+
+            if (N.isNullOrEmpty(files)) {
+                return true;
+            }
+
+            for (File subFile : files) {
+                if (subFile == null) {
+                    continue;
+                }
+
+                if (filter == null || filter.accept(dir, subFile)) {
+                    if (subFile.isFile()) {
+                        if (subFile.delete() == false) {
+                            return false;
+                        }
+                    } else {
+                        if (deleteAllIfExists(subFile) == false) {
+                            return false;
+                        }
+                    }
+                } else {
+                    if (subFile.isDirectory()) {
+                        if (deleteFiles(subFile, filter) == false) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        } else {
+            if (filter == null || filter.accept(dir.getParentFile(), dir)) {
+                return dir.delete();
+            }
+        }
+
+        return true;
     }
 
     /**

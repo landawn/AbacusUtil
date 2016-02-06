@@ -174,11 +174,11 @@ public final class JSONUtil {
                     element = null;
                 } else if (element != null) {
                     if (element instanceof JSONObject) {
-                        element = type.getComponentType().isEntity() ? unwrap(type.getComponentType().getTypeClass(), (JSONObject) element)
+                        element = type.getElementType().isEntity() ? unwrap(type.getElementType().getTypeClass(), (JSONObject) element)
                                 : unwrap((JSONObject) element);
                     } else if (element instanceof JSONArray) {
-                        element = (type.getComponentType().isCollection() || type.getComponentType().isArray())
-                                ? unwrap(type.getComponentType(), (JSONArray) element) : unwrap((JSONArray) element);
+                        element = (type.getElementType().isCollection() || type.getElementType().isArray())
+                                ? unwrap(type.getElementType(), (JSONArray) element) : unwrap((JSONArray) element);
                     }
                 }
 
@@ -187,7 +187,7 @@ public final class JSONUtil {
 
             return (T) coll;
         } else if (type.isPrimitiveArray()) {
-            final Object array = N.newArray(type.getComponentType().getTypeClass(), jsonArray.length());
+            final Object array = N.newArray(type.getElementType().getTypeClass(), jsonArray.length());
             Object element = null;
 
             for (int i = 0; i < len; i++) {
@@ -198,7 +198,7 @@ public final class JSONUtil {
                 }
 
                 if (element == null) {
-                    element = type.getComponentType().defaultValue();
+                    element = type.getElementType().defaultValue();
                 }
 
                 Array.set(array, i, element);
@@ -206,7 +206,7 @@ public final class JSONUtil {
 
             return (T) array;
         } else if (type.isArray()) {
-            final Object[] array = N.newArray(type.getComponentType().getTypeClass(), jsonArray.length());
+            final Object[] array = N.newArray(type.getElementType().getTypeClass(), jsonArray.length());
             Object element = null;
 
             for (int i = 0; i < len; i++) {
@@ -216,11 +216,11 @@ public final class JSONUtil {
                     element = null;
                 } else if (element != null) {
                     if (element instanceof JSONObject) {
-                        element = type.getComponentType().isEntity() ? unwrap(type.getComponentType().getTypeClass(), (JSONObject) element)
+                        element = type.getElementType().isEntity() ? unwrap(type.getElementType().getTypeClass(), (JSONObject) element)
                                 : unwrap((JSONObject) element);
                     } else if (element instanceof JSONArray) {
-                        element = (type.getComponentType().isCollection() || type.getComponentType().isArray())
-                                ? unwrap(type.getComponentType(), (JSONArray) element) : unwrap((JSONArray) element);
+                        element = (type.getElementType().isCollection() || type.getElementType().isArray())
+                                ? unwrap(type.getElementType(), (JSONArray) element) : unwrap((JSONArray) element);
                     }
                 }
 
