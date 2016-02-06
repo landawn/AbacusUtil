@@ -12062,7 +12062,7 @@ public final class N {
     }
 
     public static Map<String, Object> entity2Map(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames) {
-        return entity2Map(entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return entity2Map(entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     @SuppressWarnings("deprecation")
@@ -12119,7 +12119,7 @@ public final class N {
      */
     public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames) {
-        return entity2Map(resultMap, entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return entity2Map(resultMap, entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     /**
@@ -12134,7 +12134,7 @@ public final class N {
     @SuppressWarnings("deprecation")
     public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames, NamingPolicy keyNamingPolicy) {
-        keyNamingPolicy = keyNamingPolicy == null ? NamingPolicy.IDENTITY : keyNamingPolicy;
+        keyNamingPolicy = keyNamingPolicy == null ? NamingPolicy.CAMEL_CASE : keyNamingPolicy;
 
         final boolean hasIgnoredPropNames = N.notNullOrEmpty(ignoredPropNames);
 
@@ -12151,7 +12151,7 @@ public final class N {
 
                 try {
                     switch (keyNamingPolicy) {
-                        case IDENTITY: {
+                        case CAMEL_CASE: {
                             for (String propName : signedPropNames) {
                                 propGetMethod = getPropGetMethod(entityClass, propName);
                                 propName = getPropNameByMethod(propGetMethod);
@@ -12228,7 +12228,7 @@ public final class N {
 
             try {
                 switch (keyNamingPolicy) {
-                    case IDENTITY: {
+                    case CAMEL_CASE: {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
 
@@ -12314,7 +12314,7 @@ public final class N {
     }
 
     public static List<Map<String, Object>> entity2Map(final List<?> entityList, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames) {
-        return entity2Map(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return entity2Map(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     public static List<Map<String, Object>> entity2Map(final List<?> entityList, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames,
@@ -12341,7 +12341,7 @@ public final class N {
     }
 
     public static Map<String, Object> deepEntity2Map(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames) {
-        return deepEntity2Map(entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return deepEntity2Map(entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     @SuppressWarnings("deprecation")
@@ -12398,7 +12398,7 @@ public final class N {
      */
     public static <T extends Map<String, Object>> T deepEntity2Map(final T resultMap, final Object entity, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames) {
-        return deepEntity2Map(resultMap, entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return deepEntity2Map(resultMap, entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     /**
@@ -12413,7 +12413,7 @@ public final class N {
     @SuppressWarnings("deprecation")
     public static <T extends Map<String, Object>> T deepEntity2Map(final T resultMap, final Object entity, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames, NamingPolicy keyNamingPolicy) {
-        keyNamingPolicy = keyNamingPolicy == null ? NamingPolicy.IDENTITY : keyNamingPolicy;
+        keyNamingPolicy = keyNamingPolicy == null ? NamingPolicy.CAMEL_CASE : keyNamingPolicy;
         final boolean hasIgnoredPropNames = N.notNullOrEmpty(ignoredPropNames);
 
         if (entity instanceof DirtyMarker) {
@@ -12429,7 +12429,7 @@ public final class N {
 
                 try {
                     switch (keyNamingPolicy) {
-                        case IDENTITY: {
+                        case CAMEL_CASE: {
                             for (String propName : signedPropNames) {
                                 propGetMethod = getPropGetMethod(entityClass, propName);
                                 propName = getPropNameByMethod(propGetMethod);
@@ -12518,7 +12518,7 @@ public final class N {
 
             try {
                 switch (keyNamingPolicy) {
-                    case IDENTITY: {
+                    case CAMEL_CASE: {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
 
@@ -12617,7 +12617,7 @@ public final class N {
 
     public static List<Map<String, Object>> deepEntity2Map(final List<?> entityList, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames) {
-        return deepEntity2Map(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return deepEntity2Map(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     public static List<Map<String, Object>> deepEntity2Map(final List<?> entityList, final boolean ignoreNullProperty,
@@ -12644,7 +12644,7 @@ public final class N {
     }
 
     public static Map<String, Object> entity2FlatMap(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames) {
-        return entity2FlatMap(entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return entity2FlatMap(entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     @SuppressWarnings("deprecation")
@@ -12701,7 +12701,7 @@ public final class N {
      */
     public static <T extends Map<String, Object>> T entity2FlatMap(final T resultMap, final Object entity, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames) {
-        return entity2FlatMap(resultMap, entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return entity2FlatMap(resultMap, entity, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     /**
@@ -12747,7 +12747,7 @@ public final class N {
 
                 try {
                     switch (keyNamingPolicy) {
-                        case IDENTITY: {
+                        case CAMEL_CASE: {
                             for (String propName : signedPropNames) {
                                 propGetMethod = getPropGetMethod(entityClass, propName);
                                 propName = getPropNameByMethod(propGetMethod);
@@ -12863,7 +12863,7 @@ public final class N {
 
             try {
                 switch (keyNamingPolicy) {
-                    case IDENTITY: {
+                    case CAMEL_CASE: {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
 
@@ -12988,7 +12988,7 @@ public final class N {
 
     public static List<Map<String, Object>> entity2FlatMap(final List<?> entityList, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames) {
-        return entity2FlatMap(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.IDENTITY);
+        return entity2FlatMap(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
     public static List<Map<String, Object>> entity2FlatMap(final List<?> entityList, final boolean ignoreNullProperty,

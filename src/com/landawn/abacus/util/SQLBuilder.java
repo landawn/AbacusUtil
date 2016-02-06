@@ -551,7 +551,7 @@ public abstract class SQLBuilder {
 
                     sb.append(formalizeName(propColumnNameMap, columnNames[i]));
 
-                    if (namingPolicy != NamingPolicy.IDENTITY && !D.ASTERISK.equals(columnNames[i])) {
+                    if (namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
                         sb.append(_SPACE_AS_SPACE);
 
                         sb.append(D._QUOTATION_D);
@@ -569,7 +569,7 @@ public abstract class SQLBuilder {
 
                 sb.append(formalizeName(propColumnNameMap, columnName));
 
-                if (namingPolicy != NamingPolicy.IDENTITY && !D.ASTERISK.equals(columnName)) {
+                if (namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnName)) {
                     sb.append(_SPACE_AS_SPACE);
 
                     sb.append(D._QUOTATION_D);
@@ -3721,7 +3721,7 @@ public abstract class SQLBuilder {
      */
     public static final class E3 extends SQLBuilder {
         E3() {
-            super(NamingPolicy.IDENTITY, SQLPolicy.SQL);
+            super(NamingPolicy.CAMEL_CASE, SQLPolicy.SQL);
         }
 
         static E3 createInstance() {
@@ -3920,7 +3920,7 @@ public abstract class SQLBuilder {
      */
     public static final class RE3 extends SQLBuilder {
         RE3() {
-            super(NamingPolicy.IDENTITY, SQLPolicy.RAW_SQL);
+            super(NamingPolicy.CAMEL_CASE, SQLPolicy.RAW_SQL);
         }
 
         static RE3 createInstance() {
@@ -4119,7 +4119,7 @@ public abstract class SQLBuilder {
      */
     public static final class SE3 extends SQLBuilder {
         SE3() {
-            super(NamingPolicy.IDENTITY, SQLPolicy.IBATIS_SQL);
+            super(NamingPolicy.CAMEL_CASE, SQLPolicy.IBATIS_SQL);
         }
 
         static SE3 createInstance() {
@@ -4318,7 +4318,7 @@ public abstract class SQLBuilder {
      */
     public static final class NE3 extends SQLBuilder {
         NE3() {
-            super(NamingPolicy.IDENTITY, SQLPolicy.NAMED_SQL);
+            super(NamingPolicy.CAMEL_CASE, SQLPolicy.NAMED_SQL);
         }
 
         static NE3 createInstance() {
