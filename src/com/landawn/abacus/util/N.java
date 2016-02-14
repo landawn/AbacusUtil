@@ -1011,9 +1011,9 @@ public final class N {
     private static final Map<Class<?>, Boolean> dirtyMarkerClassPool = new ObjectPool<Class<?>, Boolean>(CLS_POOL_SIZE);
     private static final Map<Class<?>, Boolean> dirtyMarkerEntityClassPool = new ObjectPool<Class<?>, Boolean>(CLS_POOL_SIZE);
 
-    private static final XMLParser abacusXMLParser = ParserFactory.createAbacusXMLParser();
-    private static final XMLParser xmlParser = ParserFactory.createXMLParser();
     private static final JSONParser jsonParser = ParserFactory.createJSONParser();
+    private static final XMLParser abacusXMLParser = ParserFactory.isAbacusXMLAvailable() ? ParserFactory.createAbacusXMLParser() : null;
+    private static final XMLParser xmlParser = ParserFactory.isXMLAvailable() ? ParserFactory.createXMLParser() : null;
     private static final KryoParser kryoParser = ParserFactory.isKryoAvailable() ? ParserFactory.createKryoParser() : null;
     private static final JSONSerializationConfig jsc = JSC.valueOf(true, true);
     private static final XMLSerializationConfig xscForClone = XSC.create().setIgnoreTypeInfo(false);
