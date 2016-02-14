@@ -38,7 +38,6 @@ import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.condition.Expression;
 import com.landawn.abacus.condition.Junction;
-import com.landawn.abacus.condition.OrderDirection;
 import com.landawn.abacus.condition.SubQuery;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.logging.Logger;
@@ -802,7 +801,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final String columnName, final OrderDirection direction) {
+    public SQLBuilder groupBy(final String columnName, final SortDirection direction) {
         groupBy(columnName);
 
         sb.append(D._SPACE);
@@ -827,7 +826,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final Collection<String> columnNames, final OrderDirection direction) {
+    public SQLBuilder groupBy(final Collection<String> columnNames, final SortDirection direction) {
         groupBy(columnNames);
 
         sb.append(D._SPACE);
@@ -836,12 +835,12 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final Map<String, OrderDirection> orders) {
+    public SQLBuilder groupBy(final Map<String, SortDirection> orders) {
         sb.append(_SPACE_GROUP_BY_SPACE);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
         int i = 0;
-        for (Map.Entry<String, OrderDirection> entry : orders.entrySet()) {
+        for (Map.Entry<String, SortDirection> entry : orders.entrySet()) {
             if (i++ > 0) {
                 sb.append(_COMMA_SPACE);
             }
@@ -914,7 +913,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final String columnName, final OrderDirection direction) {
+    public SQLBuilder orderBy(final String columnName, final SortDirection direction) {
         orderBy(columnName);
 
         sb.append(D._SPACE);
@@ -939,7 +938,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final Collection<String> columnNames, final OrderDirection direction) {
+    public SQLBuilder orderBy(final Collection<String> columnNames, final SortDirection direction) {
         orderBy(columnNames);
 
         sb.append(D._SPACE);
@@ -948,12 +947,12 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final Map<String, OrderDirection> orders) {
+    public SQLBuilder orderBy(final Map<String, SortDirection> orders) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
         int i = 0;
-        for (Map.Entry<String, OrderDirection> entry : orders.entrySet()) {
+        for (Map.Entry<String, SortDirection> entry : orders.entrySet()) {
             if (i++ > 0) {
                 sb.append(_COMMA_SPACE);
             }
