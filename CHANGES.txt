@@ -1,0 +1,150 @@
+========Changes in 0.8.7=========================================================================
+
+1, rename the variable name from '_' to '__' in auto-generated entity classes by CodeGenerator due to '_' is a reserved key word since Java 8.
+
+=================================================================================================
+
+
+========Changes in 0.8.6=========================================================================
+
+1, Fix bugs for user-defined types support in CassandraExecutor.java.
+
+2, Rename OrderDirection to SortDirection and move it from com.landawn.abacus.condition to com.landawn.abacus.util
+
+3, Support Android 4.4 (API Level: 19).
+
+=================================================================================================
+
+
+========Changes in 0.8.5=========================================================================
+
+1, Support user-defined types in CassandraExecutor.java.
+
+=================================================================================================
+
+
+
+========Changes in 0.8.4=========================================================================
+
+1, Changes in IOUtil.java
+		a) Rename method: public static boolean delete(final File file, FileFilter filter) {...} to: public static boolean deleteFiles(final File file, FileFilter filter) {...}
+		
+		b) Impove the copy(...) methods.
+		
+2, Impovements and bug fix in CodeGenerator.java.
+
+3, Remove NamingPolicy.IDENTITY to NamingPolicy.CAMEL_CASE
+
+=================================================================================================
+
+
+
+========Changes in 0.8.3=========================================================================
+
+1, Rename Range.is(...) and Range.between(...) to Range.of(...)
+
+2, Changes in IOUtil.java
+	a) Change default charset from Charsets.UTF_8 to Charsets.DEFAULT.
+	
+	b) Remove method: public static boolean createFileIfNotExists(String filePath) {...} and Add method: createFileIfNotExists(File file) {...}
+	
+	c) Remove method: public static boolean deleteFileIfExists(String filePath) {...} and Add method: deleteIfExists(File file) {...}
+	
+	d) Remove method: public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final FilenameFilter filter) {...} and Add method: public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final FileFilter filter) {...}
+	
+	e) Rename method: delete(File file) to deleteAllIfExists(File file) and Add method: public static boolean delete(final File file, FileFilter filter) {...}
+	
+	f) Refactoring methods:
+		------------------------------------------------------------------------------------------------------------------------- 
+		From: 
+			public static void copy(File srcFile, File destDir, final FilenameFilter filter, final boolean preserveFileDate) {...}
+		To:
+			public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final FilenameFilter filter) {...}
+		------------------------------------------------------------------------------------------------------------------------- 
+		
+		-------------------------------------------------------------------------------------------------------------------------
+		From:
+			public static List<String> list(File path, final boolean excludeDirectory, final boolean recursively) {...}
+		To: 
+			public static List<String> list(File path, final boolean recursively, final boolean excludeDirectory) {...}
+		-------------------------------------------------------------------------------------------------------------------------
+		
+		-------------------------------------------------------------------------------------------------------------------------
+		From:
+			public static List<String> list(File path, final FileFilter filter, final boolean recursively) {...}		
+		To:
+			public static List<String> list(File path, final boolean recursively, final FileFilter filter) {...}
+		-------------------------------------------------------------------------------------------------------------------------
+		
+		-------------------------------------------------------------------------------------------------------------------------
+		From:
+			public static List<String> listFiles(File path, final boolean excludeDirectory, final boolean recursively) {...}
+		To: 
+			public static List<String> listFiles(File path, final boolean recursively, final boolean excludeDirectory) {...}
+		-------------------------------------------------------------------------------------------------------------------------
+		
+		-------------------------------------------------------------------------------------------------------------------------
+		From:
+			public static List<String> listFiles(File path, final FileFilter filter, final boolean recursively) {...}		
+		To:
+			public static List<String> listFiles(File path, final boolean recursively, final FileFilter filter) {...}
+		-------------------------------------------------------------------------------------------------------------------------
+		
+		-------------------------------------------------------------------------------------------------------------------------
+		From:
+			public static List<String> listDirectories(File path, final boolean excludeDirectory, final boolean recursively) {...}
+		To: 
+			public static List<String> listDirectories(File path, final boolean recursively, final boolean excludeDirectory) {...}
+		-------------------------------------------------------------------------------------------------------------------------
+		
+		-------------------------------------------------------------------------------------------------------------------------
+		From:
+			public static List<String> listDirectories(File path, final FileFilter filter, final boolean recursively) {...}		
+		To:
+			public static List<String> listDirectories(File path, final boolean recursively, final FileFilter filter) {...}
+		-------------------------------------------------------------------------------------------------------------------------
+
+=================================================================================================
+
+
+
+========Changes in 0.8.2=========================================================================
+
+1, Bug fix in method:
+    public static void parse(final Collection<File> files, final long lineOffset, final long count, final boolean inParallel,
+            final Consumer<String> lineParser) {
+            ...
+    }
+            
+	change: countForAll.intValue() to countForAll.longValue()
+
+2, Improvements: Array.range(...) and Array.rangeClosed(...). 
+	a) Decrement is supported by negative 'by'
+	b) Remove range/rangeClosed for float/double due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+
+=================================================================================================
+
+
+
+========Changes in 0.8.1=========================================================================
+
+1, Rename N.defaultValue(Class) to N.defaultValueOf(Class)
+
+2, Rename N.difference(String, String) to N.differenceOf(String, String)
+
+3, Rename N.difference(Object, Object) to N.differenceOf(Object, Object)
+
+4, Extend N.forEach(...) method
+
+5, Extend N.split(...) method
+
+6, Extend N.copyOfRange(...) method
+
+=================================================================================================
+
+
+
+
+
+
+		
