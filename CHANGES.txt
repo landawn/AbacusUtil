@@ -1,3 +1,8 @@
+========Changes in 0.8.8=========================================================================
+1, Minor bug fix and improvements
+
+=================================================================================================
+
 ========Changes in 0.8.7=========================================================================
 
 1, rename the variable name from '_' to '__' in auto-generated entity classes by CodeGenerator due to '_' is a reserved key word since Java 8.

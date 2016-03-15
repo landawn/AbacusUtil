@@ -361,6 +361,19 @@ public abstract class SQLBuilder {
                     break;
                 }
 
+                case NAMED_SQL: {
+                    for (int i = 0, len = columnNames.length; i < len; i++) {
+                        if (i > 0) {
+                            sb.append(_COMMA_SPACE);
+                        }
+
+                        sb.append(":");
+                        sb.append(columnNames[i]);
+                    }
+
+                    break;
+                }
+
                 case IBATIS_SQL: {
                     for (int i = 0, len = columnNames.length; i < len; i++) {
                         if (i > 0) {
@@ -370,19 +383,6 @@ public abstract class SQLBuilder {
                         sb.append("#{");
                         sb.append(columnNames[i]);
                         sb.append('}');
-                    }
-
-                    break;
-                }
-
-                case NAMED_SQL: {
-                    for (int i = 0, len = columnNames.length; i < len; i++) {
-                        if (i > 0) {
-                            sb.append(_COMMA_SPACE);
-                        }
-
-                        sb.append(":");
-                        sb.append(columnNames[i]);
                     }
 
                     break;
@@ -406,6 +406,20 @@ public abstract class SQLBuilder {
                     break;
                 }
 
+                case NAMED_SQL: {
+                    int i = 0;
+                    for (String columnName : columnNameList) {
+                        if (i++ > 0) {
+                            sb.append(_COMMA_SPACE);
+                        }
+
+                        sb.append(":");
+                        sb.append(columnName);
+                    }
+
+                    break;
+                }
+
                 case IBATIS_SQL: {
                     int i = 0;
                     for (String columnName : columnNameList) {
@@ -416,20 +430,6 @@ public abstract class SQLBuilder {
                         sb.append("#{");
                         sb.append(columnName);
                         sb.append('}');
-                    }
-
-                    break;
-                }
-
-                case NAMED_SQL: {
-                    int i = 0;
-                    for (String columnName : columnNameList) {
-                        if (i++ > 0) {
-                            sb.append(_COMMA_SPACE);
-                        }
-
-                        sb.append(":");
-                        sb.append(columnName);
                     }
 
                     break;
@@ -1255,6 +1255,23 @@ public abstract class SQLBuilder {
                     break;
                 }
 
+                case NAMED_SQL: {
+                    for (int i = 0, len = columnNames.length; i < len; i++) {
+                        if (i > 0) {
+                            sb.append(_COMMA_SPACE);
+                        }
+
+                        sb.append(formalizeName(propColumnNameMap, columnNames[i]));
+
+                        sb.append(_SPACE_EQUAL_SPACE);
+
+                        sb.append(":");
+                        sb.append(columnNames[i]);
+                    }
+
+                    break;
+                }
+
                 case IBATIS_SQL: {
                     for (int i = 0, len = columnNames.length; i < len; i++) {
                         if (i > 0) {
@@ -1268,23 +1285,6 @@ public abstract class SQLBuilder {
                         sb.append("#{");
                         sb.append(columnNames[i]);
                         sb.append('}');
-                    }
-
-                    break;
-                }
-
-                case NAMED_SQL: {
-                    for (int i = 0, len = columnNames.length; i < len; i++) {
-                        if (i > 0) {
-                            sb.append(_COMMA_SPACE);
-                        }
-
-                        sb.append(formalizeName(propColumnNameMap, columnNames[i]));
-
-                        sb.append(_SPACE_EQUAL_SPACE);
-
-                        sb.append(":");
-                        sb.append(columnNames[i]);
                     }
 
                     break;
@@ -1322,6 +1322,24 @@ public abstract class SQLBuilder {
                 break;
             }
 
+            case NAMED_SQL: {
+                int i = 0;
+                for (String columnName : columnNames) {
+                    if (i++ > 0) {
+                        sb.append(_COMMA_SPACE);
+                    }
+
+                    sb.append(formalizeName(propColumnNameMap, columnName));
+
+                    sb.append(_SPACE_EQUAL_SPACE);
+
+                    sb.append(":");
+                    sb.append(columnName);
+                }
+
+                break;
+            }
+
             case IBATIS_SQL: {
                 int i = 0;
                 for (String columnName : columnNames) {
@@ -1336,24 +1354,6 @@ public abstract class SQLBuilder {
                     sb.append("#{");
                     sb.append(columnName);
                     sb.append('}');
-                }
-
-                break;
-            }
-
-            case NAMED_SQL: {
-                int i = 0;
-                for (String columnName : columnNames) {
-                    if (i++ > 0) {
-                        sb.append(_COMMA_SPACE);
-                    }
-
-                    sb.append(formalizeName(propColumnNameMap, columnName));
-
-                    sb.append(_SPACE_EQUAL_SPACE);
-
-                    sb.append(":");
-                    sb.append(columnName);
                 }
 
                 break;
@@ -1406,6 +1406,23 @@ public abstract class SQLBuilder {
                 break;
             }
 
+            case NAMED_SQL: {
+                int i = 0;
+                for (Map.Entry<String, Object> entry : props.entrySet()) {
+                    if (i++ > 0) {
+                        sb.append(_COMMA_SPACE);
+                    }
+
+                    sb.append(formalizeName(propColumnNameMap, entry.getKey()));
+
+                    sb.append(_SPACE_EQUAL_SPACE);
+
+                    setParameterForNamedSQL(entry.getKey(), entry.getValue());
+                }
+
+                break;
+            }
+
             case IBATIS_SQL: {
                 int i = 0;
                 for (Map.Entry<String, Object> entry : props.entrySet()) {
@@ -1418,23 +1435,6 @@ public abstract class SQLBuilder {
                     sb.append(_SPACE_EQUAL_SPACE);
 
                     setParameterForIbatisNamedSQL(entry.getKey(), entry.getValue());
-                }
-
-                break;
-            }
-
-            case NAMED_SQL: {
-                int i = 0;
-                for (Map.Entry<String, Object> entry : props.entrySet()) {
-                    if (i++ > 0) {
-                        sb.append(_COMMA_SPACE);
-                    }
-
-                    sb.append(formalizeName(propColumnNameMap, entry.getKey()));
-
-                    sb.append(_SPACE_EQUAL_SPACE);
-
-                    setParameterForHibernateNamedSQL(entry.getKey(), entry.getValue());
                 }
 
                 break;
@@ -1757,7 +1757,7 @@ public abstract class SQLBuilder {
         }
     }
 
-    private void setParameterForHibernateNamedSQL(final String propName, final Object propValue) {
+    private void setParameterForNamedSQL(final String propName, final Object propValue) {
         if (L.QME.equals(propValue)) {
             sb.append(":");
             sb.append(propName);
@@ -1785,14 +1785,14 @@ public abstract class SQLBuilder {
                 break;
             }
 
-            case IBATIS_SQL: {
-                setParameterForIbatisNamedSQL(propName, propValue);
+            case NAMED_SQL: {
+                setParameterForNamedSQL(propName, propValue);
 
                 break;
             }
 
-            case NAMED_SQL: {
-                setParameterForHibernateNamedSQL(propName, propValue);
+            case IBATIS_SQL: {
+                setParameterForIbatisNamedSQL(propName, propValue);
 
                 break;
             }
@@ -1836,6 +1836,22 @@ public abstract class SQLBuilder {
                 break;
             }
 
+            case NAMED_SQL: {
+                int i = 0;
+                Object propValue = null;
+                for (String propName : props.keySet()) {
+                    if (i++ > 0) {
+                        sb.append(_COMMA_SPACE);
+                    }
+
+                    propValue = props.get(propName);
+
+                    setParameterForNamedSQL(propName, propValue);
+                }
+
+                break;
+            }
+
             case IBATIS_SQL: {
                 int i = 0;
                 Object propValue = null;
@@ -1847,22 +1863,6 @@ public abstract class SQLBuilder {
                     propValue = props.get(propName);
 
                     setParameterForIbatisNamedSQL(propName, propValue);
-                }
-
-                break;
-            }
-
-            case NAMED_SQL: {
-                int i = 0;
-                Object propValue = null;
-                for (String propName : props.keySet()) {
-                    if (i++ > 0) {
-                        sb.append(_COMMA_SPACE);
-                    }
-
-                    propValue = props.get(propName);
-
-                    setParameterForHibernateNamedSQL(propName, propValue);
                 }
 
                 break;
@@ -1895,17 +1895,24 @@ public abstract class SQLBuilder {
             sb.append(D._SPACE);
             sb.append(bt.getOperator().toString());
             sb.append(D._SPACE);
-            sb.append(D._PARENTHESES_L);
 
             Object minValue = bt.getMinValue();
-            setParameter(propName, minValue);
+            if (sqlPolicy == SQLPolicy.NAMED_SQL || sqlPolicy == SQLPolicy.IBATIS_SQL) {
+                setParameter("min" + N.capitalize(propName), minValue);
+            } else {
+                setParameter(propName, minValue);
+            }
 
-            sb.append(_COMMA_SPACE);
+            sb.append(D._SPACE);
+            sb.append(D.AND);
+            sb.append(D._SPACE);
 
             Object maxValue = bt.getMaxValue();
-            setParameter(propName, maxValue);
-
-            sb.append(D._PARENTHESES_R);
+            if (sqlPolicy == SQLPolicy.NAMED_SQL || sqlPolicy == SQLPolicy.IBATIS_SQL) {
+                setParameter("max" + N.capitalize(propName), maxValue);
+            } else {
+                setParameter(propName, maxValue);
+            }
         } else if (cond instanceof Cell) {
             final Cell cell = (Cell) cond;
 
@@ -2119,6 +2126,10 @@ public abstract class SQLBuilder {
 
             return entityPropNameSet;
         }
+    }
+
+    static enum SQLPolicy {
+        SQL, RAW_SQL, IBATIS_SQL, NAMED_SQL;
     }
 
     /**
@@ -2520,18 +2531,17 @@ public abstract class SQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be converted to lower case with underscore and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
-     * 
+     * All the property/column names in collection/map/entity/condition will be converted to lower case with underscore and the sql will be parameterized with named parameter with Hibernate/JPA format <code> :parameterName</code>
      * @author haiyang li 
      *
      */
-    public static final class SE extends SQLBuilder {
-        SE() {
-            super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.IBATIS_SQL);
+    public static final class NE extends SQLBuilder {
+        NE() {
+            super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.NAMED_SQL);
         }
 
-        static SE createInstance() {
-            return new SE();
+        static NE createInstance() {
+            return new NE();
         }
 
         public static SQLBuilder insert(final String expr) {
@@ -2719,17 +2729,18 @@ public abstract class SQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be converted to lower case with underscore and the sql will be parameterized with named parameter with Hibernate/JPA format <code> :parameterName</code>
+     * All the property/column names in collection/map/entity/condition will be converted to lower case with underscore and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
+     * 
      * @author haiyang li 
      *
      */
-    public static final class NE extends SQLBuilder {
-        NE() {
-            super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.NAMED_SQL);
+    public static final class SE extends SQLBuilder {
+        SE() {
+            super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.IBATIS_SQL);
         }
 
-        static NE createInstance() {
-            return new NE();
+        static SE createInstance() {
+            return new SE();
         }
 
         public static SQLBuilder insert(final String expr) {
@@ -3315,18 +3326,18 @@ public abstract class SQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be converted to upper case with underscore and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
+     * All the property/column names in collection/map/entity/condition will be converted to upper case with underscore and the sql will be parameterized with named parameter with Hibernate/JPA format <code> :parameterName</code>
      * 
      * @author haiyang li
      *
      */
-    public static final class SE2 extends SQLBuilder {
-        SE2() {
-            super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.IBATIS_SQL);
+    public static final class NE2 extends SQLBuilder {
+        NE2() {
+            super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.NAMED_SQL);
         }
 
-        static SE2 createInstance() {
-            return new SE2();
+        static NE2 createInstance() {
+            return new NE2();
         }
 
         public static SQLBuilder insert(final String expr) {
@@ -3514,18 +3525,18 @@ public abstract class SQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be converted to upper case with underscore and the sql will be parameterized with named parameter with Hibernate/JPA format <code> :parameterName</code>
+     * All the property/column names in collection/map/entity/condition will be converted to upper case with underscore and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
      * 
      * @author haiyang li
      *
      */
-    public static final class NE2 extends SQLBuilder {
-        NE2() {
-            super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.NAMED_SQL);
+    public static final class SE2 extends SQLBuilder {
+        SE2() {
+            super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.IBATIS_SQL);
         }
 
-        static NE2 createInstance() {
-            return new NE2();
+        static SE2 createInstance() {
+            return new SE2();
         }
 
         public static SQLBuilder insert(final String expr) {
@@ -4111,205 +4122,6 @@ public abstract class SQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be kept without any change and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
-     * 
-     * @author haiyang li
-     *
-     */
-    public static final class SE3 extends SQLBuilder {
-        SE3() {
-            super(NamingPolicy.CAMEL_CASE, SQLPolicy.IBATIS_SQL);
-        }
-
-        static SE3 createInstance() {
-            return new SE3();
-        }
-
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
-        }
-
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.props = props;
-
-            return instance;
-        }
-
-        public static SQLBuilder insert(final Object entity) {
-            return insert(entity, null);
-        }
-
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-
-            parseInsertEntity(instance, entity, excludedPropNames);
-
-            return instance;
-        }
-
-        public static SQLBuilder insert(final Class<?> entityClass) {
-            return insert(entityClass, null);
-        }
-
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(getPropNamesByClass(entityClass, excludedPropNames));
-        }
-
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
-            return insertInto(entityClass, null);
-        }
-
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(entityClass, excludedPropNames).into(entityClass);
-        }
-
-        /**
-         * Generate the MySQL style batch insert sql.
-         * 
-         * @param propsList list of entity or properties map.
-         * @return
-         */
-        @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-
-            instance.propsList = toInsertPropsList(propsList);
-
-            return instance;
-        }
-
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
-        }
-
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnNames
-         * @return
-         */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnAliases
-         * @return
-         */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        public static SQLBuilder select(final Class<?> entityClass) {
-            return select(entityClass, null);
-        }
-
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return select(getPropNamesByClass(entityClass, excludedPropNames));
-        }
-
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
-            return selectFrom(entityClass, null);
-        }
-
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return select(entityClass, excludedPropNames).from(entityClass);
-        }
-
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static SQLBuilder update(final Class<?> entityClass) {
-            return update(N.getSimpleClassName(entityClass));
-        }
-
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
-        }
-    }
-
-    /**
      * All the property/column names in collection/map/entity/condition will be kept without any change and the sql will be parameterized with named parameter with Hibernate/JPA format <code> :parameterName</code>
      * 
      * @author haiyang li
@@ -4508,8 +4320,203 @@ public abstract class SQLBuilder {
         }
     }
 
-    static enum SQLPolicy {
-        SQL, RAW_SQL, IBATIS_SQL, NAMED_SQL;
+    /**
+     * All the property/column names in collection/map/entity/condition will be kept without any change and the sql will be parameterized with named parameter with Ibatis format <code>#{parameterName}</code>.
+     * 
+     * @author haiyang li
+     *
+     */
+    public static final class SE3 extends SQLBuilder {
+        SE3() {
+            super(NamingPolicy.CAMEL_CASE, SQLPolicy.IBATIS_SQL);
+        }
+
+        static SE3 createInstance() {
+            return new SE3();
+        }
+
+        public static SQLBuilder insert(final String expr) {
+            return insert(N.arrayOf(expr));
+        }
+
+        public static SQLBuilder insert(final String... columnNames) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static SQLBuilder insert(final Collection<String> columnNames) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static SQLBuilder insert(final Map<String, Object> props) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.props = props;
+
+            return instance;
+        }
+
+        public static SQLBuilder insert(final Object entity) {
+            return insert(entity, null);
+        }
+
+        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+
+            parseInsertEntity(instance, entity, excludedPropNames);
+
+            return instance;
+        }
+
+        public static SQLBuilder insert(final Class<?> entityClass) {
+            return insert(entityClass, null);
+        }
+
+        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return insert(getPropNamesByClass(entityClass, excludedPropNames));
+        }
+
+        public static SQLBuilder insertInto(final Class<?> entityClass) {
+            return insertInto(entityClass, null);
+        }
+
+        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return insert(entityClass, excludedPropNames).into(entityClass);
+        }
+
+        /**
+         * Generate the MySQL style batch insert sql.
+         * 
+         * @param propsList list of entity or properties map.
+         * @return
+         */
+        @Beta
+        public static SQLBuilder batchInsert(final Collection<?> propsList) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+
+            instance.propsList = toInsertPropsList(propsList);
+
+            return instance;
+        }
+
+        public static SQLBuilder select(final String expr) {
+            return select(N.arrayOf(expr));
+        }
+
+        public static SQLBuilder select(final String... columnNames) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static SQLBuilder select(final Collection<String> columnNames) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnNames
+         * @return
+         */
+        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static SQLBuilder select(final Map<String, String> columnAliases) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnAliases
+         * @return
+         */
+        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        public static SQLBuilder select(final Class<?> entityClass) {
+            return select(entityClass, null);
+        }
+
+        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return select(getPropNamesByClass(entityClass, excludedPropNames));
+        }
+
+        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+            return selectFrom(entityClass, null);
+        }
+
+        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return select(entityClass, excludedPropNames).from(entityClass);
+        }
+
+        public static SQLBuilder update(final String tableName) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static SQLBuilder update(final Class<?> entityClass) {
+            return update(N.getSimpleClassName(entityClass));
+        }
+
+        public static SQLBuilder deleteFrom(final String tableName) {
+            final SQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+            return deleteFrom(N.getSimpleClassName(entityClass));
+        }
     }
 
     public static final class Pair {

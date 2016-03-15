@@ -4976,7 +4976,7 @@ public final class N {
      *             if the date given can't be parsed with specified format.
      */
     public static java.util.Date asJUDate(final String date, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(date)) {
+        if (isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
             return null;
         }
 
@@ -5241,7 +5241,7 @@ public final class N {
      * @return
      */
     public static Date asDate(final String date, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(date)) {
+        if (isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
             return null;
         }
 
@@ -5278,7 +5278,7 @@ public final class N {
      * @return
      */
     public static Time asTime(final String date, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(date)) {
+        if (isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
             return null;
         }
 
@@ -5315,7 +5315,7 @@ public final class N {
      * @return
      */
     public static Timestamp asTimestamp(final String date, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(date)) {
+        if (isNullOrEmpty(date) || (date.length() == 4 && "null".equalsIgnoreCase(date))) {
             return null;
         }
 
@@ -5360,7 +5360,7 @@ public final class N {
      * @return
      */
     public static Calendar asCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(calendar)) {
+        if (isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
             return null;
         }
 
@@ -5405,7 +5405,7 @@ public final class N {
      * @return
      */
     public static GregorianCalendar asGregorianCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(calendar)) {
+        if (isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
             return null;
         }
 
@@ -5446,7 +5446,7 @@ public final class N {
      * @return
      */
     public static XMLGregorianCalendar asXMLGregorianCalendar(final String calendar, final String format, final TimeZone timeZone) {
-        if (isNullOrEmpty(calendar)) {
+        if (isNullOrEmpty(calendar) || (calendar.length() == 4 && "null".equalsIgnoreCase(calendar))) {
             return null;
         }
 

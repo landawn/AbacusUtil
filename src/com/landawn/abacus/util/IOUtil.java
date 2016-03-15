@@ -110,7 +110,7 @@ public final class IOUtil {
             }
 
         } catch (Throwable e) {
-            e.printStackTrace();
+            // e.printStackTrace();
             // ignore
         }
 
