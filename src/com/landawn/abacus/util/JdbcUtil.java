@@ -20,6 +20,7 @@ import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguratio
 import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration.PASSWORD;
 import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration.URL;
 import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration.USER;
+import static com.landawn.abacus.util.IOUtil.DEFAULT_QUEUE_SIZE_FOR_ROW_PARSER;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -48,6 +49,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.parsers.DocumentBuilder;
 
@@ -96,6 +100,9 @@ import com.landawn.abacus.util.function.Predicate;
  */
 public final class JdbcUtil {
     private static final Logger logger = LoggerFactory.getLogger(JdbcUtil.class);
+
+    // ...
+    private static final String CURRENT_DIR_PATH = "./";
 
     private static final StatementSetter DEFAULT_STATEMENT_SETTER = new StatementSetter() {
         @Override
@@ -204,7 +211,7 @@ public final class JdbcUtil {
      * @see DataSource.xsd
      */
     public static DataSourceManager createDataSourceManager(final InputStream dataSourceXmlInputStream) {
-        return createDataSourceManager(dataSourceXmlInputStream, IOUtil.CURRENT_DIR_PATH);
+        return createDataSourceManager(dataSourceXmlInputStream, CURRENT_DIR_PATH);
     }
 
     private static DataSourceManager createDataSourceManager(final InputStream dataSourceXmlInputStream, final String dataSourceXmlFile) {
@@ -274,13 +281,13 @@ public final class JdbcUtil {
     }
 
     public static DataSource createDataSource(final InputStream dataSourceInputStream) {
-        return createDataSource(dataSourceInputStream, IOUtil.CURRENT_DIR_PATH);
+        return createDataSource(dataSourceInputStream, CURRENT_DIR_PATH);
     }
 
     private static DataSource createDataSource(final InputStream dataSourceInputStream, final String dataSourceFile) {
         final String dataSourceString = IOUtil.readString(dataSourceInputStream);
 
-        if (IOUtil.CURRENT_DIR_PATH.equals(dataSourceFile) || dataSourceFile.endsWith(".xml")) {
+        if (CURRENT_DIR_PATH.equals(dataSourceFile) || dataSourceFile.endsWith(".xml")) {
             try {
                 return createDataSourceManager(new ByteArrayInputStream(dataSourceString.getBytes())).getPrimaryDataSource();
             } catch (ParseException e) {
@@ -1601,7 +1608,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final Connection conn, final String sql, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, false, rowParser);
+        parse(conn, sql, 0, 0, rowParser);
     }
 
     /**
@@ -1610,11 +1617,12 @@ public final class JdbcUtil {
      * 
      * @param conn
      * @param sql
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final Connection conn, final String sql, final boolean inParallel, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, 0, Long.MAX_VALUE, inParallel, rowParser);
+    public static void parse(final Connection conn, final String sql, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+        parse(conn, sql, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
     }
 
     /**
@@ -1628,7 +1636,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final Connection conn, final String sql, final long offset, final long count, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, offset, count, false, rowParser);
+        parse(conn, sql, offset, count, 0, 0, rowParser);
     }
 
     /**
@@ -1639,24 +1647,13 @@ public final class JdbcUtil {
      * @param sql
      * @param offset
      * @param count
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final Connection conn, final String sql, final long offset, final long count, final boolean inParallel,
+    public static void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
-        PreparedStatement stmt = null;
-
-        try {
-            stmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
-            stmt.setFetchSize(200);
-
-            parse(stmt, offset, count, inParallel, rowParser);
-        } catch (SQLException e) {
-            throw new AbacusSQLException(e);
-        } finally {
-            closeQuietly(stmt);
-        }
+        parse(conn, sql, null, offset, count, processThreadNumber, queueSize, rowParser);
     }
 
     /**
@@ -1669,7 +1666,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final Connection conn, final String sql, final List<?> parameters, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, parameters, false, rowParser);
+        parse(conn, sql, parameters, 0, 0, rowParser);
     }
 
     /**
@@ -1679,11 +1676,13 @@ public final class JdbcUtil {
      * @param conn
      * @param sql
      * @param parameters
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final Connection conn, final String sql, final List<?> parameters, final boolean inParallel, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, parameters, 0, Long.MAX_VALUE, inParallel, rowParser);
+    public static void parse(final Connection conn, final String sql, final List<?> parameters, final int processThreadNumber, final int queueSize,
+            final Consumer<Object[]> rowParser) {
+        parse(conn, sql, parameters, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
     }
 
     /**
@@ -1699,7 +1698,7 @@ public final class JdbcUtil {
      */
     public static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count,
             final Consumer<Object[]> rowParser) {
-        parse(conn, sql, parameters, offset, count, false, rowParser);
+        parse(conn, sql, parameters, offset, count, 0, 0, rowParser);
     }
 
     /**
@@ -1711,11 +1710,12 @@ public final class JdbcUtil {
      * @param parameters
      * @param offset
      * @param count
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count, final boolean inParallel,
-            final Consumer<Object[]> rowParser) {
+    public static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count,
+            final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
         PreparedStatement stmt = null;
 
         try {
@@ -1729,7 +1729,7 @@ public final class JdbcUtil {
 
             stmt.setFetchSize(200);
 
-            parse(stmt, offset, count, inParallel, rowParser);
+            parse(stmt, offset, count, processThreadNumber, queueSize, rowParser);
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {
@@ -1745,7 +1745,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final PreparedStatement stmt, final Consumer<Object[]> rowParser) {
-        parse(stmt, false, rowParser);
+        parse(stmt, 0, 0, rowParser);
     }
 
     /**
@@ -1753,11 +1753,12 @@ public final class JdbcUtil {
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
      * @param stmt
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final PreparedStatement stmt, final boolean inParallel, final Consumer<Object[]> rowParser) {
-        parse(stmt, 0, Long.MAX_VALUE, inParallel, rowParser);
+    public static void parse(final PreparedStatement stmt, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+        parse(stmt, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
     }
 
     /**
@@ -1770,7 +1771,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final PreparedStatement stmt, final long offset, final long count, final Consumer<Object[]> rowParser) {
-        parse(stmt, offset, count, false, rowParser);
+        parse(stmt, offset, count, 0, 0, rowParser);
     }
 
     /**
@@ -1780,16 +1781,18 @@ public final class JdbcUtil {
      * @param stmt
      * @param offset
      * @param count
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final PreparedStatement stmt, final long offset, final long count, final boolean inParallel, final Consumer<Object[]> rowParser) {
+    public static void parse(final PreparedStatement stmt, final long offset, final long count, final int processThreadNumber, final int queueSize,
+            final Consumer<Object[]> rowParser) {
         ResultSet rs = null;
 
         try {
             rs = stmt.executeQuery();
 
-            parse(rs, offset, count, inParallel, rowParser);
+            parse(rs, offset, count, processThreadNumber, queueSize, rowParser);
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {
@@ -1805,7 +1808,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final ResultSet rs, final Consumer<Object[]> rowParser) {
-        parse(rs, false, rowParser);
+        parse(rs, 0, 0, rowParser);
     }
 
     /**
@@ -1813,11 +1816,12 @@ public final class JdbcUtil {
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
      * @param rs
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final ResultSet rs, final boolean inParallel, final Consumer<Object[]> rowParser) {
-        parse(rs, 0, Long.MAX_VALUE, inParallel, rowParser);
+    public static void parse(final ResultSet rs, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+        parse(rs, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
     }
 
     /**
@@ -1830,7 +1834,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final ResultSet rs, long offset, long count, final Consumer<Object[]> rowParser) {
-        parse(rs, offset, count, false, rowParser);
+        parse(rs, offset, count, 0, 0, rowParser);
     }
 
     /**
@@ -1840,120 +1844,146 @@ public final class JdbcUtil {
      * @param rs
      * @param offset
      * @param count
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final ResultSet rs, long offset, long count, final boolean inParallel, final Consumer<Object[]> rowParser) {
-        parse(new RowIterator(rs), offset, count, inParallel, rowParser);
+    public static void parse(final ResultSet rs, long offset, long count, final int processThreadNumber, final int queueSize,
+            final Consumer<Object[]> rowParser) {
+        parse(new RowIterator(rs), offset, count, processThreadNumber, queueSize, rowParser);
     }
 
     /**
      * Parse the specified ResultSet.
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
-     * @param iter
+     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final RowIterator iter, final Consumer<Object[]> rowParser) {
-        parse(iter, false, rowParser);
+    static void parse(final RowIterator iter, final Consumer<Object[]> rowParser) {
+        parse(iter, 0, 0, rowParser);
     }
 
     /**
      * Parse the specified ResultSet.
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
-     * @param iter
-     * @param inParallel
+     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final RowIterator iter, final boolean inParallel, final Consumer<Object[]> rowParser) {
-        parse(iter, 0, Long.MAX_VALUE, inParallel, rowParser);
+    static void parse(final RowIterator iter, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+        parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
     }
 
     /**
      * Parse the specified ResultSet.
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
-     * @param iter
+     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
      * @param offset
      * @param count
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final RowIterator iter, long offset, long count, final Consumer<Object[]> rowParser) {
-        parse(iter, offset, count, false, rowParser);
+    static void parse(final RowIterator iter, long offset, long count, final Consumer<Object[]> rowParser) {
+        parse(iter, offset, count, 0, 0, rowParser);
     }
 
     /**
      * Parse the specified ResultSet.
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
-     * @param iter
+     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
      * @param offset
      * @param count
-     * @param inParallel
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    public static void parse(final RowIterator iter, long offset, long count, final boolean inParallel, final Consumer<Object[]> rowParser) {
+    static void parse(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
         while (offset-- > 0 && iter.moveToNext()) {
         }
 
-        if (inParallel) {
-            final AsyncExecutor asyncExecutor = new AsyncExecutor();
+        if (processThreadNumber == 0) {
+            while (count-- > 0 && iter.hasNext()) {
+                rowParser.accept(iter.next());
+            }
+
+            rowParser.accept(null);
+        } else {
+            final AtomicInteger activeThreadNum = new AtomicInteger();
+            final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
             final Queue<Object[]> rowQueue = new ConcurrentLinkedQueue<Object[]>();
             final MutableBoolean isReadDone = new MutableBoolean(false);
-            final MutableBoolean isParseDone = new MutableBoolean(false);
             final Handle<Throwable> exceptionHandle = new Handle<Throwable>();
             final Handle<String> errorMessageHandle = new Handle<String>();
 
-            asyncExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    Object[] row = null;
-                    try {
-                        while (true) {
-                            if (rowQueue.size() > 0) {
+            for (int i = 0; i < processThreadNumber; i++) {
+                activeThreadNum.incrementAndGet();
+
+                executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        Object[] row = null;
+                        try {
+                            while (exceptionHandle.getValue() == null) {
                                 row = rowQueue.poll();
-                                rowParser.accept(row);
-                            } else if (isReadDone.booleanValue()) {
-                                rowParser.accept(null);
-                                break;
-                            } else {
-                                N.sleep(1);
+
+                                if (row == null) {
+                                    if (isReadDone.booleanValue()) {
+                                        row = rowQueue.poll();
+                                        if (row == null) {
+                                            break;
+                                        } else {
+                                            rowParser.accept(row);
+                                        }
+                                    } else {
+                                        N.sleep(1);
+                                    }
+                                } else {
+                                    rowParser.accept(row);
+                                }
                             }
+                        } catch (Throwable e) {
+                            errorMessageHandle.setValue("### Failed to parse at row: " + row + ". " + AbacusException.getErrorMsg(e));
+                            exceptionHandle.setValue(e);
+                        } finally {
+                            activeThreadNum.decrementAndGet();
                         }
-                    } catch (Throwable e) {
-                        errorMessageHandle.setValue("### Failed to parse at row: " + row + ". " + AbacusException.getErrorMsg(e));
-                        exceptionHandle.setValue(e);
-                    } finally {
-                        isParseDone.setTrue();
                     }
-                }
-            });
-
-            while (isParseDone.booleanValue() == false && count-- > 0 && iter.hasNext()) {
-                while (isParseDone.booleanValue() == false && rowQueue.size() > 1024) {
-                    N.sleep(1);
-                }
-
-                rowQueue.add(iter.next());
+                });
             }
 
-            isReadDone.setTrue();
+            try {
+                while (exceptionHandle.getValue() == null && count-- > 0 && iter.hasNext()) {
+                    while (rowQueue.size() > queueSize) {
+                        N.sleep(1);
+                    }
 
-            while (isParseDone.booleanValue() == false) {
-                N.sleep(10);
+                    rowQueue.add(iter.next());
+                }
+            } finally {
+                isReadDone.setTrue();
+
+                while (activeThreadNum.get() > 0) {
+                    N.sleep(10);
+                }
+            }
+
+            if (exceptionHandle.getValue() == null) {
+                try {
+                    rowParser.accept(null);
+                } catch (Throwable e) {
+                    errorMessageHandle.setValue("### Failed to parse null, the end of row. " + AbacusException.getErrorMsg(e));
+                    exceptionHandle.setValue(e);
+                }
             }
 
             if (exceptionHandle.getValue() != null) {
                 logger.error(errorMessageHandle.getValue());
                 throw new AbacusException(errorMessageHandle.getValue(), exceptionHandle.getValue());
             }
-        } else {
-            while (count-- > 0 && iter.hasNext()) {
-                rowParser.accept(iter.next());
-            }
-
-            rowParser.accept(null);
         }
     }
 
@@ -2057,7 +2087,7 @@ public final class JdbcUtil {
             }
         };
 
-        JdbcUtil.parse(selectStmt, offset, count, inParallel, rowParser);
+        JdbcUtil.parse(selectStmt, offset, count, inParallel ? 1 : 0, DEFAULT_QUEUE_SIZE_FOR_ROW_PARSER, rowParser);
 
         return result.longValue();
     }
