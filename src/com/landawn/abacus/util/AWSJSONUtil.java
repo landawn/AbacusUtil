@@ -217,8 +217,8 @@ public final class AWSJSONUtil {
                         element = type.getElementType().isEntity() ? unwrap(type.getElementType().getTypeClass(), (JSONObject) element)
                                 : unwrap((JSONObject) element);
                     } else if (element instanceof JSONArray) {
-                        element = (type.getElementType().isCollection() || type.getElementType().isArray()) ? unwrap(type.getElementType(), (JSONArray) element)
-                                : unwrap((JSONArray) element);
+                        element = (type.getElementType().isCollection() || type.getElementType().isArray())
+                                ? unwrap(type.getElementType(), (JSONArray) element) : unwrap((JSONArray) element);
                     }
                 }
 
@@ -259,8 +259,8 @@ public final class AWSJSONUtil {
                         element = type.getElementType().isEntity() ? unwrap(type.getElementType().getTypeClass(), (JSONObject) element)
                                 : unwrap((JSONObject) element);
                     } else if (element instanceof JSONArray) {
-                        element = (type.getElementType().isCollection() || type.getElementType().isArray()) ? unwrap(type.getElementType(), (JSONArray) element)
-                                : unwrap((JSONArray) element);
+                        element = (type.getElementType().isCollection() || type.getElementType().isArray())
+                                ? unwrap(type.getElementType(), (JSONArray) element) : unwrap((JSONArray) element);
                     }
                 }
 

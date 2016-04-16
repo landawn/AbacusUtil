@@ -1,15 +1,9 @@
-/*
- * Copyright (c) 2015, Haiyang Li. All rights reserved.
- */
-
 package com.landawn.abacus.util.function;
 
 /**
- * 
- * @since 0.8
- * 
- * @author Haiyang Li
+ * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  */
 public interface FloatUnaryOperator {
+
     float applyAsFloat(float operand);
 }

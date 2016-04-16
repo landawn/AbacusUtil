@@ -16,10 +16,13 @@
 
 package com.landawn.abacus.util;
 
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import com.landawn.abacus.exception.AbacusException;
 
 /**
  * It's designed to supported primitive/object array key.
@@ -42,7 +45,29 @@ public final class ArrayHashMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("rawtypes")
     public ArrayHashMap(final Class<? extends Map> mapType) {
-        map = N.newInstance(mapType);
+        //  StackOverflowError
+
+        /*
+        ......
+        at java.lang.Class.getDeclaredConstructor(Class.java:2066)
+        at com.landawn.abacus.util.N.getDeclaredConstructor(N.java:1554)
+        at com.landawn.abacus.util.N.newInstance(N.java:3180)
+        at com.landawn.abacus.util.ArrayHashMap.<init>(ArrayHashMap.java:45)
+        at com.landawn.abacus.util.N.getDeclaredConstructor(N.java:1564)
+        at com.landawn.abacus.util.N.newInstance(N.java:3180)
+        at com.landawn.abacus.util.ArrayHashMap.<init>(ArrayHashMap.java:45)
+        ......
+        */
+
+        // map = N.newInstance(mapType);
+
+        try {
+            map = Modifier.isAbstract(mapType.getModifiers()) ? N.newInstance(mapType) : mapType.newInstance();
+        } catch (InstantiationException e) {
+            throw new AbacusException(e);
+        } catch (IllegalAccessException e) {
+            throw new AbacusException(e);
+        }
     }
 
     public ArrayHashMap(final Map<? extends K, ? extends V> m) {

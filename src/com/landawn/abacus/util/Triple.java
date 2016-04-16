@@ -85,7 +85,7 @@ public final class Triple<L, M, R> {
             return true;
         }
 
-        if (obj instanceof Pair) {
+        if (obj instanceof Triple) {
             final Triple<L, M, R> other = (Triple<L, M, R>) obj;
 
             return N.equals(left, other.left) && N.equals(middle, other.middle) && N.equals(right, other.right);

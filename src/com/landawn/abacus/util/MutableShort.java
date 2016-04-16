@@ -40,7 +40,7 @@ public final class MutableShort extends Number implements Comparable<MutableShor
     private static final long serialVersionUID = -2135791679L;
 
     /** The mutable value. */
-    private volatile short value;
+    private short value;
 
     /**
      * Constructs a new MutableShort with the default value of zero.

@@ -48,14 +48,14 @@ public interface PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E, A, L
     /**
      * 
      * @param l
-     * <tt>true</tt> if this list changed as a result of the call
+     * @return <tt>true</tt> if this list changed as a result of the call
      */
     boolean removeAll(L l);
 
     /**
      * 
      * @param l
-     * <tt>true</tt> if this list changed as a result of the call
+     * @return <tt>true</tt> if this list changed as a result of the call
      */
     boolean retainAll(L l);
 
@@ -66,6 +66,12 @@ public interface PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E, A, L
      */
     boolean containsAll(L l);
 
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
     L subList(int fromIndex, int toIndex);
 
     /**

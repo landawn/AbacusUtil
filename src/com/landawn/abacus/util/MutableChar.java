@@ -1,7 +1,19 @@
 /*
- * Copyright (c) 2015, Haiyang Li. All rights reserved.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package com.landawn.abacus.util;
 
 /**
@@ -10,15 +22,17 @@ package com.landawn.abacus.util;
  * under the Apache License 2.0. The methods copied from other products/frameworks may be modified in this class.
  * </p>
  * 
- * A mutable <code>char</code> wrapper.
+ * A mutable <code>byte</code> wrapper.
+ * <p>
+ * Note that as MutableCharacter does not extend Character, it is not treated by String.format as a Character parameter. 
  * 
- * @since 0.8
- * 
- * @author Haiyang Li
+ * @see Character
+ * @since 2.1
+ * @version $Id: MutableCharacter.java 1669791 2015-03-28 15:22:59Z britter $
  */
 public final class MutableChar implements Comparable<MutableChar>, Mutable<Character> {
     /** The mutable value. */
-    private volatile char value;
+    private char value;
 
     /**
      * Constructs a new MutableChar with the default value of zero.

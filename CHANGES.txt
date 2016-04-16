@@ -1,3 +1,27 @@
+========Changes in 0.8.11=========================================================================
+1, Build separated library for android.
+2, Add utility classes to support Android: http://www.landawn.com/programming-in-android.html
+3, Support stream for jdk 7, specially for android. Lambda can be supported by Retrolambda: https://github.com/evant/gradle-retrolambda
+4, move methods N.streamOf(...) to com.landawn.util.stream.Stream.Of(...); 
+5, rename CallableFuture to CallbackFuture.
+6, enhancement and bug fix.
+
+========Changes in 0.8.10=========================================================================
+1, Add below methods to SQLiteExecutor:
+	public long insert(Object entity, int conflictAlgorithm)
+	 ...
+	public DataSet query(String table, Map<String, Class> selectColumnNameTypeMap, Condition whereClause, String groupBy, String having, String orderBy,int offset, int count)
+
+2, Refactoring the parse methods in JdbcUtil.java and IOUtil.java.
+
+3, Refactoring HttpClient and Integrated with Square okhttp.
+
+========Changes in 0.8.9=========================================================================
+1, Add Neo4jExecutor.
+2, Fix the log issue for Android.
+
+=================================================================================================
+
 ========Changes in 0.8.8=========================================================================
 1, Minor bug fix and improvements
 

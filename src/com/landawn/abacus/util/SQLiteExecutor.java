@@ -141,11 +141,13 @@ public final class SQLiteExecutor {
         return extractData(cursor, Type.arrayOf(selectColumnTypes.toArray(new Class[selectColumnTypes.size()])), offset, count);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     static DataSet extractData(Cursor cursor, Type[] selectColumnTypes) {
         return extractData(cursor, selectColumnTypes, 0, Integer.MAX_VALUE);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     static DataSet extractData(Cursor cursor, Type[] selectColumnTypes, int offset, int count) {
         final int columnCount = cursor.getColumnCount();
@@ -293,7 +295,7 @@ public final class SQLiteExecutor {
     }
 
     @SuppressWarnings("deprecation")
-    static ContentValues toContentValues(Object obj, NamingPolicy namingPolicy, boolean isForUpdate) {
+    private static ContentValues toContentValues(Object obj, NamingPolicy namingPolicy, boolean isForUpdate) {
         final ContentValues result = new ContentValues();
 
         @SuppressWarnings("rawtypes")
@@ -633,6 +635,7 @@ public final class SQLiteExecutor {
     }
 
     // mess up
+    @Deprecated
     int update(EntityId entityId, Map<String, Object> props) {
         return update(entityId.entityName(), props, EntityManagerUtil.entityId2Condition(entityId));
     }
@@ -685,6 +688,7 @@ public final class SQLiteExecutor {
     }
 
     // mess up
+    @Deprecated
     int delete(EntityId entityId) {
         return delete(entityId.entityName(), EntityManagerUtil.entityId2Condition(entityId));
     }
@@ -739,6 +743,7 @@ public final class SQLiteExecutor {
         return delete(getTableNameByEntity(entityClass), whereClause);
     }
 
+    @Deprecated
     int delete(String table, String whereClause, String... whereArgs) {
         table = formatName(table);
 
@@ -750,6 +755,7 @@ public final class SQLiteExecutor {
      *
      * @param sql
      */
+    @Deprecated
     void execute(String sql) {
         sqliteDB.execSQL(parseSQL(sql).getPureSQL());
     }
@@ -760,6 +766,7 @@ public final class SQLiteExecutor {
      * @param sql
      * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
      */
+    @Deprecated
     void execute(String sql, Object... parameters) {
         final NamedSQL namedSQL = parseSQL(sql);
         final Object[] args = prepareArguments(namedSQL, parameters);
@@ -768,6 +775,7 @@ public final class SQLiteExecutor {
     }
 
     // mess up
+    @Deprecated
     boolean exists(EntityId entityId) {
         final Pair pair = generateQuerySQL(entityId, NE._1_list);
 
@@ -817,6 +825,7 @@ public final class SQLiteExecutor {
     }
 
     // mess up
+    @Deprecated
     <T> T get(Class<T> targetClass, EntityId entityId, String... selectPropNames) {
         return get(targetClass, entityId, N.asList(selectPropNames));
     }
@@ -831,6 +840,7 @@ public final class SQLiteExecutor {
      * @throws NonUniqueResultException if more than one records are found.
      */
     // mess up
+    @Deprecated
     <T> T get(Class<T> targetClass, EntityId entityId, Collection<String> selectPropNames) {
         final Condition whereClause = EntityManagerUtil.entityId2Condition(entityId);
         final List<T> resultList = find(targetClass, selectPropNames, whereClause, null, 0, 2);
@@ -947,6 +957,7 @@ public final class SQLiteExecutor {
         }
     }
 
+    @Deprecated
     <T> T queryForSingleResult(final Class<T> targetClass, final String tableName, final String columnName, Condition whereClause) {
         final DataSet rs = query(tableName, Array.of(columnName), Array.of(targetClass), whereClause, null, null, null, 0, 1);
 
@@ -1229,21 +1240,25 @@ public final class SQLiteExecutor {
         return this.query(table, selectColumnNames, selectColumnTypes, whereClause, groupBy, having, orderBy, offset, count);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Class[] selectColumnTypes, Condition whereClause) {
         return query(table, selectColumnNames, selectColumnTypes, whereClause, null);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Class[] selectColumnTypes, Condition whereClause, String orderBy) {
         return query(table, selectColumnNames, selectColumnTypes, whereClause, orderBy, 0, Integer.MAX_VALUE);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Class[] selectColumnTypes, Condition whereClause, String orderBy, int offset, int count) {
         return query(table, selectColumnNames, selectColumnTypes, whereClause, null, null, orderBy, offset, count);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Class[] selectColumnTypes, Condition whereClause, String groupBy, String having, String orderBy) {
         return query(table, selectColumnNames, selectColumnTypes, whereClause, groupBy, having, orderBy, 0, Integer.MAX_VALUE);
@@ -1263,6 +1278,7 @@ public final class SQLiteExecutor {
      * @param count
      * @return
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Class[] selectColumnTypes, Condition whereClause, String groupBy, String having, String orderBy,
             int offset, int count) {
@@ -1276,21 +1292,25 @@ public final class SQLiteExecutor {
         }
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, Condition whereClause) {
         return query(table, selectColumnNames, selectColumnTypes, whereClause, null);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, Condition whereClause, String orderBy) {
         return query(table, selectColumnNames, selectColumnTypes, whereClause, orderBy, 0, Integer.MAX_VALUE);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, Condition whereClause, String orderBy, int offset, int count) {
         return query(table, selectColumnNames, selectColumnTypes, whereClause, null, null, orderBy, offset, count);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, Condition whereClause, String groupBy, String having, String orderBy) {
         return query(table, selectColumnNames, selectColumnTypes, whereClause, groupBy, having, orderBy, 0, Integer.MAX_VALUE);
@@ -1309,6 +1329,7 @@ public final class SQLiteExecutor {
      * @param count
      * @return
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, Condition whereClause, String groupBy, String having, String orderBy,
             int offset, int count) {
@@ -1320,22 +1341,26 @@ public final class SQLiteExecutor {
         }
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, String where, String[] whereArgs) {
         return query(table, selectColumnNames, selectColumnTypes, where, whereArgs, null);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, String where, String[] whereArgs, String orderBy) {
         return query(table, selectColumnNames, selectColumnTypes, where, whereArgs, orderBy, 0, Integer.MAX_VALUE);
 
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, String where, String[] whereArgs, String orderBy, int offset, int count) {
         return query(table, selectColumnNames, selectColumnTypes, where, whereArgs, null, null, orderBy, offset, count);
     }
 
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, String where, String[] whereArgs, String groupBy, String having,
             String orderBy) {
@@ -1356,6 +1381,7 @@ public final class SQLiteExecutor {
      * @param count
      * @return
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     DataSet query(String table, String[] selectColumnNames, Type[] selectColumnTypes, String where, String[] whereArgs, String groupBy, String having,
             String orderBy, int offset, int count) {

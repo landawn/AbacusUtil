@@ -1201,9 +1201,8 @@ public final class CSVUtil {
             while (offset-- > 0 && br.readLine() != null) {
             }
 
-            final boolean isNullOrEmptyTypes = N.isNullOrEmpty(columnTypeList);
-            final Type<Object>[] columnTypes = isNullOrEmptyTypes ? null : columnTypeList.toArray(new Type[columnTypeList.size()]);
-            final DataChannel dc = isNullOrEmptyTypes ? null : new StatementDataChannel(stmt);
+            final Type<Object>[] columnTypes = columnTypeList.toArray(new Type[columnTypeList.size()]);
+            final DataChannel dc = new StatementDataChannel(stmt);
             final String[] strs = new String[columnTypeList.size()];
             String line = null;
             Type<Object> type = null;
@@ -1215,20 +1214,14 @@ public final class CSVUtil {
                     continue;
                 }
 
-                if (isNullOrEmptyTypes) {
-                    for (int i = 0, len = strs.length; i < len; i++) {
-                        stmt.setObject(i + 1, strs[i]);
-                    }
-                } else {
-                    for (int i = 0, parameterIndex = 0, len = strs.length; i < len; i++) {
-                        type = columnTypes[i];
+                for (int i = 0, parameterIndex = 0, len = strs.length; i < len; i++) {
+                    type = columnTypes[i];
 
-                        if (type == null) {
-                            continue;
-                        }
-
-                        type.set(dc, parameterIndex++, (strs[i] == null) ? null : type.valueOf(strs[i]));
+                    if (type == null) {
+                        continue;
                     }
+
+                    type.set(dc, parameterIndex++, (strs[i] == null) ? null : type.valueOf(strs[i]));
                 }
 
                 stmt.addBatch();

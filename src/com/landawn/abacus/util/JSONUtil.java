@@ -18,11 +18,12 @@ package com.landawn.abacus.util;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.landawn.abacus.parser.ParserUtil;
@@ -50,39 +51,39 @@ public final class JSONUtil {
         return new JSONObject(entity instanceof Map ? (Map<String, Object>) entity : N.entity2Map(entity));
     }
 
-    public static JSONArray wrap(final boolean[] array) {
+    public static JSONArray wrap(final boolean[] array) throws JSONException {
         return new JSONArray(array);
     }
 
-    public static JSONArray wrap(final char[] array) {
+    public static JSONArray wrap(final char[] array) throws JSONException {
         return new JSONArray(array);
     }
 
-    public static JSONArray wrap(final byte[] array) {
+    public static JSONArray wrap(final byte[] array) throws JSONException {
         return new JSONArray(array);
     }
 
-    public static JSONArray wrap(final short[] array) {
+    public static JSONArray wrap(final short[] array) throws JSONException {
         return new JSONArray(array);
     }
 
-    public static JSONArray wrap(final int[] array) {
+    public static JSONArray wrap(final int[] array) throws JSONException {
         return new JSONArray(array);
     }
 
-    public static JSONArray wrap(final long[] array) {
+    public static JSONArray wrap(final long[] array) throws JSONException {
         return new JSONArray(array);
     }
 
-    public static JSONArray wrap(final float[] array) {
+    public static JSONArray wrap(final float[] array) throws JSONException {
         return new JSONArray(array);
     }
 
-    public static JSONArray wrap(final double[] array) {
+    public static JSONArray wrap(final double[] array) throws JSONException {
         return new JSONArray(array);
     }
 
-    public static JSONArray wrap(final Object[] array) {
+    public static JSONArray wrap(final Object[] array) throws JSONException {
         return new JSONArray(array);
     }
 
@@ -90,17 +91,19 @@ public final class JSONUtil {
         return new JSONArray(coll);
     }
 
-    public static Map<String, Object> unwrap(final JSONObject jsonObject) {
+    public static Map<String, Object> unwrap(final JSONObject jsonObject) throws JSONException {
         return unwrap(Map.class, jsonObject);
     }
 
-    public static <T> T unwrap(final Class<?> cls, final JSONObject jsonObject) {
+    public static <T> T unwrap(final Class<?> cls, final JSONObject jsonObject) throws JSONException {
         if (Map.class.isAssignableFrom(cls)) {
             final Map<String, Object> map = (Map<String, Object>) N.newInstance(cls);
-            final Set<String> keySet = jsonObject.keySet();
+            final Iterator<String> iter = jsonObject.keys();
+            String key = null;
             Object value = null;
 
-            for (String key : keySet) {
+            while (iter.hasNext()) {
+                key = iter.next();
                 value = jsonObject.get(key);
 
                 if (value == JSONObject.NULL) {
@@ -120,11 +123,15 @@ public final class JSONUtil {
         } else {
             final Object entity = N.newEntity(cls, null);
             final EntityInfo entityInfo = ParserUtil.getEntityInfo(cls);
-            final Set<String> keySet = jsonObject.keySet();
-            PropInfo propInfo = null;
+            final Iterator<String> iter = jsonObject.keys();
+            String key = null;
             Object value = null;
+            PropInfo propInfo = null;
 
-            for (String key : keySet) {
+            while (iter.hasNext()) {
+                key = iter.next();
+                value = jsonObject.get(key);
+
                 propInfo = entityInfo.getPropInfo(key);
                 value = jsonObject.get(key);
 
@@ -145,7 +152,7 @@ public final class JSONUtil {
         }
     }
 
-    public static <T> List<T> unwrap(final JSONArray jsonArray) {
+    public static <T> List<T> unwrap(final JSONArray jsonArray) throws JSONException {
         return unwrap(List.class, jsonArray);
     }
 
@@ -156,11 +163,11 @@ public final class JSONUtil {
      * @param jsonArray
      * @return
      */
-    public static <T> T unwrap(final Class<?> cls, final JSONArray jsonArray) {
+    public static <T> T unwrap(final Class<?> cls, final JSONArray jsonArray) throws JSONException {
         return unwrap(N.getType(cls), jsonArray);
     }
 
-    public static <T> T unwrap(final Type<?> type, final JSONArray jsonArray) {
+    public static <T> T unwrap(final Type<?> type, final JSONArray jsonArray) throws JSONException {
         final int len = jsonArray.length();
 
         if (type.isCollection()) {
@@ -177,8 +184,8 @@ public final class JSONUtil {
                         element = type.getElementType().isEntity() ? unwrap(type.getElementType().getTypeClass(), (JSONObject) element)
                                 : unwrap((JSONObject) element);
                     } else if (element instanceof JSONArray) {
-                        element = (type.getElementType().isCollection() || type.getElementType().isArray())
-                                ? unwrap(type.getElementType(), (JSONArray) element) : unwrap((JSONArray) element);
+                        element = (type.getElementType().isCollection() || type.getElementType().isArray()) ? unwrap(type.getElementType(), (JSONArray) element)
+                                : unwrap((JSONArray) element);
                     }
                 }
 
@@ -219,8 +226,8 @@ public final class JSONUtil {
                         element = type.getElementType().isEntity() ? unwrap(type.getElementType().getTypeClass(), (JSONObject) element)
                                 : unwrap((JSONObject) element);
                     } else if (element instanceof JSONArray) {
-                        element = (type.getElementType().isCollection() || type.getElementType().isArray())
-                                ? unwrap(type.getElementType(), (JSONArray) element) : unwrap((JSONArray) element);
+                        element = (type.getElementType().isCollection() || type.getElementType().isArray()) ? unwrap(type.getElementType(), (JSONArray) element)
+                                : unwrap((JSONArray) element);
                     }
                 }
 

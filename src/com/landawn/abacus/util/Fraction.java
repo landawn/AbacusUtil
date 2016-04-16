@@ -137,11 +137,11 @@ public final class Fraction extends Number implements Comparable<Fraction> {
     }
 
     /**
-     * @see {{@link #of(int, int, boolean)}
-     * 
      * @param numerator
      * @param denominator
      * @return
+     * 
+     * @see #of(int, int, boolean)
      */
     public static Fraction of(int numerator, int denominator) {
         return of(numerator, denominator, false);

@@ -52,6 +52,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.parsers.DocumentBuilder;
 
@@ -335,13 +336,11 @@ public final class JdbcUtil {
 
     /**
      * 
-     * @param driver
+     * @param driverClass
      * @param url
      * @param user
      * @param password
-     * @param props
-     *            refer to Connection.xsd for the supported properties.
-     *            {@link com.landawn.abacus.core.AbacusConfiguration.EntityManagerConfiguration.DataSourceConfiguration}
+     * @param props refer to Connection.xsd for the supported properties.
      * @return
      */
     public static DataSource createDataSource(final Class<? extends Driver> driverClass, final String url, final String user, final String password,
@@ -364,9 +363,7 @@ public final class JdbcUtil {
 
     /**
      * 
-     * @param props
-     *            refer to Connection.xsd for the supported properties.
-     *            {@link com.landawn.abacus.core.AbacusConfiguration.EntityManagerConfiguration.DataSourceConfiguration}
+     * @param props refer to Connection.xsd for the supported properties.
      * @return
      */
     public static DataSource createDataSource(final Map<String, ?> props) {
@@ -588,7 +585,6 @@ public final class JdbcUtil {
      * 
      * @param rs
      * @param stmt
-     * @param conn
      */
     public static void closeQuietly(final ResultSet rs, final Statement stmt) {
         closeQuietly(rs, stmt, null);
@@ -600,7 +596,6 @@ public final class JdbcUtil {
      * Equivalent to {@link Statement#close()}, {@link Connection#close()}, except any exceptions will be ignored.
      * This is typically used in finally blocks.
      * 
-     * @param rs
      * @param stmt
      * @param conn
      */
@@ -1166,7 +1161,6 @@ public final class JdbcUtil {
      * @param offset
      * @param count
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
-     * @param filter
      * @return
      */
     public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final PreparedStatement stmt,
@@ -1184,7 +1178,6 @@ public final class JdbcUtil {
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
      * @param batchSize
      * @param batchInterval
-     * @param filter
      * @return
      */
     public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final PreparedStatement stmt,
@@ -1946,7 +1939,7 @@ public final class JdbcUtil {
                                 }
                             }
                         } catch (Throwable e) {
-                            errorMessageHandle.setValue("### Failed to parse at row: " + row + ". " + AbacusException.getErrorMsg(e));
+                            errorMessageHandle.setValue("### Failed to parse at row: " + N.toString(row) + ". " + AbacusException.getErrorMsg(e));
                             exceptionHandle.setValue(e);
                         } finally {
                             activeThreadNum.decrementAndGet();
@@ -2055,7 +2048,7 @@ public final class JdbcUtil {
         }
 
         final StatementSetter parametersSetter = statementSetter == null ? DEFAULT_STATEMENT_SETTER : statementSetter;
-        final MutableLong result = new MutableLong();
+        final AtomicLong result = new AtomicLong();
 
         final Consumer<Object[]> rowParser = new Consumer<Object[]>() {
             @Override
@@ -2070,7 +2063,7 @@ public final class JdbcUtil {
                         parametersSetter.setParameters(null, insertStmt, row);
 
                         insertStmt.addBatch();
-                        result.increment();
+                        result.incrementAndGet();
 
                         if ((result.longValue() % batchSize) == 0) {
                             insertStmt.executeBatch();

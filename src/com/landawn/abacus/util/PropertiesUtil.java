@@ -23,8 +23,10 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
 
@@ -106,11 +108,11 @@ public final class PropertiesUtil {
         }
     };
 
-    private static final Timer autoRefreshTimer = new Timer(true);
+    private static final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(64);
     private static final Map<Resource, Properties<?, ?>> registeredAutoRefreshProperties = N.newConcurrentHashMap(256);
 
     static {
-        TimerTask task = new TimerTask() {
+        TimerTask refreshTask = new TimerTask() {
             @Override
             public void run() {
                 synchronized (registeredAutoRefreshProperties) {
@@ -247,7 +249,7 @@ public final class PropertiesUtil {
             }
         };
 
-        autoRefreshTimer.schedule(task, 1000, 1000);
+        scheduledExecutor.scheduleWithFixedDelay(refreshTask, 1000, 1000, TimeUnit.MICROSECONDS);
     }
 
     private PropertiesUtil() {

@@ -191,7 +191,7 @@ public final class Profiler {
 
         N.sleep(1000);
 
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(8, 64, threadNum, TimeUnit.SECONDS);
+        final AsyncExecutor asyncExecutor = new AsyncExecutor(threadNum, 300, TimeUnit.SECONDS);
         final AtomicInteger threadCounter = new AtomicInteger();
 
         // MXBean mxBean = new MXBean();
@@ -1021,16 +1021,21 @@ public final class Profiler {
                 final int minLen = 12;
                 writer.println(
                         N.padEnd(methodName + ",  ", maxMethodNameLength) + N.padEnd(DOUBLE_FORMAT.format(avgTime) + ",  ", minLen)
-                                + N.padEnd(minTime + ",  ", minLen) + N.padEnd(maxTime + ",  ", minLen)
+                                + N.padEnd(minTime + ",  ",
+                                        minLen)
+                                + N.padEnd(maxTime + ",  ",
+                                        minLen)
                                 + N.padEnd(methodStatisticsList.get((int) (size * 0.0001)).getElapsedTime() + ",  ",
                                         minLen)
-                                + N.padEnd(methodStatisticsList.get((int) (size * 0.001)).getElapsedTime() + ",  ",
-                                        minLen)
                                 + N.padEnd(
-                                        methodStatisticsList.get((int) (size * 0.01)).getElapsedTime()
+                                        methodStatisticsList.get((int) (size * 0.001)).getElapsedTime()
                                                 + ",  ",
                                         minLen)
-                                + N.padEnd(methodStatisticsList.get((int) (size * 0.1)).getElapsedTime() + ",  ",
+                                + N.padEnd(methodStatisticsList.get((int) (size * 0.01)).getElapsedTime() + ",  ",
+                                        minLen)
+                                + N.padEnd(
+                                        methodStatisticsList.get((int) (size * 0.1)).getElapsedTime()
+                                                + ",  ",
                                         minLen)
                                 + N.padEnd(
                                         methodStatisticsList.get((int) (size * 0.2)).getElapsedTime()

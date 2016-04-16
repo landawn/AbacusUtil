@@ -40,7 +40,7 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
     private static final long serialVersionUID = -1585823265L;
 
     /** The mutable value. */
-    private volatile byte value;
+    private byte value;
 
     /**
      * Constructs a new MutableByte with the default value of zero.

@@ -399,7 +399,7 @@ public final class Array {
         }
 
         int tmp = (int) (endExclusive - startInclusive);
-        final float[] a = new float[startInclusive + tmp == endExclusive ? tmp : tmp + 1];
+        final float[] a = new float[(startInclusive + tmp == endExclusive) ? tmp : tmp + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;
@@ -416,7 +416,7 @@ public final class Array {
         }
 
         int tmp = (int) (endExclusive - startInclusive);
-        final double[] a = new double[startInclusive + tmp == endExclusive ? tmp : tmp + 1];
+        final double[] a = new double[(startInclusive + tmp == endExclusive) ? tmp : tmp + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;

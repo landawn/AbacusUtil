@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -847,7 +848,7 @@ public final class IOUtil {
      * @param file  the file to open for input, must not be {@code null}
      * @return an Iterator of the lines in the file, never {@code null}
      * @throws AbacusIOException in case of an I/O error (file closed)
-     * @see #lineIterator(File, String)
+     * @see #lineIterator(File, Charset)
      */
     public static LineIterator lineIterator(final File file) {
         return lineIterator(file, Charsets.DEFAULT);
@@ -3233,8 +3234,8 @@ public final class IOUtil {
             return;
         }
 
-        final MutableLong offsetForAll = MutableLong.of(lineOffset);
-        final MutableLong countForAll = MutableLong.of(count);
+        final AtomicLong offsetForAll = new AtomicLong(lineOffset);
+        final AtomicLong countForAll = new AtomicLong(count);
 
         for (final File subFile : files) {
             if (subFile.isDirectory()) {
@@ -3321,7 +3322,7 @@ public final class IOUtil {
                         @Override
                         public void run() {
                             try {
-                                parseFile(subSubFile, MutableLong.of(0), MutableLong.of(Long.MAX_VALUE), processThreadNumber, queueSize, lineParser);
+                                parseFile(subSubFile, new AtomicLong(0), new AtomicLong(Long.MAX_VALUE), processThreadNumber, queueSize, lineParser);
                             } finally {
                                 activeThreadNum.decrementAndGet();
                             }
@@ -3337,7 +3338,7 @@ public final class IOUtil {
                     @Override
                     public void run() {
                         try {
-                            parseFile(subFile, MutableLong.of(0), MutableLong.of(Long.MAX_VALUE), processThreadNumber, queueSize, lineParser);
+                            parseFile(subFile, new AtomicLong(0), new AtomicLong(Long.MAX_VALUE), processThreadNumber, queueSize, lineParser);
                         } finally {
                             activeThreadNum.decrementAndGet();
                         }
@@ -3354,7 +3355,7 @@ public final class IOUtil {
         }
     }
 
-    private static void parseFile(final File file, final MutableLong lineOffset, final MutableLong count, final int processThreadNumber, final int queueSize,
+    private static void parseFile(final File file, final AtomicLong lineOffset, final AtomicLong count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
         final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
         InputStream is = null;
@@ -3421,10 +3422,10 @@ public final class IOUtil {
      */
     public static void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
-        parse(is, null, MutableLong.of(lineOffset), MutableLong.of(count), processThreadNumber, queueSize, lineParser);
+        parse(is, null, new AtomicLong(lineOffset), new AtomicLong(count), processThreadNumber, queueSize, lineParser);
     }
 
-    private static void parse(final InputStream is, final File file, final MutableLong lineOffset, final MutableLong count, final int processThreadNumber,
+    private static void parse(final InputStream is, final File file, final AtomicLong lineOffset, final AtomicLong count, final int processThreadNumber,
             final int queueSize, final Consumer<String> lineParser) {
         final BufferedReader br = ObjectFactory.createBufferedReader(is);
 
@@ -3485,10 +3486,10 @@ public final class IOUtil {
      */
     public static void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
-        parse(reader, null, MutableLong.of(lineOffset), MutableLong.of(count), processThreadNumber, queueSize, lineParser);
+        parse(reader, null, new AtomicLong(lineOffset), new AtomicLong(count), processThreadNumber, queueSize, lineParser);
     }
 
-    private static void parse(final Reader reader, final File file, final MutableLong offset, final MutableLong count, final int processThreadNumber,
+    private static void parse(final Reader reader, final File file, final AtomicLong offset, final AtomicLong count, final int processThreadNumber,
             final int queueSize, final Consumer<String> lineParser) {
         logger.info(file == null ? "### Start to parse" : "### Start to parse file: " + file);
 
@@ -3497,7 +3498,7 @@ public final class IOUtil {
 
         try {
             while (offset.longValue() > 0 && br.readLine() != null) {
-                offset.decrement();
+                offset.decrementAndGet();
             }
 
             if (processThreadNumber == 0) {
@@ -3509,7 +3510,7 @@ public final class IOUtil {
                     }
 
                     lineParser.accept(line);
-                    count.decrement();
+                    count.decrementAndGet();
                 }
 
                 lineParser.accept(null);

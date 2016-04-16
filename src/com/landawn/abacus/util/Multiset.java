@@ -273,29 +273,28 @@ public final class Multiset<E> implements Iterable<E> {
             return N.newLinkedHashMap();
         }
 
-        if (valueMap instanceof SortedMap) {
+        if (valueMap instanceof SortedMap && cmp == null) {
             return N.newLinkedHashMap(valueMap);
         } else {
+            final Comparator<? super E> comparator = cmp == null ? N.comparableCmp : cmp;
             final Map.Entry<E, Integer>[] entries = entrySet().toArray(new Map.Entry[size()]);
             final Comparator<Map.Entry<E, Integer>> entryCmp = new Comparator<Map.Entry<E, Integer>>() {
                 @Override
                 public int compare(final Map.Entry<E, Integer> o1, final Map.Entry<E, Integer> o2) {
-                    return cmp.compare(o1.getKey(), o2.getKey());
+                    return comparator.compare(o1.getKey(), o2.getKey());
                 }
             };
 
             Arrays.sort(entries, entryCmp);
 
             final Map<E, Integer> sortedValues = N.newLinkedHashMap(N.initHashCapacity(size()));
-            Map.Entry<E, Integer>[] newEntries = entries;
 
-            for (Map.Entry<E, Integer> entry : newEntries) {
+            for (Map.Entry<E, Integer> entry : entries) {
                 sortedValues.put(entry.getKey(), entry.getValue());
             }
 
             return sortedValues;
         }
-
     }
 
     /**

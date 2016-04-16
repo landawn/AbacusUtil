@@ -40,7 +40,7 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
     private static final long serialVersionUID = 512176391864L;
 
     /** The mutable value. */
-    private volatile int value;
+    private int value;
 
     /**
      * Constructs a new MutableInt with the default value of zero.
