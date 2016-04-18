@@ -33,28 +33,30 @@ public final class LoggerFactory {
         if (logger == null) {
             switch (logType) {
                 case 0:
-                    try {
-                        logger = new SLF4JLogger(name);
+                    if (IS_ANDROID_PLATFORM) {
+                        try {
+                            logger = new AndroidLogger(name);
 
-                        if (initialized == false) {
-                            jdkLogger.info("Initialized with SLF4J Logger");
+                            if (initialized == false) {
+                                jdkLogger.info("Initialized with Android Logger");
+                            }
+
+                            logType = 0;
+                            initialized = true;
+
+                            break;
+                        } catch (Throwable e) {
+                            // ignore
                         }
-
-                        logType = 0;
-                        initialized = true;
-
-                        break;
-                    } catch (Throwable e) {
-                        // ignore
                     }
 
                 case 1:
                     if (logger == null) {
                         try {
-                            logger = new Log4Jv2Logger(name);
+                            logger = new SLF4JLogger(name);
 
                             if (initialized == false) {
-                                jdkLogger.info("Initialized with Log4j v2 Logger");
+                                jdkLogger.info("Initialized with SLF4J Logger");
                             }
 
                             logType = 1;
@@ -69,10 +71,10 @@ public final class LoggerFactory {
                 case 2:
                     if (logger == null) {
                         try {
-                            logger = new Log4Jv1Logger(name);
+                            logger = new Log4Jv2Logger(name);
 
                             if (initialized == false) {
-                                jdkLogger.info("Initialized with Log4j v1 Logger");
+                                jdkLogger.info("Initialized with Log4j v2 Logger");
                             }
 
                             logType = 2;
@@ -85,12 +87,12 @@ public final class LoggerFactory {
                     }
 
                 case 3:
-                    if (logger == null && IS_ANDROID_PLATFORM) {
+                    if (logger == null) {
                         try {
-                            logger = new AndroidLogger(name);
+                            logger = new Log4Jv1Logger(name);
 
                             if (initialized == false) {
-                                jdkLogger.info("Initialized with Android Logger");
+                                jdkLogger.info("Initialized with Log4j v1 Logger");
                             }
 
                             logType = 3;
