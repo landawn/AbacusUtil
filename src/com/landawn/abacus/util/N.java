@@ -363,6 +363,8 @@ public final class N {
 
     public static final int CPU_CORES = Runtime.getRuntime().availableProcessors();
 
+    public static final long MAX_MEMORY = Runtime.getRuntime().maxMemory();
+
     // ...
     public static final String OS_NAME = System.getProperty("os.name");
     public static final String OS_VERSION = System.getProperty("os.version");
@@ -581,8 +583,8 @@ public final class N {
     public static final String LOCAL_TIME_FORMAT = "HH:mm:ss";
     public static final String LOCAL_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     static final String LOCAL_DATETIME_FORMAT_SLASH = "yyyy/MM/dd HH:mm:ss";
-    public static final String LOCAL_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.sss";
-    static final String LOCAL_TIMESTAMP_FORMAT_SLASH = "yyyy/MM/dd HH:mm:ss.sss";
+    public static final String LOCAL_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+    static final String LOCAL_TIMESTAMP_FORMAT_SLASH = "yyyy/MM/dd HH:mm:ss.SSS";
     /**
      * It's default date/time format.
      */
@@ -4794,7 +4796,7 @@ public final class N {
     }
 
     private static String checkDateFormat(final String str, final String format) {
-        if (format == null) {
+        if (N.isNullOrEmpty(format)) {
             int len = str.length();
 
             switch (len) {
@@ -4860,7 +4862,7 @@ public final class N {
         }
 
         if (!(format.equals(ISO_8601_DATETIME_FORMAT) || format.equals(ISO_8601_TIMESTAMP_FORMAT) || format.equals(LOCAL_DATETIME_FORMAT)
-                || format.equals(LOCAL_DATETIME_FORMAT))) {
+                || format.equals(LOCAL_TIMESTAMP_FORMAT))) {
             return 0;
         }
 
@@ -33353,35 +33355,35 @@ public final class N {
         return xmlParser.serialize(jsonParser.deserialize(cls, json));
     }
 
-    public static CallbackFuture<Void> asyncExecute(final Runnable command) {
+    public static FutureExecutor<Void> asyncExecute(final Runnable command) {
         return asyncExecutor.execute(command);
     }
 
-    public static CallbackFuture<Void>[] asyncExecute(final Runnable... commands) {
+    public static FutureExecutor<Void>[] asyncExecute(final Runnable... commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static List<CallbackFuture<Void>> asyncExecute(final List<? extends Runnable> commands) {
+    public static List<FutureExecutor<Void>> asyncExecute(final List<? extends Runnable> commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> CallbackFuture<T> asyncExecute(final Callable<T> command) {
+    public static <T> FutureExecutor<T> asyncExecute(final Callable<T> command) {
         return asyncExecutor.execute(command);
     }
 
-    public static <T> CallbackFuture<T>[] asyncExecute(final Callable<T>... commands) {
+    public static <T> FutureExecutor<T>[] asyncExecute(final Callable<T>... commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> List<CallbackFuture<T>> asyncExecute(final Collection<? extends Callable<T>> commands) {
+    public static <T> List<FutureExecutor<T>> asyncExecute(final Collection<? extends Callable<T>> commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> CallbackFuture<T> asyncInvoke(final Method method, final Object... args) {
+    public static <T> FutureExecutor<T> asyncInvoke(final Method method, final Object... args) {
         return asyncExecutor.invoke(method, args);
     }
 
-    public static <T> CallbackFuture<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
+    public static <T> FutureExecutor<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
         return asyncExecutor.invoke(instance, method, args);
     }
 

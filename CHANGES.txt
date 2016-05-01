@@ -1,6 +1,30 @@
 ========Changes in 0.8.12=========================================================================
 1, Add fluent API for HTTP client.
 
+2, Below methods are removed from IOUtil.java:
+	1) public static void parse(final File file, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser)
+	2) public static void parse(final Collection<File> files, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser)
+	3) public static void parse(final InputStream is, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser)
+	4) public static <T> void parse(final Iterator<T> iter, final int processThreadNumber, final int queueSize, final Consumer<T> elementParser)
+The reason is these methods may be misused with:
+	public static void parse(final File file, final long lineOffset, final long count, final Consumer<String> lineParser)
+	public static void parse(final Collection<File> files, final long lineOffset, final long count, final Consumer<String> lineParser)
+	public static void parse(final InputStream is, final long lineOffset, final long count, final Consumer<String> lineParser)
+	public static void parse(final Iterator<T> iter, final long lineOffset, final long count, final Consumer<String> lineParser)
+
+BE CAREFUL that methods fall to parse(XXX, final long lineOffset, final long count, final Consumer<String> lineParser) if the removed methods are used in your code.
+
+3, Move SQLiteExecutor from package: com.landawn.abacus.util to package:com.landawn.abacus.android.util. The reason is because SQLiteExecutor is tied to Android.
+
+4, Move com.landawn.abacus.android.AsyncExecutor.java/CallbackFuture.java/Util.java to package com.landawn.abacus.android.util
+
+5, rename CallbackFuture to FutureExecutor.
+
+6, Support cache measured by memory size with GenericKeyedObjectPool/GenericObjectPool
+
+7, Bug fix and improvements
+
+
 ========Changes in 0.8.11=========================================================================
 1, Build separated library for android.
 2, Add utility classes to support Android: http://www.landawn.com/programming-in-android.html

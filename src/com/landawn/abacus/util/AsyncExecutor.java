@@ -25,6 +25,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 
@@ -34,7 +35,7 @@ import com.landawn.abacus.logging.LoggerFactory;
  * 
  * @author Haiyang Li
  */
-public final class AsyncExecutor {
+public class AsyncExecutor {
     private static final Logger logger = LoggerFactory.getLogger(AsyncExecutor.class);
 
     private final int maxConcurrentThreadNumber;
@@ -83,19 +84,19 @@ public final class AsyncExecutor {
         });
     }
 
-    public CallbackFuture<Void> execute(final Runnable command) {
-        final CallbackFuture<Void> future = new CallbackFuture<Void>(command, null);
+    public FutureExecutor<Void> execute(final Runnable command) {
+        final FutureExecutor<Void> future = new FutureExecutor<Void>(this, command, null);
 
         getExecutorService().execute(future);
 
         return future;
     }
 
-    public CallbackFuture<Void>[] execute(final Runnable... commands) {
-        final CallbackFuture<Void>[] results = new CallbackFuture[commands.length];
+    public FutureExecutor<Void>[] execute(final Runnable... commands) {
+        final FutureExecutor<Void>[] results = new FutureExecutor[commands.length];
 
         for (int i = 0, len = commands.length; i < len; i++) {
-            results[i] = new CallbackFuture<Void>(commands[i], null);
+            results[i] = new FutureExecutor<Void>(this, commands[i], null);
 
             getExecutorService().execute(results[i]);
         }
@@ -103,12 +104,12 @@ public final class AsyncExecutor {
         return results;
     }
 
-    public List<CallbackFuture<Void>> execute(final List<? extends Runnable> commands) {
-        final List<CallbackFuture<Void>> results = N.newArrayList(commands.size());
-        CallbackFuture<Void> future = null;
+    public List<FutureExecutor<Void>> execute(final List<? extends Runnable> commands) {
+        final List<FutureExecutor<Void>> results = N.newArrayList(commands.size());
+        FutureExecutor<Void> future = null;
 
         for (Runnable cmd : commands) {
-            future = new CallbackFuture<Void>(cmd, null);
+            future = new FutureExecutor<Void>(this, cmd, null);
 
             getExecutorService().execute(future);
 
@@ -118,19 +119,19 @@ public final class AsyncExecutor {
         return results;
     }
 
-    public <T> CallbackFuture<T> execute(final Callable<T> command) {
-        final CallbackFuture<T> future = new CallbackFuture<T>(command);
+    public <T> FutureExecutor<T> execute(final Callable<T> command) {
+        final FutureExecutor<T> future = new FutureExecutor<T>(this, command);
 
         getExecutorService().execute(future);
 
         return future;
     }
 
-    public <T> CallbackFuture<T>[] execute(final Callable<T>... commands) {
-        final CallbackFuture<T>[] results = new CallbackFuture[commands.length];
+    public <T> FutureExecutor<T>[] execute(final Callable<T>... commands) {
+        final FutureExecutor<T>[] results = new FutureExecutor[commands.length];
 
         for (int i = 0, len = commands.length; i < len; i++) {
-            results[i] = new CallbackFuture<T>(commands[i]);
+            results[i] = new FutureExecutor<T>(this, commands[i]);
 
             getExecutorService().execute(results[i]);
         }
@@ -138,12 +139,12 @@ public final class AsyncExecutor {
         return results;
     }
 
-    public <T> List<CallbackFuture<T>> execute(final Collection<? extends Callable<T>> commands) {
-        final List<CallbackFuture<T>> results = N.newArrayList(commands.size());
-        CallbackFuture<T> future = null;
+    public <T> List<FutureExecutor<T>> execute(final Collection<? extends Callable<T>> commands) {
+        final List<FutureExecutor<T>> results = N.newArrayList(commands.size());
+        FutureExecutor<T> future = null;
 
         for (Callable<T> cmd : commands) {
-            future = new CallbackFuture<T>(cmd);
+            future = new FutureExecutor<T>(this, cmd);
 
             getExecutorService().execute(future);
 
@@ -153,12 +154,12 @@ public final class AsyncExecutor {
         return results;
     }
 
-    public <T> CallbackFuture<T> invoke(final Method method, final Object... args) {
+    public <T> FutureExecutor<T> invoke(final Method method, final Object... args) {
         return invoke(null, method, args);
     }
 
-    public <T> CallbackFuture<T> invoke(final Object instance, final Method method, final Object... args) {
-        final CallbackFuture<T> future = new CallbackFuture<T>(new Callable<T>() {
+    public <T> FutureExecutor<T> invoke(final Object instance, final Method method, final Object... args) {
+        final FutureExecutor<T> future = new FutureExecutor<T>(this, new Callable<T>() {
             @Override
             @SuppressWarnings("unchecked")
             public T call() throws Exception {
@@ -184,5 +185,13 @@ public final class AsyncExecutor {
         }
 
         return executorService;
+    }
+
+    /**
+     * Short name for AsyncExecutor
+     */
+    @Beta
+    static final class Async extends AsyncExecutor {
+
     }
 }

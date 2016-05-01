@@ -71,6 +71,11 @@ public final class IOUtil {
 
     static final int DEFAULT_QUEUE_SIZE_FOR_ROW_PARSER = 1024;
 
+    // ...
+    public static final String PATH_SEPARATOR = N.PATH_SEPARATOR;
+    public static final String FILE_SEPARATOR = N.FILE_SEPARATOR;
+    public static final String LINE_SEPARATOR = N.LINE_SEPARATOR;
+
     // ... 
     public static final int EOF = -1;
 
@@ -3147,7 +3152,8 @@ public final class IOUtil {
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param lineParser always remember to handle line <code>null</code>
      */
-    public static void parse(final File file, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
+    @Deprecated
+    static void parse(final File file, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
         parse(file, 0, Long.MAX_VALUE, processThreadNumber, queueSize, lineParser);
     }
 
@@ -3200,7 +3206,8 @@ public final class IOUtil {
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param lineParser always remember to handle line <code>null</code>
      */
-    public static void parse(final Collection<File> files, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
+    @Deprecated
+    static void parse(final Collection<File> files, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
         parse(files, 0, Long.MAX_VALUE, processThreadNumber, queueSize, lineParser);
     }
 
@@ -3392,7 +3399,8 @@ public final class IOUtil {
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param lineParser always remember to handle line <code>null</code>
      */
-    public static void parse(final InputStream is, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
+    @Deprecated
+    static void parse(final InputStream is, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
         parse(is, 0, Long.MAX_VALUE, processThreadNumber, queueSize, lineParser);
     }
 
@@ -3638,7 +3646,8 @@ public final class IOUtil {
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param elementParser always remember to handle element <code>null</code>
      */
-    public static <T> void parse(final Iterator<T> iter, final int processThreadNumber, final int queueSize, final Consumer<T> elementParser) {
+    @Deprecated
+    static <T> void parse(final Iterator<T> iter, final int processThreadNumber, final int queueSize, final Consumer<T> elementParser) {
         parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, elementParser);
     }
 

@@ -1310,7 +1310,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param m
      * @return
      */
-    public static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m) {
+    @Deprecated
+    static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m) {
         return of(m, 0, m.size());
     }
 
@@ -1322,7 +1323,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param toIndex
      * @return
      */
-    public static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m, final int fromIndex, final int toIndex) {
+    @Deprecated
+    static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m, final int fromIndex, final int toIndex) {
         return of(m.entrySet(), fromIndex, toIndex);
     }
 
