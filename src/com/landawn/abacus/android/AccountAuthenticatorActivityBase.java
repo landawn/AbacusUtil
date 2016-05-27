@@ -32,4 +32,8 @@ public abstract class AccountAuthenticatorActivityBase extends AccountAuthentica
     public Button getButtonById(int id) {
         return (Button) this.findViewById(id);
     }
+
+    public String getViewTextById(int id) {
+        return this.getTextViewById(id).getText().toString().trim();
+    }
 }

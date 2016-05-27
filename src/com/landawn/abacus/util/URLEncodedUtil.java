@@ -35,6 +35,9 @@ import java.util.Map;
 import java.util.Scanner;
 
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.parser.ParserUtil;
+import com.landawn.abacus.parser.ParserUtil.EntityInfo;
+import com.landawn.abacus.parser.ParserUtil.PropInfo;
 import com.landawn.abacus.type.Type;
 
 /**
@@ -230,13 +233,14 @@ public final class URLEncodedUtil {
         final Scanner scanner = new Scanner(urlQuery);
         scanner.useDelimiter(QP_SEP_PATTERN);
 
-        Type<?> type = null;
+        Type<?> propType = null;
         Method getMethod = null;
         Method setMethod = null;
-        Class<?> parameterClass = null;
         Object propValue = null;
         String name = null;
         String value = null;
+
+        final EntityInfo entityInfo = ParserUtil.getEntityInfo(targetClass);
 
         while (scanner.hasNext()) {
             final String token = scanner.next();
@@ -259,22 +263,14 @@ public final class URLEncodedUtil {
                     scanner.close();
                     throw new AbacusException("Can't set property value for parameter: " + name);
                 }
-
-                parameterClass = getMethod.getReturnType();
-            } else {
-                parameterClass = setMethod.getParameterTypes()[0];
             }
 
-            if (value == null) {
-                propValue = null;
-            } else {
-                type = N.getType(parameterClass);
+            propType = entityInfo.getPropInfo(name).type;
 
-                if ((type == null) || !type.isSerializable()) {
-                    propValue = N.valueOf(parameterClass, value);
-                } else {
-                    propValue = type.valueOf(value);
-                }
+            if (value == null) {
+                propValue = propType.defaultValue();
+            } else {
+                propValue = propType.valueOf(value);
             }
 
             if (setMethod == null) {
@@ -296,40 +292,23 @@ public final class URLEncodedUtil {
             return result;
         }
 
-        Method getMethod = null;
-        Method setMethod = null;
-        Class<?> parameterClass = null;
+        final EntityInfo entityInfo = ParserUtil.getEntityInfo(targetClass);
+
+        PropInfo propInfo = null;
         Object propValue = null;
         String[] values = null;
 
         for (String key : parameters.keySet()) {
+            propInfo = entityInfo.getPropInfo(key);
             values = parameters.get(key);
 
-            setMethod = N.getPropSetMethod(targetClass, key);
-
-            if (setMethod == null) {
-                getMethod = N.getPropGetMethod(targetClass, key);
-
-                if (getMethod == null) {
-                    throw new AbacusException("Can't set property value for parameter: " + key);
-                }
-
-                parameterClass = getMethod.getReturnType();
-            } else {
-                parameterClass = setMethod.getParameterTypes()[0];
-            }
-
             if (N.isNullOrEmpty(values)) {
-                propValue = null;
+                propValue = propInfo.type.defaultValue();
             } else {
-                propValue = N.valueOf(parameterClass, values[0]);
+                propValue = propInfo.type.valueOf(values[0]);
             }
 
-            if (setMethod == null) {
-                N.setPropValueByGet(result, getMethod, propValue);
-            } else {
-                N.setPropValue(result, setMethod, propValue);
-            }
+            propInfo.setPropValue(result, propValue);
         }
 
         return result;

@@ -1328,4 +1328,20 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         return of(m.entrySet(), fromIndex, toIndex);
     }
 
+    public static IntStream range(final int startInclusive, final int endExclusive) {
+        return of(Array.range(startInclusive, endExclusive));
+    }
+
+    public static LongStream range(final long startInclusive, final long endExclusive) {
+        return of(Array.range(startInclusive, endExclusive));
+    }
+
+    public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
+        return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
+        return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
 }

@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -61,12 +62,15 @@ import android.database.sqlite.SQLiteDatabase;
  * 
  * @author Haiyang Li
  * 
+ * @see android.database.sqlite.SQLiteDatabase
+ * @see android.database.sqlite.SQLiteOpenHelper
  * @see com.landawn.abacus.util.SQLBuilder
  */
 public final class SQLiteExecutor {
     public static final NamingPolicy DEFAULT_NAMING_POLICY = NamingPolicy.LOWER_CASE_WITH_UNDERSCORE;
 
     private static final String ID = "id";
+    private static final String _ID = "_id";
 
     private final SQLiteDatabase sqliteDB;
     private final NamingPolicy columnNamingPolicy;
@@ -89,7 +93,7 @@ public final class SQLiteExecutor {
         return sqliteDB;
     }
 
-    public static DataSet extractData(Class<?> targetClass, Cursor cursor) {
+    static DataSet extractData(Class<?> targetClass, Cursor cursor) {
         return extractData(targetClass, cursor, 0, Integer.MAX_VALUE);
     }
 
@@ -101,7 +105,7 @@ public final class SQLiteExecutor {
      * @param count
      * @return
      */
-    public static DataSet extractData(Class<?> targetClass, Cursor cursor, int offset, int count) {
+    static DataSet extractData(Class<?> targetClass, Cursor cursor, int offset, int count) {
         final int columnCount = cursor.getColumnCount();
         final List<String> columnNameList = N.asList(cursor.getColumnNames());
         final List<List<Object>> columnList = N.newArrayList(columnCount);
@@ -130,22 +134,22 @@ public final class SQLiteExecutor {
     }
 
     @SuppressWarnings("rawtypes")
-    public static DataSet extractData(Cursor cursor, Class[] selectColumnTypes) {
+    static DataSet extractData(Cursor cursor, Class[] selectColumnTypes) {
         return extractData(cursor, selectColumnTypes, 0, Integer.MAX_VALUE);
     }
 
     @SuppressWarnings("rawtypes")
-    public static DataSet extractData(Cursor cursor, Class[] selectColumnTypes, int offset, int count) {
+    static DataSet extractData(Cursor cursor, Class[] selectColumnTypes, int offset, int count) {
         return extractData(cursor, Type.arrayOf(selectColumnTypes), offset, count);
     }
 
     @SuppressWarnings("rawtypes")
-    public static DataSet extractData(Cursor cursor, Collection<Class> selectColumnTypes) {
+    static DataSet extractData(Cursor cursor, Collection<Class> selectColumnTypes) {
         return extractData(cursor, selectColumnTypes, 0, Integer.MAX_VALUE);
     }
 
     @SuppressWarnings("rawtypes")
-    public static DataSet extractData(Cursor cursor, Collection<Class> selectColumnTypes, int offset, int count) {
+    static DataSet extractData(Cursor cursor, Collection<Class> selectColumnTypes, int offset, int count) {
         return extractData(cursor, Type.arrayOf(selectColumnTypes.toArray(new Class[selectColumnTypes.size()])), offset, count);
     }
 
@@ -179,8 +183,119 @@ public final class SQLiteExecutor {
         return new RowDataSet(Map.class, columnNameList, columnList);
     }
 
-    public static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues) {
-        return toEntity(targetClass, contentValues, false);
+    /**
+     * Returns values from all rows associated with the specified <code>targetClass</code> if the specified <code>targetClass</code> is an entity class, otherwise, only returns values from first column.
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param cursor
+     * @return
+     */
+    static <T> List<T> toList(Class<T> targetClass, Cursor cursor) {
+        return toList(targetClass, cursor, 0, Integer.MAX_VALUE);
+    }
+
+    /** 
+     * Returns values from all rows associated with the specified <code>targetClass</code> if the specified <code>targetClass</code> is an entity class, otherwise, only returns values from first column.
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param cursor
+     * @param offset
+     * @param count
+     * @return
+     */
+    static <T> List<T> toList(Class<T> targetClass, Cursor cursor, int offset, int count) {
+        if (N.isEntity(targetClass)) {
+            final DataSet ds = extractData(targetClass, cursor, offset, count);
+
+            if (ds == null || ds.isEmpty()) {
+                return new ArrayList<>();
+            } else {
+                return ds.toList(targetClass);
+            }
+        } else {
+            return toList(targetClass, cursor, 0, offset, count);
+        }
+    }
+
+    /**
+     * Returns the values from the specified <code>column</code>. 
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param cursor
+     * @param columnIndex
+     * @return
+     */
+    static <T> List<T> toList(Class<T> targetClass, Cursor cursor, int columnIndex) {
+        return toList(targetClass, cursor, columnIndex, 0, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Returns the values from the specified <code>column</code>. 
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param cursor
+     * @param columnIndex
+     * @param offset
+     * @param count
+     * @return
+     */
+    static <T> List<T> toList(final Class<T> targetClass, final Cursor cursor, final int columnIndex, int offset, int count) {
+        if (columnIndex < 0 || columnIndex >= cursor.getColumnCount()) {
+            throw new IllegalArgumentException("Invalid column index: " + columnIndex);
+        }
+
+        if (offset > 0) {
+            cursor.moveToPosition(offset - 1);
+        }
+
+        final List<T> resultList = new ArrayList<>();
+
+        if (N.isEntity(targetClass)) {
+            final Method propSetMethod = N.getPropSetMethod(targetClass, cursor.getColumnName(columnIndex));
+            final Type<T> selectColumnType = Type.valueOf(propSetMethod.getParameterTypes()[0]);
+
+            while (count-- > 0 && cursor.moveToNext()) {
+                T entity = N.newEntity(targetClass);
+                N.setPropValue(entity, propSetMethod, selectColumnType.get(cursor, columnIndex));
+                resultList.add(entity);
+            }
+
+        } else {
+            final Type<T> selectColumnType = Type.valueOf(targetClass);
+
+            while (count-- > 0 && cursor.moveToNext()) {
+                resultList.add(selectColumnType.get(cursor, columnIndex));
+            }
+        }
+
+        return resultList;
+    }
+
+    /**
+     * 
+     * @param targetClass entity class with getter/setter methods.
+     * @param cursor
+     * @return
+     */
+    static <T> T toEntity(Class<T> targetClass, Cursor cursor) {
+        return toEntity(targetClass, cursor, 0);
+    }
+
+    /**
+     * 
+     * @param targetClass entity class with getter/setter methods.
+     * @param cursor
+     * @param rowNum
+     * @return
+     */
+    static <T> T toEntity(Class<T> targetClass, Cursor cursor, int rowNum) {
+        final List<T> list = toList(targetClass, cursor, rowNum, 1);
+
+        return N.isNullOrEmpty(list) ? null : list.get(0);
+    }
+
+    static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues) {
+        return toEntity(targetClass, contentValues, NamingPolicy.CAMEL_CASE);
     }
 
     /**
@@ -190,7 +305,7 @@ public final class SQLiteExecutor {
      * @p
      * @return
      */
-    public static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues, boolean formalizePropName) {
+    static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues, NamingPolicy namingPolicy) {
         if (!(N.isEntity(targetClass) || targetClass.equals(Map.class))) {
             throw new AbacusException(
                     "The target class must be an entity class with getter/setter methods or Map.class. But it is: " + N.getCanonicalClassName(targetClass));
@@ -202,22 +317,51 @@ public final class SQLiteExecutor {
 
             Object propValue = null;
 
-            for (String propName : contentValues.keySet()) {
-                propValue = contentValues.get(propName);
+            switch (namingPolicy) {
+                case CAMEL_CASE: {
+                    for (String propName : contentValues.keySet()) {
+                        propValue = contentValues.get(propName);
 
-                if (propValue instanceof ContentValues) {
-                    if (formalizePropName) {
-                        map.put(N.formalizePropName(propName), toEntity(targetClass, (ContentValues) propValue, formalizePropName));
-                    } else {
-                        map.put(propName, toEntity(targetClass, (ContentValues) propValue, formalizePropName));
+                        if (propValue instanceof ContentValues) {
+                            map.put(N.formalizePropName(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
+                        } else {
+                            map.put(N.formalizePropName(propName), propValue);
+                        }
                     }
-                } else {
-                    if (formalizePropName) {
-                        map.put(N.formalizePropName(propName), propValue);
-                    } else {
-                        map.put(propName, propValue);
-                    }
+
+                    break;
                 }
+
+                case LOWER_CASE_WITH_UNDERSCORE: {
+                    for (String propName : contentValues.keySet()) {
+                        propValue = contentValues.get(propName);
+
+                        if (propValue instanceof ContentValues) {
+                            map.put(N.toLowerCaseWithUnderscore(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
+                        } else {
+                            map.put(N.toLowerCaseWithUnderscore(propName), propValue);
+                        }
+                    }
+
+                    break;
+                }
+
+                case UPPER_CASE_WITH_UNDERSCORE: {
+                    for (String propName : contentValues.keySet()) {
+                        propValue = contentValues.get(propName);
+
+                        if (propValue instanceof ContentValues) {
+                            map.put(N.toUpperCaseWithUnderscore(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
+                        } else {
+                            map.put(N.toUpperCaseWithUnderscore(propName), propValue);
+                        }
+                    }
+
+                    break;
+                }
+
+                default:
+                    throw new IllegalArgumentException("Unsupported NamingPolicy: " + namingPolicy);
             }
 
             return (T) map;
@@ -241,10 +385,10 @@ public final class SQLiteExecutor {
                 if (propValue != null && !parameterType.isAssignableFrom(propValue.getClass())) {
                     if (propValue instanceof ContentValues) {
                         if (parameterType.isAssignableFrom(Map.class) || N.isEntity(parameterType)) {
-                            N.setPropValue(entity, propSetMethod, toEntity(parameterType, (ContentValues) propValue, formalizePropName));
+                            N.setPropValue(entity, propSetMethod, toEntity(parameterType, (ContentValues) propValue, namingPolicy));
                         } else {
                             N.setPropValue(entity, propSetMethod,
-                                    N.valueOf(parameterType, N.stringOf(toEntity(Map.class, (ContentValues) propValue, formalizePropName))));
+                                    N.valueOf(parameterType, N.stringOf(toEntity(Map.class, (ContentValues) propValue, namingPolicy))));
                         }
                     } else {
                         N.setPropValue(entity, propSetMethod, propValue);
@@ -262,7 +406,7 @@ public final class SQLiteExecutor {
         }
     }
 
-    public static ContentValues toContentValues(Object obj) {
+    static ContentValues toContentValues(Object obj) {
         return toContentValues(obj, DEFAULT_NAMING_POLICY);
     }
 
@@ -272,7 +416,7 @@ public final class SQLiteExecutor {
      * @param namingPolicy
      * @return
      */
-    public static ContentValues toContentValues(Object obj, NamingPolicy namingPolicy) {
+    static ContentValues toContentValues(Object obj, NamingPolicy namingPolicy) {
         return toContentValues(obj, namingPolicy, false);
     }
 
@@ -533,7 +677,7 @@ public final class SQLiteExecutor {
     public long insert(String table, Object record) {
         table = formatName(table);
 
-        return sqliteDB.insert(table, null, toContentValues(record, columnNamingPolicy, false));
+        return insert(table, record, SQLiteDatabase.CONFLICT_NONE);
     }
 
     /**
@@ -548,8 +692,25 @@ public final class SQLiteExecutor {
      */
     public long insert(String table, Object record, int conflictAlgorithm) {
         table = formatName(table);
+        final ContentValues contentValues = toContentValues(record, columnNamingPolicy, false);
 
-        return sqliteDB.insertWithOnConflict(table, null, toContentValues(record, columnNamingPolicy, false), conflictAlgorithm);
+        removeIdDefaultValue(contentValues);
+
+        return sqliteDB.insertWithOnConflict(table, null, contentValues, conflictAlgorithm);
+    }
+
+    private void removeIdDefaultValue(final ContentValues initialValues) {
+        Object value = initialValues.get(ID);
+
+        if (value != null && (value.equals(0) || value.equals(0L))) {
+            initialValues.remove(ID);
+        } else {
+            value = initialValues.get(_ID);
+
+            if (value != null && (value.equals(0) || value.equals(0L))) {
+                initialValues.remove(_ID);
+            }
+        }
     }
 
     /**
@@ -698,6 +859,7 @@ public final class SQLiteExecutor {
     public int update(String table, Object record, Condition whereClause) {
         table = formatName(table);
         final ContentValues contentValues = toContentValues(record, columnNamingPolicy, true);
+        removeIdDefaultValue(contentValues);
 
         if (whereClause == null) {
             return sqliteDB.update(table, contentValues, null, N.EMPTY_STRING_ARRAY);
@@ -777,7 +939,7 @@ public final class SQLiteExecutor {
      */
     @Deprecated
     void execute(String sql) {
-        sqliteDB.execSQL(parseSQL(sql).getPureSQL());
+        sqliteDB.execSQL(sql);
     }
 
     /**
@@ -788,10 +950,13 @@ public final class SQLiteExecutor {
      */
     @Deprecated
     void execute(String sql, Object... parameters) {
-        final NamedSQL namedSQL = parseSQL(sql);
-        final Object[] args = prepareArguments(namedSQL, parameters);
-
-        sqliteDB.execSQL(namedSQL.getPureSQL(), args);
+        if (N.isNullOrEmpty(parameters)) {
+            sqliteDB.execSQL(sql);
+        } else {
+            final NamedSQL namedSQL = parseSQL(sql);
+            final Object[] args = prepareArguments(namedSQL, parameters);
+            sqliteDB.execSQL(namedSQL.getPureSQL(), args);
+        }
     }
 
     // mess up

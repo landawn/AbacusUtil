@@ -52,13 +52,13 @@ public class AsyncExecutor {
      * @param action
      * @return
      */
-    public static FutureExecutor<Void> execute(final Runnable action) {
-        return execute(new FutureExecutor<Void>(action, null));
+    public static CompletableFuture<Void> execute(final Runnable action) {
+        return execute(new CompletableFuture<Void>(action, null));
     }
 
     @Beta
-    static List<FutureExecutor<Void>> execute(final List<? extends Runnable> actions) {
-        final List<FutureExecutor<Void>> results = N.newArrayList(actions.size());
+    static List<CompletableFuture<Void>> execute(final List<? extends Runnable> actions) {
+        final List<CompletableFuture<Void>> results = N.newArrayList(actions.size());
 
         for (Runnable cmd : actions) {
             results.add(execute(cmd));
@@ -73,8 +73,8 @@ public class AsyncExecutor {
      * @param action
      * @return
      */
-    public static <T> FutureExecutor<T> execute(final Callable<T> action) {
-        return execute(new FutureExecutor<T>(action));
+    public static <T> CompletableFuture<T> execute(final Callable<T> action) {
+        return execute(new CompletableFuture<T>(action));
     }
 
     /**
@@ -84,8 +84,8 @@ public class AsyncExecutor {
      * @return
      */
     @Beta
-    static <T> List<FutureExecutor<T>> execute(final Collection<? extends Callable<T>> actions) {
-        final List<FutureExecutor<T>> results = N.newArrayList(actions.size());
+    static <T> List<CompletableFuture<T>> execute(final Collection<? extends Callable<T>> actions) {
+        final List<CompletableFuture<T>> results = N.newArrayList(actions.size());
 
         for (Callable<T> cmd : actions) {
             results.add(execute(cmd));
@@ -94,7 +94,7 @@ public class AsyncExecutor {
         return results;
     }
 
-    private static <T> FutureExecutor<T> execute(final FutureExecutor<T> callableFuture) {
+    private static <T> CompletableFuture<T> execute(final CompletableFuture<T> callableFuture) {
         AsyncTask.SERIAL_EXECUTOR.execute(callableFuture);
 
         return callableFuture;
@@ -106,8 +106,8 @@ public class AsyncExecutor {
      * @param action
      * @return
      */
-    public static FutureExecutor<Void> executeInParallel(final Runnable action) {
-        return executeInParallel(new FutureExecutor<Void>(action, null));
+    public static CompletableFuture<Void> executeInParallel(final Runnable action) {
+        return executeInParallel(new CompletableFuture<Void>(action, null));
     }
 
     /**
@@ -117,8 +117,8 @@ public class AsyncExecutor {
      * @return
      */
     @Beta
-    static List<FutureExecutor<Void>> executeInParallel(final List<? extends Runnable> actions) {
-        final List<FutureExecutor<Void>> results = N.newArrayList(actions.size());
+    static List<CompletableFuture<Void>> executeInParallel(final List<? extends Runnable> actions) {
+        final List<CompletableFuture<Void>> results = N.newArrayList(actions.size());
 
         for (Runnable cmd : actions) {
             results.add(executeInParallel(cmd));
@@ -133,8 +133,8 @@ public class AsyncExecutor {
      * @param action
      * @return
      */
-    public static <T> FutureExecutor<T> executeInParallel(final Callable<T> action) {
-        return executeInParallel(new FutureExecutor<T>(action));
+    public static <T> CompletableFuture<T> executeInParallel(final Callable<T> action) {
+        return executeInParallel(new CompletableFuture<T>(action));
     }
 
     /**
@@ -144,8 +144,8 @@ public class AsyncExecutor {
      * @return
      */
     @Beta
-    static <T> List<FutureExecutor<T>> executeInParallel(final Collection<? extends Callable<T>> actions) {
-        final List<FutureExecutor<T>> results = N.newArrayList(actions.size());
+    static <T> List<CompletableFuture<T>> executeInParallel(final Collection<? extends Callable<T>> actions) {
+        final List<CompletableFuture<T>> results = N.newArrayList(actions.size());
 
         for (Callable<T> cmd : actions) {
             results.add(executeInParallel(cmd));
@@ -154,7 +154,7 @@ public class AsyncExecutor {
         return results;
     }
 
-    private static <T> FutureExecutor<T> executeInParallel(final FutureExecutor<T> callableFuture) {
+    private static <T> CompletableFuture<T> executeInParallel(final CompletableFuture<T> callableFuture) {
         AsyncTask.THREAD_POOL_EXECUTOR.execute(callableFuture);
 
         return callableFuture;
@@ -166,8 +166,8 @@ public class AsyncExecutor {
      * @param action
      * @return
      */
-    public static FutureExecutor<Void> executeOnUiThread(final Runnable action) {
-        return executeOnUiThread(new FutureExecutor<Void>(action, null), 0);
+    public static CompletableFuture<Void> executeOnUiThread(final Runnable action) {
+        return executeOnUiThread(new CompletableFuture<Void>(action, null), 0);
     }
 
     /**
@@ -177,8 +177,8 @@ public class AsyncExecutor {
      * @param delay
      * @return
      */
-    public static FutureExecutor<Void> executeOnUiThread(final Runnable action, final long delay) {
-        return executeOnUiThread(new FutureExecutor<Void>(action, null), delay);
+    public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final long delay) {
+        return executeOnUiThread(new CompletableFuture<Void>(action, null), delay);
     }
 
     /**
@@ -188,8 +188,8 @@ public class AsyncExecutor {
      * @return
      */
     @Beta
-    static List<FutureExecutor<Void>> executeOnUiThread(final List<? extends Runnable> actions) {
-        final List<FutureExecutor<Void>> results = N.newArrayList(actions.size());
+    static List<CompletableFuture<Void>> executeOnUiThread(final List<? extends Runnable> actions) {
+        final List<CompletableFuture<Void>> results = N.newArrayList(actions.size());
 
         for (Runnable cmd : actions) {
             results.add(executeOnUiThread(cmd));
@@ -206,8 +206,8 @@ public class AsyncExecutor {
      * @return
      */
     @Beta
-    static List<FutureExecutor<Void>> executeOnUiThread(final List<? extends Runnable> actions, final long delay) {
-        final List<FutureExecutor<Void>> results = N.newArrayList(actions.size());
+    static List<CompletableFuture<Void>> executeOnUiThread(final List<? extends Runnable> actions, final long delay) {
+        final List<CompletableFuture<Void>> results = N.newArrayList(actions.size());
 
         for (Runnable cmd : actions) {
             results.add(executeOnUiThread(cmd, delay));
@@ -222,8 +222,8 @@ public class AsyncExecutor {
      * @param action
      * @return
      */
-    public static <T> FutureExecutor<T> executeOnUiThread(final Callable<T> action) {
-        return executeOnUiThread(new FutureExecutor<T>(action), 0);
+    public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action) {
+        return executeOnUiThread(new CompletableFuture<T>(action), 0);
     }
 
     /**
@@ -233,8 +233,8 @@ public class AsyncExecutor {
      * @param delay
      * @return
      */
-    public static <T> FutureExecutor<T> executeOnUiThread(final Callable<T> action, final long delay) {
-        return executeOnUiThread(new FutureExecutor<T>(action), delay);
+    public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final long delay) {
+        return executeOnUiThread(new CompletableFuture<T>(action), delay);
     }
 
     /**
@@ -244,8 +244,8 @@ public class AsyncExecutor {
      * @return
      */
     @Beta
-    static <T> List<FutureExecutor<T>> executeOnUiThread(final Collection<? extends Callable<T>> actions) {
-        final List<FutureExecutor<T>> results = N.newArrayList(actions.size());
+    static <T> List<CompletableFuture<T>> executeOnUiThread(final Collection<? extends Callable<T>> actions) {
+        final List<CompletableFuture<T>> results = N.newArrayList(actions.size());
 
         for (Callable<T> cmd : actions) {
             results.add(executeOnUiThread(cmd));
@@ -262,8 +262,8 @@ public class AsyncExecutor {
      * @return
      */
     @Beta
-    static <T> List<FutureExecutor<T>> executeOnUiThread(final Collection<? extends Callable<T>> actions, final long delay) {
-        final List<FutureExecutor<T>> results = N.newArrayList(actions.size());
+    static <T> List<CompletableFuture<T>> executeOnUiThread(final Collection<? extends Callable<T>> actions, final long delay) {
+        final List<CompletableFuture<T>> results = N.newArrayList(actions.size());
 
         for (Callable<T> cmd : actions) {
             results.add(executeOnUiThread(cmd, delay));
@@ -272,7 +272,7 @@ public class AsyncExecutor {
         return results;
     }
 
-    private static <T> FutureExecutor<T> executeOnUiThread(final FutureExecutor<T> callableFuture, final long delay) {
+    private static <T> CompletableFuture<T> executeOnUiThread(final CompletableFuture<T> callableFuture, final long delay) {
         if (delay > 0) {
             HANDLER.postDelayed(callableFuture, delay);
         } else {

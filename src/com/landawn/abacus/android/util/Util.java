@@ -2,28 +2,37 @@ package com.landawn.abacus.android.util;
 
 import java.io.Closeable;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
+import com.landawn.abacus.DataSet;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.IOUtil;
+import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.NamingPolicy;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
+import android.os.CancellationSignal;
 import android.os.Looper;
 import android.os.StatFs;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -34,20 +43,33 @@ import android.widget.Toast;
  * Always remember to initialize {@code Util} class by calling method {@code init(Context context)} when the application is started.
  *
  */
-public final class Util {
-    static final Logger logger = LoggerFactory.getLogger(Util.class);
+public abstract class Util {
+    protected static final Logger logger = LoggerFactory.getLogger(Util.class);
 
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
+
+    protected static volatile Context context;
     private static volatile int MAX_APP_MEMORY;
 
-    private Util() {
-        // singleton.
+    protected Util() {
     }
 
-    private static Context context;
+    public static synchronized void init(Context context) {
+        if (Util.context != null) {
+            return;
+        }
 
-    public static void init(Context context) {
         Util.context = context;
+
+        final ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        boolean isLargeHeap = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_LARGE_HEAP) != 0;
+        int memoryClass = am.getMemoryClass();
+
+        if (isLargeHeap && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            memoryClass = am.getLargeMemoryClass();
+        }
+
+        MAX_APP_MEMORY = memoryClass;
     }
 
     public static Context context() {
@@ -65,22 +87,7 @@ public final class Util {
      * @return approximate per-application memory in megabytes.
      */
     public static int maxMemoryPerApp() {
-        int maxAppMemory = MAX_APP_MEMORY;
-
-        if (maxAppMemory == 0) {
-            final ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-            boolean isLargeHeap = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_LARGE_HEAP) != 0;
-            int memoryClass = am.getMemoryClass();
-
-            if (isLargeHeap && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                memoryClass = am.getLargeMemoryClass();
-            }
-
-            maxAppMemory = memoryClass;
-            MAX_APP_MEMORY = maxAppMemory;
-        }
-
-        return maxAppMemory;
+        return MAX_APP_MEMORY;
     }
 
     /**
@@ -139,26 +146,409 @@ public final class Util {
         return Build.SERIAL;
     }
 
-    /**
-     * 
-     * @return
-     * @see android.os.Build.VERSION.RELEASE
-     */
-    public static String releaseVersion() {
-        return Build.VERSION.RELEASE;
-    }
-
-    /**
-     * 
-     * @return
-     * @see android.os.Build.VERSION.BASE_OS
-     */
-    public static String baseOS() {
-        return Build.VERSION.BASE_OS;
-    }
+    //    /**
+    //     * 
+    //     * @return
+    //     * @see android.os.Build.VERSION.RELEASE
+    //     */
+    //    public static String releaseVersion() {
+    //        return Build.VERSION.RELEASE;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @return
+    //     * @see android.os.Build.VERSION.BASE_OS
+    //     */
+    //    public static String baseOS() {
+    //        return Build.VERSION.BASE_OS;
+    //    }
 
     public static DisplayMetrics getDisplayMetrics() {
         return context.getResources().getDisplayMetrics();
+    }
+
+    /**
+     * 
+     * @param targetClass
+     * @param cursor
+     * @return
+     * 
+     * @see SQLiteExecutor#extractData(Class, Cursor)
+     */
+    public static DataSet extractData(final Class<?> targetClass, final Cursor cursor) {
+        return SQLiteExecutor.extractData(targetClass, cursor);
+    }
+
+    /**
+     * 
+     * @param targetClass an entity class with getter/setter methods.
+     * @param cursor
+     * @param offset
+     * @param count
+     * @return
+     * 
+     * @see SQLiteExecutor#extractData(Class, Cursor, int, int)
+     */
+    public static DataSet extractData(final Class<?> targetClass, final Cursor cursor, final int offset, final int count) {
+        return SQLiteExecutor.extractData(targetClass, cursor, offset, count);
+    }
+
+    /**
+     * 
+     * @param cursor
+     * @param selectColumnTypes
+     * @return
+     * 
+     * 
+     * @see SQLiteExecutor#extractData(Cursor, Class[])
+     */
+    @SuppressWarnings("rawtypes")
+    public static DataSet extractData(final Cursor cursor, final Class[] selectColumnTypes) {
+        return SQLiteExecutor.extractData(cursor, selectColumnTypes);
+    }
+
+    /**
+     * 
+     * @param cursor
+     * @param selectColumnTypes
+     * @param offset
+     * @param count
+     * @return
+     * 
+     * @see SQLiteExecutor#extractData(Cursor, Class[], int, int)
+     */
+    @SuppressWarnings("rawtypes")
+    public static DataSet extractData(final Cursor cursor, final Class[] selectColumnTypes, final int offset, final int count) {
+        return SQLiteExecutor.extractData(cursor, selectColumnTypes, offset, count);
+    }
+
+    /**
+     * 
+     * @param cursor
+     * @param selectColumnTypes
+     * @return
+     * 
+     * @see SQLiteExecutor#extractData(Cursor, Collection)
+     */
+    @SuppressWarnings("rawtypes")
+    public static DataSet extractData(final Cursor cursor, final Collection<Class> selectColumnTypes) {
+        return SQLiteExecutor.extractData(cursor, selectColumnTypes);
+    }
+
+    /**
+     * 
+     * @param cursor
+     * @param selectColumnTypes
+     * @param offset
+     * @param count
+     * @return
+     * 
+     * @see SQLiteExecutor#extractData(Cursor, Collection, int, int)
+     */
+    @SuppressWarnings("rawtypes")
+    public static DataSet extractData(final Cursor cursor, final Collection<Class> selectColumnTypes, final int offset, final int count) {
+        return SQLiteExecutor.extractData(cursor, selectColumnTypes, offset, count);
+    }
+
+    /**
+     * Returns values from all rows associated with the specified <code>targetClass</code> if the specified <code>targetClass</code> is an entity class, otherwise, only returns values from first column.
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param cursor
+     * @return
+     * 
+     * @see SQLiteExecutor#toList(Class, Cursor)
+     */
+    public static <T> List<T> toList(final Class<T> targetClass, final Cursor cursor) {
+        return SQLiteExecutor.toList(targetClass, cursor);
+    }
+
+    /**
+     * Returns values from all rows associated with the specified <code>targetClass</code> if the specified <code>targetClass</code> is an entity class, otherwise, only returns values from first column.
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param cursor
+     * @param offset
+     * @param count
+     * @return
+     * 
+     * @see SQLiteExecutor#toList(Class, Cursor, int, int)
+     */
+    public static <T> List<T> toList(final Class<T> targetClass, final Cursor cursor, final int offset, final int count) {
+        return SQLiteExecutor.toList(targetClass, cursor, offset, count);
+    }
+
+    /**
+     * Returns the values from the specified <code>column</code>. 
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param cursor
+     * @param columnIndex
+     * @return
+     * 
+     * @see SQLiteExecutor#toList(Class, Cursor, int)
+     */
+    public static <T> List<T> toList(Class<T> targetClass, Cursor cursor, int columnIndex) {
+        return SQLiteExecutor.toList(targetClass, cursor, columnIndex);
+    }
+
+    /**
+     * Returns the values from the specified <code>column</code>. 
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param cursor
+     * @param columnIndex
+     * @param offset
+     * @param count
+     * @return
+     * 
+     * @see SQLiteExecutor#toList(Class, Cursor, int, int, int)
+     */
+    public static <T> List<T> toList(final Class<T> targetClass, final Cursor cursor, final int columnIndex, final int offset, final int count) {
+        return SQLiteExecutor.toList(targetClass, cursor, columnIndex, offset, count);
+    }
+
+    /**
+     * 
+     * @param targetClass entity class with getter/setter methods.
+     * @param cursor
+     * @return
+     * 
+     * @see SQLiteExecutor#toEntity(Class, Cursor)
+     */
+    public static <T> T toEntity(Class<T> targetClass, Cursor cursor) {
+        return SQLiteExecutor.toEntity(targetClass, cursor);
+    }
+
+    /**
+     * 
+     * @param targetClass entity class with getter/setter methods.
+     * @param cursor
+     * @param rowNum
+     * @return
+     * 
+     * @see SQLiteExecutor#toEntity(Class, Cursor, int)
+     */
+    public static <T> T toEntity(Class<T> targetClass, Cursor cursor, int rowNum) {
+        return SQLiteExecutor.toEntity(targetClass, cursor, rowNum);
+    }
+
+    /**
+     * 
+     * @param targetClass
+     * @param contentValues
+     * @return
+     * 
+     * @see SQLiteExecutor#toEntity(Class, ContentValues)
+     */
+    public static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues) {
+        return SQLiteExecutor.toEntity(targetClass, contentValues);
+    }
+
+    /**
+     * 
+     * @param targetClass an Map class or Entity class with getter/setter methods.
+     * @param contentValues
+     * @param namingPolicy
+     * @return
+     * 
+     * @see SQLiteExecutor#toEntity(Class, ContentValues, NamingPolicy)
+     */
+    public static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues, final NamingPolicy namingPolicy) {
+        return SQLiteExecutor.toEntity(targetClass, contentValues, namingPolicy);
+    }
+
+    /**
+     * 
+     * @param obj
+     * @return
+     * 
+     * @see SQLiteExecutor#toContentValues(Object)
+     */
+    public static ContentValues toContentValues(final Object obj) {
+        return SQLiteExecutor.toContentValues(obj);
+    }
+
+    /**
+     * 
+     * @param obj an instance of Map or Entity.
+     * @param namingPolicy
+     * @return
+     * 
+     * @see SQLiteExecutor#toContentValues(Object, NamingPolicy)
+     */
+    public static ContentValues toContentValues(final Object obj, final NamingPolicy namingPolicy) {
+        return SQLiteExecutor.toContentValues(obj, namingPolicy);
+    }
+
+    /**
+     * 
+     * @param a pair of column name and types.
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static Map<String, Class> asColumnTypes(Object... a) {
+        return N.asMap(a);
+    }
+
+    public static ContentResolver getContentResolver() {
+        return context.getContentResolver();
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param targetClass
+     * @param uri
+     * @param projection
+     * @return
+     */
+    public static <T> List<T> query(Class<T> targetClass, Uri uri, String projection) {
+        return query(targetClass, uri, projection, null, null, null);
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param targetClass
+     * @param uri
+     * @param projection
+     * @param selection
+     * @param selectionArgs
+     * @param sortOrder
+     * @return
+     */
+    public static <T> List<T> query(Class<T> targetClass, Uri uri, String projection, String selection, String[] selectionArgs, String sortOrder) {
+        return query(targetClass, uri, projection, selection, selectionArgs, sortOrder, null);
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param targetClass entity class or specific column type.
+     * @param uri
+     * @param projection
+     * @param selection
+     * @param selectionArgs
+     * @param sortOrder
+     * @param cancellationSignal
+     * @return
+     */
+    public static <T> List<T> query(Class<T> targetClass, final Uri uri, String projection, String selection, String[] selectionArgs, String sortOrder,
+            CancellationSignal cancellationSignal) {
+        final Cursor cursor = context.getContentResolver().query(uri, Array.of(projection), selection, selectionArgs, sortOrder, cancellationSignal);
+
+        try {
+            return toList(targetClass, cursor);
+        } finally {
+            closeQuietly(cursor);
+        }
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param targetClass entity class with getter/setting method.
+     * @param uri
+     * @param projection
+     * @return
+     */
+    public static <T> List<T> query(Class<T> targetClass, final Uri uri, String[] projection) {
+        return query(targetClass, uri, projection, null, null, null);
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param targetClass entity class with getter/setting method.
+     * @param uri
+     * @param projection
+     * @param selection
+     * @param selectionArgs
+     * @param sortOrder
+     * @return
+     */
+    public static <T> List<T> query(Class<T> targetClass, final Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        return query(targetClass, uri, projection, selection, selectionArgs, sortOrder, null);
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param targetClass entity class with getter/setting method.
+     * @param uri
+     * @param projection
+     * @param selection
+     * @param selectionArgs
+     * @param sortOrder
+     * @param cancellationSignal
+     * @return
+     */
+    public static <T> List<T> query(Class<T> targetClass, final Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder,
+            CancellationSignal cancellationSignal) {
+        final Cursor cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
+
+        try {
+            return toList(targetClass, cursor);
+        } finally {
+            closeQuietly(cursor);
+        }
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param uri
+     * @param projectionTypeMap
+     * @param selection
+     * @param selectionArgs
+     * @param sortOrder
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static List<Map<String, Object>> query(final Uri uri, Map<String, Class> projectionTypeMap) {
+        return query(uri, projectionTypeMap, null, null, null);
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param uri
+     * @param projectionTypeMap
+     * @param selection
+     * @param selectionArgs
+     * @param sortOrder
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static List<Map<String, Object>> query(final Uri uri, Map<String, Class> projectionTypeMap, String selection, String[] selectionArgs,
+            String sortOrder) {
+        return query(uri, projectionTypeMap, selection, selectionArgs, sortOrder, null);
+    }
+
+    /**
+     * Query by context.getContentResolver().
+     * 
+     * @param uri
+     * @param projectionTypeMap
+     * @param selection
+     * @param selectionArgs
+     * @param sortOrder
+     * @param cancellationSignal
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static List<Map<String, Object>> query(final Uri uri, Map<String, Class> projectionTypeMap, String selection, String[] selectionArgs,
+            String sortOrder, CancellationSignal cancellationSignal) {
+        final Cursor cursor = context.getContentResolver().query(uri, projectionTypeMap.keySet().toArray(new String[projectionTypeMap.size()]), selection,
+                selectionArgs, sortOrder);
+
+        try {
+            return (List) extractData(cursor, projectionTypeMap.values()).toList(Map.class);
+        } finally {
+            closeQuietly(cursor);
+        }
     }
 
     public static boolean isUiThread() {
@@ -337,209 +727,209 @@ public final class Util {
         }
     }
 
-    /**
-     * Execute the action right now if current thread is a background thread or execute it asynchronously with @{code android.os.AsyncTask#SERIAL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
-     * 
-     * @param action
-     */
-    public static void callInBackground(final Runnable action) {
-        if (isUiThread()) {
-            try {
-                AsyncExecutor.execute(action).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            action.run();
-        }
-    }
-
-    /**
-     * Execute the actions right now if current thread is a background thread or execute them asynchronously with @{code android.os.AsyncTask#SERIAL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
-     * 
-     * @param actions
-     */
-    @Beta
-    static void callInBackground(final List<? extends Runnable> actions) {
-        for (Runnable action : actions) {
-            callInBackground(action);
-        }
-    }
-
-    /**
-     * Execute the action right now if current thread is a background thread or execute it asynchronously with @{code android.os.AsyncTask#SERIAL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
-     * 
-     * @param action
-     * @return
-     */
-    public static <T> T callInBackground(final Callable<T> action) {
-        if (isUiThread()) {
-            try {
-                return AsyncExecutor.execute(action).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                return action.call();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    /**
-     * Execute the actions right now if current thread is a background thread or execute them asynchronously with @{code android.os.AsyncTask#SERIAL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
-     * 
-     * @param actions
-     * @return
-     */
-    @Beta
-    static <T> List<T> callInBackground(final Collection<? extends Callable<T>> actions) {
-        final List<T> result = new ArrayList<T>(actions.size());
-
-        for (Callable<T> action : actions) {
-            result.add(callInBackground(action));
-        }
-
-        return result;
-    }
-
-    /**
-     * Execute the action right now if current thread is a background thread or execute it asynchronously with @{code android.os.AsyncTask#THREAD_POOL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
-     * 
-     * @param action
-     */
-    public static void callInParallel(final Runnable action) {
-        if (isUiThread()) {
-            try {
-                AsyncExecutor.executeInParallel(action).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            action.run();
-        }
-    }
-
-    /**
-     * Execute the actions right now if current thread is a background thread or execute them asynchronously with @{code android.os.AsyncTask#THREAD_POOL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
-     * 
-     * @param actions
-     */
-    @Beta
-    static void callInParallel(final List<? extends Runnable> actions) {
-        for (Runnable action : actions) {
-            callInParallel(action);
-        }
-    }
-
-    /**
-     * Execute the action right now if current thread is a background thread or execute it asynchronously with @{code android.os.AsyncTask#THREAD_POOL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
-     * 
-     * @param action
-     * @return
-     */
-    public static <T> T callInParallel(final Callable<T> action) {
-        if (isUiThread()) {
-            try {
-                return AsyncExecutor.executeInParallel(action).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                return action.call();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    /**
-     * Execute the actions right now if current thread is a background thread or execute them asynchronously with @{code android.os.AsyncTask#THREAD_POOL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
-     * 
-     * @param actions
-     * @return
-     */
-    @Beta
-    static <T> List<T> callInParallel(final Collection<? extends Callable<T>> actions) {
-        final List<T> result = new ArrayList<T>(actions.size());
-
-        for (Callable<T> action : actions) {
-            result.add(callInParallel(action));
-        }
-
-        return result;
-    }
-
-    /**
-     * Execute the action right now if current thread is UI thread or execute it asynchronously and waiting for result before it returns if current thread is a background thread.
-     * 
-     * @param action
-     */
-    public static void callOnUiThread(final Runnable action) {
-        if (isUiThread()) {
-            action.run();
-        } else {
-            try {
-                AsyncExecutor.executeOnUiThread(action).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    /**
-     * Execute the actions right now if current thread is UI thread or execute them asynchronously and waiting for result before it returns if current thread is a background thread.
-     * 
-     * @param actions
-     */
-    @Beta
-    static void callOnUiThread(final List<? extends Runnable> actions) {
-        for (Runnable action : actions) {
-            callOnUiThread(action);
-        }
-    }
-
-    /**
-     * Execute the action right now if current thread is UI thread or execute it asynchronously and waiting for result before it returns if current thread is a background thread.
-     * 
-     * @param action
-     * @return
-     */
-    public static <T> T callOnUiThread(final Callable<T> action) {
-        if (isUiThread()) {
-            try {
-                return action.call();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                return AsyncExecutor.executeOnUiThread(action).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    /**
-     * Execute the actions right now if current thread is UI thread or execute them asynchronously and waiting for result before it returns if current thread is a background thread.
-     * 
-     * @param actions
-     * @return
-     */
-    @Beta
-    static <T> List<T> callOnUiThread(final Collection<? extends Callable<T>> actions) {
-        final List<T> result = new ArrayList<T>(actions.size());
-
-        for (Callable<T> action : actions) {
-            result.add(callOnUiThread(action));
-        }
-
-        return result;
-    }
+    //    /**
+    //     * Execute the action right now if current thread is a background thread or execute it asynchronously with @{code android.os.AsyncTask#SERIAL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
+    //     * 
+    //     * @param action
+    //     */
+    //    public static void callInBackground(final Runnable action) {
+    //        if (isUiThread()) {
+    //            try {
+    //                AsyncExecutor.execute(action).get();
+    //            } catch (InterruptedException | ExecutionException e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        } else {
+    //            action.run();
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the actions right now if current thread is a background thread or execute them asynchronously with @{code android.os.AsyncTask#SERIAL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
+    //     * 
+    //     * @param actions
+    //     */
+    //    @Beta
+    //    static void callInBackground(final List<? extends Runnable> actions) {
+    //        for (Runnable action : actions) {
+    //            callInBackground(action);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the action right now if current thread is a background thread or execute it asynchronously with @{code android.os.AsyncTask#SERIAL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
+    //     * 
+    //     * @param action
+    //     * @return
+    //     */
+    //    public static <T> T callInBackground(final Callable<T> action) {
+    //        if (isUiThread()) {
+    //            try {
+    //                return AsyncExecutor.execute(action).get();
+    //            } catch (InterruptedException | ExecutionException e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        } else {
+    //            try {
+    //                return action.call();
+    //            } catch (Exception e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the actions right now if current thread is a background thread or execute them asynchronously with @{code android.os.AsyncTask#SERIAL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
+    //     * 
+    //     * @param actions
+    //     * @return
+    //     */
+    //    @Beta
+    //    static <T> List<T> callInBackground(final Collection<? extends Callable<T>> actions) {
+    //        final List<T> result = new ArrayList<T>(actions.size());
+    //
+    //        for (Callable<T> action : actions) {
+    //            result.add(callInBackground(action));
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * Execute the action right now if current thread is a background thread or execute it asynchronously with @{code android.os.AsyncTask#THREAD_POOL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
+    //     * 
+    //     * @param action
+    //     */
+    //    public static void callInParallel(final Runnable action) {
+    //        if (isUiThread()) {
+    //            try {
+    //                AsyncExecutor.executeInParallel(action).get();
+    //            } catch (InterruptedException | ExecutionException e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        } else {
+    //            action.run();
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the actions right now if current thread is a background thread or execute them asynchronously with @{code android.os.AsyncTask#THREAD_POOL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
+    //     * 
+    //     * @param actions
+    //     */
+    //    @Beta
+    //    static void callInParallel(final List<? extends Runnable> actions) {
+    //        for (Runnable action : actions) {
+    //            callInParallel(action);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the action right now if current thread is a background thread or execute it asynchronously with @{code android.os.AsyncTask#THREAD_POOL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
+    //     * 
+    //     * @param action
+    //     * @return
+    //     */
+    //    public static <T> T callInParallel(final Callable<T> action) {
+    //        if (isUiThread()) {
+    //            try {
+    //                return AsyncExecutor.executeInParallel(action).get();
+    //            } catch (InterruptedException | ExecutionException e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        } else {
+    //            try {
+    //                return action.call();
+    //            } catch (Exception e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the actions right now if current thread is a background thread or execute them asynchronously with @{code android.os.AsyncTask#THREAD_POOL_EXECUTOR} and waiting for result before it returns if current thread is UI thread.
+    //     * 
+    //     * @param actions
+    //     * @return
+    //     */
+    //    @Beta
+    //    static <T> List<T> callInParallel(final Collection<? extends Callable<T>> actions) {
+    //        final List<T> result = new ArrayList<T>(actions.size());
+    //
+    //        for (Callable<T> action : actions) {
+    //            result.add(callInParallel(action));
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * Execute the action right now if current thread is UI thread or execute it asynchronously and waiting for result before it returns if current thread is a background thread.
+    //     * 
+    //     * @param action
+    //     */
+    //    public static void callOnUiThread(final Runnable action) {
+    //        if (isUiThread()) {
+    //            action.run();
+    //        } else {
+    //            try {
+    //                AsyncExecutor.executeOnUiThread(action).get();
+    //            } catch (InterruptedException | ExecutionException e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the actions right now if current thread is UI thread or execute them asynchronously and waiting for result before it returns if current thread is a background thread.
+    //     * 
+    //     * @param actions
+    //     */
+    //    @Beta
+    //    static void callOnUiThread(final List<? extends Runnable> actions) {
+    //        for (Runnable action : actions) {
+    //            callOnUiThread(action);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the action right now if current thread is UI thread or execute it asynchronously and waiting for result before it returns if current thread is a background thread.
+    //     * 
+    //     * @param action
+    //     * @return
+    //     */
+    //    public static <T> T callOnUiThread(final Callable<T> action) {
+    //        if (isUiThread()) {
+    //            try {
+    //                return action.call();
+    //            } catch (Exception e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        } else {
+    //            try {
+    //                return AsyncExecutor.executeOnUiThread(action).get();
+    //            } catch (InterruptedException | ExecutionException e) {
+    //                throw new RuntimeException(e);
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Execute the actions right now if current thread is UI thread or execute them asynchronously and waiting for result before it returns if current thread is a background thread.
+    //     * 
+    //     * @param actions
+    //     * @return
+    //     */
+    //    @Beta
+    //    static <T> List<T> callOnUiThread(final Collection<? extends Callable<T>> actions) {
+    //        final List<T> result = new ArrayList<T>(actions.size());
+    //
+    //        for (Callable<T> action : actions) {
+    //            result.add(callOnUiThread(action));
+    //        }
+    //
+    //        return result;
+    //    }
 
     public static <T extends View> T getViewById(View root, int id) {
         return (T) root.findViewById(id);
@@ -589,6 +979,31 @@ public final class Util {
         return (Button) activity.findViewById(id);
     }
 
+    public static String getViewTextById(View root, int id) {
+        return getTextViewById(root, id).getText().toString().trim();
+    }
+
+    public static String getViewTextById(Activity activity, int id) {
+        return getTextViewById(activity, id).getText().toString().trim();
+    }
+
+    /**
+     * Sometimes {@code view.requestFocus()}, or {@code dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)} (the view is in a dialog) is required to show virtual keyboard.
+     * 
+     * @param view
+     */
+    public static void showVirtualKeyboard(View view) {
+        final Context context = view.getContext();
+        final InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    public static void hideVirtualKeyboard(View view) {
+        final Context context = view.getContext();
+        final InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
     public static void showToast(final CharSequence text) {
         showToast(context, text);
     }
@@ -617,9 +1032,9 @@ public final class Util {
      * Copied from Picasso: http://square.github.io/picasso Copyright (C) 2013 Square, Inc.
      * 
      * @param bitmap
-     * @return
+     * @return the size of the specified bitmap in bytes.
      */
-    public static int getBitmapBytes(Bitmap bitmap) {
+    public static int getByteCount(Bitmap bitmap) {
         int result;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {

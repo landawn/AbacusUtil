@@ -101,6 +101,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -131,6 +132,7 @@ import com.landawn.abacus.parser.JSONSerializationConfig;
 import com.landawn.abacus.parser.JSONSerializationConfig.JSC;
 import com.landawn.abacus.parser.KryoParser;
 import com.landawn.abacus.parser.ParserFactory;
+import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.XMLDeserializationConfig;
 import com.landawn.abacus.parser.XMLParser;
 import com.landawn.abacus.parser.XMLSerializationConfig;
@@ -300,6 +302,34 @@ public final class N {
     // ArrayBlockingQueue.
     private static final int POOL_SIZE = 1000;
     private static final int CLS_POOL_SIZE = 2000;
+
+    public static final long ONE_SECOND = 1 * 1000L;
+    public static final long TWO_SECOND = 2 * 1000L;
+    public static final long THREE_SECONDS = 3 * 1000L;
+    public static final long FIVE_SECONDS = 5 * 1000L;
+    public static final long EIGHT_SECONDS = 8 * 1000L;
+    public static final long TEN_SECONDS = 10 * 1000L;
+    public static final long FIFTEEN_SECONDS = 15 * 1000L;
+    public static final long THIRTY_SECONDS = 30 * 1000L;
+    public static final long ONE_MINUTE = 1 * 60 * 1000L;
+    public static final long TWO_MINUTE = 2 * 60 * 1000L;
+    public static final long THREE_MINUTES = 3 * 60 * 1000L;
+    public static final long FIVE_MINUTES = 5 * 60 * 1000L;
+    public static final long EIGHT_MINUTES = 8 * 60 * 1000L;
+    public static final long TEN_MINUTES = 10 * 60 * 1000L;
+    public static final long FIFTEEN_MINUTES = 15 * 60 * 1000L;
+    public static final long THIRTY_MINUTES = 30 * 60 * 1000L;
+    public static final long ONE_HOUR = 1 * 3600 * 1000L;
+    public static final long TWO_HOURS = 2 * 3600 * 1000L;
+    public static final long THREE_HOURS = 3 * 3600 * 1000L;
+    public static final long FIVE_HOURS = 5 * 3600 * 1000L;
+    public static final long TWELVE_HOURS = 12 * 3600 * 1000L;
+    public static final long ONE_DAY = 1 * 24 * 3600 * 1000L;
+    public static final long TWO_DAYS = 2 * 24 * 3600 * 1000L;
+    public static final long THREE_DAYS = 3 * 24 * 3600 * 1000L;
+    public static final long FIVE_DAYS = 5 * 24 * 3600 * 1000L;
+    public static final long ONE_WEEK = 1 * 7 * 24 * 3600 * 1000L;
+    public static final long TWO_WEEKS = 2 * 7 * 24 * 3600 * 1000L;
 
     /**
      * The number of bytes in a kilobyte.
@@ -1698,12 +1728,8 @@ public final class N {
     public static <T> T invokeConstructor(final Constructor<T> constructor, final Object... args) {
         try {
             return constructor.newInstance(args);
-        } catch (InstantiationException e) {
-            throw new AbacusException(e);
-        } catch (IllegalAccessException e) {
-            throw new AbacusException(e);
-        } catch (InvocationTargetException e) {
-            throw new AbacusException(e);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw toRuntimeException(e);
         }
     }
 
@@ -1716,10 +1742,8 @@ public final class N {
     public static <T> T invokeMethod(final Object instance, final Method method, final Object... args) {
         try {
             return (T) method.invoke(instance, args);
-        } catch (IllegalAccessException e) {
-            throw new AbacusException(e);
-        } catch (InvocationTargetException e) {
-            throw new AbacusException(e);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw toRuntimeException(e);
         }
     }
 
@@ -2133,8 +2157,8 @@ public final class N {
     public static <T> T getPropValue(final Object entity, final Method propGetMethod) {
         try {
             return (T) propGetMethod.invoke(entity);
-        } catch (Exception e) {
-            throw new AbacusException(e);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw toRuntimeException(e);
         }
     }
 
@@ -2155,14 +2179,13 @@ public final class N {
     public static void setPropValue(final Object entity, final Method propSetMethod, Object propValue) {
         try {
             propSetMethod.invoke(entity, propValue);
-        } catch (Exception e) {
-            final Class<?> targetPropClass = propSetMethod.getParameterTypes()[0];
-            propValue = N.as(targetPropClass, propValue);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            propValue = N.as(ParserUtil.getEntityInfo(entity.getClass()).getPropInfo(propSetMethod.getName()).type, propValue);
 
             try {
                 propSetMethod.invoke(entity, propValue);
-            } catch (Exception e1) {
-                throw new AbacusException("Failed to set property value by method '" + propSetMethod.getName() + "'", e);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e2) {
+                throw toRuntimeException(e);
             }
         }
     }
@@ -4465,37 +4488,73 @@ public final class N {
      */
     @SuppressWarnings("unchecked")
     public static <T> T as(final Class<T> targetClass, final Object obj) {
+        //        if (obj == null) {
+        //            return defaultValueOf(targetClass);
+        //        }
+        //
+        //        final Class<?> srcPropClass = obj.getClass();
+        //
+        //        if (targetClass.isAssignableFrom(srcPropClass)) {
+        //            return (T) obj;
+        //        }
+        //
+        //        final Type<Object> targetPropType = targetClass.isEnum()
+        //                ? getType(getCanonicalClassName(targetClass) + "(" + Integer.class.isAssignableFrom(srcPropClass) + ")") : N.getType(targetClass);
+        //        final Type<Object> srcPropType = getType(srcPropClass);
+        //
+        //        if (targetPropType.isBoolean() && srcPropType.isNumber()) {
+        //            return (T) ((Boolean) (((Number) obj).longValue() > 0));
+        //        }
+        //
+        //        if (targetPropType.isEntity() && srcPropType.isMap()) {
+        //            return map2Entity(targetClass, (Map<String, Object>) obj);
+        //        } else if (targetPropType.isMap() && srcPropType.isEntity()) {
+        //            try {
+        //                return (T) entity2Map((Map<String, Object>) N.newInstance(targetClass), obj);
+        //            } catch (Exception e) {
+        //                // ignore.
+        //            }
+        //        } else if (targetPropType.isEntity() && srcPropType.isEntity()) {
+        //            return copy(targetClass, obj);
+        //        }
+        //
+        //        return (T) targetPropType.valueOf(srcPropType.stringOf(obj));
+
+        final Type<T> type = getType(targetClass);
+        return as(type, obj);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T as(final Type<T> targetType, final Object obj) {
         if (obj == null) {
-            return defaultValueOf(targetClass);
+            return targetType.defaultValue();
         }
 
         final Class<?> srcPropClass = obj.getClass();
 
-        if (targetClass.isAssignableFrom(srcPropClass)) {
+        if (targetType.getTypeClass().isAssignableFrom(srcPropClass)) {
             return (T) obj;
         }
 
-        final Type<Object> targetPropType = targetClass.isEnum()
-                ? getType(getCanonicalClassName(targetClass) + "(" + Integer.class.isAssignableFrom(srcPropClass) + ")") : N.getType(targetClass);
         final Type<Object> srcPropType = getType(srcPropClass);
 
-        if (targetPropType.isBoolean() && srcPropType.isNumber()) {
+        if (targetType.isBoolean() && srcPropType.isNumber()) {
             return (T) ((Boolean) (((Number) obj).longValue() > 0));
         }
 
-        if (targetPropType.isEntity() && srcPropType.isMap()) {
-            return map2Entity(targetClass, (Map<String, Object>) obj);
-        } else if (targetPropType.isMap() && srcPropType.isEntity()) {
+        if (targetType.isEntity() && srcPropType.isMap()) {
+            return map2Entity(targetType.getTypeClass(), (Map<String, Object>) obj);
+        } else if (targetType.isMap() && srcPropType.isEntity()) {
             try {
-                return (T) entity2Map((Map<String, Object>) N.newInstance(targetClass), obj);
+                return (T) entity2Map((Map<String, Object>) N.newInstance(targetType.getTypeClass()), obj);
             } catch (Exception e) {
                 // ignore.
             }
-        } else if (targetPropType.isEntity() && srcPropType.isEntity()) {
-            return copy(targetClass, obj);
+        } else if (targetType.isEntity() && srcPropType.isEntity()) {
+            return copy(targetType.getTypeClass(), obj);
         }
 
-        return (T) targetPropType.valueOf(srcPropType.stringOf(obj));
+        return targetType.valueOf(srcPropType.stringOf(obj));
     }
 
     /**
@@ -8044,34 +8103,6 @@ public final class N {
     }
 
     /**
-     * Returns consecutive substring of the specified string, each of the same length (the final list may be smaller),
-     * or an empty array if the specified string is null or empty.
-     * 
-     * @param str
-     * @param size
-     * @return
-     */
-    public static String[] split(final String str, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
-        }
-
-        if (N.isNullOrEmpty(str)) {
-            return N.EMPTY_STRING_ARRAY;
-        }
-
-        final int len = str.length();
-        final String[] res = new String[len % size == 0 ? len / size : len / size + 1];
-
-        for (int i = 0, beginIndex = 0, endIndex = Math.min(beginIndex + size, len); beginIndex < len; i++, beginIndex = endIndex, endIndex = Math
-                .min(beginIndex + size, len)) {
-            res[i] = str.substring(beginIndex, endIndex);
-        }
-
-        return res;
-    }
-
-    /**
      * <p>
      * Splits the provided text into an array, separator specified. This is an
      * alternative to using StringTokenizer.
@@ -8153,19 +8184,11 @@ public final class N {
      * @return an array of parsed Strings, an empty String[] if null String input
      */
     public static String[] split(final String str, final String separatorChars) {
-        return splitWorker(str, separatorChars, -1, false);
+        return split(str, separatorChars, false);
     }
 
     public static String[] split(final String str, final String separatorChars, final boolean trim) {
-        final String[] strs = split(str, separatorChars);
-
-        if (trim && N.notNullOrEmpty(strs)) {
-            for (int i = 0, len = strs.length; i < len; i++) {
-                strs[i] = strs[i].trim();
-            }
-        }
-
-        return strs;
+        return split(str, separatorChars, -1, trim);
     }
 
     /**
@@ -8266,7 +8289,19 @@ public final class N {
      * @since 2.1
      */
     public static String[] splitPreserveAllTokens(final String str, final char separatorChar) {
-        return splitWorker(str, separatorChar, true);
+        return splitPreserveAllTokens(str, separatorChar, false);
+    }
+
+    public static String[] splitPreserveAllTokens(final String str, final char separatorChar, boolean trim) {
+        final String[] strs = splitWorker(str, separatorChar, true);
+
+        if (trim && N.notNullOrEmpty(strs)) {
+            for (int i = 0, len = strs.length; i < len; i++) {
+                strs[i] = strs[i].trim();
+            }
+        }
+
+        return strs;
     }
 
     /**
@@ -8311,7 +8346,11 @@ public final class N {
      * @since 2.1
      */
     public static String[] splitPreserveAllTokens(final String str, final String separatorChars) {
-        return splitWorker(str, separatorChars, -1, true);
+        return splitPreserveAllTokens(str, separatorChars, false);
+    }
+
+    public static String[] splitPreserveAllTokens(final String str, final String separatorChars, boolean trim) {
+        return splitPreserveAllTokens(str, separatorChars, -1, trim);
     }
 
     /**
@@ -8362,7 +8401,19 @@ public final class N {
      * @since 2.1
      */
     public static String[] splitPreserveAllTokens(final String str, final String separatorChars, final int max) {
-        return splitWorker(str, separatorChars, max, true);
+        return splitPreserveAllTokens(str, separatorChars, max, false);
+    }
+
+    public static String[] splitPreserveAllTokens(final String str, final String separatorChars, final int max, boolean trim) {
+        final String[] strs = splitWorker(str, separatorChars, max, true);
+
+        if (trim && N.notNullOrEmpty(strs)) {
+            for (int i = 0, len = strs.length; i < len; i++) {
+                strs[i] = strs[i].trim();
+            }
+        }
+
+        return strs;
     }
 
     private static String[] splitWorker(final String str, final char separatorChar, final boolean preserveAllTokens) {
@@ -20761,7 +20812,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20781,7 +20832,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20805,7 +20856,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20825,7 +20876,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20849,7 +20900,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20869,7 +20920,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20893,7 +20944,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20913,7 +20964,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20937,7 +20988,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -20957,7 +21008,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -20981,7 +21032,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21001,7 +21052,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21025,7 +21076,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21045,7 +21096,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21069,7 +21120,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21089,7 +21140,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21113,7 +21164,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21133,7 +21184,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21157,7 +21208,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param c
      * @param action
@@ -21177,7 +21228,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param c
      * @param fromIndex
@@ -21211,7 +21262,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param m
      * @param action
@@ -21231,7 +21282,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param m
      * @param fromIndex
@@ -21265,7 +21316,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21285,7 +21336,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21309,7 +21360,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21329,7 +21380,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21353,7 +21404,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21373,7 +21424,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21397,7 +21448,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21417,7 +21468,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21441,7 +21492,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21461,7 +21512,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21485,7 +21536,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21505,7 +21556,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21529,7 +21580,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21549,7 +21600,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21573,7 +21624,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21593,7 +21644,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21617,7 +21668,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param action
@@ -21637,7 +21688,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
@@ -21661,7 +21712,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param c
      * @param action
@@ -21679,7 +21730,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param c
      * @param fromIndex
@@ -21693,16 +21744,18 @@ public final class N {
             return;
         }
 
+        final Iterator<E> iter = c.iterator();
         int idx = 0;
 
-        for (E e : c) {
-            if (idx++ < fromIndex) {
-                continue;
-            }
+        while (idx < fromIndex && iter.hasNext()) {
+            iter.next();
+            idx++;
+        }
 
-            action.accept(e, idx);
+        while (iter.hasNext()) {
+            action.accept(iter.next(), idx);
 
-            if (idx >= toIndex) {
+            if (++idx >= toIndex) {
                 break;
             }
         }
@@ -21713,7 +21766,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param m
      * @param action
@@ -21731,7 +21784,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
      * Note: This is NOT a replacement of traditional for loop statement. 
-     * The tradtional for loop is still recommended in regular programming.
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param m
      * @param fromIndex
@@ -21745,16 +21798,18 @@ public final class N {
             return;
         }
 
+        final Iterator<Map.Entry<K, V>> iter = m.entrySet().iterator();
         int idx = 0;
 
-        for (Map.Entry<K, V> e : m.entrySet()) {
-            if (idx++ < fromIndex) {
-                continue;
-            }
+        while (idx < fromIndex && iter.hasNext()) {
+            iter.next();
+            idx++;
+        }
 
-            action.accept(e, idx);
+        while (iter.hasNext()) {
+            action.accept(iter.next(), idx);
 
-            if (idx >= toIndex) {
+            if (++idx >= toIndex) {
                 break;
             }
         }
@@ -25040,6 +25095,34 @@ public final class N {
             }
 
             res.add(subMap);
+        }
+
+        return res;
+    }
+
+    /**
+     * Returns consecutive substring of the specified string, each of the same length (the final list may be smaller),
+     * or an empty array if the specified string is null or empty.
+     * 
+     * @param str
+     * @param size
+     * @return
+     */
+    public static String[] split(final String str, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
+        }
+
+        if (N.isNullOrEmpty(str)) {
+            return N.EMPTY_STRING_ARRAY;
+        }
+
+        final int len = str.length();
+        final String[] res = new String[len % size == 0 ? len / size : len / size + 1];
+
+        for (int i = 0, beginIndex = 0, endIndex = Math.min(beginIndex + size, len); beginIndex < len; i++, beginIndex = endIndex, endIndex = Math
+                .min(beginIndex + size, len)) {
+            res[i] = str.substring(beginIndex, endIndex);
         }
 
         return res;
@@ -33355,35 +33438,35 @@ public final class N {
         return xmlParser.serialize(jsonParser.deserialize(cls, json));
     }
 
-    public static FutureExecutor<Void> asyncExecute(final Runnable command) {
+    public static CompletableFuture<Void> asyncExecute(final Runnable command) {
         return asyncExecutor.execute(command);
     }
 
-    public static FutureExecutor<Void>[] asyncExecute(final Runnable... commands) {
+    public static CompletableFuture<Void>[] asyncExecute(final Runnable... commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static List<FutureExecutor<Void>> asyncExecute(final List<? extends Runnable> commands) {
+    public static List<CompletableFuture<Void>> asyncExecute(final List<? extends Runnable> commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> FutureExecutor<T> asyncExecute(final Callable<T> command) {
+    public static <T> CompletableFuture<T> asyncExecute(final Callable<T> command) {
         return asyncExecutor.execute(command);
     }
 
-    public static <T> FutureExecutor<T>[] asyncExecute(final Callable<T>... commands) {
+    public static <T> CompletableFuture<T>[] asyncExecute(final Callable<T>... commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> List<FutureExecutor<T>> asyncExecute(final Collection<? extends Callable<T>> commands) {
+    public static <T> List<CompletableFuture<T>> asyncExecute(final Collection<? extends Callable<T>> commands) {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> FutureExecutor<T> asyncInvoke(final Method method, final Object... args) {
+    public static <T> CompletableFuture<T> asyncInvoke(final Method method, final Object... args) {
         return asyncExecutor.invoke(method, args);
     }
 
-    public static <T> FutureExecutor<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
+    public static <T> CompletableFuture<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
         return asyncExecutor.invoke(instance, method, args);
     }
 
@@ -33505,6 +33588,16 @@ public final class N {
         }
 
         return str.toCharArray();
+    }
+
+    public static RuntimeException toRuntimeException(Throwable e) {
+        if (e instanceof RuntimeException) {
+            return (RuntimeException) e;
+        } else if (e instanceof ExecutionException || e instanceof InvocationTargetException) {
+            return e.getCause() == null ? new RuntimeException(e) : toRuntimeException(e.getCause());
+        } else {
+            return new RuntimeException(e);
+        }
     }
 
     public static void sleep(final long millis) {

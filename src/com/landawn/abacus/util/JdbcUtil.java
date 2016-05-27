@@ -1909,8 +1909,8 @@ public final class JdbcUtil {
             final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
             final Queue<Object[]> rowQueue = new ConcurrentLinkedQueue<Object[]>();
             final MutableBoolean isReadDone = new MutableBoolean(false);
-            final Handle<Throwable> exceptionHandle = new Handle<Throwable>();
-            final Handle<String> errorMessageHandle = new Handle<String>();
+            final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
+            final Holder<String> errorMessageHandle = new Holder<String>();
 
             for (int i = 0; i < processThreadNumber; i++) {
                 activeThreadNum.incrementAndGet();

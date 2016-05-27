@@ -25,6 +25,8 @@
 
 package com.landawn.abacus.logging;
 
+import com.landawn.abacus.util.function.Supplier;
+
 /**
  * The org.slf4j.Logger interface is the main user entry point of SLF4J API. It is expected that logging takes place
  * through concrete implementations of this interface.
@@ -113,6 +115,10 @@ public interface Logger {
      */
     public void trace(String msg, Throwable t);
 
+    public void trace(Supplier<String> supplier);
+
+    public void trace(Supplier<String> supplier, Throwable t);
+
     /**
      * Is the logger instance enabled for the DEBUG level?
      * 
@@ -153,6 +159,10 @@ public interface Logger {
      */
     public void debug(String msg, Throwable t);
 
+    public void debug(Supplier<String> supplier);
+
+    public void debug(Supplier<String> supplier, Throwable t);
+
     /**
      * Is the logger instance enabled for the INFO level?
      * 
@@ -191,6 +201,10 @@ public interface Logger {
      *            the exception (throwable) to log
      */
     public void info(String msg, Throwable t);
+
+    public void info(Supplier<String> supplier);
+
+    public void info(Supplier<String> supplier, Throwable t);
 
     /**
      * Is the logger instance enabled for the WARN level?
@@ -231,6 +245,10 @@ public interface Logger {
      */
     public void warn(String msg, Throwable t);
 
+    public void warn(Supplier<String> supplier);
+
+    public void warn(Supplier<String> supplier, Throwable t);
+
     /**
      * Is the logger instance enabled for the ERROR level?
      * 
@@ -269,5 +287,9 @@ public interface Logger {
      *            the exception (throwable) to log
      */
     public void error(String msg, Throwable t);
+
+    public void error(Supplier<String> supplier);
+
+    public void error(Supplier<String> supplier, Throwable t);
 
 }

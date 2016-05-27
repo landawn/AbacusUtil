@@ -31,12 +31,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -44,6 +49,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongSummaryStatistics;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.StringJoiner;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -228,6 +234,17 @@ public final class Collectors {
         return toCollection(collectionFactory);
     }
 
+    public static <T> Collector<T, ?, List<T>> toLinkedList() {
+        final Supplier<List<T>> collectionFactory = new Supplier<List<T>>() {
+            @Override
+            public List<T> get() {
+                return new LinkedList<T>();
+            }
+        };
+
+        return toCollection(collectionFactory);
+    }
+
     /**
      * Returns a {@code Collector} that accumulates the input elements into a
      * new {@code Set}. There are no guarantees on the type, mutability,
@@ -251,6 +268,55 @@ public final class Collectors {
         };
 
         return toCollection(collectionFactory);
+    }
+
+    public static <T> Collector<T, ?, Set<T>> toLinkedSet() {
+        final Supplier<Set<T>> collectionFactory = new Supplier<Set<T>>() {
+            @Override
+            public Set<T> get() {
+                return new LinkedHashSet<T>();
+            }
+        };
+
+        return toCollection(collectionFactory);
+    }
+
+    public static <T> Collector<T, ?, Queue<T>> toQueue() {
+        final Supplier<Queue<T>> collectionFactory = new Supplier<Queue<T>>() {
+            @Override
+            public Queue<T> get() {
+                return new LinkedList<T>();
+            }
+        };
+
+        return toCollection(collectionFactory);
+    }
+
+    public static <T> Collector<T, ?, Deque<T>> toDeque() {
+        final Supplier<Deque<T>> collectionFactory = new Supplier<Deque<T>>() {
+            @Override
+            public Deque<T> get() {
+                return new LinkedList<T>();
+            }
+        };
+
+        return toCollection(collectionFactory);
+    }
+
+    public static <T> Collector<T, ?, T[]> toArray(final Class<T[]> arrayClass) {
+        return toArray((T[]) N.newArray(arrayClass.getComponentType(), 0));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Collector<T, ?, T[]> toArray(final T[] array) {
+        final Collector<T, List<T>, List<T>> collector = (Collector) toList();
+
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), new Function<List<T>, T[]>() {
+            @Override
+            public T[] apply(List<T> t) {
+                return t.toArray(array);
+            }
+        });
     }
 
     /**
@@ -1800,6 +1866,39 @@ public final class Collectors {
         final BinaryOperator<M> combiner = (BinaryOperator<M>) mapMerger(mergeFunction);
 
         return new CollectorImpl<>(mapSupplier, accumulator, combiner);
+    }
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see #toMap(Function, Function)
+     */
+    public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        final BinaryOperator<U> mergeFunction = throwingMerger();
+
+        return toLinkedMap(keyMapper, valueMapper, mergeFunction);
+    }
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see #toMap(Function, Function, BinaryOperator)
+     */
+    public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction) {
+        final Supplier<Map<K, U>> mapSupplier = new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new LinkedHashMap<>();
+            }
+        };
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
     /**

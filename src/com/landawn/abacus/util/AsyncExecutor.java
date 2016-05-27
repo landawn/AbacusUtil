@@ -84,19 +84,19 @@ public class AsyncExecutor {
         });
     }
 
-    public FutureExecutor<Void> execute(final Runnable command) {
-        final FutureExecutor<Void> future = new FutureExecutor<Void>(this, command, null);
+    public CompletableFuture<Void> execute(final Runnable command) {
+        final CompletableFuture<Void> future = new CompletableFuture<Void>(this, command, null);
 
         getExecutorService().execute(future);
 
         return future;
     }
 
-    public FutureExecutor<Void>[] execute(final Runnable... commands) {
-        final FutureExecutor<Void>[] results = new FutureExecutor[commands.length];
+    public CompletableFuture<Void>[] execute(final Runnable... commands) {
+        final CompletableFuture<Void>[] results = new CompletableFuture[commands.length];
 
         for (int i = 0, len = commands.length; i < len; i++) {
-            results[i] = new FutureExecutor<Void>(this, commands[i], null);
+            results[i] = new CompletableFuture<Void>(this, commands[i], null);
 
             getExecutorService().execute(results[i]);
         }
@@ -104,12 +104,12 @@ public class AsyncExecutor {
         return results;
     }
 
-    public List<FutureExecutor<Void>> execute(final List<? extends Runnable> commands) {
-        final List<FutureExecutor<Void>> results = N.newArrayList(commands.size());
-        FutureExecutor<Void> future = null;
+    public List<CompletableFuture<Void>> execute(final List<? extends Runnable> commands) {
+        final List<CompletableFuture<Void>> results = N.newArrayList(commands.size());
+        CompletableFuture<Void> future = null;
 
         for (Runnable cmd : commands) {
-            future = new FutureExecutor<Void>(this, cmd, null);
+            future = new CompletableFuture<Void>(this, cmd, null);
 
             getExecutorService().execute(future);
 
@@ -119,19 +119,19 @@ public class AsyncExecutor {
         return results;
     }
 
-    public <T> FutureExecutor<T> execute(final Callable<T> command) {
-        final FutureExecutor<T> future = new FutureExecutor<T>(this, command);
+    public <T> CompletableFuture<T> execute(final Callable<T> command) {
+        final CompletableFuture<T> future = new CompletableFuture<T>(this, command);
 
         getExecutorService().execute(future);
 
         return future;
     }
 
-    public <T> FutureExecutor<T>[] execute(final Callable<T>... commands) {
-        final FutureExecutor<T>[] results = new FutureExecutor[commands.length];
+    public <T> CompletableFuture<T>[] execute(final Callable<T>... commands) {
+        final CompletableFuture<T>[] results = new CompletableFuture[commands.length];
 
         for (int i = 0, len = commands.length; i < len; i++) {
-            results[i] = new FutureExecutor<T>(this, commands[i]);
+            results[i] = new CompletableFuture<T>(this, commands[i]);
 
             getExecutorService().execute(results[i]);
         }
@@ -139,12 +139,12 @@ public class AsyncExecutor {
         return results;
     }
 
-    public <T> List<FutureExecutor<T>> execute(final Collection<? extends Callable<T>> commands) {
-        final List<FutureExecutor<T>> results = N.newArrayList(commands.size());
-        FutureExecutor<T> future = null;
+    public <T> List<CompletableFuture<T>> execute(final Collection<? extends Callable<T>> commands) {
+        final List<CompletableFuture<T>> results = N.newArrayList(commands.size());
+        CompletableFuture<T> future = null;
 
         for (Callable<T> cmd : commands) {
-            future = new FutureExecutor<T>(this, cmd);
+            future = new CompletableFuture<T>(this, cmd);
 
             getExecutorService().execute(future);
 
@@ -154,12 +154,12 @@ public class AsyncExecutor {
         return results;
     }
 
-    public <T> FutureExecutor<T> invoke(final Method method, final Object... args) {
+    public <T> CompletableFuture<T> invoke(final Method method, final Object... args) {
         return invoke(null, method, args);
     }
 
-    public <T> FutureExecutor<T> invoke(final Object instance, final Method method, final Object... args) {
-        final FutureExecutor<T> future = new FutureExecutor<T>(this, new Callable<T>() {
+    public <T> CompletableFuture<T> invoke(final Object instance, final Method method, final Object... args) {
+        final CompletableFuture<T> future = new CompletableFuture<T>(this, new Callable<T>() {
             @Override
             @SuppressWarnings("unchecked")
             public T call() throws Exception {

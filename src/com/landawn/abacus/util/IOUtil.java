@@ -529,7 +529,7 @@ public final class IOUtil {
     }
 
     public static byte[] readBytes(final File file, final int maxLen) {
-        final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         try {
@@ -594,7 +594,7 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final File file, final int maxLen, final Charset encoding) {
-        final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         try {
@@ -726,7 +726,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final File file, final int lineOffset, final Charset encoding) {
-        final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         try {
@@ -787,7 +787,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final File file, final int offset, final int count, final Charset encoding) {
-        final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         try {
@@ -2487,7 +2487,7 @@ public final class IOUtil {
         String prefix = file.getName().substring(0, index);
         String postfix = (index > 0) ? file.getName().substring(index) : "";
 
-        final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         BufferedReader br = null;
@@ -2549,7 +2549,7 @@ public final class IOUtil {
      * @return
      */
     private static long estimateLineCount(final File file, final int byReadingLineNum) {
-        final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
         BufferedReader br = null;
 
@@ -3364,7 +3364,7 @@ public final class IOUtil {
 
     private static void parseFile(final File file, final AtomicLong lineOffset, final AtomicLong count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
-        final Handle<ZipFile> outputZipFile = new Handle<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         try {
@@ -3527,8 +3527,8 @@ public final class IOUtil {
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
                 final Queue<String> lineQueue = new ConcurrentLinkedQueue<String>();
                 final MutableBoolean isReadDone = new MutableBoolean(false);
-                final Handle<Throwable> exceptionHandle = new Handle<Throwable>();
-                final Handle<String> errorMessageHandle = new Handle<String>();
+                final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
+                final Holder<String> errorMessageHandle = new Holder<String>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();
@@ -3695,8 +3695,8 @@ public final class IOUtil {
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
                 final Queue<T> elementQueue = new ConcurrentLinkedQueue<T>();
                 final MutableBoolean isReadDone = new MutableBoolean(false);
-                final Handle<Throwable> exceptionHandle = new Handle<Throwable>();
-                final Handle<String> errorMessageHandle = new Handle<String>();
+                final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
+                final Holder<String> errorMessageHandle = new Holder<String>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();
@@ -3769,7 +3769,7 @@ public final class IOUtil {
         }
     }
 
-    private static InputStream openFile(final Handle<ZipFile> outputZipFile, final File file) throws IOException {
+    private static InputStream openFile(final Holder<ZipFile> outputZipFile, final File file) throws IOException {
         InputStream is = null;
 
         if (file.getName().endsWith(GZ)) {

@@ -33,4 +33,7 @@ public abstract class ExpandableListActivityBase extends ExpandableListActivity 
         return (Button) this.findViewById(id);
     }
 
+    public String getViewTextById(int id) {
+        return this.getTextViewById(id).getText().toString().trim();
+    }
 }
