@@ -2187,7 +2187,7 @@ public final class JdbcUtil {
         static final String PRIMARY = "primary";
 
         private final javax.sql.DataSource sqlDataSource;
-        private final Properties<String, String> props = Properties.valueOf();
+        private final Properties<String, String> props = Properties.of();
         private final SliceSelector sliceSelector = new NonSliceSelector();
 
         private final Method closeMethod;
@@ -2316,7 +2316,7 @@ public final class JdbcUtil {
     static class SimpleDataSourceManager implements DataSourceManager {
         private final DataSource primaryDataSource;
         private final Map<String, DataSource> activeDataSources;
-        private final Properties<String, String> props = Properties.valueOf();
+        private final Properties<String, String> props = Properties.of();
         private final DataSourceSelector dataSourceSelector = new SimpleSourceSelector();
         private boolean isClosed = false;
 

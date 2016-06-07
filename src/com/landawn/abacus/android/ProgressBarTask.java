@@ -6,6 +6,7 @@ import com.landawn.abacus.android.util.AsyncExecutor;
 import com.landawn.abacus.android.util.CompletableFuture;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -16,7 +17,7 @@ import android.widget.ProgressBar;
  * Designed to show progress bar easily for network or other heavy operation:
  * <pre>
  * <code>
-        final DisplayProgressBarTask displayProgressBarTask = DisplayProgressBarTask.start(this, 1000, 0xFFE0E0E0);
+        final ProgressBarTask progressBarTask = ProgressBarTask.display(this, 1000, 0xFFE0E0E0);
         final LoginRequest request = ...;
 
         AsyncExecutor.executeInParallel(() -> accountService.login(request))
@@ -34,31 +35,55 @@ import android.widget.ProgressBar;
  * @author haiyangl
  *
  */
-public class DisplayProgressBarTask {
+public class ProgressBarTask {
     protected final CompletableFuture<ProgressBar> future;
     protected ProgressBar progressBar;
 
-    public DisplayProgressBarTask(final Activity activity, final long delay, final int circleColor) {
+    public ProgressBarTask(final ViewGroup root, final long delay, final int circleColor) {
         future = AsyncExecutor.executeOnUiThread(new Callable<ProgressBar>() {
             @Override
             public ProgressBar call() {
-                synchronized (DisplayProgressBarTask.this) {
-                    return DisplayProgressBarTask.this.progressBar = future.isCancelled() ? null : createProgressBar(activity, circleColor);
+                synchronized (ProgressBarTask.this) {
+                    return ProgressBarTask.this.progressBar = future.isCancelled() ? null : createProgressBar(root, circleColor);
                 }
             }
         }, delay);
     }
 
-    public static DisplayProgressBarTask start(final Activity activity) {
-        return start(activity, 0);
+    public static ProgressBarTask display(final Activity activity) {
+        return display(activity, 0);
     }
 
-    public static DisplayProgressBarTask start(final Activity activity, final long delay) {
-        return new DisplayProgressBarTask(activity, delay, Integer.MIN_VALUE);
+    public static ProgressBarTask display(final Activity activity, final long delay) {
+        return display(activity, delay, Integer.MIN_VALUE);
     }
 
-    public static DisplayProgressBarTask start(final Activity activity, final long delay, final int circleColor) {
-        return new DisplayProgressBarTask(activity, delay, circleColor);
+    public static ProgressBarTask display(final Activity activity, final long delay, final int circleColor) {
+        return display((ViewGroup) activity.getWindow().getDecorView(), delay, circleColor);
+    }
+
+    public static ProgressBarTask display(final Dialog dialog) {
+        return display(dialog, 0);
+    }
+
+    public static ProgressBarTask display(final Dialog dialog, final long delay) {
+        return display(dialog, delay, Integer.MIN_VALUE);
+    }
+
+    public static ProgressBarTask display(final Dialog dialog, final long delay, final int circleColor) {
+        return display((ViewGroup) dialog.getWindow().getDecorView(), delay, circleColor);
+    }
+
+    public static ProgressBarTask display(final ViewGroup root) {
+        return display(root, 0);
+    }
+
+    public static ProgressBarTask display(final ViewGroup root, final long delay) {
+        return display(root, delay, Integer.MIN_VALUE);
+    }
+
+    public static ProgressBarTask display(final ViewGroup root, final long delay, final int circleColor) {
+        return new ProgressBarTask(root, delay, circleColor);
     }
 
     public void finish() {
@@ -79,14 +104,14 @@ public class DisplayProgressBarTask {
         }
     }
 
-    protected ProgressBar createProgressBar(final Activity activity, final int circleColor) {
+    protected ProgressBar createProgressBar(final ViewGroup root, final int circleColor) {
         // Create layout params expecting to be added to a frame layout.
         final FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(0, 0);
         lp.width = lp.height = FrameLayout.LayoutParams.WRAP_CONTENT;
         lp.gravity = Gravity.CENTER;
 
         // Create a progress bar to be added to the window.
-        final ProgressBar progressBar = new ProgressBar(activity);
+        final ProgressBar progressBar = new ProgressBar(root.getContext());
         progressBar.setIndeterminate(true);
         progressBar.setLayoutParams(lp);
 
@@ -94,9 +119,8 @@ public class DisplayProgressBarTask {
             progressBar.getIndeterminateDrawable().setColorFilter(circleColor, android.graphics.PorterDuff.Mode.SRC_ATOP);
         }
 
-        // Get the root view to attach the progress bar to.
-        ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
-        decorView.addView(progressBar);
+        root.addView(progressBar);
+
         return progressBar;
     }
 }

@@ -947,36 +947,36 @@ public abstract class Util {
         return (T) activity.findViewById(id);
     }
 
-    public static TextView getTextViewById(View root, int id) {
-        return (TextView) root.findViewById(id);
+    public static <T extends TextView> T getTextViewById(View root, int id) {
+        return (T) root.findViewById(id);
     }
 
-    public static TextView getTextViewById(Activity activity, int id) {
-        return (TextView) activity.findViewById(id);
+    public static <T extends TextView> T getTextViewById(Activity activity, int id) {
+        return (T) activity.findViewById(id);
     }
 
-    public static EditText getEditTextById(View root, int id) {
-        return (EditText) root.findViewById(id);
+    public static <T extends EditText> T getEditTextById(View root, int id) {
+        return (T) root.findViewById(id);
     }
 
-    public static EditText getEditTextById(Activity activity, int id) {
-        return (EditText) activity.findViewById(id);
+    public static <T extends EditText> T getEditTextById(Activity activity, int id) {
+        return (T) activity.findViewById(id);
     }
 
-    public static ImageView getImageViewById(View root, int id) {
-        return (ImageView) root.findViewById(id);
+    public static <T extends ImageView> T getImageViewById(View root, int id) {
+        return (T) root.findViewById(id);
     }
 
-    public static ImageView getImageViewById(Activity activity, int id) {
-        return (ImageView) activity.findViewById(id);
+    public static <T extends ImageView> T getImageViewById(Activity activity, int id) {
+        return (T) activity.findViewById(id);
     }
 
-    public static Button getButtonById(View root, int id) {
-        return (Button) root.findViewById(id);
+    public static <T extends Button> T getButtonById(View root, int id) {
+        return (T) root.findViewById(id);
     }
 
-    public static Button getButtonById(Activity activity, int id) {
-        return (Button) activity.findViewById(id);
+    public static <T extends Button> T getButtonById(Activity activity, int id) {
+        return (T) activity.findViewById(id);
     }
 
     public static String getViewTextById(View root, int id) {

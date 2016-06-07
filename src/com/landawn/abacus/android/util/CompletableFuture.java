@@ -10,6 +10,7 @@ import java.util.concurrent.TimeoutException;
 import com.landawn.abacus.util.Callback;
 import com.landawn.abacus.util.Callback2;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ThreadMode;
 
 public class CompletableFuture<T> implements RunnableFuture<T> {
     private final FutureTask<T> futureTask;
@@ -28,10 +29,10 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
     /**
      * 
      * @param result
-     * @return a CompletableFuture which is already done by passing the result to it directly.
+     * @return a {@code CompletableFuture} which is already completed.
      */
     public static <T> CompletableFuture<T> of(T result) {
-        return new FinishedFuture<T>(result);
+        return new CompletedFuture<T>(result);
     }
 
     @Override
@@ -141,7 +142,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
      * @param action
      */
     public void callback(final Callback.Action<T> action) {
-        callback(action, ThreadMode.CURRENT_THREAD);
+        callback(action, ThreadMode.DEFAULT);
     }
 
     /**
@@ -150,7 +151,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
      * @param callback
      */
     public void callback(final Callback<T> callback) {
-        callback(callback, ThreadMode.CURRENT_THREAD);
+        callback(callback, ThreadMode.DEFAULT);
     }
 
     /**
@@ -248,7 +249,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
         }
 
         switch (threadMode) {
-            case CURRENT_THREAD:
+            case DEFAULT:
                 callback.on(runtimeException, result);
 
                 break;
@@ -650,11 +651,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
         }, delay);
     }
 
-    static enum ThreadMode {
-        CURRENT_THREAD, SERIAL_EXECUTOR, THREAD_POOL_EXECUTOR, UI_THREAD;
-    }
-
-    static class FinishedFuture<T> extends CompletableFuture<T> {
+    static class CompletedFuture<T> extends CompletableFuture<T> {
         private static final Runnable EMPTY_CALLABLE = new Runnable() {
             @Override
             public void run() {
@@ -664,7 +661,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
 
         private final T result;
 
-        FinishedFuture(T result) {
+        CompletedFuture(T result) {
             super(EMPTY_CALLABLE, null);
 
             this.result = result;

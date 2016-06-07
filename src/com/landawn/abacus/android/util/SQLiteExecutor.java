@@ -634,11 +634,14 @@ public final class SQLiteExecutor {
 
     /**
      * Insert one record into database.
+     * To exclude the some properties or default value, invoke {@code com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)}
      * 
      * <p>The target table is identified by the simple class name of the specified entity.</p>
      * 
      * @param entity with getter/setter methods
      * @return
+     * 
+     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(Object entity) {
         if (!N.isEntity(entity.getClass())) {
@@ -650,6 +653,7 @@ public final class SQLiteExecutor {
 
     /**
      * Insert one record into database.
+     * To exclude the some properties or default value, invoke {@code com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)}
      * 
      * <p>The target table is identified by the simple class name of the specified entity.</p>
      * 
@@ -657,7 +661,7 @@ public final class SQLiteExecutor {
      * @param conflictAlgorithm
      * @return
      * 
-     * @since 0.8.10
+     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(Object entity, int conflictAlgorithm) {
         if (!N.isEntity(entity.getClass())) {
@@ -668,11 +672,14 @@ public final class SQLiteExecutor {
     }
 
     /**
-     * Insert one record into database
+     * Insert one record into database.
+     * To exclude the some properties or default value, invoke {@code com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)}
      * 
      * @param table
      * @param record can be <code>Map</code> or <code>entity</code> with getter/setter methods
      * @return
+     * 
+     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(String table, Object record) {
         table = formatName(table);
@@ -681,14 +688,15 @@ public final class SQLiteExecutor {
     }
 
     /**
-     * Insert one record into database
+     * Insert one record into database.
+     * To exclude the some properties or default value, invoke {@code com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)}
      * 
      * @param table
      * @param record can be <code>Map</code> or <code>entity</code> with getter/setter methods
      * @param conflictAlgorithm
      * @return
      * 
-     * @since 0.8.10
+     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(String table, Object record, int conflictAlgorithm) {
         table = formatName(table);
@@ -822,14 +830,38 @@ public final class SQLiteExecutor {
     }
 
     /**
+     * Update the records in data store with the properties which have been updated/set in the specified <code>entity</code> by id property in the entity.
+     * if the entity implements <code>DirtyMarker</code> interface, just update the dirty properties.
+     * To exclude the some properties or default value, invoke {@code com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)}
+     * 
+     * @param entity with getter/setter methods
+     * @return
+     */
+    public int update(Object entity) {
+        if (!N.isEntity(entity.getClass())) {
+            throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
+        }
+
+        Number id = N.getPropValue(entity, ID);
+        if (id.longValue() == 0) {
+            throw new IllegalArgumentException("Please specify value for the id property");
+        }
+
+        return update(getTableNameByEntity(entity), entity, L.eq(ID, id));
+    }
+
+    /**
      * Update the records in data store with the properties which have been updated/set in the specified <code>entity</code> by the specified condition.
      * if the entity implements <code>DirtyMarker</code> interface, just update the dirty properties.
+     * To exclude the some properties or default value, invoke {@code com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)}
      * 
      * <p>The target table is identified by the simple class name of the specified entity.</p>
      *
      * @param entity with getter/setter methods
      * @param whereClause Only binary(=, <>, like, IS NULL ...)/between/junction(or, and...) are supported.
      * @return
+     * 
+     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public int update(Object entity, Condition whereClause) {
         if (!N.isEntity(entity.getClass())) {
@@ -850,11 +882,14 @@ public final class SQLiteExecutor {
     /**
      * Update the records in data store with the properties which have been updated/set in the specified <code>entity</code> by the specified condition.
      * if the entity implements <code>DirtyMarker</code> interface, just update the dirty properties.
+     * To exclude the some properties or default value, invoke {@code com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)}
      *
      * @param table
      * @param record can be <code>Map</code> or <code>entity</code> with getter/setter methods
      * @param whereClause Only binary(=, <>, like, IS NULL ...)/between/junction(or, and...) are supported.
      * @return
+     * 
+     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public int update(String table, Object record, Condition whereClause) {
         table = formatName(table);
@@ -873,6 +908,26 @@ public final class SQLiteExecutor {
     @Deprecated
     int delete(EntityId entityId) {
         return delete(entityId.entityName(), EntityManagerUtil.entityId2Condition(entityId));
+    }
+
+    /**
+     * Delete the entity by id value in the entity.
+     * 
+     * @param entity
+     * @return
+     */
+    public int delete(Object entity) {
+        if (!N.isEntity(entity.getClass())) {
+            throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
+        }
+
+        Number id = N.getPropValue(entity, ID);
+
+        if (id.longValue() == 0) {
+            throw new IllegalArgumentException("Please specify value for the id property");
+        }
+
+        return delete(getTableNameByEntity(entity), L.eq(ID, id));
     }
 
     /**
@@ -1315,7 +1370,7 @@ public final class SQLiteExecutor {
      */
     public DataSet query(final Class<?> targetClass, Collection<String> selectColumnNames, Condition whereClause, String groupBy, String having, String orderBy,
             int offset, int count) {
-        if (selectColumnNames == null) {
+        if (N.isNullOrEmpty(selectColumnNames)) {
             selectColumnNames = N.getPropGetMethodList(targetClass).keySet();
         }
 

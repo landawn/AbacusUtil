@@ -17,20 +17,20 @@ public abstract class ExpandableListActivityBase extends ExpandableListActivity 
         return (T) this.findViewById(id);
     }
 
-    public TextView getTextViewById(int id) {
-        return (TextView) this.findViewById(id);
+    public <T extends TextView> T getTextViewById(int id) {
+        return (T) this.findViewById(id);
     }
 
-    public EditText getEditTextById(int id) {
-        return (EditText) this.findViewById(id);
+    public <T extends EditText> T getEditTextById(int id) {
+        return (T) this.findViewById(id);
     }
 
-    public ImageView getImageViewById(int id) {
-        return (ImageView) this.findViewById(id);
+    public <T extends ImageView> T getImageViewById(int id) {
+        return (T) this.findViewById(id);
     }
 
-    public Button getButtonById(int id) {
-        return (Button) this.findViewById(id);
+    public <T extends Button> T getButtonById(int id) {
+        return (T) this.findViewById(id);
     }
 
     public String getViewTextById(int id) {

@@ -30,7 +30,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
      * @return a CompletableFuture which is already done by passing the result to it directly.
      */
     public static <T> CompletableFuture<T> of(final T result, final AsyncExecutor asyncExecutor) {
-        return new FinishedFuture<T>(asyncExecutor, result);
+        return new CompletedFuture<T>(asyncExecutor, result);
     }
 
     @Override
@@ -238,7 +238,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
         });
     }
 
-    static class FinishedFuture<T> extends CompletableFuture<T> {
+    static class CompletedFuture<T> extends CompletableFuture<T> {
         private static final Runnable EMPTY_CALLABLE = new Runnable() {
             @Override
             public void run() {
@@ -248,7 +248,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
 
         private final T result;
 
-        FinishedFuture(final AsyncExecutor asyncExecutor, T result) {
+        CompletedFuture(final AsyncExecutor asyncExecutor, T result) {
             super(asyncExecutor, EMPTY_CALLABLE, null);
 
             this.result = result;

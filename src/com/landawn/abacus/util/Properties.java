@@ -31,7 +31,7 @@ public class Properties<K, V> implements Map<K, V> {
         this.values = valueMap;
     }
 
-    public static <K, V> Properties<K, V> valueOf(Object... a) {
+    public static <K, V> Properties<K, V> of(Object... a) {
         return new Properties<K, V>((Map<K, V>) N.asMap(a));
     }
 
