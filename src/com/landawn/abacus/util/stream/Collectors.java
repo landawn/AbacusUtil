@@ -1875,10 +1875,10 @@ public final class Collectors {
      * @return
      * @see #toMap(Function, Function)
      */
-    public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+    public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedHashMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
         final BinaryOperator<U> mergeFunction = throwingMerger();
 
-        return toLinkedMap(keyMapper, valueMapper, mergeFunction);
+        return toLinkedHashMap(keyMapper, valueMapper, mergeFunction);
     }
 
     /**
@@ -1889,7 +1889,7 @@ public final class Collectors {
      * @return
      * @see #toMap(Function, Function, BinaryOperator)
      */
-    public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedHashMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
         final Supplier<Map<K, U>> mapSupplier = new Supplier<Map<K, U>>() {
             @Override
