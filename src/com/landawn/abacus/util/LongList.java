@@ -23,6 +23,8 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongPredicate;
+import com.landawn.abacus.util.stream.LongStream;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -553,6 +555,10 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
         for (int i = 0; i < size; i++) {
             multiset.add(elementData[i]);
         }
+    }
+
+    public LongStream stream() {
+        return Stream.of(elementData, 0, size());
     }
 
     @Override

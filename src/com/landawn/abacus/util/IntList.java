@@ -23,6 +23,8 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -608,6 +610,10 @@ public final class IntList extends AbastractPrimitiveList<IntConsumer, IntPredic
         for (int i = 0; i < size; i++) {
             multiset.add(elementData[i]);
         }
+    }
+
+    public IntStream stream() {
+        return Stream.of(elementData, 0, size());
     }
 
     @Override

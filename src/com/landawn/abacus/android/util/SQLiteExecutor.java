@@ -45,10 +45,14 @@ import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.ObjectPool;
+import com.landawn.abacus.util.SQLBuilder;
 import com.landawn.abacus.util.SQLBuilder.NE;
 import com.landawn.abacus.util.SQLBuilder.NE2;
 import com.landawn.abacus.util.SQLBuilder.NE3;
 import com.landawn.abacus.util.SQLBuilder.Pair;
+import com.landawn.abacus.util.SQLBuilder.RE;
+import com.landawn.abacus.util.SQLBuilder.RE2;
+import com.landawn.abacus.util.SQLBuilder.RE3;
 import com.landawn.abacus.util.SQLParser;
 
 import android.content.ContentValues;
@@ -843,6 +847,7 @@ public final class SQLiteExecutor {
         }
 
         Number id = N.getPropValue(entity, ID);
+
         if (id.longValue() == 0) {
             throw new IllegalArgumentException("Please specify value for the id property");
         }
@@ -1043,6 +1048,17 @@ public final class SQLiteExecutor {
         }
     }
 
+    public boolean exists(Class<?> entityClass, Condition whereClause) {
+        return exists(getTableNameByEntity(entityClass), whereClause);
+    }
+
+    public boolean exists(String tableName, Condition whereClause) {
+        final Pair pair = select(tableName, SQLBuilder._1, whereClause);
+        final Object[] parameters = N.isNullOrEmpty(pair.parameters) ? N.EMPTY_OBJECT_ARRAY : pair.parameters.toArray(new Object[pair.parameters.size()]);
+
+        return exists(pair.sql, parameters);
+    }
+
     /**
      * Remember to add {@code limit} condition if big result will be returned by the query.
      *
@@ -1060,8 +1076,35 @@ public final class SQLiteExecutor {
         }
     }
 
+    public int count(Class<?> entityClass, Condition whereClause) {
+        return count(getTableNameByEntity(entityClass), whereClause);
+    }
+
+    public int count(String tableName, Condition whereClause) {
+        final Pair pair = select(tableName, SQLBuilder.COUNT_ALL, whereClause);
+        final Object[] parameters = N.isNullOrEmpty(pair.parameters) ? N.EMPTY_OBJECT_ARRAY : pair.parameters.toArray(new Object[pair.parameters.size()]);
+
+        return count(pair.sql, parameters);
+    }
+
     public int count(String sql, Object... parameters) {
         return queryForSingleResult(int.class, sql, parameters);
+    }
+
+    private Pair select(String tableName, String selectColumnName, Condition whereClause) {
+        switch (columnNamingPolicy) {
+            case LOWER_CASE_WITH_UNDERSCORE:
+                return RE.select(selectColumnName).from(tableName).where(whereClause).pair();
+
+            case UPPER_CASE_WITH_UNDERSCORE:
+                return RE2.select(selectColumnName).from(tableName).where(whereClause).pair();
+
+            case CAMEL_CASE:
+                return RE3.select(selectColumnName).from(tableName).where(whereClause).pair();
+
+            default:
+                return RE.select(selectColumnName).from(tableName).where(whereClause).pair();
+        }
     }
 
     // mess up
@@ -1208,6 +1251,22 @@ public final class SQLiteExecutor {
         }
     }
 
+    @Deprecated
+    <T> T queryForSingleResult(final Class<?> entityClass, final String columnName, Condition whereClause) {
+        //        final Method propGetMethod = N.getPropGetMethod(entityClass, columnName);
+        //        final Class<T> targetClass = (Class) propGetMethod.getReturnType();
+        //        final DataSet rs = query(getTableNameByEntity(entityClass), Array.of(columnName), Array.of(targetClass), whereClause, null, null, null, 0, 1);
+        //
+        //        if (N.isNullOrEmpty(rs)) {
+        //            return N.defaultValueOf(targetClass);
+        //        } else {
+        //            return N.as(targetClass, rs.absolute(0).get(0));
+        //        }
+
+        return queryForSingleResult((Class<T>) N.getPropGetMethod(entityClass, columnName).getReturnType(), getTableNameByEntity(entityClass), columnName,
+                whereClause);
+    }
+
     //    <T> T queryForEntity(final Class<T> targetClass, String... selectColumnNames) {
     //        return queryForEntity(targetClass, N.asList(selectColumnNames));
     //    }
@@ -1257,6 +1316,48 @@ public final class SQLiteExecutor {
 
         return N.isNullOrEmpty(rs) ? null : rs.getRow(targetClass, 0);
     }
+
+    //    public <T> Optional<T> queryForEntity2(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
+    //        return queryForEntity2(targetClass, selectColumnNames, whereClause, null);
+    //    }
+    //
+    //    /**
+    //     * Just fetch the result in the 1st row. {@code null} is returned if no result is found. This method will try to
+    //     * convert the column values to the type of mapping entity property if the mapping entity property is not assignable
+    //     * from column value.
+    //     *
+    //     * @param targetClass an entity class with getter/setter methods.
+    //     * @param selectColumnNames
+    //     * @param whereClause Only binary(=, <>, like, IS NULL ...)/between/junction(or, and...) are supported.
+    //     * @param orderby How to order the rows, formatted as an SQL ORDER BY clause (excluding the ORDER BY itself). Passing null will use the default sort order, which may be unordered.
+    //     * @return
+    //     */
+    //    public <T> Optional<T> queryForEntity2(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
+    //        final List<T> resultList = find(targetClass, selectColumnNames, whereClause, orderBy, 0, 1);
+    //
+    //        return Optional.ofNullable(N.isNullOrEmpty(resultList) ? null : resultList.get(0));
+    //    }
+    //
+    //    /**
+    //     * Just fetch the result in the 1st row. {@code null} is returned if no result is found. This method will try to
+    //     * convert the column values to the type of mapping entity property if the mapping entity property is not assignable
+    //     * from the column value.
+    //     *
+    //     * Remember to add {@code limit} condition if big result will be returned by the query.
+    //     *
+    //     * @param targetClass an entity class with getter/setter methods.
+    //     * @param sql set <code>offset</code> and <code>limit</code> in sql with format: 
+    //     * <li><code>SELECT * FROM account where id = ? LIMIT <i>offsetValue</i>, <i>limitValue</i></code></li>
+    //     * <br>or limit only:</br>
+    //     * <li><code>SELECT * FROM account where id = ? LIMIT <i>limitValue</i></code></li>
+    //     * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
+    //     * @return
+    //     */
+    //    public <T> Optional<T> queryForEntity2(final Class<T> targetClass, final String sql, Object... parameters) {
+    //        final DataSet rs = query(targetClass, sql, 0, 1, parameters);
+    //
+    //        return Optional.ofNullable(N.isNullOrEmpty(rs) ? null : rs.getRow(targetClass, 0));
+    //    }
 
     //    <T> List<T> find(final Class<T> targetClass, String... selectColumnNames) {
     //        return find(targetClass, N.asList(selectColumnNames));

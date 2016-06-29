@@ -23,6 +23,8 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortPredicate;
+import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -553,6 +555,10 @@ public final class ShortList extends AbastractPrimitiveList<ShortConsumer, Short
         for (int i = 0; i < size; i++) {
             multiset.add(elementData[i]);
         }
+    }
+
+    public IntStream stream() {
+        return Stream.of(elementData, 0, size());
     }
 
     @Override

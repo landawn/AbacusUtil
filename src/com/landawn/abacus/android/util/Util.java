@@ -19,6 +19,7 @@ import com.landawn.abacus.util.NamingPolicy;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -939,12 +940,20 @@ public abstract class Util {
         return (T) activity.findViewById(id);
     }
 
+    public static <T extends View> T getViewById(Dialog dialog, int id) {
+        return (T) dialog.findViewById(id);
+    }
+
     public static <T extends View> T getViewById(Class<T> cls, View root, int id) {
         return (T) root.findViewById(id);
     }
 
     public static <T extends View> T getViewById(Class<T> cls, Activity activity, int id) {
         return (T) activity.findViewById(id);
+    }
+
+    public static <T extends View> T getViewById(Class<T> cls, Dialog dialog, int id) {
+        return (T) dialog.findViewById(id);
     }
 
     public static <T extends TextView> T getTextViewById(View root, int id) {
@@ -955,12 +964,20 @@ public abstract class Util {
         return (T) activity.findViewById(id);
     }
 
+    public static <T extends TextView> T getTextViewById(Dialog dialog, int id) {
+        return (T) dialog.findViewById(id);
+    }
+
     public static <T extends EditText> T getEditTextById(View root, int id) {
         return (T) root.findViewById(id);
     }
 
     public static <T extends EditText> T getEditTextById(Activity activity, int id) {
         return (T) activity.findViewById(id);
+    }
+
+    public static <T extends EditText> T getEditTextById(Dialog dialog, int id) {
+        return (T) dialog.findViewById(id);
     }
 
     public static <T extends ImageView> T getImageViewById(View root, int id) {
@@ -971,6 +988,10 @@ public abstract class Util {
         return (T) activity.findViewById(id);
     }
 
+    public static <T extends ImageView> T getImageViewById(Dialog dialog, int id) {
+        return (T) dialog.findViewById(id);
+    }
+
     public static <T extends Button> T getButtonById(View root, int id) {
         return (T) root.findViewById(id);
     }
@@ -979,12 +1000,20 @@ public abstract class Util {
         return (T) activity.findViewById(id);
     }
 
+    public static <T extends Button> T getButtonById(Dialog dialog, int id) {
+        return (T) dialog.findViewById(id);
+    }
+
     public static String getViewTextById(View root, int id) {
         return getTextViewById(root, id).getText().toString().trim();
     }
 
     public static String getViewTextById(Activity activity, int id) {
         return getTextViewById(activity, id).getText().toString().trim();
+    }
+
+    public static String getViewTextById(Dialog dialog, int id) {
+        return getTextViewById(dialog, id).getText().toString().trim();
     }
 
     /**

@@ -23,6 +23,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -531,6 +532,10 @@ public final class StringList extends AbastractPrimitiveList<Consumer<String>, P
         for (int i = 0; i < size; i++) {
             multiset.add(elementData[i]);
         }
+    }
+
+    public Stream<String> stream() {
+        return Stream.of(elementData, 0, size());
     }
 
     @Override

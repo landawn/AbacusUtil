@@ -23,6 +23,8 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatPredicate;
+import com.landawn.abacus.util.stream.DoubleStream;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -536,6 +538,10 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
         for (int i = 0; i < size; i++) {
             multiset.add(elementData[i]);
         }
+    }
+
+    public DoubleStream stream() {
+        return Stream.of(elementData, 0, size());
     }
 
     @Override
