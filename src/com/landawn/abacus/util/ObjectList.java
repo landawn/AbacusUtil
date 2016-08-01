@@ -26,11 +26,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.util.function.ByteBinaryOperator;
-import com.landawn.abacus.util.function.ByteConsumer;
-import com.landawn.abacus.util.function.ByteFunction;
-import com.landawn.abacus.util.function.BytePredicate;
-import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -39,34 +38,24 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredicate, Byte, byte[], ByteList> {
-    private byte[] elementData = N.EMPTY_BYTE_ARRAY;
+public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate<T>, T, T[], ObjectList<T>> {
+    private T[] elementData = null;
     private int size = 0;
-
-    public ByteList() {
-        super();
-    }
-
-    public ByteList(int initialCapacity) {
-        this();
-
-        elementData = new byte[initialCapacity];
-    }
 
     /**
      * The specified array is used as the element array for this list without copying action.
      * 
      * @param a
      */
-    public ByteList(byte[] a) {
-        this();
+    public ObjectList(T[] a) {
+        super();
 
         elementData = a;
         size = a.length;
     }
 
-    public ByteList(byte[] a, int size) {
-        this();
+    public ObjectList(T[] a, int size) {
+        super();
 
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
@@ -76,108 +65,12 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         this.size = size;
     }
 
-    public static ByteList of(byte[] a) {
-        return new ByteList(a);
+    public static <T> ObjectList<T> of(T[] a) {
+        return new ObjectList<T>(a);
     }
 
-    public static ByteList of(byte[] a, int size) {
-        return new ByteList(a, size);
-    }
-
-    public static ByteList of(int[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static ByteList of(int[] a, final int fromIndex, final int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final byte[] elementData = new byte[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] < Byte.MIN_VALUE || a[i] > Byte.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - fromIndex] = (byte) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    public static ByteList of(String[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static ByteList of(String[] a, final int fromIndex, final int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final byte[] elementData = new byte[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            double val = N.asDouble(a[i]);
-
-            if (N.compare(val, Byte.MIN_VALUE) < 0 || N.compare(val, Byte.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - fromIndex] = (byte) val;
-        }
-
-        return of(elementData);
-    }
-
-    public static ByteList of(List<String> c) {
-        return of(c, (byte) 0);
-    }
-
-    public static ByteList of(List<String> c, byte defaultValueForNull) {
-        final byte[] a = new byte[c.size()];
-        int idx = 0;
-
-        for (String e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = N.asDouble(e);
-
-                if (N.compare(val, Byte.MIN_VALUE) < 0 || N.compare(val, Byte.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (byte) val;
-            }
-        }
-
-        return of(a);
-    }
-
-    public static ByteList of(Collection<? extends Number> c) {
-        return of(c, (byte) 0);
-    }
-
-    public static ByteList of(Collection<? extends Number> c, byte defaultValueForNull) {
-        final byte[] a = new byte[c.size()];
-        int idx = 0;
-
-        for (Number e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = e.doubleValue();
-
-                if (N.compare(val, Byte.MIN_VALUE) < 0 || N.compare(val, Byte.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (byte) val;
-            }
-        }
-
-        return of(a);
+    public static <T> ObjectList<T> of(T[] a, int size) {
+        return new ObjectList<T>(a, size);
     }
 
     /**
@@ -186,7 +79,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @return
      */
     @Override
-    public byte[] array() {
+    public T[] array() {
         return elementData;
     }
 
@@ -195,8 +88,8 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @return
      */
     @Beta
-    public OptionalByte findFirst() {
-        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[0]);
+    public Optional<T> findFirst() {
+        return size() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elementData[0]);
     }
 
     /**
@@ -204,11 +97,11 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @return
      */
     @Beta
-    public OptionalByte findLast() {
-        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[size - 1]);
+    public Optional<T> findLast() {
+        return size() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elementData[size - 1]);
     }
 
-    public byte get(int index) {
+    public T get(int index) {
         rangeCheck(index);
 
         return elementData[index];
@@ -226,23 +119,23 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @param e
      * @return the old value in the specified position.
      */
-    public byte set(int index, byte e) {
+    public T set(int index, T e) {
         rangeCheck(index);
 
-        byte oldValue = elementData[index];
+        T oldValue = elementData[index];
 
         elementData[index] = e;
 
         return oldValue;
     }
 
-    public void add(byte e) {
+    public void add(T e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
     }
 
-    public void add(int index, byte e) {
+    public void add(int index, T e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -259,7 +152,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public void addAll(ByteList c) {
+    public void addAll(ObjectList<T> c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -270,7 +163,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public void addAll(int index, ByteList c) {
+    public void addAll(int index, ObjectList<T> c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -299,9 +192,9 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @param e
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(byte e) {
+    public boolean remove(T e) {
         for (int i = 0; i < size; i++) {
-            if (elementData[i] == e) {
+            if (N.equals(elementData[i], e)) {
 
                 fastRemove(i);
 
@@ -318,12 +211,12 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @param removeAllOccurrences
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(byte e, boolean removeAllOccurrences) {
+    public boolean remove(T e, boolean removeAllOccurrences) {
         if (removeAllOccurrences) {
             int w = 0;
 
             for (int i = 0; i < size; i++) {
-                if (elementData[i] != e) {
+                if (!N.equals(elementData[i], e)) {
                     elementData[w++] = elementData[i];
                 }
             }
@@ -331,7 +224,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
             int numRemoved = size - w;
 
             if (numRemoved > 0) {
-                N.fill(elementData, w, size, (byte) 0);
+                N.fill(elementData, w, size, 0);
 
                 size = w;
             }
@@ -350,21 +243,21 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
             N.copy(elementData, index + 1, elementData, index, numMoved);
         }
 
-        elementData[--size] = 0; // clear to let GC do its work
+        elementData[--size] = null; // clear to let GC do its work
     }
 
     @Override
-    public boolean removeAll(ByteList c) {
+    public boolean removeAll(ObjectList<T> c) {
         return batchRemove(c, false) > 0;
     }
 
     @Override
-    public boolean retainAll(ByteList c) {
+    public boolean retainAll(ObjectList<T> c) {
         return batchRemove(c, true) > 0;
     }
 
-    private int batchRemove(ByteList c, boolean complement) {
-        final byte[] elementData = this.elementData;
+    private int batchRemove(ObjectList<T> c, boolean complement) {
+        final T[] elementData = this.elementData;
 
         int w = 0;
 
@@ -377,7 +270,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         int numRemoved = size - w;
 
         if (numRemoved > 0) {
-            N.fill(elementData, w, size, (byte) 0);
+            N.fill(elementData, w, size, 0);
 
             size = w;
         }
@@ -390,23 +283,23 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @param index
      * @return the deleted element
      */
-    public byte delete(int index) {
+    public T delete(int index) {
         rangeCheck(index);
 
-        byte oldValue = elementData[index];
+        T oldValue = elementData[index];
 
         fastRemove(index);
 
         return oldValue;
     }
 
-    public boolean contains(byte e) {
+    public boolean contains(T e) {
         return indexOf(e) >= 0;
     }
 
     @Override
-    public boolean containsAll(ByteList c) {
-        final byte[] srcElementData = c.array();
+    public boolean containsAll(ObjectList<T> c) {
+        final T[] srcElementData = c.array();
 
         for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
 
@@ -419,21 +312,21 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public ByteList subList(final int fromIndex, final int toIndex) {
+    public ObjectList<T> subList(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
+        return new ObjectList<T>(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
-    public int indexOf(byte e) {
+    public int indexOf(T e) {
         return indexOf(0, e);
     }
 
-    public int indexOf(final int fromIndex, byte e) {
+    public int indexOf(final int fromIndex, T e) {
         checkIndex(fromIndex, size);
 
         for (int i = fromIndex; i < size; i++) {
-            if (elementData[i] == e) {
+            if (N.equals(elementData[i], e)) {
                 return i;
             }
         }
@@ -441,7 +334,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return -1;
     }
 
-    public int lastIndexOf(byte e) {
+    public int lastIndexOf(T e) {
         return lastIndexOf(size, e);
     }
 
@@ -451,11 +344,11 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @param e
      * @return
      */
-    public int lastIndexOf(final int fromIndex, byte e) {
+    public int lastIndexOf(final int fromIndex, T e) {
         checkIndex(0, fromIndex);
 
         for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
-            if (elementData[i] == e) {
+            if (N.equals(elementData[i], e)) {
                 return i;
             }
         }
@@ -463,42 +356,48 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return -1;
     }
 
-    public byte min() {
+    public T min() {
         return min(0, size());
     }
 
-    public byte min(final int fromIndex, final int toIndex) {
+    public T min(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.min(elementData, fromIndex, toIndex);
+        return (T) N.min((Comparable[]) elementData, fromIndex, toIndex);
     }
 
-    public byte max() {
+    public T min(Comparator<T> cmp) {
+        return min(0, size(), cmp);
+    }
+
+    public T min(final int fromIndex, final int toIndex, Comparator<T> cmp) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.min(elementData, fromIndex, toIndex, cmp);
+    }
+
+    public T max() {
         return max(0, size());
     }
 
-    public byte max(final int fromIndex, final int toIndex) {
+    public T max(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.max(elementData, fromIndex, toIndex);
+        return (T) N.max((Comparable[]) elementData, fromIndex, toIndex);
+    }
+
+    public T max(Comparator<T> cmp) {
+        return min(0, size(), cmp);
+    }
+
+    public T max(final int fromIndex, final int toIndex, Comparator<T> cmp) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.max(elementData, fromIndex, toIndex, cmp);
     }
 
     @Override
-    public Number sum(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return N.sum(elementData, fromIndex, toIndex);
-    }
-
-    @Override
-    public Number avg(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return N.avg(elementData, fromIndex, toIndex);
-    }
-
-    @Override
-    public void forEach(final int fromIndex, final int toIndex, ByteConsumer action) {
+    public void forEach(final int fromIndex, final int toIndex, Consumer<T> action) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -509,7 +408,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
+    public boolean allMatch(final int fromIndex, final int toIndex, Predicate<T> filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -524,7 +423,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
+    public boolean anyMatch(final int fromIndex, final int toIndex, Predicate<T> filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -539,7 +438,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
+    public boolean noneMatch(final int fromIndex, final int toIndex, Predicate<T> filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -554,35 +453,35 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public int count(final int fromIndex, final int toIndex, BytePredicate filter) {
+    public int count(final int fromIndex, final int toIndex, Predicate<T> filter) {
         checkIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
-    public ByteList filter(final int fromIndex, final int toIndex, BytePredicate filter) {
+    public ObjectList<T> filter(final int fromIndex, final int toIndex, Predicate<T> filter) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
-    public <R> List<R> map(final ByteFunction<? extends R> func) {
+    public <R> List<R> map(final Function<? super T, ? extends R> func) {
         return map(0, size(), func);
     }
 
-    public <R> List<R> map(final int fromIndex, final int toIndex, final ByteFunction<? extends R> func) {
+    public <R> List<R> map(final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
         return map(List.class, fromIndex, toIndex, func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final ByteFunction<? extends R> func) {
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final Function<? super T, ? extends R> func) {
         return map(collClass, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
     public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<? extends R> func) {
+            final Function<? super T, ? extends R> func) {
         checkIndex(fromIndex, toIndex);
 
         final V res = (V) N.newInstance(collClass);
@@ -594,22 +493,23 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return res;
     }
 
-    public <R> List<R> flatMap(final ByteFunction<? extends Collection<? extends R>> func) {
+    public <R> List<R> flatMap(final Function<? super T, ? extends Collection<? extends R>> func) {
         return flatMap(0, size(), func);
     }
 
-    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final ByteFunction<? extends Collection<? extends R>> func) {
+    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
         return flatMap(List.class, fromIndex, toIndex, func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final ByteFunction<? extends Collection<? extends R>> func) {
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass,
+            final Function<? super T, ? extends Collection<? extends R>> func) {
         return flatMap(List.class, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
     public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<? extends Collection<? extends R>> func) {
+            final Function<? super T, ? extends Collection<? extends R>> func) {
         checkIndex(fromIndex, toIndex);
 
         final V res = (V) N.newInstance(collClass);
@@ -621,22 +521,22 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return res;
     }
 
-    public <R> List<R> flatMap2(final ByteFunction<R[]> func) {
+    public <R> List<R> flatMap2(final Function<? super T, R[]> func) {
         return flatMap2(0, size(), func);
     }
 
-    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final ByteFunction<R[]> func) {
+    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
         return flatMap2(List.class, fromIndex, toIndex, func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final ByteFunction<R[]> func) {
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final Function<? super T, R[]> func) {
         return flatMap2(List.class, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
     public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<R[]> func) {
+            final Function<? super T, R[]> func) {
         checkIndex(fromIndex, toIndex);
 
         final V res = (V) N.newInstance(collClass);
@@ -648,35 +548,35 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return res;
     }
 
-    public <K> Map<K, List<Byte>> groupBy(final ByteFunction<? extends K> func) {
+    public <K> Map<K, List<T>> groupBy(final Function<? super T, ? extends K> func) {
         return groupBy(0, size(), func);
     }
 
-    public <K> Map<K, List<Byte>> groupBy(final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
+    public <K> Map<K, List<T>> groupBy(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
         return groupBy(List.class, fromIndex, toIndex, func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final ByteFunction<? extends K> func) {
+    public <K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Function<? super T, ? extends K> func) {
         return groupBy(HashMap.class, List.class, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<? extends K> func) {
+    public <K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> func) {
         return groupBy(HashMap.class, List.class, fromIndex, toIndex, func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Byte>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
-            final ByteFunction<? extends K> func) {
+    public <K, V extends Collection<T>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final Function<? super T, ? extends K> func) {
 
         return groupBy(outputClass, List.class, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Byte>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
-            final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
+    public <K, V extends Collection<T>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
         final R outputResult = N.newInstance(outputClass);
@@ -699,32 +599,32 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return outputResult;
     }
 
-    public byte reduce(final ByteBinaryOperator accumulator) {
+    public T reduce(final BiFunction<T, T, T> accumulator) {
         return reduce(0, size(), accumulator);
     }
 
-    public byte reduce(final int fromIndex, final int toIndex, final ByteBinaryOperator accumulator) {
-        return reduce(fromIndex, toIndex, (byte) 0, accumulator);
+    public T reduce(final int fromIndex, final int toIndex, final BiFunction<T, T, T> accumulator) {
+        return reduce(fromIndex, toIndex, null, accumulator);
     }
 
-    public byte reduce(final byte identity, final ByteBinaryOperator accumulator) {
+    public T reduce(final T identity, final BiFunction<T, T, T> accumulator) {
         return reduce(0, size(), identity, accumulator);
     }
 
-    public byte reduce(final int fromIndex, final int toIndex, final byte identity, final ByteBinaryOperator accumulator) {
+    public T reduce(final int fromIndex, final int toIndex, final T identity, final BiFunction<T, T, T> accumulator) {
         checkIndex(fromIndex, toIndex);
 
-        byte result = identity;
+        T result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.applyAsByte(result, elementData[i]);
+            result = accumulator.apply(result, elementData[i]);
         }
 
         return result;
     }
 
     @Override
-    public ByteList distinct(final int fromIndex, final int toIndex) {
+    public ObjectList<T> distinct(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 1) {
@@ -735,37 +635,37 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public List<ByteList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<ObjectList<T>> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<ByteList> result = new ArrayList<>(list.size());
+        final List<T[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<ObjectList<T>> result = new ArrayList<>(list.size());
 
-        for (byte[] a : list) {
-            result.add(ByteList.of(a));
+        for (T[] a : list) {
+            result.add(ObjectList.of(a));
         }
 
         return result;
     }
 
-    @Override
-    public ByteList top(int top) {
-        throw new UnsupportedOperationException();
+    public ObjectList<T> top(final int top) {
+        return top(0, size(), top);
     }
 
-    @Override
-    public ByteList top(int fromIndex, int toIndex, int top) {
-        throw new UnsupportedOperationException();
+    public ObjectList<T> top(final int fromIndex, final int toIndex, final int top) {
+        checkIndex(fromIndex, toIndex);
+
+        return of((T[]) N.top((Comparable[]) elementData, fromIndex, toIndex, top));
     }
 
-    @Override
-    public ByteList top(int top, Comparator<Byte> cmp) {
-        throw new UnsupportedOperationException();
+    public ObjectList<T> top(final int top, Comparator<T> cmp) {
+        return top(0, size(), top, cmp);
     }
 
-    @Override
-    public ByteList top(int fromIndex, int toIndex, int top, Comparator<Byte> cmp) {
-        throw new UnsupportedOperationException();
+    public ObjectList<T> top(final int fromIndex, final int toIndex, final int top, Comparator<T> cmp) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.top(elementData, fromIndex, toIndex, top, cmp));
     }
 
     @Override
@@ -776,14 +676,14 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public ByteList copy(final int fromIndex, final int toIndex) {
+    public ObjectList<T> copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
+        return new ObjectList<T>(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override
-    public ByteList trimToSize() {
+    public ObjectList<T> trimToSize() {
         if (elementData.length == size) {
             return this;
         }
@@ -794,7 +694,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     @Override
     public void clear() {
         if (size > 0) {
-            N.fill(elementData, 0, size, (byte) 0);
+            N.fill(elementData, 0, size, 0);
         }
 
         size = 0;
@@ -811,7 +711,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public void toList(List<Byte> list, final int fromIndex, final int toIndex) {
+    public void toList(List<T> list, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -820,7 +720,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public void toSet(Set<Byte> set, final int fromIndex, final int toIndex) {
+    public void toSet(Set<T> set, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -829,7 +729,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public void toMultiset(Multiset<Byte> multiset, final int fromIndex, final int toIndex) {
+    public void toMultiset(Multiset<T> multiset, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -837,11 +737,11 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         }
     }
 
-    public IntStream stream() {
+    public Stream<T> stream() {
         return stream(0, size());
     }
 
-    public IntStream stream(final int fromIndex, final int toIndex) {
+    public Stream<T> stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return Stream.of(elementData, fromIndex, toIndex);
@@ -854,7 +754,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || (obj instanceof ByteList && N.equals(elementData, 0, size(), ((ByteList) obj).elementData));
+        return obj == this || (obj instanceof ObjectList && N.equals(elementData, 0, size(), ((ObjectList<T>) obj).elementData));
 
     }
 
@@ -864,7 +764,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     private void ensureCapacityInternal(int minCapacity) {
-        if (elementData == N.EMPTY_BYTE_ARRAY) {
+        if (N.isNullOrEmpty(elementData)) {
             minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
         }
 

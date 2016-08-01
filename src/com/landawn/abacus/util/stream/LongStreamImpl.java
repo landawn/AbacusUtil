@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
@@ -325,7 +326,7 @@ final class LongStreamImpl implements LongStream {
 
     @Override
     public Stream<Long> boxed() {
-        return new ArrayStream<Long>(N.wrap(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Long>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
     }
 
     @Override

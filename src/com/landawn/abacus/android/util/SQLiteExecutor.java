@@ -1953,7 +1953,7 @@ public final class SQLiteExecutor {
         final Command cmd = new Command();
 
         cmd.setSql(formatName(binary.getPropName()) + D.SPACE + binary.getOperator() + " ?");
-        cmd.setArgs(N.arrayOf(N.stringOf(binary.getPropValue())));
+        cmd.setArgs(Array.of(N.stringOf(binary.getPropValue())));
 
         return cmd;
     }
@@ -1962,7 +1962,7 @@ public final class SQLiteExecutor {
         final Command cmd = new Command();
 
         cmd.setSql(formatName(bt.getPropName()) + D.SPACE + bt.getOperator() + " (?, ?)");
-        cmd.setArgs(N.arrayOf(N.stringOf(bt.getMinValue()), N.stringOf(bt.getMaxValue())));
+        cmd.setArgs(Array.of(N.stringOf(bt.getMinValue()), N.stringOf(bt.getMaxValue())));
 
         return cmd;
     }

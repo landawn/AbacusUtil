@@ -43,7 +43,7 @@ public final class MutableBoolean implements Mutable<Boolean>, Serializable, Com
     private static final long serialVersionUID = -4830728138360036487L;
 
     /** The mutable value. */
-    private boolean value;
+    private volatile boolean value;
 
     /**
      * Constructs a new MutableBoolean with the default value of false.

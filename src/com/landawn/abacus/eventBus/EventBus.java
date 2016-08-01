@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ThreadMode;
@@ -232,7 +233,7 @@ public class EventBus {
             this.obj = obj;
             this.method = method;
             this.parameterType = method.getParameterTypes()[0];
-            this.parameterType2 = N.isPrimitive(parameterType) ? N.wrap(parameterType) : (N.isPrimitiveWapper(parameterType) ? N.unwrap(parameterType) : null);
+            this.parameterType2 = N.isPrimitive(parameterType) ? Array.wrap(parameterType) : (N.isPrimitiveWapper(parameterType) ? Array.unwrap(parameterType) : null);
             this.eventId = eventId;
             this.threadMode = threadMode;
         }

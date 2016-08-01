@@ -16,13 +16,19 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.BooleanBinaryOperator;
 import com.landawn.abacus.util.function.BooleanConsumer;
+import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 
 /**
@@ -51,10 +57,7 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
      * @param a
      */
     public BooleanList(boolean[] a) {
-        this();
-
-        elementData = a;
-        size = a.length;
+        this(a, a.length);
     }
 
     public BooleanList(boolean[] a, int size) {
@@ -76,19 +79,41 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
         return new BooleanList(a, size);
     }
 
-    public static BooleanList of(Collection<Boolean> c) {
+    public static BooleanList of(String[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static BooleanList of(String[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final boolean[] elementData = new boolean[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            elementData[i - fromIndex] = Boolean.valueOf(a[i]);
+        }
+
+        return of(elementData);
+    }
+
+    public static BooleanList of(List<String> c) {
+        return of(c, false);
+    }
+
+    public static BooleanList of(List<String> c, boolean defaultValueForNull) {
         final boolean[] a = new boolean[c.size()];
         int idx = 0;
 
-        for (Boolean e : c) {
-            if (e == null) {
-                continue;
-            }
-
-            a[idx++] = e;
+        for (String e : c) {
+            a[idx++] = e == null ? defaultValueForNull : Boolean.valueOf(e);
         }
 
         return of(a);
+    }
+
+    public static BooleanList of(Collection<Boolean> c) {
+        return of(c, false);
     }
 
     public static BooleanList of(Collection<Boolean> c, boolean defaultValueForNull) {
@@ -96,11 +121,7 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
         int idx = 0;
 
         for (Boolean e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                a[idx++] = e;
-            }
+            a[idx++] = e == null ? defaultValueForNull : e;
         }
 
         return of(a);
@@ -114,6 +135,24 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     @Override
     public boolean[] array() {
         return elementData;
+    }
+
+    /**
+     * Return the first element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalBoolean findFirst() {
+        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[0]);
+    }
+
+    /**
+     * Return the last element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalBoolean findLast() {
+        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[size - 1]);
     }
 
     public boolean get(int index) {
@@ -208,10 +247,10 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
      * @return <tt>true</tt> if this list contained the specified element
      */
     public boolean remove(boolean e) {
-        for (int index = 0; index < size; index++) {
-            if (elementData[index] == e) {
+        for (int i = 0; i < size; i++) {
+            if (elementData[i] == e) {
 
-                fastRemove(index);
+                fastRemove(i);
 
                 return true;
             }
@@ -296,7 +335,7 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     /**
      * 
      * @param index
-     * @return the deleted element.
+     * @return the deleted element
      */
     public boolean delete(int index) {
         rangeCheck(index);
@@ -327,17 +366,22 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     }
 
     @Override
-    public BooleanList subList(int fromIndex, int toIndex) {
-        subListRangeCheck(fromIndex, toIndex, size);
+    public BooleanList subList(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
         return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     public int indexOf(boolean e) {
-        for (int index = 0; index < size; index++) {
-            if (elementData[index] == e) {
+        return indexOf(0, e);
+    }
 
-                return index;
+    public int indexOf(final int fromIndex, boolean e) {
+        checkIndex(fromIndex, size);
+
+        for (int i = fromIndex; i < size; i++) {
+            if (elementData[i] == e) {
+                return i;
             }
         }
 
@@ -345,10 +389,21 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     }
 
     public int lastIndexOf(boolean e) {
-        for (int index = size; index > 0;) {
-            if (elementData[--index] == e) {
+        return lastIndexOf(size, e);
+    }
 
-                return index;
+    /**
+     * 
+     * @param fromIndex the start index to traverse backwards from. Inclusive.
+     * @param e
+     * @return
+     */
+    public int lastIndexOf(final int fromIndex, boolean e) {
+        checkIndex(0, fromIndex);
+
+        for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
+            if (elementData[i] == e) {
+                return i;
             }
         }
 
@@ -356,18 +411,22 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     }
 
     @Override
-    public void forEach(BooleanConsumer action) {
+    public void forEach(final int fromIndex, final int toIndex, BooleanConsumer action) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elementData[i]);
             }
         }
     }
 
     @Override
-    public boolean allMatch(BooleanPredicate filter) {
+    public boolean allMatch(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i]) == false) {
                     return false;
                 }
@@ -378,9 +437,11 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     }
 
     @Override
-    public boolean anyMatch(BooleanPredicate filter) {
+    public boolean anyMatch(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i])) {
                     return true;
                 }
@@ -391,9 +452,11 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     }
 
     @Override
-    public boolean noneMatch(BooleanPredicate filter) {
+    public boolean noneMatch(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i])) {
                     return false;
                 }
@@ -404,72 +467,264 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     }
 
     @Override
-    public int count(BooleanPredicate filter) {
-        return N.count(elementData, 0, size, filter);
+    public int count(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
-    public BooleanList filter(BooleanPredicate filter) {
-        return of(N.filter(elementData, 0, size, filter));
+    public BooleanList filter(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter));
+    }
+
+    public <R> List<R> map(final BooleanFunction<? extends R> func) {
+        return map(0, size(), func);
+    }
+
+    public <R> List<R> map(final int fromIndex, final int toIndex, final BooleanFunction<? extends R> func) {
+        return map(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final BooleanFunction<? extends R> func) {
+        return map(collClass, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final BooleanFunction<? extends R> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(func.apply(elementData[i]));
+        }
+
+        return res;
+    }
+
+    public <R> List<R> flatMap(final BooleanFunction<? extends Collection<? extends R>> func) {
+        return flatMap(0, size(), func);
+    }
+
+    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends Collection<? extends R>> func) {
+        return flatMap(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final BooleanFunction<? extends Collection<? extends R>> func) {
+        return flatMap(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final BooleanFunction<? extends Collection<? extends R>> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(func.apply(elementData[i]));
+        }
+
+        return res;
+    }
+
+    public <R> List<R> flatMap2(final BooleanFunction<R[]> func) {
+        return flatMap2(0, size(), func);
+    }
+
+    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final BooleanFunction<R[]> func) {
+        return flatMap2(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final BooleanFunction<R[]> func) {
+        return flatMap2(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final BooleanFunction<R[]> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(Arrays.asList(func.apply(elementData[i])));
+        }
+
+        return res;
+    }
+
+    public <K> Map<K, List<Boolean>> groupBy(final BooleanFunction<? extends K> func) {
+        return groupBy(0, size(), func);
+    }
+
+    public <K> Map<K, List<Boolean>> groupBy(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> func) {
+        return groupBy(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Boolean>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final BooleanFunction<? extends K> func) {
+        return groupBy(HashMap.class, List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Boolean>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final BooleanFunction<? extends K> func) {
+        return groupBy(HashMap.class, List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Boolean>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final BooleanFunction<? extends K> func) {
+
+        return groupBy(outputClass, List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Boolean>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final BooleanFunction<? extends K> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final R outputResult = N.newInstance(outputClass);
+
+        K key = null;
+        V values = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = func.apply(elementData[i]);
+            values = outputResult.get(key);
+
+            if (values == null) {
+                values = (V) N.newInstance(collClass);
+                outputResult.put(key, values);
+            }
+
+            values.add(elementData[i]);
+        }
+
+        return outputResult;
+    }
+
+    public boolean reduce(final BooleanBinaryOperator accumulator) {
+        return reduce(0, size(), accumulator);
+    }
+
+    public boolean reduce(final int fromIndex, final int toIndex, final BooleanBinaryOperator accumulator) {
+        return reduce(fromIndex, toIndex, false, accumulator);
+    }
+
+    public boolean reduce(final boolean identity, final BooleanBinaryOperator accumulator) {
+        return reduce(0, size(), identity, accumulator);
+    }
+
+    public boolean reduce(final int fromIndex, final int toIndex, final boolean identity, final BooleanBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        boolean result = identity;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result = accumulator.applyAsBoolean(result, elementData[i]);
+        }
+
+        return result;
     }
 
     @Override
-    public BooleanList distinct() {
+    public BooleanList distinct(final int fromIndex, final int toIndex) {
         if (size > 1) {
-            final Set<Boolean> set = N.newLinkedHashSet();
+            final Boolean[] a = new Boolean[2];
 
             for (int i = 0; i < size; i++) {
-                set.add(elementData[i]);
-
-                if (set.size() >= 2) {
+                if (a[0] == null) {
+                    a[0] = elementData[i];
+                } else if (a[0].booleanValue() != elementData[i]) {
+                    a[1] = elementData[i];
                     break;
                 }
             }
 
-            final Iterator<Boolean> it = set.iterator();
-
-            return set.size() == 1 ? of(N.arrayOf(it.next())) : of(N.arrayOf(it.next(), it.next()));
+            return a[1] == null ? of(Array.of(a[0].booleanValue())) : of(Array.of(a[0].booleanValue(), a[1].booleanValue()));
         } else {
             return of(N.copyOfRange(elementData, 0, size));
         }
     }
 
     @Override
+    public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<BooleanList> result = new ArrayList<>(list.size());
+
+        for (boolean[] a : list) {
+            result.add(BooleanList.of(a));
+        }
+
+        return result;
+    }
+
+    @Override
+    public BooleanList top(int top) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public BooleanList top(int fromIndex, int toIndex, int top) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public BooleanList top(int top, Comparator<Boolean> cmp) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public BooleanList top(int fromIndex, int toIndex, int top, Comparator<Boolean> cmp) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void sort() {
-        if (size > 1) {
-            final Set<Boolean> set = N.newLinkedHashSet();
+        if (size <= 1) {
+            return;
+        }
 
-            for (int i = 0; i < size; i++) {
-                set.add(elementData[i]);
+        final int[] count = new int[2];
 
-                if (set.size() >= 2) {
-                    break;
-                }
-            }
+        for (int i = 0; i < size; i++) {
+            count[elementData[i] == false ? 0 : 1]++;
+        }
 
-            if (set.size() == 1) {
-                elementData[0] = set.iterator().next();
-            } else {
-                elementData[0] = false;
-                elementData[1] = true;
-            }
+        if (count[0] > 0) {
+            N.fill(elementData, 0, count[0], false);
+        }
 
-            size = set.size();
+        if (count[1] > 0) {
+            N.fill(elementData, count[0], count[0] + count[1], true);
         }
     }
 
     @Override
-    public BooleanList copy() {
-        return new BooleanList(N.copyOfRange(elementData, 0, size));
+    public BooleanList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override
     public BooleanList trimToSize() {
-        if (elementData.length > size) {
-            elementData = N.copyOfRange(elementData, 0, size);
+        if (elementData.length == size) {
+            return this;
         }
 
-        return this;
+        return of(N.copyOfRange(elementData, 0, size));
     }
 
     @Override
@@ -492,61 +747,28 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
     }
 
     @Override
-    public List<Boolean> toList() {
-        if (size == 0) {
-            return N.newArrayList();
-        }
+    public void toList(List<Boolean> list, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final List<Boolean> list = N.newArrayList(size);
-
-        toList(list);
-
-        return list;
-    }
-
-    @Override
-    public void toList(List<Boolean> list) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
         }
     }
 
     @Override
-    public Set<Boolean> toSet() {
-        if (size == 0) {
-            return N.newLinkedHashSet();
-        }
+    public void toSet(Set<Boolean> set, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final Set<Boolean> set = N.newLinkedHashSet();
-
-        toSet(set);
-
-        return set;
-    }
-
-    @Override
-    public void toSet(Set<Boolean> set) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
         }
     }
 
     @Override
-    public Multiset<Boolean> toMultiset() {
-        if (size == 0) {
-            return N.newLinkedMultiset();
-        }
+    public void toMultiset(Multiset<Boolean> multiset, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final Multiset<Boolean> multiset = N.newLinkedMultiset();
-
-        toMultiset(multiset);
-
-        return multiset;
-    }
-
-    @Override
-    public void toMultiset(Multiset<Boolean> multiset) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
     }

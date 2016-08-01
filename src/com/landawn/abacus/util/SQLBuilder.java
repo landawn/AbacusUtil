@@ -26,9 +26,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.condition.Between;
@@ -56,7 +56,7 @@ import com.landawn.abacus.logging.LoggerFactory;
  * 
  * @author Haiyang Li
  */
-public abstract class SQLBuilder {
+public abstract class SQLBuilder<T> {
     private static final Logger logger = LoggerFactory.getLogger(SQLBuilder.class);
 
     public static final String ALL = D.ALL;
@@ -123,6 +123,10 @@ public abstract class SQLBuilder {
     static final char[] _SPACE_LIMIT_SPACE = (D.SPACE + D.LIMIT + D.SPACE).toCharArray();
     static final char[] _OFFSET = D.OFFSET.toCharArray();
     static final char[] _SPACE_OFFSET_SPACE = (D.SPACE + D.OFFSET + D.SPACE).toCharArray();
+    static final char[] _AND = D.AND.toCharArray();
+    static final char[] _SPACE_AND_SPACE = (D.SPACE + D.AND + D.SPACE).toCharArray();
+    static final char[] _OR = D.OR.toCharArray();
+    static final char[] _SPACE_OR_SPACE = (D.SPACE + D.OR + D.SPACE).toCharArray();
 
     static final char[] _UNION = D.UNION.toCharArray();
     static final char[] _SPACE_UNION_SPACE = (D.SPACE + D.UNION + D.SPACE).toCharArray();
@@ -148,7 +152,7 @@ public abstract class SQLBuilder {
     private static final Map<String, char[]> tableDeleteFrom = N.newConcurrentHashMap();
     private static final Map<Class<?>, List<String>> classPropNameListPool = N.newConcurrentHashMap();
     private static final Map<Class<?>, Set<String>> classPropNameSetPool = N.newConcurrentHashMap();
-    private static final AtomicInteger activeBuilderStringBuilderCounter = new AtomicInteger();
+    private static final AtomicInteger activeStringBuilderCounter = new AtomicInteger();
 
     private final NamingPolicy namingPolicy;
     private final SQLPolicy sqlPolicy;
@@ -165,8 +169,8 @@ public abstract class SQLBuilder {
     private Collection<Map<String, Object>> propsList;
 
     SQLBuilder(final NamingPolicy namingPolicy, final SQLPolicy sqlPolicy) {
-        if (activeBuilderStringBuilderCounter.incrementAndGet() > 1024) {
-            logger.error("Too many(" + activeBuilderStringBuilderCounter.get()
+        if (activeStringBuilderCounter.incrementAndGet() > 1024) {
+            logger.error("Too many(" + activeStringBuilderCounter.get()
                     + ") StringBuilder instances are created in SQLBuilder. The method sql()/pair() must be called to release resources and close SQLBuilder");
         }
 
@@ -285,7 +289,7 @@ public abstract class SQLBuilder {
         return m;
     }
 
-    public SQLBuilder into(final String tableName) {
+    public SQLBuilder<T> into(final String tableName) {
         if (op != OperationType.ADD) {
             throw new AbacusException("Invalid operation: " + op);
         }
@@ -458,11 +462,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder into(final Class<?> entityClass) {
+    public SQLBuilder<T> into(final Class<?> entityClass) {
         return into(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder from(String expr) {
+    public SQLBuilder<T> from(String expr) {
         expr = expr.trim();
         String tableName = expr.indexOf(D._COMMA) > 0 ? N.split(expr, D._COMMA, true)[0] : expr;
 
@@ -473,7 +477,7 @@ public abstract class SQLBuilder {
         return from(tableName, expr);
     }
 
-    public SQLBuilder from(final String... tableNames) {
+    public SQLBuilder<T> from(final String... tableNames) {
         if (tableNames.length == 1) {
             return from(tableNames[0]);
         } else {
@@ -487,7 +491,7 @@ public abstract class SQLBuilder {
         }
     }
 
-    public SQLBuilder from(final Collection<String> tableNames) {
+    public SQLBuilder<T> from(final Collection<String> tableNames) {
         String tableName = tableNames.iterator().next().trim();
 
         if (tableName.indexOf(D.SPACE) > 0) {
@@ -497,7 +501,7 @@ public abstract class SQLBuilder {
         return from(tableName, N.join(tableNames, D.SPACE));
     }
 
-    public SQLBuilder from(final Map<String, String> tableAliases) {
+    public SQLBuilder<T> from(final Map<String, String> tableAliases) {
         String tableName = tableAliases.keySet().iterator().next().trim();
 
         if (tableName.indexOf(D.SPACE) > 0) {
@@ -518,7 +522,7 @@ public abstract class SQLBuilder {
         return from(tableName, expr);
     }
 
-    private SQLBuilder from(final String tableName, final String fromCause) {
+    private SQLBuilder<T> from(final String tableName, final String fromCause) {
         if (op != OperationType.QUERY) {
             throw new AbacusException("Invalid operation: " + op);
         }
@@ -602,11 +606,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder from(final Class<?> entityClass) {
+    public SQLBuilder<T> from(final Class<?> entityClass) {
         return from(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder join(final String expr) {
+    public SQLBuilder<T> join(final String expr) {
         sb.append(_SPACE_JOIN_SPACE);
 
         sb.append(formalizeName(expr));
@@ -614,11 +618,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder join(final Class<?> entityClass) {
+    public SQLBuilder<T> join(final Class<?> entityClass) {
         return join(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder leftJoin(final String expr) {
+    public SQLBuilder<T> leftJoin(final String expr) {
         sb.append(_SPACE_LEFT_JOIN_SPACE);
 
         sb.append(formalizeName(expr));
@@ -626,11 +630,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder leftJoin(final Class<?> entityClass) {
+    public SQLBuilder<T> leftJoin(final Class<?> entityClass) {
         return leftJoin(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder rightJoin(final String expr) {
+    public SQLBuilder<T> rightJoin(final String expr) {
         sb.append(_SPACE_RIGHT_JOIN_SPACE);
 
         sb.append(formalizeName(expr));
@@ -638,11 +642,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder rightJoin(final Class<?> entityClass) {
+    public SQLBuilder<T> rightJoin(final Class<?> entityClass) {
         return rightJoin(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder fullJoin(final String expr) {
+    public SQLBuilder<T> fullJoin(final String expr) {
         sb.append(_SPACE_FULL_JOIN_SPACE);
 
         sb.append(formalizeName(expr));
@@ -650,11 +654,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder fullJoin(final Class<?> entityClass) {
+    public SQLBuilder<T> fullJoin(final Class<?> entityClass) {
         return fullJoin(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder crossJoin(final String expr) {
+    public SQLBuilder<T> crossJoin(final String expr) {
         sb.append(_SPACE_CROSS_JOIN_SPACE);
 
         sb.append(formalizeName(expr));
@@ -662,11 +666,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder crossJoin(final Class<?> entityClass) {
+    public SQLBuilder<T> crossJoin(final Class<?> entityClass) {
         return crossJoin(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder innerJoin(final String expr) {
+    public SQLBuilder<T> innerJoin(final String expr) {
         sb.append(_SPACE_INNER_JOIN_SPACE);
 
         sb.append(formalizeName(expr));
@@ -674,11 +678,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder innerJoin(final Class<?> entityClass) {
+    public SQLBuilder<T> innerJoin(final Class<?> entityClass) {
         return innerJoin(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder naturalJoin(final String expr) {
+    public SQLBuilder<T> naturalJoin(final String expr) {
         sb.append(_SPACE_NATURAL_JOIN_SPACE);
 
         sb.append(formalizeName(expr));
@@ -686,11 +690,11 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder naturalJoin(final Class<?> entityClass) {
+    public SQLBuilder<T> naturalJoin(final Class<?> entityClass) {
         return naturalJoin(N.getSimpleClassName(entityClass));
     }
 
-    public SQLBuilder on(final String expr) {
+    public SQLBuilder<T> on(final String expr) {
         sb.append(_SPACE_ON_SPACE);
 
         // sb.append(formalizeName(tableName, expr));
@@ -704,7 +708,7 @@ public abstract class SQLBuilder {
      * @param cond any literal written in <code>Expression</code> condition won't be formalized
      * @return
      */
-    public SQLBuilder on(final Condition cond) {
+    public SQLBuilder<T> on(final Condition cond) {
         sb.append(_SPACE_ON_SPACE);
 
         appendCondition(cond);
@@ -712,7 +716,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder using(final String expr) {
+    public SQLBuilder<T> using(final String expr) {
         sb.append(_SPACE_USING_SPACE);
 
         sb.append(formalizeName(tableName, expr));
@@ -720,7 +724,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder where(final String expr) {
+    public SQLBuilder<T> where(final String expr) {
         init();
 
         sb.append(_SPACE_WHERE_SPACE);
@@ -753,7 +757,7 @@ public abstract class SQLBuilder {
      * @param cond any literal written in <code>Expression</code> condition won't be formalized
      * @return
      */
-    public SQLBuilder where(final Condition cond) {
+    public SQLBuilder<T> where(final Condition cond) {
         init();
 
         sb.append(_SPACE_WHERE_SPACE);
@@ -763,7 +767,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final String expr) {
+    public SQLBuilder<T> groupBy(final String expr) {
         sb.append(_SPACE_GROUP_BY_SPACE);
 
         if (expr.indexOf(D._SPACE) > 0) {
@@ -776,7 +780,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final String... columnNames) {
+    public SQLBuilder<T> groupBy(final String... columnNames) {
         sb.append(_SPACE_GROUP_BY_SPACE);
 
         if (columnNames.length == 1) {
@@ -801,7 +805,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final String columnName, final SortDirection direction) {
+    public SQLBuilder<T> groupBy(final String columnName, final SortDirection direction) {
         groupBy(columnName);
 
         sb.append(D._SPACE);
@@ -810,7 +814,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final Collection<String> columnNames) {
+    public SQLBuilder<T> groupBy(final Collection<String> columnNames) {
         sb.append(_SPACE_GROUP_BY_SPACE);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -826,7 +830,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final Collection<String> columnNames, final SortDirection direction) {
+    public SQLBuilder<T> groupBy(final Collection<String> columnNames, final SortDirection direction) {
         groupBy(columnNames);
 
         sb.append(D._SPACE);
@@ -835,7 +839,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final Map<String, SortDirection> orders) {
+    public SQLBuilder<T> groupBy(final Map<String, SortDirection> orders) {
         sb.append(_SPACE_GROUP_BY_SPACE);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -854,7 +858,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder having(final String expr) {
+    public SQLBuilder<T> having(final String expr) {
         sb.append(_SPACE_HAVING_SPACE);
 
         appendStringExpr(expr);
@@ -867,7 +871,7 @@ public abstract class SQLBuilder {
      * @param cond any literal written in <code>Expression</code> condition won't be formalized
      * @return
      */
-    public SQLBuilder having(final Condition cond) {
+    public SQLBuilder<T> having(final Condition cond) {
         sb.append(_SPACE_HAVING_SPACE);
 
         appendCondition(cond);
@@ -875,7 +879,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final String expr) {
+    public SQLBuilder<T> orderBy(final String expr) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         if (expr.indexOf(D._SPACE) > 0) {
@@ -888,7 +892,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final String... columnNames) {
+    public SQLBuilder<T> orderBy(final String... columnNames) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         if (columnNames.length == 1) {
@@ -913,7 +917,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final String columnName, final SortDirection direction) {
+    public SQLBuilder<T> orderBy(final String columnName, final SortDirection direction) {
         orderBy(columnName);
 
         sb.append(D._SPACE);
@@ -922,7 +926,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final Collection<String> columnNames) {
+    public SQLBuilder<T> orderBy(final Collection<String> columnNames) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -938,7 +942,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final Collection<String> columnNames, final SortDirection direction) {
+    public SQLBuilder<T> orderBy(final Collection<String> columnNames, final SortDirection direction) {
         orderBy(columnNames);
 
         sb.append(D._SPACE);
@@ -947,7 +951,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final Map<String, SortDirection> orders) {
+    public SQLBuilder<T> orderBy(final Map<String, SortDirection> orders) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -966,7 +970,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder limit(final int count) {
+    public SQLBuilder<T> limit(final int count) {
         sb.append(_SPACE_LIMIT_SPACE);
 
         sb.append(count);
@@ -974,7 +978,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder limit(final int offset, final int count) {
+    public SQLBuilder<T> limit(final int offset, final int count) {
         sb.append(_SPACE_LIMIT_SPACE);
 
         sb.append(offset);
@@ -986,7 +990,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder offset(final int offset) {
+    public SQLBuilder<T> offset(final int offset) {
         sb.append(_SPACE_OFFSET_SPACE);
 
         sb.append(offset);
@@ -994,7 +998,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder union(final SQLBuilder sqlBuilder) {
+    public SQLBuilder<T> union(final SQLBuilder<T> sqlBuilder) {
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
@@ -1002,11 +1006,11 @@ public abstract class SQLBuilder {
         return union(sqlBuilder.sql());
     }
 
-    public SQLBuilder union(final String query) {
-        return union(N.arrayOf(query));
+    public SQLBuilder<T> union(final String query) {
+        return union(Array.of(query));
     }
 
-    public SQLBuilder union(final String... columnNames) {
+    public SQLBuilder<T> union(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1027,7 +1031,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder union(final Collection<String> columnNames) {
+    public SQLBuilder<T> union(final Collection<String> columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = null;
@@ -1039,7 +1043,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder unionAll(final SQLBuilder sqlBuilder) {
+    public SQLBuilder<T> unionAll(final SQLBuilder<T> sqlBuilder) {
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
@@ -1047,11 +1051,11 @@ public abstract class SQLBuilder {
         return unionAll(sqlBuilder.sql());
     }
 
-    public SQLBuilder unionAll(final String query) {
-        return unionAll(N.arrayOf(query));
+    public SQLBuilder<T> unionAll(final String query) {
+        return unionAll(Array.of(query));
     }
 
-    public SQLBuilder unionAll(final String... columnNames) {
+    public SQLBuilder<T> unionAll(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1072,7 +1076,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder unionAll(final Collection<String> columnNames) {
+    public SQLBuilder<T> unionAll(final Collection<String> columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = null;
@@ -1084,7 +1088,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder intersect(final SQLBuilder sqlBuilder) {
+    public SQLBuilder<T> intersect(final SQLBuilder<T> sqlBuilder) {
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
@@ -1092,11 +1096,11 @@ public abstract class SQLBuilder {
         return intersect(sqlBuilder.sql());
     }
 
-    public SQLBuilder intersect(final String query) {
-        return intersect(N.arrayOf(query));
+    public SQLBuilder<T> intersect(final String query) {
+        return intersect(Array.of(query));
     }
 
-    public SQLBuilder intersect(final String... columnNames) {
+    public SQLBuilder<T> intersect(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1117,7 +1121,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder intersect(final Collection<String> columnNames) {
+    public SQLBuilder<T> intersect(final Collection<String> columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = null;
@@ -1129,7 +1133,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder except(final SQLBuilder sqlBuilder) {
+    public SQLBuilder<T> except(final SQLBuilder<T> sqlBuilder) {
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
@@ -1137,11 +1141,11 @@ public abstract class SQLBuilder {
         return except(sqlBuilder.sql());
     }
 
-    public SQLBuilder except(final String query) {
-        return except(N.arrayOf(query));
+    public SQLBuilder<T> except(final String query) {
+        return except(Array.of(query));
     }
 
-    public SQLBuilder except(final String... columnNames) {
+    public SQLBuilder<T> except(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1162,7 +1166,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder except(final Collection<String> columnNames) {
+    public SQLBuilder<T> except(final Collection<String> columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = null;
@@ -1174,7 +1178,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder minus(final SQLBuilder sqlBuilder) {
+    public SQLBuilder<T> minus(final SQLBuilder<T> sqlBuilder) {
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
@@ -1182,11 +1186,11 @@ public abstract class SQLBuilder {
         return minus(sqlBuilder.sql());
     }
 
-    public SQLBuilder minus(final String query) {
-        return minus(N.arrayOf(query));
+    public SQLBuilder<T> minus(final String query) {
+        return minus(Array.of(query));
     }
 
-    public SQLBuilder minus(final String... columnNames) {
+    public SQLBuilder<T> minus(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1207,7 +1211,7 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder minus(final Collection<String> columnNames) {
+    public SQLBuilder<T> minus(final Collection<String> columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = null;
@@ -1219,18 +1223,18 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder forUpdate() {
+    public SQLBuilder<T> forUpdate() {
         sb.append(_SPACE_FOR_UPDATE);
 
         return this;
     }
 
-    public SQLBuilder set(final String expr) {
-        return set(N.arrayOf(expr));
+    public SQLBuilder<T> set(final String expr) {
+        return set(Array.of(expr));
     }
 
-    public SQLBuilder set(final String... columnNames) {
-        setUpdate();
+    public SQLBuilder<T> set(final String... columnNames) {
+        init();
 
         if (columnNames.length == 1 && SQLParser.parse(columnNames[0]).contains(D.EQUAL)) {
             sb.append(columnNames[0]);
@@ -1298,8 +1302,8 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder set(final Collection<String> columnNames) {
-        setUpdate();
+    public SQLBuilder<T> set(final Collection<String> columnNames) {
+        init();
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
 
@@ -1366,8 +1370,8 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder set(final Map<String, Object> props) {
-        setUpdate();
+    public SQLBuilder<T> set(final Map<String, Object> props) {
+        init();
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
 
@@ -1454,9 +1458,9 @@ public abstract class SQLBuilder {
      * @return
      */
     @SuppressWarnings("deprecation")
-    public SQLBuilder set(final Object entity) {
+    public SQLBuilder<T> set(final Object entity) {
         if (entity instanceof String) {
-            return set(N.arrayOf((String) entity));
+            return set(Array.of((String) entity));
         } else if (entity instanceof Map) {
             return set((Map<String, Object>) entity);
         } else {
@@ -1476,27 +1480,14 @@ public abstract class SQLBuilder {
         }
     }
 
-    void setUpdate() {
-        if (op != OperationType.UPDATE) {
-            throw new AbacusException("Invalid operation: " + op);
-        }
-
-        sb.append(_UPDATE);
-
-        sb.append(D._SPACE);
-        sb.append(formalizeName(tableName));
-
-        sb.append(_SPACE_SET_SPACE);
-    }
-
     /**
-     * This SQLBuilder will be closed after <code>sql()</code> is called.
+     * This SQLBuilder<T> will be closed after <code>sql()</code> is called.
      * 
      * @return
      */
     public String sql() {
         if (sb == null) {
-            throw new AbacusException("This SQLBuilder has been closed after sql() was called previously");
+            throw new AbacusException("This SQLBuilder<T> has been closed after sql() was called previously");
         }
 
         init();
@@ -1507,7 +1498,7 @@ public abstract class SQLBuilder {
             ObjectFactory.recycle(sb);
             sb = null;
 
-            activeBuilderStringBuilderCounter.decrementAndGet();
+            activeStringBuilderCounter.decrementAndGet();
         }
     }
 
@@ -1562,10 +1553,12 @@ public abstract class SQLBuilder {
      * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, the updated record count. 
      */
     @Beta
-    public <T> T execute(final SQLExecutor sqlExecutor) {
+    public T execute(final SQLExecutor sqlExecutor) {
         if (op == OperationType.QUERY) {
             return (T) sqlExecutor.query(sql(), this.parameters);
-        } else {
+        } /* else if (op == OperationType.ADD) {
+            return (T) sqlExecutor.insert(sql(), this.parameters);
+          } */ else {
             return (T) (Integer) sqlExecutor.update(sql(), this.parameters);
         }
     }
@@ -1577,17 +1570,21 @@ public abstract class SQLBuilder {
      * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, the updated record count. 
      */
     @Beta
-    public <T> T execute(final SQLExecutor sqlExecutor, final Object... parameters) {
+    public T execute(final SQLExecutor sqlExecutor, final Object... parameters) {
         if (N.isNullOrEmpty(parameters)) {
             if (op == OperationType.QUERY) {
                 return (T) sqlExecutor.query(sql(), this.parameters);
-            } else {
+            } /* else if (op == OperationType.ADD) {
+                 return (T) sqlExecutor.insert(sql(), this.parameters);
+              } */ else {
                 return (T) (Integer) sqlExecutor.update(sql(), this.parameters);
             }
         } else {
             if (op == OperationType.QUERY) {
                 return (T) sqlExecutor.query(sql(), parameters);
-            } else {
+            } /* else if (op == OperationType.ADD) {
+                return (T) sqlExecutor.insert(sql(), parameters);
+              } */ else {
                 return (T) (Integer) sqlExecutor.update(sql(), parameters);
             }
         }
@@ -1601,7 +1598,7 @@ public abstract class SQLBuilder {
      * @return 
      */
     @Beta
-    public <T> T execute(final Class<T> targetClass, final SQLExecutor sqlExecutor) {
+    public <R> R execute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
         if (op != OperationType.QUERY) {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
@@ -1622,7 +1619,7 @@ public abstract class SQLBuilder {
      * @return
      */
     @Beta
-    public <T> T execute(final Class<T> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
+    public <R> R execute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
         if (op != OperationType.QUERY) {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
@@ -1643,33 +1640,39 @@ public abstract class SQLBuilder {
     }
 
     @Beta
-    public <T> Future<T> asyncExecute(final SQLExecutor sqlExecutor) {
+    public CompletableFuture<T> asyncExecute(final SQLExecutor sqlExecutor) {
         if (op == OperationType.QUERY) {
-            return (Future<T>) sqlExecutor.asyncSQLExecutor().query(sql(), this.parameters);
-        } else {
-            return (Future<T>) sqlExecutor.asyncSQLExecutor().update(sql(), this.parameters);
+            return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().query(sql(), this.parameters);
+        } /* else if (op == OperationType.ADD) {
+            return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().insert(sql(), this.parameters);
+          } */ else {
+            return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().update(sql(), this.parameters);
         }
     }
 
     @Beta
-    public <T> Future<T> asyncExecute(final SQLExecutor sqlExecutor, final Object... parameters) {
+    public CompletableFuture<T> asyncExecute(final SQLExecutor sqlExecutor, final Object... parameters) {
         if (N.isNullOrEmpty(parameters)) {
             if (op == OperationType.QUERY) {
-                return (Future<T>) sqlExecutor.asyncSQLExecutor().query(sql(), this.parameters);
-            } else {
-                return (Future<T>) sqlExecutor.asyncSQLExecutor().update(sql(), this.parameters);
+                return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().query(sql(), this.parameters);
+            } /* else if (op == OperationType.ADD) {
+                return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().insert(sql(), this.parameters);
+              } */ else {
+                return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().update(sql(), this.parameters);
             }
         } else {
             if (op == OperationType.QUERY) {
-                return (Future<T>) sqlExecutor.asyncSQLExecutor().query(sql(), parameters);
-            } else {
-                return (Future<T>) sqlExecutor.asyncSQLExecutor().update(sql(), parameters);
+                return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().query(sql(), parameters);
+            } /* else if (op == OperationType.ADD) {
+                return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().insert(sql(), parameters);
+              } */ else {
+                return (CompletableFuture<T>) sqlExecutor.asyncSQLExecutor().update(sql(), parameters);
             }
         }
     }
 
     @Beta
-    public <T> Future<T> asyncExecute(final Class<T> targetClass, final SQLExecutor sqlExecutor) {
+    public <R> CompletableFuture<R> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
         if (op != OperationType.QUERY) {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
@@ -1682,7 +1685,7 @@ public abstract class SQLBuilder {
     }
 
     @Beta
-    public <T> Future<T> asyncExecute(final Class<T> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
+    public <R> CompletableFuture<R> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
         if (op != OperationType.QUERY) {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
@@ -1703,19 +1706,28 @@ public abstract class SQLBuilder {
     }
 
     void init() {
-        if (sb.length() == 0) {
-            if (op == OperationType.DELETE) {
-                final String newTableName = formalizeName(tableName);
+        if (sb.length() > 0) {
+            return;
+        }
 
-                char[] deleteFromTableChars = tableDeleteFrom.get(newTableName);
+        if (op == OperationType.UPDATE) {
+            sb.append(_UPDATE);
 
-                if (deleteFromTableChars == null) {
-                    deleteFromTableChars = (D.DELETE + D.SPACE + D.FROM + D.SPACE + newTableName).toCharArray();
-                    tableDeleteFrom.put(newTableName, deleteFromTableChars);
-                }
+            sb.append(D._SPACE);
+            sb.append(formalizeName(tableName));
 
-                sb.append(deleteFromTableChars);
+            sb.append(_SPACE_SET_SPACE);
+        } else if (op == OperationType.DELETE) {
+            final String newTableName = formalizeName(tableName);
+
+            char[] deleteFromTableChars = tableDeleteFrom.get(newTableName);
+
+            if (deleteFromTableChars == null) {
+                deleteFromTableChars = (D.DELETE + D.SPACE + D.FROM + D.SPACE + newTableName).toCharArray();
+                tableDeleteFrom.put(newTableName, deleteFromTableChars);
             }
+
+            sb.append(deleteFromTableChars);
         }
     }
 
@@ -2071,9 +2083,9 @@ public abstract class SQLBuilder {
         return sb.toString();
     }
 
-    private static void parseInsertEntity(final SQLBuilder instance, final Object entity, final Set<String> excludedPropNames) {
+    private static void parseInsertEntity(final SQLBuilder<?> instance, final Object entity, final Set<String> excludedPropNames) {
         if (entity instanceof String) {
-            instance.columnNames = N.arrayOf((String) entity);
+            instance.columnNames = Array.of((String) entity);
         } else if (entity instanceof Map) {
             if (N.isNullOrEmpty(excludedPropNames)) {
                 instance.props = (Map<String, Object>) entity;
@@ -2138,21 +2150,21 @@ public abstract class SQLBuilder {
      * @author haiyang li 
      *
      */
-    public static final class E extends SQLBuilder {
+    public static final class E<T> extends SQLBuilder<T> {
         E() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.SQL);
         }
 
-        static E createInstance() {
-            return new E();
+        static <T> E<T> createInstance() {
+            return new E<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2160,8 +2172,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2169,8 +2181,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2178,12 +2190,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2192,19 +2204,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -2215,8 +2227,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2225,12 +2237,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2238,8 +2250,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2253,8 +2265,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2263,8 +2275,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2278,8 +2290,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2288,24 +2300,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2313,12 +2325,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -2326,7 +2338,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -2337,21 +2349,21 @@ public abstract class SQLBuilder {
      * @author haiyang li 
      *
      */
-    public static final class RE extends SQLBuilder {
+    public static final class RE<T> extends SQLBuilder<T> {
         RE() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.RAW_SQL);
         }
 
-        static RE createInstance() {
-            return new RE();
+        static <T> RE<T> createInstance() {
+            return new RE<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2359,8 +2371,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2368,8 +2380,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2377,12 +2389,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2391,19 +2403,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -2414,8 +2426,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2424,12 +2436,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2437,8 +2449,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2452,8 +2464,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2462,8 +2474,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2477,8 +2489,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2487,24 +2499,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2512,12 +2524,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -2525,7 +2537,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -2535,21 +2547,21 @@ public abstract class SQLBuilder {
      * @author haiyang li 
      *
      */
-    public static final class NE extends SQLBuilder {
+    public static final class NE<T> extends SQLBuilder<T> {
         NE() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.NAMED_SQL);
         }
 
-        static NE createInstance() {
-            return new NE();
+        static <T> NE<T> createInstance() {
+            return new NE<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2557,8 +2569,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2566,8 +2578,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2575,12 +2587,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2589,19 +2601,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -2612,8 +2624,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2622,12 +2634,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2635,8 +2647,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2650,8 +2662,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2660,8 +2672,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2675,8 +2687,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2685,24 +2697,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2710,12 +2722,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -2723,7 +2735,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -2734,21 +2746,21 @@ public abstract class SQLBuilder {
      * @author haiyang li 
      *
      */
-    public static final class SE extends SQLBuilder {
+    public static final class SE<T> extends SQLBuilder<T> {
         SE() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.IBATIS_SQL);
         }
 
-        static SE createInstance() {
-            return new SE();
+        static <T> SE<T> createInstance() {
+            return new SE<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2756,8 +2768,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2765,8 +2777,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2774,12 +2786,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2788,19 +2800,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -2811,8 +2823,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2821,12 +2833,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2834,8 +2846,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2849,8 +2861,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2859,8 +2871,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2874,8 +2886,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2884,24 +2896,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2909,12 +2921,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -2922,7 +2934,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -2933,21 +2945,21 @@ public abstract class SQLBuilder {
      * @author haiyang li
      *
      */
-    public static final class E2 extends SQLBuilder {
+    public static final class E2<T> extends SQLBuilder<T> {
         E2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.SQL);
         }
 
-        static E2 createInstance() {
-            return new E2();
+        static <T> E2<T> createInstance() {
+            return new E2<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2955,8 +2967,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2964,8 +2976,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2973,12 +2985,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2987,19 +2999,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -3010,8 +3022,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3020,12 +3032,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3033,8 +3045,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3048,8 +3060,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3058,8 +3070,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3073,8 +3085,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3083,24 +3095,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3108,12 +3120,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3121,7 +3133,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -3132,21 +3144,21 @@ public abstract class SQLBuilder {
      * @author haiyang li
      *
      */
-    public static final class RE2 extends SQLBuilder {
+    public static final class RE2<T> extends SQLBuilder<T> {
         RE2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.RAW_SQL);
         }
 
-        static RE2 createInstance() {
-            return new RE2();
+        static <T> RE2<T> createInstance() {
+            return new RE2<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3154,8 +3166,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3163,8 +3175,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3172,12 +3184,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3186,19 +3198,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -3209,8 +3221,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3219,12 +3231,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3232,8 +3244,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3247,8 +3259,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3257,8 +3269,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3272,8 +3284,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3282,24 +3294,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3307,12 +3319,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3320,7 +3332,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -3331,21 +3343,21 @@ public abstract class SQLBuilder {
      * @author haiyang li
      *
      */
-    public static final class NE2 extends SQLBuilder {
+    public static final class NE2<T> extends SQLBuilder<T> {
         NE2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.NAMED_SQL);
         }
 
-        static NE2 createInstance() {
-            return new NE2();
+        static <T> NE2<T> createInstance() {
+            return new NE2<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3353,8 +3365,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3362,8 +3374,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3371,12 +3383,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3385,19 +3397,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -3408,8 +3420,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3418,12 +3430,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3431,8 +3443,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3446,8 +3458,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3456,8 +3468,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3471,8 +3483,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3481,24 +3493,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3506,12 +3518,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3519,7 +3531,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -3530,21 +3542,21 @@ public abstract class SQLBuilder {
      * @author haiyang li
      *
      */
-    public static final class SE2 extends SQLBuilder {
+    public static final class SE2<T> extends SQLBuilder<T> {
         SE2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.IBATIS_SQL);
         }
 
-        static SE2 createInstance() {
-            return new SE2();
+        static <T> SE2<T> createInstance() {
+            return new SE2<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3552,8 +3564,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3561,8 +3573,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3570,12 +3582,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3584,19 +3596,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -3607,8 +3619,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3617,12 +3629,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3630,8 +3642,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3645,8 +3657,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3655,8 +3667,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3670,8 +3682,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3680,24 +3692,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3705,12 +3717,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3718,7 +3730,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -3729,21 +3741,21 @@ public abstract class SQLBuilder {
      * @author haiyang li
      *
      */
-    public static final class E3 extends SQLBuilder {
+    public static final class E3<T> extends SQLBuilder<T> {
         E3() {
             super(NamingPolicy.CAMEL_CASE, SQLPolicy.SQL);
         }
 
-        static E3 createInstance() {
-            return new E3();
+        static <T> E3<T> createInstance() {
+            return new E3<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3751,8 +3763,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3760,8 +3772,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3769,12 +3781,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3783,19 +3795,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -3806,8 +3818,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3816,12 +3828,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3829,8 +3841,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3844,8 +3856,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3854,8 +3866,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3869,8 +3881,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3879,24 +3891,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3904,12 +3916,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3917,7 +3929,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -3928,21 +3940,21 @@ public abstract class SQLBuilder {
      * @author haiyang li
      *
      */
-    public static final class RE3 extends SQLBuilder {
+    public static final class RE3<T> extends SQLBuilder<T> {
         RE3() {
             super(NamingPolicy.CAMEL_CASE, SQLPolicy.RAW_SQL);
         }
 
-        static RE3 createInstance() {
-            return new RE3();
+        static <T> RE3<T> createInstance() {
+            return new RE3<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3950,8 +3962,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3959,8 +3971,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3968,12 +3980,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3982,19 +3994,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -4005,8 +4017,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -4015,12 +4027,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -4028,8 +4040,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -4043,8 +4055,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4053,8 +4065,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -4068,8 +4080,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4078,24 +4090,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -4103,12 +4115,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -4116,7 +4128,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -4127,21 +4139,21 @@ public abstract class SQLBuilder {
      * @author haiyang li
      *
      */
-    public static final class NE3 extends SQLBuilder {
+    public static final class NE3<T> extends SQLBuilder<T> {
         NE3() {
             super(NamingPolicy.CAMEL_CASE, SQLPolicy.NAMED_SQL);
         }
 
-        static NE3 createInstance() {
-            return new NE3();
+        static <T> NE3<T> createInstance() {
+            return new NE3<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -4149,8 +4161,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -4158,8 +4170,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -4167,12 +4179,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -4181,19 +4193,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -4204,8 +4216,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -4214,12 +4226,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -4227,8 +4239,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -4242,8 +4254,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4252,8 +4264,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -4267,8 +4279,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4277,24 +4289,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -4302,12 +4314,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -4315,7 +4327,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }
@@ -4326,21 +4338,21 @@ public abstract class SQLBuilder {
      * @author haiyang li
      *
      */
-    public static final class SE3 extends SQLBuilder {
+    public static final class SE3<T> extends SQLBuilder<T> {
         SE3() {
             super(NamingPolicy.CAMEL_CASE, SQLPolicy.IBATIS_SQL);
         }
 
-        static SE3 createInstance() {
-            return new SE3();
+        static <T> SE3<T> createInstance() {
+            return new SE3<T>();
         }
 
-        public static SQLBuilder insert(final String expr) {
-            return insert(N.arrayOf(expr));
+        public static SQLBuilder<Integer> insert(final String expr) {
+            return insert(Array.of(expr));
         }
 
-        public static SQLBuilder insert(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final String... columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -4348,8 +4360,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Collection<String> columnNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -4357,8 +4369,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Map<String, Object> props) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Map<String, Object> props) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -4366,12 +4378,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Object entity) {
+        public static SQLBuilder<Integer> insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static SQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> insert(final Object entity, final Set<String> excludedPropNames) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -4380,19 +4392,19 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static SQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static SQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<Integer> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
@@ -4403,8 +4415,8 @@ public abstract class SQLBuilder {
          * @return
          */
         @Beta
-        public static SQLBuilder batchInsert(final Collection<?> propsList) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> batchInsert(final Collection<?> propsList) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -4413,12 +4425,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final String expr) {
-            return select(N.arrayOf(expr));
+        public static SQLBuilder<DataSet> select(final String expr) {
+            return select(Array.of(expr));
         }
 
-        public static SQLBuilder select(final String... columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String... columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -4426,8 +4438,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -4441,8 +4453,8 @@ public abstract class SQLBuilder {
          * @param columnNames
          * @return
          */
-        public static SQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4451,8 +4463,8 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -4466,8 +4478,8 @@ public abstract class SQLBuilder {
          * @param columnAliases
          * @return
          */
-        public static SQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
+            final SQLBuilder<DataSet> instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4476,24 +4488,24 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder select(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static SQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static SQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static SQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static SQLBuilder update(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> update(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -4501,12 +4513,12 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder update(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static SQLBuilder deleteFrom(final String tableName) {
-            final SQLBuilder instance = createInstance();
+        public static SQLBuilder<Integer> deleteFrom(final String tableName) {
+            final SQLBuilder<Integer> instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -4514,7 +4526,7 @@ public abstract class SQLBuilder {
             return instance;
         }
 
-        public static SQLBuilder deleteFrom(final Class<?> entityClass) {
+        public static SQLBuilder<Integer> deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
     }

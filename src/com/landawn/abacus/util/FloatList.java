@@ -16,12 +16,19 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
+import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -32,7 +39,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class FloatList extends AbastractPrimitiveList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
+public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
     private float[] elementData = N.EMPTY_FLOAT_ARRAY;
     private int size = 0;
 
@@ -77,19 +84,115 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
         return new FloatList(a, size);
     }
 
-    public static FloatList of(Collection<? extends Number> c) {
+    public static FloatList of(int[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static FloatList of(int[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final float[] elementData = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            elementData[i - fromIndex] = a[i];
+        }
+
+        return of(elementData);
+    }
+
+    public static FloatList of(long[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static FloatList of(long[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final float[] elementData = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            elementData[i - fromIndex] = a[i];
+        }
+
+        return of(elementData);
+    }
+
+    public static FloatList of(double[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static FloatList of(double[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final float[] elementData = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (N.compare(a[i], Float.MIN_VALUE) < 0 || N.compare(a[i], Float.MAX_VALUE) > 0) {
+                throw new ArithmeticException("overflow");
+            }
+
+            elementData[i - fromIndex] = (float) a[i];
+        }
+
+        return of(elementData);
+    }
+
+    public static FloatList of(String[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static FloatList of(String[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final float[] elementData = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            double val = N.asDouble(a[i]);
+
+            if (N.compare(val, Float.MIN_VALUE) < 0 || N.compare(val, Float.MAX_VALUE) > 0) {
+                throw new ArithmeticException("overflow");
+            }
+
+            elementData[i - fromIndex] = (float) val;
+        }
+
+        return of(elementData);
+    }
+
+    public static FloatList of(List<String> c) {
+        return of(c, 0f);
+    }
+
+    public static FloatList of(List<String> c, float defaultValueForNull) {
         final float[] a = new float[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
+        for (String e : c) {
             if (e == null) {
-                continue;
-            }
+                a[idx++] = defaultValueForNull;
+            } else {
+                double val = N.asDouble(e);
 
-            a[idx++] = e.floatValue();
+                if (N.compare(val, Float.MIN_VALUE) < 0 || N.compare(val, Float.MAX_VALUE) > 0) {
+                    throw new ArithmeticException("overflow");
+                }
+
+                a[idx++] = (float) val;
+            }
         }
 
         return of(a);
+    }
+
+    public static FloatList of(Collection<? extends Number> c) {
+        return of(c, 0f);
     }
 
     public static FloatList of(Collection<? extends Number> c, float defaultValueForNull) {
@@ -100,7 +203,13 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
             if (e == null) {
                 a[idx++] = defaultValueForNull;
             } else {
-                a[idx++] = e.floatValue();
+                double val = e.doubleValue();
+
+                if (N.compare(val, Float.MIN_VALUE) < 0 || N.compare(val, Float.MAX_VALUE) > 0) {
+                    throw new ArithmeticException("overflow");
+                }
+
+                a[idx++] = (float) val;
             }
         }
 
@@ -115,6 +224,24 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     @Override
     public float[] array() {
         return elementData;
+    }
+
+    /**
+     * Return the first element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalFloat findFirst() {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[0]);
+    }
+
+    /**
+     * Return the last element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalFloat findLast() {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[size - 1]);
     }
 
     public float get(int index) {
@@ -209,10 +336,10 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
      * @return <tt>true</tt> if this list contained the specified element
      */
     public boolean remove(float e) {
-        for (int index = 0; index < size; index++) {
-            if (Float.compare(elementData[index], e) == 0) {
+        for (int i = 0; i < size; i++) {
+            if (N.equals(elementData[i], e)) {
 
-                fastRemove(index);
+                fastRemove(i);
 
                 return true;
             }
@@ -232,7 +359,7 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
             int w = 0;
 
             for (int i = 0; i < size; i++) {
-                if (Float.compare(elementData[i], e) != 0) {
+                if (!N.equals(elementData[i], e)) {
                     elementData[w++] = elementData[i];
                 }
             }
@@ -297,7 +424,7 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     /**
      * 
      * @param index
-     * @return the deleted element.
+     * @return the deleted element
      */
     public float delete(int index) {
         rangeCheck(index);
@@ -328,16 +455,21 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     }
 
     @Override
-    public FloatList subList(int fromIndex, int toIndex) {
-        subListRangeCheck(fromIndex, toIndex, size);
+    public FloatList subList(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
         return new FloatList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     public int indexOf(float e) {
-        for (int i = 0; i < size; i++) {
-            if (Float.compare(elementData[i], e) == 0) {
+        return indexOf(0, e);
+    }
 
+    public int indexOf(final int fromIndex, float e) {
+        checkIndex(fromIndex, size);
+
+        for (int i = fromIndex; i < size; i++) {
+            if (N.equals(elementData[i], e)) {
                 return i;
             }
         }
@@ -346,9 +478,20 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     }
 
     public int lastIndexOf(float e) {
-        for (int i = size; i > 0;) {
-            if (Float.compare(elementData[--i], e) == 0) {
+        return lastIndexOf(size, e);
+    }
 
+    /**
+     * 
+     * @param fromIndex the start index to traverse backwards from. Inclusive.
+     * @param e
+     * @return
+     */
+    public int lastIndexOf(final int fromIndex, float e) {
+        checkIndex(0, fromIndex);
+
+        for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
+            if (N.equals(elementData[i], e)) {
                 return i;
             }
         }
@@ -356,35 +499,57 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
         return -1;
     }
 
-    public double sum() {
-        return N.sum(elementData, 0, size).doubleValue();
+    public float min() {
+        return min(0, size());
     }
 
-    public float min() {
-        return N.min(elementData, 0, size);
+    public float min(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.min(elementData, fromIndex, toIndex);
     }
 
     public float max() {
-        return N.max(elementData, 0, size);
+        return max(0, size());
     }
 
-    public double avg() {
-        return N.avg(elementData, 0, size).doubleValue();
+    public float max(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.max(elementData, fromIndex, toIndex);
     }
 
     @Override
-    public void forEach(FloatConsumer action) {
+    public Number sum(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.sum(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public Number avg(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.avg(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public void forEach(final int fromIndex, final int toIndex, FloatConsumer action) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elementData[i]);
             }
         }
     }
 
     @Override
-    public boolean allMatch(FloatPredicate filter) {
+    public boolean allMatch(final int fromIndex, final int toIndex, FloatPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i]) == false) {
                     return false;
                 }
@@ -395,9 +560,11 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     }
 
     @Override
-    public boolean anyMatch(FloatPredicate filter) {
+    public boolean anyMatch(final int fromIndex, final int toIndex, FloatPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i])) {
                     return true;
                 }
@@ -408,9 +575,11 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     }
 
     @Override
-    public boolean noneMatch(FloatPredicate filter) {
+    public boolean noneMatch(final int fromIndex, final int toIndex, FloatPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i])) {
                     return false;
                 }
@@ -421,23 +590,218 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     }
 
     @Override
-    public int count(FloatPredicate filter) {
-        return N.count(elementData, 0, size, filter);
+    public int count(final int fromIndex, final int toIndex, FloatPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
-    public FloatList filter(FloatPredicate filter) {
-        return of(N.filter(elementData, 0, size, filter));
+    public FloatList filter(final int fromIndex, final int toIndex, FloatPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
-    @Override
-    public FloatList distinct() {
-        if (size > 1) {
-            return of(N.removeDuplicates(elementData, 0, size, false));
-        } else {
-            return of(N.copyOfRange(elementData, 0, size));
+    public <R> List<R> map(final FloatFunction<? extends R> func) {
+        return map(0, size(), func);
+    }
+
+    public <R> List<R> map(final int fromIndex, final int toIndex, final FloatFunction<? extends R> func) {
+        return map(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final FloatFunction<? extends R> func) {
+        return map(collClass, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final FloatFunction<? extends R> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(func.apply(elementData[i]));
         }
 
+        return res;
+    }
+
+    public <R> List<R> flatMap(final FloatFunction<? extends Collection<? extends R>> func) {
+        return flatMap(0, size(), func);
+    }
+
+    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final FloatFunction<? extends Collection<? extends R>> func) {
+        return flatMap(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final FloatFunction<? extends Collection<? extends R>> func) {
+        return flatMap(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final FloatFunction<? extends Collection<? extends R>> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(func.apply(elementData[i]));
+        }
+
+        return res;
+    }
+
+    public <R> List<R> flatMap2(final FloatFunction<R[]> func) {
+        return flatMap2(0, size(), func);
+    }
+
+    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final FloatFunction<R[]> func) {
+        return flatMap2(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final FloatFunction<R[]> func) {
+        return flatMap2(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final FloatFunction<R[]> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(Arrays.asList(func.apply(elementData[i])));
+        }
+
+        return res;
+    }
+
+    public <K> Map<K, List<Float>> groupBy(final FloatFunction<? extends K> func) {
+        return groupBy(0, size(), func);
+    }
+
+    public <K> Map<K, List<Float>> groupBy(final int fromIndex, final int toIndex, final FloatFunction<? extends K> func) {
+        return groupBy(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Float>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final FloatFunction<? extends K> func) {
+        return groupBy(HashMap.class, List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Float>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final FloatFunction<? extends K> func) {
+        return groupBy(HashMap.class, List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Float>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final FloatFunction<? extends K> func) {
+
+        return groupBy(outputClass, List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Float>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final FloatFunction<? extends K> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final R outputResult = N.newInstance(outputClass);
+
+        K key = null;
+        V values = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = func.apply(elementData[i]);
+            values = outputResult.get(key);
+
+            if (values == null) {
+                values = (V) N.newInstance(collClass);
+                outputResult.put(key, values);
+            }
+
+            values.add(elementData[i]);
+        }
+
+        return outputResult;
+    }
+
+    public float reduce(final FloatBinaryOperator accumulator) {
+        return reduce(0, size(), accumulator);
+    }
+
+    public float reduce(final int fromIndex, final int toIndex, final FloatBinaryOperator accumulator) {
+        return reduce(fromIndex, toIndex, 0, accumulator);
+    }
+
+    public float reduce(final float identity, final FloatBinaryOperator accumulator) {
+        return reduce(0, size(), identity, accumulator);
+    }
+
+    public float reduce(final int fromIndex, final int toIndex, final float identity, final FloatBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        float result = identity;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result = accumulator.applyAsFloat(result, elementData[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public FloatList distinct(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (size > 1) {
+            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
+        } else {
+            return of(N.copyOfRange(elementData, fromIndex, toIndex));
+        }
+    }
+
+    @Override
+    public List<FloatList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<float[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<FloatList> result = new ArrayList<>(list.size());
+
+        for (float[] a : list) {
+            result.add(FloatList.of(a));
+        }
+
+        return result;
+    }
+
+    public FloatList top(final int top) {
+        return top(0, size(), top);
+    }
+
+    public FloatList top(final int fromIndex, final int toIndex, final int top) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.top(elementData, fromIndex, toIndex, top));
+    }
+
+    public FloatList top(final int top, Comparator<Float> cmp) {
+        return top(0, size(), top, cmp);
+    }
+
+    public FloatList top(final int fromIndex, final int toIndex, final int top, Comparator<Float> cmp) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.top(elementData, fromIndex, toIndex, top, cmp));
     }
 
     @Override
@@ -448,17 +812,19 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     }
 
     @Override
-    public FloatList copy() {
-        return new FloatList(N.copyOfRange(elementData, 0, size));
+    public FloatList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new FloatList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override
     public FloatList trimToSize() {
-        if (elementData.length > size) {
-            elementData = N.copyOfRange(elementData, 0, size);
+        if (elementData.length == size) {
+            return this;
         }
 
-        return this;
+        return of(N.copyOfRange(elementData, 0, size));
     }
 
     @Override
@@ -481,67 +847,40 @@ public final class FloatList extends AbastractPrimitiveList<FloatConsumer, Float
     }
 
     @Override
-    public List<Float> toList() {
-        if (size == 0) {
-            return N.newArrayList();
-        }
+    public void toList(List<Float> list, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final List<Float> list = N.newArrayList(size);
-
-        toList(list);
-
-        return list;
-    }
-
-    @Override
-    public void toList(List<Float> list) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
         }
     }
 
     @Override
-    public Set<Float> toSet() {
-        if (size == 0) {
-            return N.newLinkedHashSet();
-        }
+    public void toSet(Set<Float> set, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final Set<Float> set = N.newLinkedHashSet();
-
-        toSet(set);
-
-        return set;
-    }
-
-    @Override
-    public void toSet(Set<Float> set) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
         }
     }
 
     @Override
-    public Multiset<Float> toMultiset() {
-        if (size == 0) {
-            return N.newLinkedMultiset();
-        }
+    public void toMultiset(Multiset<Float> multiset, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final Multiset<Float> multiset = N.newLinkedMultiset();
-
-        toMultiset(multiset);
-
-        return multiset;
-    }
-
-    @Override
-    public void toMultiset(Multiset<Float> multiset) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
     }
 
     public DoubleStream stream() {
-        return Stream.of(elementData, 0, size());
+        return stream(0, size());
+    }
+
+    public DoubleStream stream(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return Stream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

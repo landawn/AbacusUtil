@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
@@ -336,7 +337,7 @@ final class IntStreamImpl implements IntStream {
 
     @Override
     public Stream<Integer> boxed() {
-        return new ArrayStream<Integer>(N.wrap(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Integer>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
     }
 
     @Override

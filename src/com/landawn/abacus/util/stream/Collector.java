@@ -24,6 +24,9 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Set;
+import java.util.stream.Collector.Characteristics;
+
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -193,12 +196,13 @@ import com.landawn.abacus.util.function.Supplier;
  * @param <R> the result type of the reduction operation
  * @since 1.8
  */
-public interface Collector<T, A, R> {
+public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> {
     /**
      * A function that creates and returns a new mutable result container.
      *
      * @return a function which returns a new, mutable result container
      */
+    @Override
     Supplier<A> supplier();
 
     /**
@@ -206,6 +210,7 @@ public interface Collector<T, A, R> {
      *
      * @return a function which folds a value into a mutable result container
      */
+    @Override
     BiConsumer<A, T> accumulator();
 
     /**
@@ -216,6 +221,7 @@ public interface Collector<T, A, R> {
      * @return a function which combines two partial results into a combined
      * result
      */
+    @Override
     BinaryOperator<A> combiner();
 
     /**
@@ -229,5 +235,15 @@ public interface Collector<T, A, R> {
      * @return a function which transforms the intermediate result to the final
      * result
      */
+    @Override
     Function<A, R> finisher();
+
+    /**
+     * Returns a {@code Set} of {@code Collector.Characteristics} indicating
+     * the characteristics of this Collector.  This set should be immutable.
+     *
+     * @return an immutable set of collector characteristics
+     */
+    @Override
+    Set<Characteristics> characteristics();
 }

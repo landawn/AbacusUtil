@@ -34,7 +34,6 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.Writer;
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -117,7 +116,6 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.EntityId;
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.core.EntityManagerUtil;
 import com.landawn.abacus.core.MapEntity;
 import com.landawn.abacus.core.NameUtil;
@@ -182,6 +180,7 @@ import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortPredicate;
 
@@ -210,13 +209,13 @@ import com.landawn.abacus.util.function.ShortPredicate;
  * <br>
  * <li> =======================================================================
  * <li>Array operations:<br>
- * <b>newArray/arrayOf/asArray/asXXX/array2XXX/isNullOrEmpty
+ * <b>newArray/asArray/asXXX/array2XXX/isNullOrEmpty
  * /notNullOrEmpty/checkNullOrEmpty/sort/parallelSort/binarySearch
  * /copy/copyOf/copyOfRange/clone
  * /indexOfXXX/lastIndexOfXXX/containsXXX/fill/concat/add
  * /addAll/insert/remove/removeAll/delete/deleteAll/replaceAll
  * /reverse/swap/rotate/shuffle
- * /sum/avg/min/max/median/wrap/unwrap/join/filter/...</b>
+ * /sum/avg/min/max/median/join/filter/...</b>
  *
  * <br>
  * <br>
@@ -304,7 +303,7 @@ public final class N {
     private static final int CLS_POOL_SIZE = 2000;
 
     public static final long ONE_SECOND = 1 * 1000L;
-    public static final long TWO_SECOND = 2 * 1000L;
+    public static final long TWO_SECONDS = 2 * 1000L;
     public static final long THREE_SECONDS = 3 * 1000L;
     public static final long FIVE_SECONDS = 5 * 1000L;
     public static final long EIGHT_SECONDS = 8 * 1000L;
@@ -312,7 +311,7 @@ public final class N {
     public static final long FIFTEEN_SECONDS = 15 * 1000L;
     public static final long THIRTY_SECONDS = 30 * 1000L;
     public static final long ONE_MINUTE = 1 * 60 * 1000L;
-    public static final long TWO_MINUTE = 2 * 60 * 1000L;
+    public static final long TWO_MINUTES = 2 * 60 * 1000L;
     public static final long THREE_MINUTES = 3 * 60 * 1000L;
     public static final long FIVE_MINUTES = 5 * 60 * 1000L;
     public static final long EIGHT_MINUTES = 8 * 60 * 1000L;
@@ -330,6 +329,7 @@ public final class N {
     public static final long FIVE_DAYS = 5 * 24 * 3600 * 1000L;
     public static final long ONE_WEEK = 1 * 7 * 24 * 3600 * 1000L;
     public static final long TWO_WEEKS = 2 * 7 * 24 * 3600 * 1000L;
+    public static final long THREE_WEEKS = 3 * 7 * 24 * 3600 * 1000L;
 
     /**
      * The number of bytes in a kilobyte.
@@ -754,7 +754,7 @@ public final class N {
     }
 
     // ...
-    private static final Map<Class<?>, Integer> CLASS_TYPE_ENUM = asMap();
+    static final Map<Class<?>, Integer> CLASS_TYPE_ENUM = asMap();
 
     static {
         CLASS_TYPE_ENUM.put(boolean.class, 1);
@@ -787,7 +787,7 @@ public final class N {
     }
 
     // ...
-    private static final BiMap<Class<?>, Class<?>> PRIMITIVE_2_WRAPPER = N.asBiMap();
+    static final BiMap<Class<?>, Class<?>> PRIMITIVE_2_WRAPPER = N.asBiMap();
 
     static {
         PRIMITIVE_2_WRAPPER.put(boolean.class, Boolean.class);
@@ -2580,287 +2580,295 @@ public final class N {
         return (str == null) ? defaultValueOf(targetClass) : (T) N.getType(targetClass).valueOf(str);
     }
 
-    static <T> T valueOf(final Class<T> targetClass, final byte[] bytes) {
-        if (bytes == null) {
-            return null;
-        }
-
-        return jsonParser.deserialize(targetClass, new ByteArrayInputStream(bytes));
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static boolean[] arrayOf(final boolean... a) {
-        return a;
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static char[] arrayOf(final char... a) {
-        return a;
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static byte[] arrayOf(final byte... a) {
-        return a;
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static short[] arrayOf(final short... a) {
-        return a;
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static int[] arrayOf(final int... a) {
-        return a;
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static long[] arrayOf(final long... a) {
-        return a;
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static float[] arrayOf(final float... a) {
-        return a;
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static double[] arrayOf(final double... a) {
-        return a;
-    }
-
-    /**
-     * The input array is returned.
-     *
-     * @param a
-     * @return
-     */
-    public static String[] arrayOf(final String... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Enum<T>> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends java.util.Date> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Calendar> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Runnable> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Callable<?>> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    public static Class[] arrayOf(final Class<?>... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends EntityId> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends DirtyMarker> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Condition> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Type<?>> T[] arrayOf(final T... a) {
-        return a;
-    }
-
-    //    // Only for Java 8. it's ambiguous in the Java version before 8.
+    //    static <T> T valueOf(final Class<T> targetClass, final byte[] bytes) {
+    //        if (bytes == null) {
+    //            return null;
+    //        }
+    //
+    //        return jsonParser.deserialize(targetClass, new ByteArrayInputStream(bytes));
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static boolean[] arrayOf(final boolean... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static char[] arrayOf(final char... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static byte[] arrayOf(final byte... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static short[] arrayOf(final short... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static int[] arrayOf(final int... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static long[] arrayOf(final long... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static float[] arrayOf(final float... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static double[] arrayOf(final double... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * The input array is returned.
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static String[] arrayOf(final String... a) {
+    //        return a;
+    //    }
+    //
     //    /**
     //     * Returns the input array
     //     *
     //     * @param a
     //     * @return
     //     */
-    //    public static <T> T[] arrayOf(final T... a) {
+    //    static <T extends Enum<T>> T[] arrayOf(final T... a) {
     //        return a;
     //    }
-
-    public static BooleanList listOf(final boolean... a) {
-        return BooleanList.of(a);
-    }
-
-    public static CharList listOf(final char... a) {
-        return CharList.of(a);
-    }
-
-    public static ByteList listOf(final byte... a) {
-        return ByteList.of(a);
-    }
-
-    public static ShortList listOf(final short... a) {
-        return ShortList.of(a);
-    }
-
-    public static IntList listOf(final int... a) {
-        return IntList.of(a);
-    }
-
-    public static LongList listOf(final long... a) {
-        return LongList.of(a);
-    }
-
-    public static FloatList listOf(final float... a) {
-        return FloatList.of(a);
-    }
-
-    public static DoubleList listOf(final double... a) {
-        return DoubleList.of(a);
-    }
-
-    public static StringList listOf(final String... a) {
-        return StringList.of(a);
-    }
-
-    static Set<Boolean> setOf(final boolean... a) {
-        return BooleanList.of(a).toSet();
-    }
-
-    static Set<Character> setOf(final char... a) {
-        return CharList.of(a).toSet();
-    }
-
-    static Set<Byte> setOf(final byte... a) {
-        return ByteList.of(a).toSet();
-    }
-
-    static Set<Short> setOf(final short... a) {
-        return ShortList.of(a).toSet();
-    }
-
-    static Set<Integer> setOf(final int... a) {
-        return IntList.of(a).toSet();
-    }
-
-    static Set<Long> setOf(final long... a) {
-        return LongList.of(a).toSet();
-    }
-
-    static Set<Float> setOf(final float... a) {
-        return FloatList.of(a).toSet();
-    }
-
-    static Set<Double> setOf(final double... a) {
-        return DoubleList.of(a).toSet();
-    }
-
-    static Set<String> setOf(final String... a) {
-        return StringList.of(a).toSet();
-    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static <T extends java.util.Date> T[] arrayOf(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static <T extends Calendar> T[] arrayOf(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static <T extends Runnable> T[] arrayOf(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static <T extends Callable<?>> T[] arrayOf(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    static Class[] arrayOf(final Class<?>... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static <T extends EntityId> T[] arrayOf(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static <T extends DirtyMarker> T[] arrayOf(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static <T extends Condition> T[] arrayOf(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    static <T extends Type<?>> T[] arrayOf(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    //    // Only for Java 8. it's ambiguous in the Java version before 8.
+    //    //    /**
+    //    //     * Returns the input array
+    //    //     *
+    //    //     * @param a
+    //    //     * @return
+    //    //     */
+    //    //    public static <T> T[] arrayOf(final T... a) {
+    //    //        return a;
+    //    //    }
+    //
+    //    static BooleanList listOf(final boolean... a) {
+    //        return BooleanList.of(a);
+    //    }
+    //
+    //    static CharList listOf(final char... a) {
+    //        return CharList.of(a);
+    //    }
+    //
+    //    static ByteList listOf(final byte... a) {
+    //        return ByteList.of(a);
+    //    }
+    //
+    //    static ShortList listOf(final short... a) {
+    //        return ShortList.of(a);
+    //    }
+    //
+    //    static IntList listOf(final int... a) {
+    //        return IntList.of(a);
+    //    }
+    //
+    //    static LongList listOf(final long... a) {
+    //        return LongList.of(a);
+    //    }
+    //
+    //    static FloatList listOf(final float... a) {
+    //        return FloatList.of(a);
+    //    }
+    //
+    //    static DoubleList listOf(final double... a) {
+    //        return DoubleList.of(a);
+    //    }
+    //
+    //    static BigIntegerList listOf(final BigInteger... a) {
+    //        return BigIntegerList.of(a);
+    //    }
+    //
+    //    static BigDecimalList listOf(final BigDecimal... a) {
+    //        return BigDecimalList.of(a);
+    //    }
+    //
+    //    static StringList listOf(final String... a) {
+    //        return StringList.of(a);
+    //    }
+    //
+    //    static Set<Boolean> setOf(final boolean... a) {
+    //        return BooleanList.of(a).toSet();
+    //    }
+    //
+    //    static Set<Character> setOf(final char... a) {
+    //        return CharList.of(a).toSet();
+    //    }
+    //
+    //    static Set<Byte> setOf(final byte... a) {
+    //        return ByteList.of(a).toSet();
+    //    }
+    //
+    //    static Set<Short> setOf(final short... a) {
+    //        return ShortList.of(a).toSet();
+    //    }
+    //
+    //    static Set<Integer> setOf(final int... a) {
+    //        return IntList.of(a).toSet();
+    //    }
+    //
+    //    static Set<Long> setOf(final long... a) {
+    //        return LongList.of(a).toSet();
+    //    }
+    //
+    //    static Set<Float> setOf(final float... a) {
+    //        return FloatList.of(a).toSet();
+    //    }
+    //
+    //    static Set<Double> setOf(final double... a) {
+    //        return DoubleList.of(a).toSet();
+    //    }
+    //
+    //    static Set<String> setOf(final String... a) {
+    //        return StringList.of(a).toSet();
+    //    }
 
     public static <E extends Enum<E>> List<E> enumListOf(final Class<E> enumClass) {
         List<E> enumList = (List<E>) enumListPool.get(enumClass);
@@ -3020,7 +3028,7 @@ public final class N {
     }
 
     public static <T> T newProxyInstance(final Class<T> interfaceClass, final InvocationHandler h) {
-        return newProxyInstance(arrayOf(interfaceClass), h);
+        return newProxyInstance(Array.of(interfaceClass), h);
     }
 
     /**
@@ -3343,15 +3351,15 @@ public final class N {
     }
 
     public static <T> Multiset<T> newMultiset() {
-        return new Multiset<T>(new HashMap<T, Integer>());
+        return new Multiset<T>(new HashMap<T, MutableInt>());
     }
 
     public static <T> Multiset<T> newMultiset(final int initialCapacity) {
-        return new Multiset<T>(new HashMap<T, Integer>(initialCapacity < 0 ? 9 : initialCapacity));
+        return new Multiset<T>(new HashMap<T, MutableInt>(initialCapacity < 0 ? 9 : initialCapacity));
     }
 
     public static <T> Multiset<T> newMultiset(final Collection<? extends T> c) {
-        final Multiset<T> set = new Multiset<T>(new HashMap<T, Integer>());
+        final Multiset<T> set = new Multiset<T>(new HashMap<T, MutableInt>());
 
         set.addAll(c);
 
@@ -3359,15 +3367,15 @@ public final class N {
     }
 
     public static <T> Multiset<T> newLinkedMultiset() {
-        return new Multiset<T>(new LinkedHashMap<T, Integer>());
+        return new Multiset<T>(new LinkedHashMap<T, MutableInt>());
     }
 
     public static <T> Multiset<T> newLinkedMultiset(final int initialCapacity) {
-        return new Multiset<T>(new LinkedHashMap<T, Integer>(initialCapacity < 0 ? 9 : initialCapacity));
+        return new Multiset<T>(new LinkedHashMap<T, MutableInt>(initialCapacity < 0 ? 9 : initialCapacity));
     }
 
     public static <T> Multiset<T> newLinkedMultiset(final Collection<? extends T> c) {
-        final Multiset<T> set = new Multiset<T>(new LinkedHashMap<T, Integer>());
+        final Multiset<T> set = new Multiset<T>(new LinkedHashMap<T, MutableInt>());
 
         set.addAll(c);
 
@@ -3375,11 +3383,11 @@ public final class N {
     }
 
     public static <T> Multiset<T> newSortedMultiset() {
-        return new Multiset<T>(new TreeMap<T, Integer>());
+        return new Multiset<T>(new TreeMap<T, MutableInt>());
     }
 
     public static <T> Multiset<T> newSortedMultiset(final Collection<? extends T> c) {
-        final Multiset<T> set = new Multiset<T>(new TreeMap<T, Integer>());
+        final Multiset<T> set = new Multiset<T>(new TreeMap<T, MutableInt>());
 
         set.addAll(c);
 
@@ -4073,13 +4081,13 @@ public final class N {
     }
 
     public static <T> Multiset<T> asMultiset(final T... a) {
-        final Multiset<T> set = new Multiset<T>(new HashMap<T, Integer>(initHashCapacity(a.length)));
+        final Multiset<T> multiset = new Multiset<T>(new HashMap<T, MutableInt>(initHashCapacity(a.length)));
 
         for (T e : a) {
-            set.add(e);
+            multiset.add(e);
         }
 
-        return set;
+        return multiset;
     }
 
     public static <K, E> Multimap<K, E, List<E>> asListMultimap(final Object... a) {
@@ -4122,7 +4130,7 @@ public final class N {
     // <===
 
     @SuppressWarnings({ "unchecked", "deprecation" })
-    private static <K, E, V extends Collection<E>> Multimap<K, E, V> newMultimap(final Multimap<K, E, V> m, final Object... a) {
+    static <K, E, V extends Collection<E>> Multimap<K, E, V> newMultimap(final Multimap<K, E, V> m, final Object... a) {
         if (isNullOrEmpty(a)) {
             return m;
         }
@@ -6908,6 +6916,14 @@ public final class N {
         }
 
         return res;
+    }
+
+    public static int compare(final float a, final float b) {
+        return Float.compare(a, b);
+    }
+
+    public static int compare(final double a, final double b) {
+        return Double.compare(a, b);
     }
 
     public static <T extends Comparable<? super T>> int compare(final T a, final T b) {
@@ -21877,7 +21893,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static char[] map(final char[] a, final CharUnaryOperator mapper) {
+    static char[] map(final char[] a, final CharUnaryOperator mapper) {
         return map(a, 0, a.length, mapper);
     }
 
@@ -21892,7 +21908,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static char[] map(final char[] a, final int fromIndex, final int toIndex, final CharUnaryOperator mapper) {
+    static char[] map(final char[] a, final int fromIndex, final int toIndex, final CharUnaryOperator mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final char[] res = new char[a.length];
@@ -21913,7 +21929,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static int[] map(final int[] a, final IntUnaryOperator mapper) {
+    static int[] map(final int[] a, final IntUnaryOperator mapper) {
         return map(a, 0, a.length, mapper);
     }
 
@@ -21928,7 +21944,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static int[] map(final int[] a, final int fromIndex, final int toIndex, final IntUnaryOperator mapper) {
+    static int[] map(final int[] a, final int fromIndex, final int toIndex, final IntUnaryOperator mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final int[] res = new int[a.length];
@@ -21949,7 +21965,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static long[] map(final long[] a, final LongUnaryOperator mapper) {
+    static long[] map(final long[] a, final LongUnaryOperator mapper) {
         return map(a, 0, a.length, mapper);
     }
 
@@ -21964,7 +21980,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static long[] map(final long[] a, final int fromIndex, final int toIndex, final LongUnaryOperator mapper) {
+    static long[] map(final long[] a, final int fromIndex, final int toIndex, final LongUnaryOperator mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final long[] res = new long[a.length];
@@ -21985,7 +22001,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static float[] map(final float[] a, final FloatUnaryOperator mapper) {
+    static float[] map(final float[] a, final FloatUnaryOperator mapper) {
         return map(a, 0, a.length, mapper);
     }
 
@@ -22000,7 +22016,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static float[] map(final float[] a, final int fromIndex, final int toIndex, final FloatUnaryOperator mapper) {
+    static float[] map(final float[] a, final int fromIndex, final int toIndex, final FloatUnaryOperator mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final float[] res = new float[a.length];
@@ -22021,7 +22037,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static double[] map(final double[] a, final DoubleUnaryOperator mapper) {
+    static double[] map(final double[] a, final DoubleUnaryOperator mapper) {
         return map(a, 0, a.length, mapper);
     }
 
@@ -22036,7 +22052,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static double[] map(final double[] a, final int fromIndex, final int toIndex, final DoubleUnaryOperator mapper) {
+    static double[] map(final double[] a, final int fromIndex, final int toIndex, final DoubleUnaryOperator mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final double[] res = new double[a.length];
@@ -22212,7 +22228,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static char[] flatMap(final char[] a, final CharFunction<char[]> mapper) {
+    static char[] flatMap(final char[] a, final CharFunction<char[]> mapper) {
         return flatMap(a, 0, a.length, mapper);
     }
 
@@ -22227,7 +22243,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static char[] flatMap(final char[] a, final int fromIndex, final int toIndex, final CharFunction<char[]> mapper) {
+    static char[] flatMap(final char[] a, final int fromIndex, final int toIndex, final CharFunction<char[]> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final CharList res = new CharList();
@@ -22248,7 +22264,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static int[] flatMap(final int[] a, final IntFunction<int[]> mapper) {
+    static int[] flatMap(final int[] a, final IntFunction<int[]> mapper) {
         return flatMap(a, 0, a.length, mapper);
     }
 
@@ -22263,7 +22279,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static int[] flatMap(final int[] a, final int fromIndex, final int toIndex, final IntFunction<int[]> mapper) {
+    static int[] flatMap(final int[] a, final int fromIndex, final int toIndex, final IntFunction<int[]> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final IntList res = new IntList();
@@ -22284,7 +22300,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static long[] flatMap(final long[] a, final LongFunction<long[]> mapper) {
+    static long[] flatMap(final long[] a, final LongFunction<long[]> mapper) {
         return flatMap(a, 0, a.length, mapper);
     }
 
@@ -22299,7 +22315,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static long[] flatMap(final long[] a, final int fromIndex, final int toIndex, final LongFunction<long[]> mapper) {
+    static long[] flatMap(final long[] a, final int fromIndex, final int toIndex, final LongFunction<long[]> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final LongList res = new LongList();
@@ -22320,7 +22336,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static float[] flatMap(final float[] a, final FloatFunction<float[]> mapper) {
+    static float[] flatMap(final float[] a, final FloatFunction<float[]> mapper) {
         return flatMap(a, 0, a.length, mapper);
     }
 
@@ -22335,7 +22351,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static float[] flatMap(final float[] a, final int fromIndex, final int toIndex, final FloatFunction<float[]> mapper) {
+    static float[] flatMap(final float[] a, final int fromIndex, final int toIndex, final FloatFunction<float[]> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final FloatList res = new FloatList();
@@ -22356,7 +22372,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static double[] flatMap(final double[] a, final DoubleFunction<double[]> mapper) {
+    static double[] flatMap(final double[] a, final DoubleFunction<double[]> mapper) {
         return flatMap(a, 0, a.length, mapper);
     }
 
@@ -22371,7 +22387,7 @@ public final class N {
      * @param mapper
      * @return
      */
-    public static double[] flatMap(final double[] a, final int fromIndex, final int toIndex, final DoubleFunction<double[]> mapper) {
+    static double[] flatMap(final double[] a, final int fromIndex, final int toIndex, final DoubleFunction<double[]> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
         final DoubleList res = new DoubleList();
@@ -22547,10 +22563,384 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
      * @param a
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    public static <T, R> List<R> flatMap2(final T[] a, final Function<? super T, R[]> func) {
+        return flatMap2(ArrayList.class, a, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    public static <T, R> List<R> flatMap2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
+        return flatMap2(ArrayList.class, a, fromIndex, toIndex, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param a
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final T[] a, final Function<? super T, R[]> func) {
+        return flatMap2(collClass, a, 0, a.length, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex,
+            final Function<? super T, R[]> func) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(Arrays.asList(func.apply(a[i])));
+        }
+
+        return res;
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    public static <T, R> List<R> flatMap2(final Collection<? extends T> c, final Function<? super T, R[]> func) {
+        return flatMap2(ArrayList.class, c, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    public static <T, R> List<R> flatMap2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
+        return flatMap2(ArrayList.class, c, fromIndex, toIndex, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param c
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+            final Function<? super T, R[]> func) {
+        return flatMap2(collClass, c, 0, c.size(), func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
+            final int toIndex, final Function<? super T, R[]> func) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+        final Iterator<? extends T> it = c.iterator();
+        T e = null;
+
+        for (int i = 0; i < toIndex && it.hasNext(); i++) {
+            e = it.next();
+
+            if (i < fromIndex) {
+                continue;
+            }
+
+            res.addAll(Arrays.asList(func.apply(e)));
+        }
+
+        return res;
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    public static <T, K> Map<K, List<T>> groupBy(final T[] a, final Function<? super T, ? extends K> func) {
+        return groupBy(ArrayList.class, a, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    public static <T, K> Map<K, List<T>> groupBy(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+        return N.groupBy(ArrayList.class, a, fromIndex, toIndex, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param a
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final T[] a,
+            final Function<? super T, ? extends K> func) {
+        return groupBy(collClass, a, 0, a.length, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final T[] a, final int fromIndex,
+            final int toIndex, final Function<? super T, ? extends K> func) {
+        return N.groupBy(HashMap.class, collClass, a, fromIndex, toIndex, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param outputClass
+     * @param collClass
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, K, V extends Collection<T>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass,
+            final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final Map<? super K, V> outputResult = N.newInstance(outputClass);
+
+        K key = null;
+        V values = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = func.apply(a[i]);
+            values = outputResult.get(key);
+
+            if (values == null) {
+                values = (V) N.newInstance(collClass);
+                outputResult.put(key, values);
+            }
+
+            values.add(a[i]);
+        }
+
+        return (R) outputResult;
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
+        return groupBy(ArrayList.class, c, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> func) {
+        return N.groupBy(ArrayList.class, c, fromIndex, toIndex, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param c
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+            final Function<? super T, ? extends K> func) {
+        return groupBy(collClass, c, 0, c.size(), func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+        return N.groupBy(HashMap.class, collClass, c, fromIndex, toIndex, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param outputClass
+     * @param collClass
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, K, V extends Collection<T>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass,
+            final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> func) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final Map<? super K, V> outputResult = N.newInstance(outputClass);
+        final Iterator<? extends T> it = c.iterator();
+        T e = null;
+        K r = null;
+        V values = null;
+
+        for (int i = 0; i < toIndex && it.hasNext(); i++) {
+            e = it.next();
+
+            if (i < fromIndex) {
+                continue;
+            }
+
+            r = func.apply(e);
+            values = outputResult.get(r);
+
+            if (values == null) {
+                values = (V) N.newInstance(collClass);
+                outputResult.put(r, values);
+            }
+
+            values.add(e);
+        }
+
+        return (R) outputResult;
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
      * @param op
      * @return
      */
-    public static char reduce(final char[] a, final CharBinaryOperator op) {
+    static char reduce(final char[] a, final CharBinaryOperator op) {
         return reduce(a, 0, a.length, op);
     }
 
@@ -22565,7 +22955,7 @@ public final class N {
      * @param op
      * @return
      */
-    public static char reduce(final char[] a, final int fromIndex, final int toIndex, final CharBinaryOperator op) {
+    static char reduce(final char[] a, final int fromIndex, final int toIndex, final CharBinaryOperator op) {
         boolean foundAny = false;
         char result = 0;
 
@@ -22591,7 +22981,7 @@ public final class N {
      * @param op
      * @return
      */
-    public static char reduce(final char[] a, final char identity, final CharBinaryOperator op) {
+    static char reduce(final char[] a, final char identity, final CharBinaryOperator op) {
         return reduce(a, 0, a.length, identity, op);
     }
 
@@ -22607,11 +22997,87 @@ public final class N {
      * @param op
      * @return
      */
-    public static char reduce(final char[] a, final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator op) {
+    static char reduce(final char[] a, final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator op) {
         char result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
             result = op.applyAsChar(result, a[i]);
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param op
+     * @return
+     */
+    public static short reduce(final short[] a, final ShortBinaryOperator op) {
+        return reduce(a, 0, a.length, op);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param op
+     * @return
+     */
+    public static short reduce(final short[] a, final int fromIndex, final int toIndex, final ShortBinaryOperator op) {
+        boolean foundAny = false;
+        short result = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (!foundAny) {
+                foundAny = true;
+                result = a[i];
+            } else {
+                result = op.applyAsShort(result, a[i]);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param identity
+     * @param op
+     * @return
+     */
+    public static short reduce(final short[] a, final short identity, final ShortBinaryOperator op) {
+        return reduce(a, 0, a.length, identity, op);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param identity
+     * @param op
+     * @return
+     */
+    public static short reduce(final short[] a, final int fromIndex, final int toIndex, final short identity, final ShortBinaryOperator op) {
+        short result = identity;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result = op.applyAsShort(result, a[i]);
         }
 
         return result;
@@ -23102,219 +23568,67 @@ public final class N {
         return result;
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K> Map<K, List<T>> groupBy(final T[] a, final Function<? super T, ? extends K> func) {
-        return groupBy(ArrayList.class, a, func);
+    public static short[] top(final short[] a, final int top) {
+        return top(a, top, null);
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K> Map<K, List<T>> groupBy(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        return N.groupBy(ArrayList.class, a, fromIndex, toIndex, func);
+    public static short[] top(final short[] a, final int top, final Comparator<Short> cmp) {
+        return top(a, 0, a.length, top, cmp);
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final T[] a,
-            final Function<? super T, ? extends K> func) {
-        return groupBy(collClass, a, 0, a.length, func);
+    public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int top) {
+        return top(a, fromIndex, toIndex, top, null);
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final T[] a, final int fromIndex,
-            final int toIndex, final Function<? super T, ? extends K> func) {
-        return N.groupBy(new HashMap<K, V>(), collClass, a, fromIndex, toIndex, func);
-    }
+    public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int top, final Comparator<Short> cmp) {
+        if (top >= toIndex - fromIndex) {
+            return N.copyOfRange(a, fromIndex, toIndex);
+        }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>, R extends Map<? super K, V>> R groupBy(final R outputResult, final Class<? extends Collection> collClass,
-            final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        checkFromToIndex(fromIndex, toIndex);
+        final Comparator<Pair<Short, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Short, Integer>>() {
+            @Override
+            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
+                return Short.compare(o1.left.shortValue(), o2.left.shortValue());
+            }
+        } : new Comparator<Pair<Short, Integer>>() {
+            @Override
+            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
+                return N.compare(o1.left, o2.left, cmp);
+            }
+        };
 
-        K r = null;
-        V values = null;
+        final Queue<Pair<Short, Integer>> heap = new PriorityQueue<Pair<Short, Integer>>(top, pairCmp);
+        Pair<Short, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            r = func.apply(a[i]);
-            values = outputResult.get(r);
+            pair = Pair.of(a[i], i);
 
-            if (values == null) {
-                values = (V) N.newInstance(collClass);
-                outputResult.put(r, values);
+            if (heap.size() >= top) {
+                if (pairCmp.compare(heap.peek(), pair) < 0) {
+                    heap.poll();
+                    heap.add(pair);
+                }
+            } else {
+                heap.offer(pair);
             }
-
-            values.add(a[i]);
         }
 
-        return outputResult;
-    }
+        final Pair<Short, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
-        return groupBy(ArrayList.class, c, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        return N.groupBy(ArrayList.class, c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Collection<? extends T> c,
-            final Function<? super T, ? extends K> func) {
-        return groupBy(collClass, c, 0, c.size(), func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Collection<? extends T> c,
-            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        return N.groupBy(new HashMap<K, V>(), collClass, c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>, R extends Map<? super K, V>> R groupBy(final R outputResult, final Class<? extends Collection> collClass,
-            final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        checkFromToIndex(fromIndex, toIndex);
-
-        final Iterator<? extends T> it = c.iterator();
-        T e = null;
-        K r = null;
-        V values = null;
-
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
-
-            if (i < fromIndex) {
-                continue;
+        N.sort(arrayOfPair, new Comparator<Pair<Short, Integer>>() {
+            @Override
+            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
+                return o1.right.intValue() - o2.right.intValue();
             }
+        });
 
-            r = func.apply(e);
-            values = outputResult.get(r);
+        final short[] res = new short[arrayOfPair.length];
 
-            if (values == null) {
-                values = (V) N.newInstance(collClass);
-                outputResult.put(r, values);
-            }
-
-            values.add(e);
+        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+            res[i] = arrayOfPair[i].left;
         }
 
-        return outputResult;
+        return res;
     }
 
     public static int[] top(final int[] a, final int top) {
@@ -31748,7 +32062,7 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 50%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
@@ -31766,7 +32080,9 @@ public final class N {
         m.put("1%", sortedArray[(int) (len * 0.01)]);
         m.put("10%", sortedArray[(int) (len * 0.1)]);
         m.put("20%", sortedArray[(int) (len * 0.2)]);
+        m.put("30%", sortedArray[(int) (len * 0.3)]);
         m.put("50%", sortedArray[(int) (len * 0.5)]);
+        m.put("70%", sortedArray[(int) (len * 0.7)]);
         m.put("80%", sortedArray[(int) (len * 0.8)]);
         m.put("90%", sortedArray[(int) (len * 0.9)]);
         m.put("99%", sortedArray[(int) (len * 0.99)]);
@@ -31795,7 +32111,9 @@ public final class N {
         m.put("1%", sortedArray[(int) (len * 0.01)]);
         m.put("10%", sortedArray[(int) (len * 0.1)]);
         m.put("20%", sortedArray[(int) (len * 0.2)]);
+        m.put("30%", sortedArray[(int) (len * 0.3)]);
         m.put("50%", sortedArray[(int) (len * 0.5)]);
+        m.put("70%", sortedArray[(int) (len * 0.7)]);
         m.put("80%", sortedArray[(int) (len * 0.8)]);
         m.put("90%", sortedArray[(int) (len * 0.9)]);
         m.put("99%", sortedArray[(int) (len * 0.99)]);
@@ -31806,7 +32124,7 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 50%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
@@ -31824,7 +32142,9 @@ public final class N {
         m.put("1%", sortedArray[(int) (len * 0.01)]);
         m.put("10%", sortedArray[(int) (len * 0.1)]);
         m.put("20%", sortedArray[(int) (len * 0.2)]);
+        m.put("30%", sortedArray[(int) (len * 0.3)]);
         m.put("50%", sortedArray[(int) (len * 0.5)]);
+        m.put("70%", sortedArray[(int) (len * 0.7)]);
         m.put("80%", sortedArray[(int) (len * 0.8)]);
         m.put("90%", sortedArray[(int) (len * 0.9)]);
         m.put("99%", sortedArray[(int) (len * 0.99)]);
@@ -31835,7 +32155,7 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 50%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
@@ -31853,7 +32173,9 @@ public final class N {
         m.put("1%", sortedArray[(int) (len * 0.01)]);
         m.put("10%", sortedArray[(int) (len * 0.1)]);
         m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("50%", sortedArray[(int) (len * 0.2)]);
+        m.put("30%", sortedArray[(int) (len * 0.3)]);
+        m.put("50%", sortedArray[(int) (len * 0.5)]);
+        m.put("70%", sortedArray[(int) (len * 0.7)]);
         m.put("80%", sortedArray[(int) (len * 0.8)]);
         m.put("90%", sortedArray[(int) (len * 0.9)]);
         m.put("99%", sortedArray[(int) (len * 0.99)]);
@@ -31864,7 +32186,7 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 50%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
@@ -31882,7 +32204,9 @@ public final class N {
         m.put("1%", sortedArray[(int) (len * 0.01)]);
         m.put("10%", sortedArray[(int) (len * 0.1)]);
         m.put("20%", sortedArray[(int) (len * 0.2)]);
+        m.put("30%", sortedArray[(int) (len * 0.3)]);
         m.put("50%", sortedArray[(int) (len * 0.5)]);
+        m.put("70%", sortedArray[(int) (len * 0.7)]);
         m.put("80%", sortedArray[(int) (len * 0.8)]);
         m.put("90%", sortedArray[(int) (len * 0.9)]);
         m.put("99%", sortedArray[(int) (len * 0.99)]);
@@ -31893,7 +32217,7 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 50%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
@@ -31911,7 +32235,9 @@ public final class N {
         m.put("1%", sortedArray[(int) (len * 0.01)]);
         m.put("10%", sortedArray[(int) (len * 0.1)]);
         m.put("20%", sortedArray[(int) (len * 0.2)]);
+        m.put("30%", sortedArray[(int) (len * 0.3)]);
         m.put("50%", sortedArray[(int) (len * 0.5)]);
+        m.put("70%", sortedArray[(int) (len * 0.7)]);
         m.put("80%", sortedArray[(int) (len * 0.8)]);
         m.put("90%", sortedArray[(int) (len * 0.9)]);
         m.put("99%", sortedArray[(int) (len * 0.99)]);
@@ -31922,7 +32248,7 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 50%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
@@ -31940,7 +32266,9 @@ public final class N {
         m.put("1%", sortedArray[(int) (len * 0.01)]);
         m.put("10%", sortedArray[(int) (len * 0.1)]);
         m.put("20%", sortedArray[(int) (len * 0.2)]);
+        m.put("30%", sortedArray[(int) (len * 0.3)]);
         m.put("50%", sortedArray[(int) (len * 0.5)]);
+        m.put("70%", sortedArray[(int) (len * 0.7)]);
         m.put("80%", sortedArray[(int) (len * 0.8)]);
         m.put("90%", sortedArray[(int) (len * 0.9)]);
         m.put("99%", sortedArray[(int) (len * 0.99)]);
@@ -31951,7 +32279,7 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 50%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
@@ -31969,7 +32297,9 @@ public final class N {
         m.put("1%", sortedArray[(int) (len * 0.01)]);
         m.put("10%", sortedArray[(int) (len * 0.1)]);
         m.put("20%", sortedArray[(int) (len * 0.2)]);
+        m.put("30%", sortedArray[(int) (len * 0.3)]);
         m.put("50%", sortedArray[(int) (len * 0.5)]);
+        m.put("70%", sortedArray[(int) (len * 0.7)]);
         m.put("80%", sortedArray[(int) (len * 0.8)]);
         m.put("90%", sortedArray[(int) (len * 0.9)]);
         m.put("99%", sortedArray[(int) (len * 0.99)]);
@@ -31980,7 +32310,7 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 50%, 80%, 90%, 99%, 99.9%, 99.99%</code> * size of the specified list.
+     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * size of the specified list.
      * 
      * @param sortedList
      * @return
@@ -31998,7 +32328,9 @@ public final class N {
         m.put("1%", sortedList.get((int) (size * 0.01)));
         m.put("10%", sortedList.get((int) (size * 0.1)));
         m.put("20%", sortedList.get((int) (size * 0.2)));
+        m.put("30%", sortedList.get((int) (size * 0.3)));
         m.put("50%", sortedList.get((int) (size * 0.5)));
+        m.put("70%", sortedList.get((int) (size * 0.7)));
         m.put("80%", sortedList.get((int) (size * 0.8)));
         m.put("90%", sortedList.get((int) (size * 0.9)));
         m.put("99%", sortedList.get((int) (size * 0.99)));
@@ -32542,896 +32874,6 @@ public final class N {
         }
 
         return Collections.disjoint(c1, c2);
-    }
-
-    public static Class<?> wrap(final Class<?> cls) {
-        Class<?> result = PRIMITIVE_2_WRAPPER.get(cls);
-
-        if (result == null) {
-            throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive (array) type");
-        }
-
-        return result;
-    }
-
-    /**
-     * <p>
-     * Converts an array of primitive booleans to objects.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code boolean} array
-     * @return a {@code Boolean} array, {@code null} if null array input
-     */
-    public static Boolean[] wrap(final boolean[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, a.length);
-    }
-
-    public static Boolean[] wrap(final boolean[] a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_BOOLEAN_OBJECT_ARRAY;
-        }
-
-        final Boolean[] result = new Boolean[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = Boolean.valueOf(a[j]);
-        }
-
-        return result;
-    }
-
-    /**
-     * <p>
-     * Converts an array of primitive chars to objects.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code char} array
-     * @return a {@code Character} array, {@code null} if null array input
-     */
-    public static Character[] wrap(final char[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, a.length);
-    }
-
-    public static Character[] wrap(final char[] a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_CHARACTER_OBJECT_ARRAY;
-        }
-
-        final Character[] result = new Character[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = Character.valueOf(a[j]);
-        }
-
-        return result;
-    }
-
-    /**
-     * <p>
-     * Converts an array of primitive bytes to objects.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code byte} array
-     * @return a {@code Byte} array, {@code null} if null array input
-     */
-    public static Byte[] wrap(final byte[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, a.length);
-    }
-
-    public static Byte[] wrap(final byte[] a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_BYTE_OBJECT_ARRAY;
-        }
-
-        final Byte[] result = new Byte[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = Byte.valueOf(a[j]);
-        }
-
-        return result;
-    }
-
-    /**
-     * <p>
-     * Converts an array of primitive shorts to objects.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code short} array
-     * @return a {@code Short} array, {@code null} if null array input
-     */
-    public static Short[] wrap(final short[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, a.length);
-    }
-
-    public static Short[] wrap(final short[] a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_SHORT_OBJECT_ARRAY;
-        }
-
-        final Short[] result = new Short[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = Short.valueOf(a[j]);
-        }
-
-        return result;
-    }
-
-    /**
-     * <p>
-     * Converts an array of primitive ints to objects.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            an {@code int} array
-     * @return an {@code Integer} array, {@code null} if null array input
-     */
-    public static Integer[] wrap(final int[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, a.length);
-    }
-
-    public static Integer[] wrap(final int[] a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_INTEGER_OBJECT_ARRAY;
-        }
-
-        final Integer[] result = new Integer[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = Integer.valueOf(a[j]);
-        }
-
-        return result;
-    }
-
-    /**
-     * <p>
-     * Converts an array of primitive longs to objects.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code long} array
-     * @return a {@code Long} array, {@code null} if null array input
-     */
-    public static Long[] wrap(final long[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, a.length);
-    }
-
-    public static Long[] wrap(final long[] a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_LONG_OBJECT_ARRAY;
-        }
-
-        final Long[] result = new Long[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = Long.valueOf(a[j]);
-        }
-
-        return result;
-    }
-
-    /**
-     * <p>
-     * Converts an array of primitive floats to objects.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code float} array
-     * @return a {@code Float} array, {@code null} if null array input
-     */
-    public static Float[] wrap(final float[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, a.length);
-    }
-
-    public static Float[] wrap(final float[] a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_FLOAT_OBJECT_ARRAY;
-        }
-
-        final Float[] result = new Float[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = Float.valueOf(a[j]);
-        }
-
-        return result;
-    }
-
-    /**
-     * <p>
-     * Converts an array of primitive doubles to objects.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code double} array
-     * @return a {@code Double} array, {@code null} if null array input
-     */
-    public static Double[] wrap(final double[] a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, a.length);
-    }
-
-    public static Double[] wrap(final double[] a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_DOUBLE_OBJECT_ARRAY;
-        }
-
-        final Double[] result = new Double[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = Double.valueOf(a[j]);
-        }
-
-        return result;
-    }
-
-    public static <T> T wrap(final Object a) {
-        if (a == null) {
-            return null;
-        }
-
-        return wrap(a, 0, Array.getLength(a));
-    }
-
-    public static <T> T wrap(final Object a, final int fromIndex, final int toIndex) {
-        if (a == null) {
-            return null;
-        }
-
-        final Class<?> cls = a.getClass();
-        final Integer enumInt = CLASS_TYPE_ENUM.get(cls);
-
-        if (enumInt == null) {
-            throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive array");
-        }
-
-        switch (enumInt) {
-            case 11:
-                return (T) wrap((boolean[]) a, fromIndex, toIndex);
-
-            case 12:
-                return (T) wrap((char[]) a, fromIndex, toIndex);
-
-            case 13:
-                return (T) wrap((byte[]) a, fromIndex, toIndex);
-
-            case 14:
-                return (T) wrap((short[]) a, fromIndex, toIndex);
-
-            case 15:
-                return (T) wrap((int[]) a, fromIndex, toIndex);
-
-            case 16:
-                return (T) wrap((long[]) a, fromIndex, toIndex);
-
-            case 17:
-                return (T) wrap((float[]) a, fromIndex, toIndex);
-
-            case 18:
-                return (T) wrap((double[]) a, fromIndex, toIndex);
-
-            default:
-                throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive array");
-        }
-    }
-
-    public static Class<?> unwrap(final Class<?> cls) {
-        Class<?> result = PRIMITIVE_2_WRAPPER.getByValue(cls);
-
-        if (result == null) {
-            throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a wrapper of primitive (array) type");
-        }
-
-        return result;
-    }
-
-    // Boolean array converters
-    // ----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts an array of object Booleans to primitives.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Boolean} array, may be {@code null}
-     * @return a {@code boolean} array, {@code null} if null array input
-     */
-    public static boolean[] unwrap(final Boolean[] a) {
-        return unwrap(a, false);
-    }
-
-    /**
-     * <p>
-     * Converts an array of object Booleans to primitives handling {@code null}.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Boolean} array, may be {@code null}
-     * @param valueForNull
-     *            the value to insert if {@code null} found
-     * @return a {@code boolean} array, {@code null} if null array input
-     */
-    public static boolean[] unwrap(final Boolean[] a, final boolean valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, a.length, valueForNull);
-    }
-
-    public static boolean[] unwrap(final Boolean[] a, final int fromIndex, final int toIndex, final boolean valueForNull) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_BOOLEAN_ARRAY;
-        }
-
-        final boolean[] result = new boolean[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = (a[j] == null ? valueForNull : a[j].booleanValue());
-        }
-
-        return result;
-    }
-
-    // Character array converters
-    // ----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts an array of object Characters to primitives.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Character} array, may be {@code null}
-     * @return a {@code char} array, {@code null} if null array input
-     */
-    public static char[] unwrap(final Character[] a) {
-        return unwrap(a, (char) 0);
-    }
-
-    /**
-     * <p>
-     * Converts an array of object Character to primitives handling {@code null}
-     * .
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Character} array, may be {@code null}
-     * @param valueForNull
-     *            the value to insert if {@code null} found
-     * @return a {@code char} array, {@code null} if null array input
-     */
-    public static char[] unwrap(final Character[] a, final char valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, a.length, valueForNull);
-    }
-
-    public static char[] unwrap(final Character[] a, final int fromIndex, final int toIndex, final char valueForNull) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_CHAR_ARRAY;
-        }
-
-        final char[] result = new char[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = (a[j] == null ? valueForNull : a[j].charValue());
-        }
-
-        return result;
-    }
-
-    // Byte array converters
-    // ----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts an array of object Bytes to primitives.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Byte} array, may be {@code null}
-     * @return a {@code byte} array, {@code null} if null array input
-     */
-    public static byte[] unwrap(final Byte[] a) {
-        return unwrap(a, (byte) 0);
-    }
-
-    /**
-     * <p>
-     * Converts an array of object Bytes to primitives handling {@code null}.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Byte} array, may be {@code null}
-     * @param valueForNull
-     *            the value to insert if {@code null} found
-     * @return a {@code byte} array, {@code null} if null array input
-     */
-    public static byte[] unwrap(final Byte[] a, final byte valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, a.length, valueForNull);
-    }
-
-    public static byte[] unwrap(final Byte[] a, final int fromIndex, final int toIndex, final byte valueForNull) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_BYTE_ARRAY;
-        }
-
-        final byte[] result = new byte[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = (a[j] == null ? valueForNull : a[j].byteValue());
-        }
-
-        return result;
-    }
-
-    // Short array converters
-    // ----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts an array of object Shorts to primitives.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Short} array, may be {@code null}
-     * @return a {@code byte} array, {@code null} if null array input
-     */
-    public static short[] unwrap(final Short[] a) {
-        return unwrap(a, (short) 0);
-    }
-
-    /**
-     * <p>
-     * Converts an array of object Short to primitives handling {@code null}.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Short} array, may be {@code null}
-     * @param valueForNull
-     *            the value to insert if {@code null} found
-     * @return a {@code byte} array, {@code null} if null array input
-     */
-    public static short[] unwrap(final Short[] a, final short valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, a.length, valueForNull);
-    }
-
-    public static short[] unwrap(final Short[] a, final int fromIndex, final int toIndex, final short valueForNull) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_SHORT_ARRAY;
-        }
-
-        final short[] result = new short[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = (a[j] == null ? valueForNull : a[j].shortValue());
-        }
-
-        return result;
-    }
-
-    // Int array converters
-    // ----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts an array of object Integers to primitives.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Integer} array, may be {@code null}
-     * @return an {@code int} array, {@code null} if null array input
-     */
-    public static int[] unwrap(final Integer[] a) {
-        return unwrap(a, 0);
-    }
-
-    /**
-     * <p>
-     * Converts an array of object Integer to primitives handling {@code null}.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Integer} array, may be {@code null}
-     * @param valueForNull
-     *            the value to insert if {@code null} found
-     * @return an {@code int} array, {@code null} if null array input
-     */
-    public static int[] unwrap(final Integer[] a, final int valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, a.length, valueForNull);
-    }
-
-    public static int[] unwrap(final Integer[] a, final int fromIndex, final int toIndex, final int valueForNull) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_INT_ARRAY;
-        }
-
-        final int[] result = new int[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = (a[j] == null ? valueForNull : a[j].intValue());
-        }
-
-        return result;
-    }
-
-    // Long array converters
-    // ----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts an array of object Longs to primitives.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Long} array, may be {@code null}
-     * @return a {@code long} array, {@code null} if null array input
-     */
-    public static long[] unwrap(final Long[] a) {
-        return unwrap(a, 0L);
-    }
-
-    /**
-     * <p>
-     * Converts an array of object Long to primitives handling {@code null}.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Long} array, may be {@code null}
-     * @param valueForNull
-     *            the value to insert if {@code null} found
-     * @return a {@code long} array, {@code null} if null array input
-     */
-    public static long[] unwrap(final Long[] a, final long valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, a.length, valueForNull);
-    }
-
-    public static long[] unwrap(final Long[] a, final int fromIndex, final int toIndex, final long valueForNull) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_LONG_ARRAY;
-        }
-
-        final long[] result = new long[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = (a[j] == null ? valueForNull : a[j].longValue());
-        }
-
-        return result;
-    }
-
-    // Float array converters
-    // ----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts an array of object Floats to primitives.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Float} array, may be {@code null}
-     * @return a {@code float} array, {@code null} if null array input
-     */
-    public static float[] unwrap(final Float[] a) {
-        return unwrap(a, 0f);
-    }
-
-    /**
-     * <p>
-     * Converts an array of object Floats to primitives handling {@code null}.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Float} array, may be {@code null}
-     * @param valueForNull
-     *            the value to insert if {@code null} found
-     * @return a {@code float} array, {@code null} if null array input
-     */
-    public static float[] unwrap(final Float[] a, final float valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, a.length, valueForNull);
-    }
-
-    public static float[] unwrap(final Float[] a, final int fromIndex, final int toIndex, final float valueForNull) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_FLOAT_ARRAY;
-        }
-
-        final float[] result = new float[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = (a[j] == null ? valueForNull : a[j].floatValue());
-        }
-
-        return result;
-    }
-
-    // Double array converters
-    // ----------------------------------------------------------------------
-    /**
-     * <p>
-     * Converts an array of object Doubles to primitives.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Double} array, may be {@code null}
-     * @return a {@code double} array, {@code null} if null array input
-     */
-    public static double[] unwrap(final Double[] a) {
-        return unwrap(a, 0d);
-    }
-
-    /**
-     * <p>
-     * Converts an array of object Doubles to primitives handling {@code null}.
-     * </p>
-     *
-     * <p>
-     * This method returns {@code null} for a {@code null} input array.
-     * </p>
-     *
-     * @param a
-     *            a {@code Double} array, may be {@code null}
-     * @param valueForNull
-     *            the value to insert if {@code null} found
-     * @return a {@code double} array, {@code null} if null array input
-     */
-    public static double[] unwrap(final Double[] a, final double valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, a.length, valueForNull);
-    }
-
-    public static double[] unwrap(final Double[] a, final int fromIndex, final int toIndex, final double valueForNull) {
-        if (a == null) {
-            return null;
-        } else if (toIndex - fromIndex == 0) {
-            return EMPTY_DOUBLE_ARRAY;
-        }
-
-        final double[] result = new double[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            result[i] = (a[j] == null ? valueForNull : a[j].doubleValue());
-        }
-
-        return result;
-    }
-
-    public static <T> T unwrap(final Object a) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, null);
-    }
-
-    public static <T> T unwrap(final Object a, final Object valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        return unwrap(a, 0, Array.getLength(a), valueForNull);
-    }
-
-    public static <T> T unwrap(final Object a, final int fromIndex, final int toIndex, final Object valueForNull) {
-        if (a == null) {
-            return null;
-        }
-
-        final Class<?> cls = unwrap(a.getClass());
-        final Object defaultValue = valueForNull == null ? N.defaultValueOf(cls.getComponentType()) : valueForNull;
-        final Integer enumInt = CLASS_TYPE_ENUM.get(cls);
-
-        if (enumInt == null) {
-            throw new IllegalArgumentException(N.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
-        }
-
-        switch (enumInt) {
-            case 11:
-                return (T) unwrap((Boolean[]) a, fromIndex, toIndex, ((Boolean) defaultValue).booleanValue());
-
-            case 12:
-                return (T) unwrap((Character[]) a, fromIndex, toIndex, ((Character) defaultValue).charValue());
-
-            case 13:
-                return (T) unwrap((Byte[]) a, fromIndex, toIndex, ((Number) defaultValue).byteValue());
-
-            case 14:
-                return (T) unwrap((Short[]) a, fromIndex, toIndex, ((Number) defaultValue).shortValue());
-
-            case 15:
-                return (T) unwrap((Integer[]) a, fromIndex, toIndex, ((Number) defaultValue).intValue());
-
-            case 16:
-                return (T) unwrap((Long[]) a, fromIndex, toIndex, ((Number) defaultValue).longValue());
-
-            case 17:
-                return (T) unwrap((Float[]) a, fromIndex, toIndex, ((Number) defaultValue).floatValue());
-
-            case 18:
-                return (T) unwrap((Double[]) a, fromIndex, toIndex, ((Number) defaultValue).doubleValue());
-
-            default:
-                throw new IllegalArgumentException(N.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
-        }
     }
 
     public static String toJSON(final Object obj) {

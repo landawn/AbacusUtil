@@ -167,10 +167,6 @@ public final class ArrayHashSet<E> implements Set<E> {
     public <T> T[] toArray(T[] a) {
         final int size = size();
 
-        if (size == 0) {
-            return a == null ? (T[]) N.EMPTY_OBJECT_ARRAY : a;
-        }
-
         if (a.length < size) {
             a = N.newArray(a.getClass().getComponentType(), size);
         }

@@ -1450,54 +1450,6 @@ public final class IOUtil {
         write(out, str == null ? N.NULL_CHAR_ARRAY : N.getCharsForReadOnly(str), flush);
     }
 
-    public static void write(final File out, final byte[] bytes) {
-        write(out, bytes, 0, bytes.length);
-    }
-
-    public static void write(final File out, final byte[] bytes, final int offset, final int len) {
-        OutputStream os = null;
-
-        try {
-            if (!out.exists()) {
-                out.createNewFile();
-            }
-
-            os = new FileOutputStream(out);
-
-            write(os, bytes, offset, len);
-
-            os.flush();
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        } finally {
-            close(os);
-        }
-    }
-
-    public static void write(final OutputStream out, final byte[] bytes) {
-        write(out, bytes, 0, bytes.length);
-    }
-
-    public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len) {
-        write(out, bytes, offset, len, false);
-    }
-
-    public static void write(final OutputStream out, final byte[] bytes, final boolean flush) {
-        write(out, bytes, 0, bytes.length, flush);
-    }
-
-    public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len, final boolean flush) {
-        try {
-            out.write(bytes, offset, len);
-
-            if (flush) {
-                out.flush();
-            }
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        }
-    }
-
     public static void write(final File out, final char[] chars) {
         write(out, chars, 0, chars.length);
     }
@@ -1549,7 +1501,7 @@ public final class IOUtil {
     public static void write(final Writer out, final char[] chars, final int offset, final int len, final boolean flush) {
         try {
             out.write(chars, offset, len);
-
+    
             if (flush) {
                 out.flush();
             }
@@ -1564,23 +1516,71 @@ public final class IOUtil {
 
     public static long write(final File output, final InputStream input, final long offset, final long len) {
         OutputStream os = null;
-
+    
         try {
             if (!output.exists()) {
                 output.createNewFile();
             }
-
+    
             os = new FileOutputStream(output);
-
+    
             long result = write(os, input, offset, len);
-
+    
             os.flush();
-
+    
             return result;
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
             close(os);
+        }
+    }
+
+    public static void write(final File out, final byte[] bytes) {
+        write(out, bytes, 0, bytes.length);
+    }
+
+    public static void write(final File out, final byte[] bytes, final int offset, final int len) {
+        OutputStream os = null;
+
+        try {
+            if (!out.exists()) {
+                out.createNewFile();
+            }
+
+            os = new FileOutputStream(out);
+
+            write(os, bytes, offset, len);
+
+            os.flush();
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            close(os);
+        }
+    }
+
+    public static void write(final OutputStream out, final byte[] bytes) {
+        write(out, bytes, 0, bytes.length);
+    }
+
+    public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len) {
+        write(out, bytes, offset, len, false);
+    }
+
+    public static void write(final OutputStream out, final byte[] bytes, final boolean flush) {
+        write(out, bytes, 0, bytes.length, flush);
+    }
+
+    public static void write(final OutputStream out, final byte[] bytes, final int offset, final int len, final boolean flush) {
+        try {
+            out.write(bytes, offset, len);
+
+            if (flush) {
+                out.flush();
+            }
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
         }
     }
 

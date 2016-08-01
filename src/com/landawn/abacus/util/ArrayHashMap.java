@@ -200,7 +200,13 @@ public final class ArrayHashMap<K, V> implements Map<K, V> {
 
         @Override
         public boolean contains(Object o) {
-            throw new UnsupportedOperationException();
+            if (o instanceof Map.Entry) {
+                final Map.Entry<K, V> entry = (Map.Entry<K, V>) o;
+
+                return set.contains(new MapEntry<ArrayWrapper<K>, V>(ArrayWrapper.of(entry.getKey()), entry.getValue()));
+            }
+
+            return false;
         }
 
         @Override
@@ -210,12 +216,38 @@ public final class ArrayHashMap<K, V> implements Map<K, V> {
 
         @Override
         public Object[] toArray() {
-            throw new UnsupportedOperationException();
+            final int size = size();
+
+            if (size == 0) {
+                return N.EMPTY_OBJECT_ARRAY;
+            }
+
+            final Object[] result = new Object[size];
+            int i = 0;
+
+            for (Map.Entry<ArrayWrapper<K>, V> e : set) {
+                result[i++] = new ArrayEntry<K, V>(e);
+            }
+
+            return result;
         }
 
         @Override
         public <T> T[] toArray(T[] a) {
-            throw new UnsupportedOperationException();
+            final int size = size();
+
+            if (a.length < size) {
+                a = N.newArray(a.getClass().getComponentType(), size);
+            }
+
+            final Object[] result = a;
+            int i = 0;
+
+            for (Map.Entry<ArrayWrapper<K>, V> e : set) {
+                result[i++] = new ArrayEntry<K, V>(e);
+            }
+
+            return a;
         }
 
         @Override

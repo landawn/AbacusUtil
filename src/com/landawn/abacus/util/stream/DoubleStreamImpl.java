@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
@@ -313,7 +314,7 @@ final class DoubleStreamImpl implements DoubleStream {
 
     @Override
     public Stream<Double> boxed() {
-        return new ArrayStream<Double>(N.wrap(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Double>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
     }
 
     @Override

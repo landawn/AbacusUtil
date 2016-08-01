@@ -32,7 +32,7 @@ package com.landawn.abacus.util;
  */
 public final class MutableChar implements Comparable<MutableChar>, Mutable<Character> {
     /** The mutable value. */
-    private char value;
+    private volatile char value;
 
     /**
      * Constructs a new MutableChar with the default value of zero.

@@ -16,12 +16,19 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
+import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.stream.LongStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -32,7 +39,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPredicate, Long, long[], LongList> {
+public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredicate, Long, long[], LongList> {
     private long[] elementData = N.EMPTY_LONG_ARRAY;
     private int size = 0;
 
@@ -95,19 +102,101 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
         return of(elementData);
     }
 
-    public static LongList of(Collection<? extends Number> c) {
+    public static LongList of(float[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static LongList of(float[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final long[] elementData = new long[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (N.compare(a[i], Long.MIN_VALUE) < 0 || N.compare(a[i], Long.MAX_VALUE) > 0) {
+                throw new ArithmeticException("overflow");
+            }
+
+            elementData[i - fromIndex] = (long) a[i];
+        }
+
+        return of(elementData);
+    }
+
+    public static LongList of(double[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static LongList of(double[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final long[] elementData = new long[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (N.compare(a[i], Long.MIN_VALUE) < 0 || N.compare(a[i], Long.MAX_VALUE) > 0) {
+                throw new ArithmeticException("overflow");
+            }
+
+            elementData[i - fromIndex] = (long) a[i];
+        }
+
+        return of(elementData);
+    }
+
+    public static LongList of(String[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static LongList of(String[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final long[] elementData = new long[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            double val = N.asDouble(a[i]);
+
+            if (N.compare(val, Long.MIN_VALUE) < 0 || N.compare(val, Long.MAX_VALUE) > 0) {
+                throw new ArithmeticException("overflow");
+            }
+
+            elementData[i - fromIndex] = (long) val;
+        }
+
+        return of(elementData);
+    }
+
+    public static LongList of(List<String> c) {
+        return of(c, 0);
+    }
+
+    public static LongList of(List<String> c, long defaultValueForNull) {
         final long[] a = new long[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
+        for (String e : c) {
             if (e == null) {
-                continue;
-            }
+                a[idx++] = defaultValueForNull;
+            } else {
+                double val = N.asDouble(e);
 
-            a[idx++] = e.longValue();
+                if (N.compare(val, Long.MIN_VALUE) < 0 || N.compare(val, Long.MAX_VALUE) > 0) {
+                    throw new ArithmeticException("overflow");
+                }
+
+                a[idx++] = (long) val;
+            }
         }
 
         return of(a);
+    }
+
+    public static LongList of(Collection<? extends Number> c) {
+        return of(c, 0);
     }
 
     public static LongList of(Collection<? extends Number> c, long defaultValueForNull) {
@@ -118,7 +207,13 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
             if (e == null) {
                 a[idx++] = defaultValueForNull;
             } else {
-                a[idx++] = e.longValue();
+                double val = e.doubleValue();
+
+                if (N.compare(val, Long.MIN_VALUE) < 0 || N.compare(val, Long.MAX_VALUE) > 0) {
+                    throw new ArithmeticException("overflow");
+                }
+
+                a[idx++] = (long) val;
             }
         }
 
@@ -133,6 +228,24 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     @Override
     public long[] array() {
         return elementData;
+    }
+
+    /**
+     * Return the first element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalLong findFirst() {
+        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[0]);
+    }
+
+    /**
+     * Return the last element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalLong findLast() {
+        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[size - 1]);
     }
 
     public long get(int index) {
@@ -227,10 +340,10 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
      * @return <tt>true</tt> if this list contained the specified element
      */
     public boolean remove(long e) {
-        for (int index = 0; index < size; index++) {
-            if (elementData[index] == e) {
+        for (int i = 0; i < size; i++) {
+            if (elementData[i] == e) {
 
-                fastRemove(index);
+                fastRemove(i);
 
                 return true;
             }
@@ -315,7 +428,7 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     /**
      * 
      * @param index
-     * @return the deleted element.
+     * @return the deleted element
      */
     public long delete(int index) {
         rangeCheck(index);
@@ -346,17 +459,22 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     }
 
     @Override
-    public LongList subList(int fromIndex, int toIndex) {
-        subListRangeCheck(fromIndex, toIndex, size);
+    public LongList subList(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
         return new LongList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     public int indexOf(long e) {
-        for (int index = 0; index < size; index++) {
-            if (elementData[index] == e) {
+        return indexOf(0, e);
+    }
 
-                return index;
+    public int indexOf(final int fromIndex, long e) {
+        checkIndex(fromIndex, size);
+
+        for (int i = fromIndex; i < size; i++) {
+            if (elementData[i] == e) {
+                return i;
             }
         }
 
@@ -364,45 +482,78 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     }
 
     public int lastIndexOf(long e) {
-        for (int index = size; index > 0;) {
-            if (elementData[--index] == e) {
+        return lastIndexOf(size, e);
+    }
 
-                return index;
+    /**
+     * 
+     * @param fromIndex the start index to traverse backwards from. Inclusive.
+     * @param e
+     * @return
+     */
+    public int lastIndexOf(final int fromIndex, long e) {
+        checkIndex(0, fromIndex);
+
+        for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
+            if (elementData[i] == e) {
+                return i;
             }
         }
 
         return -1;
     }
 
-    public long sum() {
-        return N.sum(elementData, 0, size).longValue();
+    public long min() {
+        return min(0, size());
     }
 
-    public long min() {
-        return N.min(elementData, 0, size);
+    public long min(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.min(elementData, fromIndex, toIndex);
     }
 
     public long max() {
-        return N.max(elementData, 0, size);
+        return max(0, size());
     }
 
-    public double avg() {
-        return N.avg(elementData, 0, size).doubleValue();
+    public long max(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.max(elementData, fromIndex, toIndex);
     }
 
     @Override
-    public void forEach(LongConsumer action) {
+    public Number sum(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.sum(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public Number avg(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.avg(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public void forEach(final int fromIndex, final int toIndex, LongConsumer action) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elementData[i]);
             }
         }
     }
 
     @Override
-    public boolean allMatch(LongPredicate filter) {
+    public boolean allMatch(final int fromIndex, final int toIndex, LongPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i]) == false) {
                     return false;
                 }
@@ -413,9 +564,11 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     }
 
     @Override
-    public boolean anyMatch(LongPredicate filter) {
+    public boolean anyMatch(final int fromIndex, final int toIndex, LongPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i])) {
                     return true;
                 }
@@ -426,9 +579,11 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     }
 
     @Override
-    public boolean noneMatch(LongPredicate filter) {
+    public boolean noneMatch(final int fromIndex, final int toIndex, LongPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i])) {
                     return false;
                 }
@@ -439,22 +594,218 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     }
 
     @Override
-    public int count(LongPredicate filter) {
-        return N.count(elementData, 0, size, filter);
+    public int count(final int fromIndex, final int toIndex, LongPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
-    public LongList filter(LongPredicate filter) {
-        return of(N.filter(elementData, 0, size, filter));
+    public LongList filter(final int fromIndex, final int toIndex, LongPredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
-    @Override
-    public LongList distinct() {
-        if (size > 1) {
-            return of(N.removeDuplicates(elementData, 0, size, false));
-        } else {
-            return of(N.copyOfRange(elementData, 0, size));
+    public <R> List<R> map(final LongFunction<? extends R> func) {
+        return map(0, size(), func);
+    }
+
+    public <R> List<R> map(final int fromIndex, final int toIndex, final LongFunction<? extends R> func) {
+        return map(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final LongFunction<? extends R> func) {
+        return map(collClass, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final LongFunction<? extends R> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(func.apply(elementData[i]));
         }
+
+        return res;
+    }
+
+    public <R> List<R> flatMap(final LongFunction<? extends Collection<? extends R>> func) {
+        return flatMap(0, size(), func);
+    }
+
+    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final LongFunction<? extends Collection<? extends R>> func) {
+        return flatMap(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final LongFunction<? extends Collection<? extends R>> func) {
+        return flatMap(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final LongFunction<? extends Collection<? extends R>> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(func.apply(elementData[i]));
+        }
+
+        return res;
+    }
+
+    public <R> List<R> flatMap2(final LongFunction<R[]> func) {
+        return flatMap2(0, size(), func);
+    }
+
+    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final LongFunction<R[]> func) {
+        return flatMap2(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final LongFunction<R[]> func) {
+        return flatMap2(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final LongFunction<R[]> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(Arrays.asList(func.apply(elementData[i])));
+        }
+
+        return res;
+    }
+
+    public <K> Map<K, List<Long>> groupBy(final LongFunction<? extends K> func) {
+        return groupBy(0, size(), func);
+    }
+
+    public <K> Map<K, List<Long>> groupBy(final int fromIndex, final int toIndex, final LongFunction<? extends K> func) {
+        return groupBy(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Long>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final LongFunction<? extends K> func) {
+        return groupBy(HashMap.class, List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Long>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final LongFunction<? extends K> func) {
+        return groupBy(HashMap.class, List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Long>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final LongFunction<? extends K> func) {
+
+        return groupBy(outputClass, List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Long>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final LongFunction<? extends K> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final R outputResult = N.newInstance(outputClass);
+
+        K key = null;
+        V values = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = func.apply(elementData[i]);
+            values = outputResult.get(key);
+
+            if (values == null) {
+                values = (V) N.newInstance(collClass);
+                outputResult.put(key, values);
+            }
+
+            values.add(elementData[i]);
+        }
+
+        return outputResult;
+    }
+
+    public long reduce(final LongBinaryOperator accumulator) {
+        return reduce(0, size(), accumulator);
+    }
+
+    public long reduce(final int fromIndex, final int toIndex, final LongBinaryOperator accumulator) {
+        return reduce(fromIndex, toIndex, 0, accumulator);
+    }
+
+    public long reduce(final long identity, final LongBinaryOperator accumulator) {
+        return reduce(0, size(), identity, accumulator);
+    }
+
+    public long reduce(final int fromIndex, final int toIndex, final long identity, final LongBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        long result = identity;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result = accumulator.applyAsLong(result, elementData[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongList distinct(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (size > 1) {
+            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
+        } else {
+            return of(N.copyOfRange(elementData, fromIndex, toIndex));
+        }
+    }
+
+    @Override
+    public List<LongList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<long[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<LongList> result = new ArrayList<>(list.size());
+
+        for (long[] a : list) {
+            result.add(LongList.of(a));
+        }
+
+        return result;
+    }
+
+    public LongList top(final int top) {
+        return top(0, size(), top);
+    }
+
+    public LongList top(final int fromIndex, final int toIndex, final int top) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.top(elementData, fromIndex, toIndex, top));
+    }
+
+    public LongList top(final int top, Comparator<Long> cmp) {
+        return top(0, size(), top, cmp);
+    }
+
+    public LongList top(final int fromIndex, final int toIndex, final int top, Comparator<Long> cmp) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.top(elementData, fromIndex, toIndex, top, cmp));
     }
 
     @Override
@@ -465,17 +816,19 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     }
 
     @Override
-    public LongList copy() {
-        return new LongList(N.copyOfRange(elementData, 0, size));
+    public LongList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new LongList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override
     public LongList trimToSize() {
-        if (elementData.length > size) {
-            elementData = N.copyOfRange(elementData, 0, size);
+        if (elementData.length == size) {
+            return this;
         }
 
-        return this;
+        return of(N.copyOfRange(elementData, 0, size));
     }
 
     @Override
@@ -498,67 +851,40 @@ public final class LongList extends AbastractPrimitiveList<LongConsumer, LongPre
     }
 
     @Override
-    public List<Long> toList() {
-        if (size == 0) {
-            return N.newArrayList();
-        }
+    public void toList(List<Long> list, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final List<Long> list = N.newArrayList(size);
-
-        toList(list);
-
-        return list;
-    }
-
-    @Override
-    public void toList(List<Long> list) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
         }
     }
 
     @Override
-    public Set<Long> toSet() {
-        if (size == 0) {
-            return N.newLinkedHashSet();
-        }
+    public void toSet(Set<Long> set, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final Set<Long> set = N.newLinkedHashSet();
-
-        toSet(set);
-
-        return set;
-    }
-
-    @Override
-    public void toSet(Set<Long> set) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
         }
     }
 
     @Override
-    public Multiset<Long> toMultiset() {
-        if (size == 0) {
-            return N.newLinkedMultiset();
-        }
+    public void toMultiset(Multiset<Long> multiset, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final Multiset<Long> multiset = N.newLinkedMultiset();
-
-        toMultiset(multiset);
-
-        return multiset;
-    }
-
-    @Override
-    public void toMultiset(Multiset<Long> multiset) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
     }
 
     public LongStream stream() {
-        return Stream.of(elementData, 0, size());
+        return stream(0, size());
+    }
+
+    public LongStream stream(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return Stream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

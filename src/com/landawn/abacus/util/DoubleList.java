@@ -16,12 +16,19 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
+import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -32,7 +39,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
+public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
     private double[] elementData = N.EMPTY_DOUBLE_ARRAY;
     private int size = 0;
 
@@ -77,6 +84,42 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
         return new DoubleList(a, size);
     }
 
+    public static DoubleList of(int[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static DoubleList of(int[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final double[] elementData = new double[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            elementData[i - fromIndex] = a[i];
+        }
+
+        return of(elementData);
+    }
+
+    public static DoubleList of(long[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static DoubleList of(long[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final double[] elementData = new double[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            elementData[i - fromIndex] = a[i];
+        }
+
+        return of(elementData);
+    }
+
     public static DoubleList of(float[] a) {
         return of(a, 0, a.length);
     }
@@ -95,19 +138,41 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
         return of(elementData);
     }
 
-    public static DoubleList of(Collection<? extends Number> c) {
+    public static DoubleList of(String[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static DoubleList of(String[] a, int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
+            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+        }
+
+        final double[] elementData = new double[toIndex - fromIndex];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            elementData[i - fromIndex] = N.asDouble(a[i]);
+        }
+
+        return of(elementData);
+    }
+
+    public static DoubleList of(List<String> c) {
+        return of(c, 0d);
+    }
+
+    public static DoubleList of(List<String> c, double defaultValueForNull) {
         final double[] a = new double[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
-            if (e == null) {
-                continue;
-            }
-
-            a[idx++] = e.doubleValue();
+        for (String e : c) {
+            a[idx++] = e == null ? defaultValueForNull : N.asDouble(e);
         }
 
         return of(a);
+    }
+
+    public static DoubleList of(Collection<? extends Number> c) {
+        return of(c, 0d);
     }
 
     public static DoubleList of(Collection<? extends Number> c, double defaultValueForNull) {
@@ -115,11 +180,7 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
         int idx = 0;
 
         for (Number e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                a[idx++] = e.doubleValue();
-            }
+            a[idx++] = e == null ? defaultValueForNull : e.doubleValue();
         }
 
         return of(a);
@@ -133,6 +194,24 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     @Override
     public double[] array() {
         return elementData;
+    }
+
+    /**
+     * Return the first element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalDouble findFirst() {
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elementData[0]);
+    }
+
+    /**
+     * Return the last element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalDouble findLast() {
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elementData[size - 1]);
     }
 
     public double get(int index) {
@@ -227,10 +306,10 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
      * @return <tt>true</tt> if this list contained the specified element
      */
     public boolean remove(double e) {
-        for (int index = 0; index < size; index++) {
-            if (Double.compare(elementData[index], e) == 0) {
+        for (int i = 0; i < size; i++) {
+            if (N.equals(elementData[i], e)) {
 
-                fastRemove(index);
+                fastRemove(i);
 
                 return true;
             }
@@ -250,7 +329,7 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
             int w = 0;
 
             for (int i = 0; i < size; i++) {
-                if (Double.compare(elementData[i], e) != 0) {
+                if (!N.equals(elementData[i], e)) {
                     elementData[w++] = elementData[i];
                 }
             }
@@ -315,7 +394,7 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     /**
      * 
      * @param index
-     * @return the deleted element.
+     * @return the deleted element
      */
     public double delete(int index) {
         rangeCheck(index);
@@ -346,16 +425,21 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     }
 
     @Override
-    public DoubleList subList(int fromIndex, int toIndex) {
-        subListRangeCheck(fromIndex, toIndex, size);
+    public DoubleList subList(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
         return new DoubleList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     public int indexOf(double e) {
-        for (int i = 0; i < size; i++) {
-            if (Double.compare(elementData[i], e) == 0) {
+        return indexOf(0, e);
+    }
 
+    public int indexOf(final int fromIndex, double e) {
+        checkIndex(fromIndex, size);
+
+        for (int i = fromIndex; i < size; i++) {
+            if (N.equals(elementData[i], e)) {
                 return i;
             }
         }
@@ -364,9 +448,20 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     }
 
     public int lastIndexOf(double e) {
-        for (int i = size; i > 0;) {
-            if (Double.compare(elementData[--i], e) == 0) {
+        return lastIndexOf(size, e);
+    }
 
+    /**
+     * 
+     * @param fromIndex the start index to traverse backwards from. Inclusive.
+     * @param e
+     * @return
+     */
+    public int lastIndexOf(final int fromIndex, double e) {
+        checkIndex(0, fromIndex);
+
+        for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
+            if (N.equals(elementData[i], e)) {
                 return i;
             }
         }
@@ -374,35 +469,57 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
         return -1;
     }
 
-    public double sum() {
-        return N.sum(elementData, 0, size).doubleValue();
+    public double min() {
+        return min(0, size());
     }
 
-    public double min() {
-        return N.min(elementData, 0, size);
+    public double min(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.min(elementData, fromIndex, toIndex);
     }
 
     public double max() {
-        return N.max(elementData, 0, size);
+        return max(0, size());
     }
 
-    public double avg() {
-        return N.avg(elementData, 0, size).doubleValue();
+    public double max(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.max(elementData, fromIndex, toIndex);
     }
 
     @Override
-    public void forEach(DoubleConsumer action) {
+    public Number sum(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.sum(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public Number avg(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.avg(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public void forEach(final int fromIndex, final int toIndex, DoubleConsumer action) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elementData[i]);
             }
         }
     }
 
     @Override
-    public boolean allMatch(DoublePredicate filter) {
+    public boolean allMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i]) == false) {
                     return false;
                 }
@@ -413,9 +530,11 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     }
 
     @Override
-    public boolean anyMatch(DoublePredicate filter) {
+    public boolean anyMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i])) {
                     return true;
                 }
@@ -426,9 +545,11 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     }
 
     @Override
-    public boolean noneMatch(DoublePredicate filter) {
+    public boolean noneMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
         if (size > 0) {
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(elementData[i])) {
                     return false;
                 }
@@ -439,22 +560,218 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     }
 
     @Override
-    public int count(DoublePredicate filter) {
-        return N.count(elementData, 0, size, filter);
+    public int count(final int fromIndex, final int toIndex, DoublePredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
-    public DoubleList filter(DoublePredicate filter) {
-        return of(N.filter(elementData, 0, size, filter));
+    public DoubleList filter(final int fromIndex, final int toIndex, DoublePredicate filter) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
-    @Override
-    public DoubleList distinct() {
-        if (size > 1) {
-            return of(N.removeDuplicates(elementData, 0, size, false));
-        } else {
-            return of(N.copyOfRange(elementData, 0, size));
+    public <R> List<R> map(final DoubleFunction<? extends R> func) {
+        return map(0, size(), func);
+    }
+
+    public <R> List<R> map(final int fromIndex, final int toIndex, final DoubleFunction<? extends R> func) {
+        return map(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final DoubleFunction<? extends R> func) {
+        return map(collClass, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final DoubleFunction<? extends R> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(func.apply(elementData[i]));
         }
+
+        return res;
+    }
+
+    public <R> List<R> flatMap(final DoubleFunction<? extends Collection<? extends R>> func) {
+        return flatMap(0, size(), func);
+    }
+
+    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends Collection<? extends R>> func) {
+        return flatMap(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final DoubleFunction<? extends Collection<? extends R>> func) {
+        return flatMap(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final DoubleFunction<? extends Collection<? extends R>> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(func.apply(elementData[i]));
+        }
+
+        return res;
+    }
+
+    public <R> List<R> flatMap2(final DoubleFunction<R[]> func) {
+        return flatMap2(0, size(), func);
+    }
+
+    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final DoubleFunction<R[]> func) {
+        return flatMap2(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final DoubleFunction<R[]> func) {
+        return flatMap2(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final DoubleFunction<R[]> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(Arrays.asList(func.apply(elementData[i])));
+        }
+
+        return res;
+    }
+
+    public <K> Map<K, List<Double>> groupBy(final DoubleFunction<? extends K> func) {
+        return groupBy(0, size(), func);
+    }
+
+    public <K> Map<K, List<Double>> groupBy(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> func) {
+        return groupBy(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Double>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final DoubleFunction<? extends K> func) {
+        return groupBy(HashMap.class, List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Double>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final DoubleFunction<? extends K> func) {
+        return groupBy(HashMap.class, List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Double>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final DoubleFunction<? extends K> func) {
+
+        return groupBy(outputClass, List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, V extends Collection<Double>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final DoubleFunction<? extends K> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final R outputResult = N.newInstance(outputClass);
+
+        K key = null;
+        V values = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = func.apply(elementData[i]);
+            values = outputResult.get(key);
+
+            if (values == null) {
+                values = (V) N.newInstance(collClass);
+                outputResult.put(key, values);
+            }
+
+            values.add(elementData[i]);
+        }
+
+        return outputResult;
+    }
+
+    public double reduce(final DoubleBinaryOperator accumulator) {
+        return reduce(0, size(), accumulator);
+    }
+
+    public double reduce(final int fromIndex, final int toIndex, final DoubleBinaryOperator accumulator) {
+        return reduce(fromIndex, toIndex, 0, accumulator);
+    }
+
+    public double reduce(final double identity, final DoubleBinaryOperator accumulator) {
+        return reduce(0, size(), identity, accumulator);
+    }
+
+    public double reduce(final int fromIndex, final int toIndex, final double identity, final DoubleBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        double result = identity;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result = accumulator.applyAsDouble(result, elementData[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public DoubleList distinct(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (size > 1) {
+            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
+        } else {
+            return of(N.copyOfRange(elementData, fromIndex, toIndex));
+        }
+    }
+
+    @Override
+    public List<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<double[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<DoubleList> result = new ArrayList<>(list.size());
+
+        for (double[] a : list) {
+            result.add(DoubleList.of(a));
+        }
+
+        return result;
+    }
+
+    public DoubleList top(final int top) {
+        return top(0, size(), top);
+    }
+
+    public DoubleList top(final int fromIndex, final int toIndex, final int top) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.top(elementData, fromIndex, toIndex, top));
+    }
+
+    public DoubleList top(final int top, Comparator<Double> cmp) {
+        return top(0, size(), top, cmp);
+    }
+
+    public DoubleList top(final int fromIndex, final int toIndex, final int top, Comparator<Double> cmp) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.top(elementData, fromIndex, toIndex, top, cmp));
     }
 
     @Override
@@ -465,17 +782,19 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     }
 
     @Override
-    public DoubleList copy() {
-        return new DoubleList(N.copyOfRange(elementData, 0, size));
+    public DoubleList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new DoubleList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override
     public DoubleList trimToSize() {
-        if (elementData.length > size) {
-            elementData = N.copyOfRange(elementData, 0, size);
+        if (elementData.length == size) {
+            return this;
         }
 
-        return this;
+        return of(N.copyOfRange(elementData, 0, size));
     }
 
     @Override
@@ -498,67 +817,40 @@ public final class DoubleList extends AbastractPrimitiveList<DoubleConsumer, Dou
     }
 
     @Override
-    public List<Double> toList() {
-        if (size == 0) {
-            return N.newArrayList();
-        }
+    public void toList(List<Double> list, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final List<Double> list = N.newArrayList(size);
-
-        toList(list);
-
-        return list;
-    }
-
-    @Override
-    public void toList(List<Double> list) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
         }
     }
 
     @Override
-    public Set<Double> toSet() {
-        if (size == 0) {
-            return N.newLinkedHashSet();
-        }
+    public void toSet(Set<Double> set, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final Set<Double> set = N.newLinkedHashSet();
-
-        toSet(set);
-
-        return set;
-    }
-
-    @Override
-    public void toSet(Set<Double> set) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
         }
     }
 
     @Override
-    public Multiset<Double> toMultiset() {
-        if (size == 0) {
-            return N.newLinkedMultiset();
-        }
+    public void toMultiset(Multiset<Double> multiset, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
 
-        final Multiset<Double> multiset = N.newLinkedMultiset();
-
-        toMultiset(multiset);
-
-        return multiset;
-    }
-
-    @Override
-    public void toMultiset(Multiset<Double> multiset) {
-        for (int i = 0; i < size; i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
     }
 
     public DoubleStream stream() {
-        return Stream.of(elementData, 0, size());
+        return stream(0, size());
+    }
+
+    public DoubleStream stream(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return Stream.of(elementData, fromIndex, toIndex);
     }
 
     @Override
