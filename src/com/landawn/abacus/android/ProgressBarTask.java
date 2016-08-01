@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 
 import com.landawn.abacus.android.util.AsyncExecutor;
 import com.landawn.abacus.android.util.CompletableFuture;
+import com.landawn.abacus.util.Multiset;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -36,6 +37,10 @@ import android.widget.ProgressBar;
  *
  */
 public class ProgressBarTask {
+    private static final Multiset<ViewGroup> activeProgressBarSet = new Multiset<>();
+    private static volatile int maxProgressBarTask = Integer.MAX_VALUE;
+    private static volatile int maxProgressBarTaskPerView = Integer.MAX_VALUE;
+
     protected final CompletableFuture<ProgressBar> future;
     protected ProgressBar progressBar;
 
@@ -44,10 +49,19 @@ public class ProgressBarTask {
             @Override
             public ProgressBar call() {
                 synchronized (ProgressBarTask.this) {
-                    return ProgressBarTask.this.progressBar = future.isCancelled() ? null : createProgressBar(root, circleColor);
+                    return ProgressBarTask.this.progressBar = (future.isCancelled() || activeProgressBarTaskCount() >= maxProgressBarTask
+                            || activeProgressBarTaskCount(root) >= maxProgressBarTaskPerView) ? null : createProgressBar(root, circleColor);
                 }
             }
         }, delay);
+    }
+
+    public static void setMaxProgressBarTask(int maxProgressBarTask) {
+        ProgressBarTask.maxProgressBarTask = maxProgressBarTask;
+    }
+
+    public static void setMaxProgressBarTaskPerView(int maxProgressBarTaskPerView) {
+        ProgressBarTask.maxProgressBarTaskPerView = maxProgressBarTaskPerView;
     }
 
     public static ProgressBarTask display(final Activity activity) {
@@ -86,6 +100,30 @@ public class ProgressBarTask {
         return new ProgressBarTask(root, delay, circleColor);
     }
 
+    static int activeProgressBarTaskCount() {
+        synchronized (activeProgressBarSet) {
+            return (int) activeProgressBarSet.sumCount();
+        }
+    }
+
+    static int activeProgressBarTaskCount(Activity activity) {
+        synchronized (activeProgressBarSet) {
+            return activeProgressBarSet.get(activity.getWindow().getDecorView());
+        }
+    }
+
+    static int activeProgressBarTaskCount(Dialog dialog) {
+        synchronized (activeProgressBarSet) {
+            return activeProgressBarSet.get(dialog.getWindow().getDecorView());
+        }
+    }
+
+    static int activeProgressBarTaskCount(ViewGroup root) {
+        synchronized (activeProgressBarSet) {
+            return activeProgressBarSet.get(root);
+        }
+    }
+
     public void finish() {
         synchronized (this) {
             try {
@@ -97,7 +135,12 @@ public class ProgressBarTask {
                     ViewParent parent = progressBar.getParent();
 
                     if (parent instanceof ViewGroup) {
-                        ((ViewGroup) parent).removeView(progressBar);
+                        final ViewGroup root = (ViewGroup) parent;
+                        root.removeView(progressBar);
+
+                        synchronized (activeProgressBarSet) {
+                            activeProgressBarSet.remove(root);
+                        }
                     }
                 }
             }
@@ -120,6 +163,10 @@ public class ProgressBarTask {
         }
 
         root.addView(progressBar);
+
+        synchronized (activeProgressBarSet) {
+            activeProgressBarSet.add(root);
+        }
 
         return progressBar;
     }
