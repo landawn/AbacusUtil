@@ -27,8 +27,9 @@ import java.util.List;
  * 
  * @author Haiyang Li
  */
-public abstract class StringList {
+public abstract class StringList extends ObjectList<String> {
     private StringList() {
+        super(new String[0]);
         // utility class
     }
 

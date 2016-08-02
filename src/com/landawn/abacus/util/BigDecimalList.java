@@ -26,8 +26,9 @@ import java.util.List;
  * 
  * @author Haiyang Li
  */
-public abstract class BigDecimalList {
+public abstract class BigDecimalList extends ObjectList<BigDecimal> {
     private BigDecimalList() {
+        super(new BigDecimal[0]);
         // utility class
     }
 

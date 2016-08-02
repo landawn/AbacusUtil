@@ -26,8 +26,9 @@ import java.util.List;
  * 
  * @author Haiyang Li
  */
-public abstract class BigIntegerList {
+public abstract class BigIntegerList extends ObjectList<BigInteger> {
     private BigIntegerList() {
+        super(new BigInteger[0]);
         // utility class
     }
 
