@@ -1598,7 +1598,7 @@ public abstract class SQLBuilder<T> {
      * @return 
      */
     @Beta
-    public <R> R execute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
+    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
         if (op != OperationType.QUERY) {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
@@ -1619,7 +1619,7 @@ public abstract class SQLBuilder<T> {
      * @return
      */
     @Beta
-    public <R> R execute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
+    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
         if (op != OperationType.QUERY) {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
@@ -1672,7 +1672,7 @@ public abstract class SQLBuilder<T> {
     }
 
     @Beta
-    public <R> CompletableFuture<R> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
+    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
         if (op != OperationType.QUERY) {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
@@ -1685,7 +1685,7 @@ public abstract class SQLBuilder<T> {
     }
 
     @Beta
-    public <R> CompletableFuture<R> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
+    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
         if (op != OperationType.QUERY) {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }

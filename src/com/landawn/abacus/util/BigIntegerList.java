@@ -26,43 +26,24 @@ import java.util.List;
  * 
  * @author Haiyang Li
  */
-public final class BigIntegerList extends ObjectList<BigInteger> {
-    private static final BigInteger[] EMPTY_BIG_INTEGER = new BigInteger[0];
-
-    public BigIntegerList() {
-        this(EMPTY_BIG_INTEGER);
+public abstract class BigIntegerList {
+    private BigIntegerList() {
+        // utility class
     }
 
-    public BigIntegerList(int initialCapacity) {
-        this(new BigInteger[initialCapacity]);
+    public static ObjectList<BigInteger> of(BigInteger[] a) {
+        return new ObjectList<BigInteger>(a);
     }
 
-    /**
-     * The specified array is used as the element array for this list without copying action.
-     * 
-     * @param a
-     */
-    public BigIntegerList(BigInteger[] a) {
-        super(a);
+    public static ObjectList<BigInteger> of(BigInteger[] a, int size) {
+        return new ObjectList<BigInteger>(a, size);
     }
 
-    public BigIntegerList(BigInteger[] a, int size) {
-        super(a, size);
-    }
-
-    public static BigIntegerList of(BigInteger[] a) {
-        return new BigIntegerList(a);
-    }
-
-    public static BigIntegerList of(BigInteger[] a, int size) {
-        return new BigIntegerList(a, size);
-    }
-
-    public static BigIntegerList of(String[] a) {
+    public static ObjectList<BigInteger> of(String[] a) {
         return of(a, 0, a.length);
     }
 
-    public static BigIntegerList of(String[] a, int fromIndex, int toIndex) {
+    public static ObjectList<BigInteger> of(String[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -76,11 +57,11 @@ public final class BigIntegerList extends ObjectList<BigInteger> {
         return of(elementData);
     }
 
-    public static BigIntegerList of(List<String> c) {
+    public static ObjectList<BigInteger> of(List<String> c) {
         return of(c, null);
     }
 
-    public static BigIntegerList of(List<String> c, BigInteger defaultValueForNull) {
+    public static ObjectList<BigInteger> of(List<String> c, BigInteger defaultValueForNull) {
         final BigInteger[] a = new BigInteger[c.size()];
         int idx = 0;
 
@@ -91,11 +72,11 @@ public final class BigIntegerList extends ObjectList<BigInteger> {
         return of(a);
     }
 
-    public static BigIntegerList of(Collection<BigInteger> c) {
+    public static ObjectList<BigInteger> of(Collection<BigInteger> c) {
         return of(c, null);
     }
 
-    public static BigIntegerList of(Collection<BigInteger> c, BigInteger defaultValueForNull) {
+    public static ObjectList<BigInteger> of(Collection<BigInteger> c, BigInteger defaultValueForNull) {
         final BigInteger[] a = new BigInteger[c.size()];
         int idx = 0;
 

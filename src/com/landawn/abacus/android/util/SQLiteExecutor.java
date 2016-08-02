@@ -45,6 +45,15 @@ import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.ObjectPool;
+import com.landawn.abacus.util.OptionalBoolean;
+import com.landawn.abacus.util.OptionalByte;
+import com.landawn.abacus.util.OptionalChar;
+import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalFloat;
+import com.landawn.abacus.util.OptionalInt;
+import com.landawn.abacus.util.OptionalLong;
+import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.SQLBuilder;
 import com.landawn.abacus.util.SQLBuilder.NE;
 import com.landawn.abacus.util.SQLBuilder.NE2;
@@ -1088,7 +1097,7 @@ public final class SQLiteExecutor {
     }
 
     public int count(String sql, Object... parameters) {
-        return queryForSingleResult(int.class, sql, parameters);
+        return queryForSingleResult(int.class, sql, parameters).orElse(0);
     }
 
     private Pair select(String tableName, String selectColumnName, Condition whereClause) {
@@ -1140,64 +1149,80 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public boolean queryForBoolean(final String sql, final Object... parameters) {
-        return queryForSingleResult(boolean.class, sql, parameters);
+    public OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
+        final OptionalNullable<Boolean> result = queryForSingleResult(boolean.class, sql, parameters);
+
+        return result.isPresent() ? OptionalBoolean.of(result.get()) : OptionalBoolean.empty();
     }
 
     /**
      *
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public char queryForChar(final String sql, final Object... parameters) {
-        return queryForSingleResult(char.class, sql, parameters);
+    public OptionalChar queryForChar(final String sql, final Object... parameters) {
+        final OptionalNullable<Character> result = queryForSingleResult(char.class, sql, parameters);
+
+        return result.isPresent() ? OptionalChar.of(result.get()) : OptionalChar.empty();
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public byte queryForByte(final String sql, final Object... parameters) {
-        return queryForSingleResult(byte.class, sql, parameters);
+    public OptionalByte queryForByte(final String sql, final Object... parameters) {
+        final OptionalNullable<Byte> result = queryForSingleResult(byte.class, sql, parameters);
+
+        return result.isPresent() ? OptionalByte.of(result.get()) : OptionalByte.empty();
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public short queryForShort(final String sql, final Object... parameters) {
-        return queryForSingleResult(short.class, sql, parameters);
+    public OptionalShort queryForShort(final String sql, final Object... parameters) {
+        final OptionalNullable<Short> result = queryForSingleResult(short.class, sql, parameters);
+
+        return result.isPresent() ? OptionalShort.of(result.get()) : OptionalShort.empty();
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public int queryForInt(final String sql, final Object... parameters) {
-        return queryForSingleResult(int.class, sql, parameters);
+    public OptionalInt queryForInt(final String sql, final Object... parameters) {
+        final OptionalNullable<Integer> result = queryForSingleResult(int.class, sql, parameters);
+
+        return result.isPresent() ? OptionalInt.of(result.get()) : OptionalInt.empty();
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public long queryForLong(final String sql, final Object... parameters) {
-        return queryForSingleResult(long.class, sql, parameters);
+    public OptionalLong queryForLong(final String sql, final Object... parameters) {
+        final OptionalNullable<Long> result = queryForSingleResult(long.class, sql, parameters);
+
+        return result.isPresent() ? OptionalLong.of(result.get()) : OptionalLong.empty();
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public float queryForFloat(final String sql, final Object... parameters) {
-        return queryForSingleResult(float.class, sql, parameters);
+    public OptionalFloat queryForFloat(final String sql, final Object... parameters) {
+        final OptionalNullable<Float> result = queryForSingleResult(float.class, sql, parameters);
+
+        return result.isPresent() ? OptionalFloat.of(result.get()) : OptionalFloat.empty();
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public double queryForDouble(final String sql, final Object... parameters) {
-        return queryForSingleResult(double.class, sql, parameters);
+    public OptionalDouble queryForDouble(final String sql, final Object... parameters) {
+        final OptionalNullable<Double> result = queryForSingleResult(double.class, sql, parameters);
+
+        return result.isPresent() ? OptionalDouble.of(result.get()) : OptionalDouble.empty();
     }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public String queryForString(final String sql, final Object... parameters) {
+    public OptionalNullable<String> queryForString(final String sql, final Object... parameters) {
         return queryForSingleResult(String.class, sql, parameters);
     }
 
@@ -1222,7 +1247,7 @@ public final class SQLiteExecutor {
      * @throws ClassCastException
      */
     @SuppressWarnings("unchecked")
-    public <T> T queryForSingleResult(final Class<T> targetClass, final String sql, Object... parameters) {
+    public <T> OptionalNullable<T> queryForSingleResult(final Class<T> targetClass, final String sql, Object... parameters) {
         DataSet rs = null;
 
         final Cursor cursor = rawQuery(sql, parameters);
@@ -1233,26 +1258,26 @@ public final class SQLiteExecutor {
             cursor.close();
         }
 
-        if (targetClass == null) {
-            return (T) (N.isNullOrEmpty(rs) ? null : rs.get(0, 0));
+        if (N.isNullOrEmpty(rs)) {
+            return OptionalNullable.empty();
         } else {
-            return N.isNullOrEmpty(rs) ? N.defaultValueOf(targetClass) : N.as(targetClass, rs.get(0, 0));
+            return targetClass == null ? OptionalNullable.of((T) rs.get(0, 0)) : OptionalNullable.of(N.as(targetClass, rs.get(0, 0)));
         }
     }
 
     @Deprecated
-    <T> T queryForSingleResult(final Class<T> targetClass, final String tableName, final String columnName, Condition whereClause) {
+    <T> OptionalNullable<T> queryForSingleResult(final Class<T> targetClass, final String tableName, final String columnName, Condition whereClause) {
         final DataSet rs = query(tableName, Array.of(columnName), Array.of(targetClass), whereClause, null, null, null, 0, 1);
 
         if (N.isNullOrEmpty(rs)) {
-            return N.defaultValueOf(targetClass);
+            return OptionalNullable.empty();
         } else {
-            return N.as(targetClass, rs.absolute(0).get(0));
+            return targetClass == null ? OptionalNullable.of((T) rs.get(0, 0)) : OptionalNullable.of(N.as(targetClass, rs.get(0, 0)));
         }
     }
 
     @Deprecated
-    <T> T queryForSingleResult(final Class<?> entityClass, final String columnName, Condition whereClause) {
+    <T> OptionalNullable<T> queryForSingleResult(final Class<?> entityClass, final String columnName, Condition whereClause) {
         //        final Method propGetMethod = N.getPropGetMethod(entityClass, columnName);
         //        final Class<T> targetClass = (Class) propGetMethod.getReturnType();
         //        final DataSet rs = query(getTableNameByEntity(entityClass), Array.of(columnName), Array.of(targetClass), whereClause, null, null, null, 0, 1);
@@ -1275,7 +1300,7 @@ public final class SQLiteExecutor {
     //        return queryForEntity(targetClass, selectColumnNames, null);
     //    }
 
-    public <T> T queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
+    public <T> OptionalNullable<T> queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
         return queryForEntity(targetClass, selectColumnNames, whereClause, null);
     }
 
@@ -1290,10 +1315,10 @@ public final class SQLiteExecutor {
      * @param orderby How to order the rows, formatted as an SQL ORDER BY clause (excluding the ORDER BY itself). Passing null will use the default sort order, which may be unordered.
      * @return
      */
-    public <T> T queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
+    public <T> OptionalNullable<T> queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
         final List<T> resultList = find(targetClass, selectColumnNames, whereClause, orderBy, 0, 1);
 
-        return N.isNullOrEmpty(resultList) ? null : resultList.get(0);
+        return N.isNullOrEmpty(resultList) ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultList.get(0));
     }
 
     /**
@@ -1311,10 +1336,10 @@ public final class SQLiteExecutor {
      * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
      * @return
      */
-    public <T> T queryForEntity(final Class<T> targetClass, final String sql, Object... parameters) {
+    public <T> OptionalNullable<T> queryForEntity(final Class<T> targetClass, final String sql, Object... parameters) {
         final DataSet rs = query(targetClass, sql, 0, 1, parameters);
 
-        return N.isNullOrEmpty(rs) ? null : rs.getRow(targetClass, 0);
+        return N.isNullOrEmpty(rs) ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(rs.getRow(targetClass, 0));
     }
 
     //    public <T> Optional<T> queryForEntity2(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {

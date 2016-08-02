@@ -27,41 +27,24 @@ import java.util.List;
  * 
  * @author Haiyang Li
  */
-public final class StringList extends ObjectList<String> {
-    public StringList() {
-        this(N.EMPTY_STRING_ARRAY);
+public abstract class StringList {
+    private StringList() {
+        // utility class
     }
 
-    public StringList(int initialCapacity) {
-        this(new String[initialCapacity]);
+    public static ObjectList<String> of(String[] a) {
+        return new ObjectList<String>(a);
     }
 
-    /**
-     * The specified array is used as the element array for this list without copying action.
-     * 
-     * @param a
-     */
-    public StringList(String[] a) {
-        this(a, a.length);
+    public static ObjectList<String> of(String[] a, int size) {
+        return new ObjectList<String>(a, size);
     }
 
-    public StringList(String[] a, int size) {
-        super(a, size);
-    }
-
-    public static StringList of(String[] a) {
-        return new StringList(a);
-    }
-
-    public static StringList of(String[] a, int size) {
-        return new StringList(a, size);
-    }
-
-    public static StringList of(boolean[] a) {
+    public static ObjectList<String> of(boolean[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(boolean[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(boolean[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -75,11 +58,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(char[] a) {
+    public static ObjectList<String> of(char[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(char[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(char[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -93,11 +76,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(byte[] a) {
+    public static ObjectList<String> of(byte[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(byte[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(byte[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -111,11 +94,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(short[] a) {
+    public static ObjectList<String> of(short[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(short[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(short[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -129,11 +112,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(long[] a) {
+    public static ObjectList<String> of(long[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(long[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(long[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -147,11 +130,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(float[] a) {
+    public static ObjectList<String> of(float[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(float[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(float[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -165,11 +148,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(double[] a) {
+    public static ObjectList<String> of(double[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(double[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(double[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -183,11 +166,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(BigInteger[] a) {
+    public static ObjectList<String> of(BigInteger[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(BigInteger[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(BigInteger[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -201,11 +184,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(BigDecimal[] a) {
+    public static ObjectList<String> of(BigDecimal[] a) {
         return of(a, 0, a.length);
     }
 
-    public static StringList of(BigDecimal[] a, int fromIndex, int toIndex) {
+    public static ObjectList<String> of(BigDecimal[] a, int fromIndex, int toIndex) {
         if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
             throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
         }
@@ -219,11 +202,11 @@ public final class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static StringList of(List<Number> c) {
+    public static ObjectList<String> of(List<Number> c) {
         return of(c, null);
     }
 
-    public static StringList of(List<Number> c, String defaultValueForNull) {
+    public static ObjectList<String> of(List<Number> c, String defaultValueForNull) {
         final String[] a = new String[c.size()];
         int idx = 0;
 
@@ -234,11 +217,11 @@ public final class StringList extends ObjectList<String> {
         return of(a);
     }
 
-    public static StringList of(Collection<String> c) {
+    public static ObjectList<String> of(Collection<String> c) {
         return of(c, null);
     }
 
-    public static StringList of(Collection<String> c, String defaultValueForNull) {
+    public static ObjectList<String> of(Collection<String> c, String defaultValueForNull) {
         final String[] a = new String[c.size()];
         int idx = 0;
 

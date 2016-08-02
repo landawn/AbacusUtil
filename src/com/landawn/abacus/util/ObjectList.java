@@ -224,7 +224,7 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
             int numRemoved = size - w;
 
             if (numRemoved > 0) {
-                N.fill(elementData, w, size, 0);
+                N.fill(elementData, w, size, null);
 
                 size = w;
             }
@@ -270,7 +270,7 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
         int numRemoved = size - w;
 
         if (numRemoved > 0) {
-            N.fill(elementData, w, size, 0);
+            N.fill(elementData, w, size, null);
 
             size = w;
         }
@@ -648,20 +648,24 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
         return result;
     }
 
+    @Override
     public ObjectList<T> top(final int top) {
         return top(0, size(), top);
     }
 
+    @Override
     public ObjectList<T> top(final int fromIndex, final int toIndex, final int top) {
         checkIndex(fromIndex, toIndex);
 
         return of((T[]) N.top((Comparable[]) elementData, fromIndex, toIndex, top));
     }
 
+    @Override
     public ObjectList<T> top(final int top, Comparator<T> cmp) {
         return top(0, size(), top, cmp);
     }
 
+    @Override
     public ObjectList<T> top(final int fromIndex, final int toIndex, final int top, Comparator<T> cmp) {
         checkIndex(fromIndex, toIndex);
 
@@ -694,7 +698,7 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
     @Override
     public void clear() {
         if (size > 0) {
-            N.fill(elementData, 0, size, 0);
+            N.fill(elementData, 0, size, null);
         }
 
         size = 0;

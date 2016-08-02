@@ -118,7 +118,7 @@ public final class OptionalFloat {
      *
      * @see OptionalFloat#isPresent()
      */
-    public float getAsFloat() {
+    public float get() {
         if (!isPresent) {
             throw new NoSuchElementException("No value present");
         }
@@ -145,6 +145,15 @@ public final class OptionalFloat {
     public void ifPresent(FloatConsumer consumer) {
         if (isPresent)
             consumer.accept(value);
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code 0}.
+     *
+     * @return the value, if present, otherwise {@code 0}
+     */
+    public float orDefault() {
+        return value;
     }
 
     /**

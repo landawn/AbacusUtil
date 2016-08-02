@@ -35,7 +35,7 @@ import com.landawn.abacus.util.function.Supplier;
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
  * 
- * A container object which may or may not contain a non-null value.
+ * A container object which may or may not contain a nullable value.
  * If a value is present, {@code isPresent()} will return {@code true} and
  * {@code get()} will return the value.
  *
@@ -52,25 +52,34 @@ import com.landawn.abacus.util.function.Supplier;
  *
  * @since 1.8
  */
-public final class Optional<T> {
+public final class OptionalNullable<T> {
     /**
      * Common instance for {@code empty()}.
      */
-    private static final Optional<?> EMPTY = new Optional<>();
+    private static final OptionalNullable<?> EMPTY = new OptionalNullable<>();
 
-    /**
-     * If non-null, the value; if null, indicates no value is present
-     */
     private final T value;
+    private final boolean isPresent;
 
     /**
      * Constructs an empty instance.
      *
-     * @implNote Generally only one empty instance, {@link Optional#EMPTY},
+     * @implNote Generally only one empty instance, {@link OptionalNullable#EMPTY},
      * should exist per VM.
      */
-    private Optional() {
+    private OptionalNullable() {
         this.value = null;
+        isPresent = false;
+    }
+
+    /**
+     * Constructs an instance with the value present.
+     *
+     * @param value the nullable value to be present
+     */
+    private OptionalNullable(T value) {
+        this.value = value;
+        isPresent = true;
     }
 
     /**
@@ -85,60 +94,35 @@ public final class Optional<T> {
      * @param <T> Type of the non-existent value
      * @return an empty {@code Optional}
      */
-    public static <T> Optional<T> empty() {
-        @SuppressWarnings("unchecked")
-        Optional<T> t = (Optional<T>) EMPTY;
-        return t;
+    public static <T> OptionalNullable<T> empty() {
+        return (OptionalNullable<T>) EMPTY;
     }
 
     /**
-     * Constructs an instance with the value present.
-     *
-     * @param value the non-null value to be present
-     * @throws NullPointerException if value is null
-     */
-    private Optional(T value) {
-        this.value = N.requireNonNull(value);
-    }
-
-    /**
-     * Returns an {@code Optional} with the specified present non-null value.
+     * Returns an {@code Optional} with the specified present nullable value.
      *
      * @param <T> the class of the value
-     * @param value the value to be present, which must be non-null
+     * @param value the value to be present, which could be null
      * @return an {@code Optional} with the value present
-     * @throws NullPointerException if value is null
      */
-    public static <T> Optional<T> of(T value) {
-        return new Optional<>(value);
-    }
-
-    /**
-     * Returns an {@code Optional} describing the specified value, if non-null,
-     * otherwise returns an empty {@code Optional}.
-     *
-     * @param <T> the class of the value
-     * @param value the possibly-null value to describe
-     * @return an {@code Optional} with a present value if the specified value
-     * is non-null, otherwise an empty {@code Optional}
-     */
-    public static <T> Optional<T> ofNullable(T value) {
-        return value == null ? (Optional<T>) empty() : of(value);
+    public static <T> OptionalNullable<T> of(T value) {
+        return new OptionalNullable<>(value);
     }
 
     /**
      * If a value is present in this {@code Optional}, returns the value,
      * otherwise throws {@code NoSuchElementException}.
      *
-     * @return the non-null value held by this {@code Optional}
+     * @return the nullable value held by this {@code Optional}
      * @throws NoSuchElementException if there is no value present
      *
-     * @see Optional#isPresent()
+     * @see OptionalNullable#isPresent()
      */
     public T get() {
-        if (value == null) {
+        if (isPresent == false) {
             throw new NoSuchElementException("No value present");
         }
+
         return value;
     }
 
@@ -148,7 +132,7 @@ public final class Optional<T> {
      * @return {@code true} if there is a value present, otherwise {@code false}
      */
     public boolean isPresent() {
-        return value != null;
+        return isPresent;
     }
 
     /**
@@ -160,6 +144,11 @@ public final class Optional<T> {
      * null
      */
     public void ifPresent(Consumer<? super T> consumer) {
+        if (isPresent)
+            consumer.accept(value);
+    }
+
+    public void ifNotNull(Consumer<? super T> consumer) {
         if (value != null)
             consumer.accept(value);
     }
@@ -175,18 +164,17 @@ public final class Optional<T> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the predicate is null
      */
-    public Optional<T> filter(Predicate<? super T> predicate) {
+    public OptionalNullable<T> filter(Predicate<? super T> predicate) {
         N.requireNonNull(predicate);
+
         if (!isPresent())
             return this;
         else
-            return predicate.test(value) ? this : (Optional<T>) empty();
+            return predicate.test(value) ? this : (OptionalNullable<T>) empty();
     }
 
     /**
      * If a value is present, apply the provided mapping function to it,
-     * and if the result is non-null, return an {@code Optional} describing the
-     * result.  Otherwise return an empty {@code Optional}.
      *
      * @apiNote This method supports post-processing on optional values, without
      * the need to explicitly check for a return status.  For example, the
@@ -212,12 +200,13 @@ public final class Optional<T> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the mapping function is null
      */
-    public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+    public <U> OptionalNullable<U> map(Function<? super T, ? extends U> mapper) {
         N.requireNonNull(mapper);
+
         if (!isPresent())
             return empty();
         else {
-            return (Optional<U>) Optional.ofNullable(mapper.apply(value));
+            return (OptionalNullable<U>) OptionalNullable.of(mapper.apply(value));
         }
     }
 
@@ -238,9 +227,94 @@ public final class Optional<T> {
      * @throws NullPointerException if the mapping function is null or returns
      * a null result
      */
-    public <U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
+    public <U> OptionalNullable<U> flatMap(Function<? super T, OptionalNullable<U>> mapper) {
         N.requireNonNull(mapper);
+
         if (!isPresent())
+            return empty();
+        else {
+            return N.requireNonNull(mapper.apply(value));
+        }
+    }
+
+    /**
+     * If a value is not null, and the value matches the given predicate,
+     * return an {@code Optional} describing the value, otherwise return an
+     * empty {@code Optional}.
+     *
+     * @param predicate a predicate to apply to the value, if present
+     * @return an {@code Optional} describing the value of this {@code Optional}
+     * if a value is present and the value matches the given predicate,
+     * otherwise an empty {@code Optional}
+     * @throws NullPointerException if the predicate is null
+     */
+    public OptionalNullable<T> filterIfNotNull(Predicate<? super T> predicate) {
+        N.requireNonNull(predicate);
+
+        if (value == null)
+            return this;
+        else
+            return predicate.test(value) ? this : (OptionalNullable<T>) empty();
+    }
+
+    /**
+     * If a value is not null, apply the provided mapping function to it,
+     *
+     * @apiNote This method supports post-processing on optional values, without
+     * the need to explicitly check for a return status.  For example, the
+     * following code traverses a stream of file names, selects one that has
+     * not yet been processed, and then opens that file, returning an
+     * {@code Optional<FileInputStream>}:
+     *
+     * <pre>{@code
+     *     Optional<FileInputStream> fis =
+     *         names.stream().filter(name -> !isProcessedYet(name))
+     *                       .findFirst()
+     *                       .map(name -> new FileInputStream(name));
+     * }</pre>
+     *
+     * Here, {@code findFirst} returns an {@code Optional<String>}, and then
+     * {@code map} returns an {@code Optional<FileInputStream>} for the desired
+     * file if one exists.
+     *
+     * @param <U> The type of the result of the mapping function
+     * @param mapper a mapping function to apply to the value, if present
+     * @return an {@code Optional} describing the result of applying a mapping
+     * function to the value of this {@code Optional}, if a value is present,
+     * otherwise an empty {@code Optional}
+     * @throws NullPointerException if the mapping function is null
+     */
+    public <U> OptionalNullable<U> mapIfNotNull(Function<? super T, ? extends U> mapper) {
+        N.requireNonNull(mapper);
+
+        if (value == null)
+            return empty();
+        else {
+            return (OptionalNullable<U>) OptionalNullable.of(mapper.apply(value));
+        }
+    }
+
+    /**
+     * If a value is not null, apply the provided {@code Optional}-bearing
+     * mapping function to it, return that result, otherwise return an empty
+     * {@code Optional}.  This method is similar to {@link #map(Function)},
+     * but the provided mapper is one whose result is already an {@code Optional},
+     * and if invoked, {@code flatMap} does not wrap it with an additional
+     * {@code Optional}.
+     *
+     * @param <U> The type parameter to the {@code Optional} returned by
+     * @param mapper a mapping function to apply to the value, if present
+     *           the mapping function
+     * @return the result of applying an {@code Optional}-bearing mapping
+     * function to the value of this {@code Optional}, if a value is present,
+     * otherwise an empty {@code Optional}
+     * @throws NullPointerException if the mapping function is null or returns
+     * a null result
+     */
+    public <U> OptionalNullable<U> flatMapIfNotNull(Function<? super T, OptionalNullable<U>> mapper) {
+        N.requireNonNull(mapper);
+
+        if (value == null)
             return empty();
         else {
             return N.requireNonNull(mapper.apply(value));
@@ -264,7 +338,7 @@ public final class Optional<T> {
      * @return the value, if present, otherwise {@code other}
      */
     public T orElse(T other) {
-        return value != null ? value : other;
+        return isPresent ? value : other;
     }
 
     /**
@@ -278,7 +352,7 @@ public final class Optional<T> {
      * null
      */
     public T orElseGet(Supplier<? extends T> other) {
-        return value != null ? value : other.get();
+        return isPresent ? value : other.get();
     }
 
     /**
@@ -298,6 +372,53 @@ public final class Optional<T> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+        if (isPresent) {
+            return value;
+        } else {
+            throw exceptionSupplier.get();
+        }
+    }
+
+    /**
+     * Return the value is not null, otherwise return {@code other}.
+     *
+     * @param other the value to be returned if not present or null, may be null
+     * @return the value, if not present or null, otherwise {@code other}
+     */
+    public T orElseIfNull(T other) {
+        return value != null ? value : other;
+    }
+
+    /**
+     * Return the value is not null, otherwise invoke {@code other} and return
+     * the result of that invocation.
+     *
+     * @param other a {@code Supplier} whose result is returned if not present or null
+     * @return the value if present otherwise the result of {@code other.get()}
+     * @throws NullPointerException if value is not present and {@code other} is
+     * null
+     */
+    public T orElseGetIfNull(Supplier<? extends T> other) {
+        return value != null ? value : other.get();
+    }
+
+    /**
+     * Return the value is not null, otherwise throw an exception
+     * to be created by the provided supplier.
+     *
+     * @apiNote A method reference to the exception constructor with an empty
+     * argument list can be used as the supplier. For example,
+     * {@code IllegalStateException::new}
+     *
+     * @param <X> Type of the exception to be thrown
+     * @param exceptionSupplier The supplier which will return the exception to
+     * be thrown
+     * @return the present value
+     * @throws X if not present or null
+     * @throws NullPointerException if not present or null and
+     * {@code exceptionSupplier} is null
+     */
+    public <X extends Throwable> T orElseThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
         if (value != null) {
             return value;
         } else {
@@ -324,12 +445,13 @@ public final class Optional<T> {
             return true;
         }
 
-        if (!(obj instanceof Optional)) {
+        if (!(obj instanceof OptionalNullable)) {
             return false;
         }
 
-        Optional<?> other = (Optional<?>) obj;
-        return N.equals(value, other.value);
+        final OptionalNullable<?> other = (OptionalNullable<?>) obj;
+
+        return N.equals(isPresent, other.isPresent) && N.equals(value, other.value);
     }
 
     /**
@@ -340,7 +462,7 @@ public final class Optional<T> {
      */
     @Override
     public int hashCode() {
-        return N.hashCode(value);
+        return N.hashCode(isPresent) * 31 + N.hashCode(value);
     }
 
     /**
@@ -356,6 +478,6 @@ public final class Optional<T> {
      */
     @Override
     public String toString() {
-        return value != null ? String.format("Optional[%s]", value) : "Optional.empty";
+        return isPresent ? String.format("Optional[%s]", value) : "Optional.empty";
     }
 }

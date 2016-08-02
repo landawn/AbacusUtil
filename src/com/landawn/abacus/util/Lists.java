@@ -51,15 +51,15 @@ public final class Lists {
         return DoubleList.of(a);
     }
 
-    public static BigIntegerList of(final BigInteger... a) {
+    public static ObjectList<BigInteger> of(final BigInteger... a) {
         return BigIntegerList.of(a);
     }
 
-    public static BigDecimalList of(final BigDecimal... a) {
+    public static ObjectList<BigDecimal> of(final BigDecimal... a) {
         return BigDecimalList.of(a);
     }
 
-    public static StringList of(final String... a) {
+    public static ObjectList<String> of(final String... a) {
         return StringList.of(a);
     }
 

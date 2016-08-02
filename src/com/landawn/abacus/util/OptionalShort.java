@@ -118,7 +118,7 @@ public final class OptionalShort {
      *
      * @see OptionalShort#isPresent()
      */
-    public short getAsShort() {
+    public short get() {
         if (!isPresent) {
             throw new NoSuchElementException("No value present");
         }
@@ -145,6 +145,15 @@ public final class OptionalShort {
     public void ifPresent(ShortConsumer consumer) {
         if (isPresent)
             consumer.accept(value);
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code 0}.
+     *
+     * @return the value, if present, otherwise {@code 0}
+     */
+    public short orDefault() {
+        return value;
     }
 
     /**

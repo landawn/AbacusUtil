@@ -118,7 +118,7 @@ public final class OptionalBoolean {
      *
      * @see OptionalBoolean#isPresent()
      */
-    public boolean getAsBoolean() {
+    public boolean get() {
         if (!isPresent) {
             throw new NoSuchElementException("No value present");
         }
@@ -145,6 +145,15 @@ public final class OptionalBoolean {
     public void ifPresent(BooleanConsumer consumer) {
         if (isPresent)
             consumer.accept(value);
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code false}.
+     *
+     * @return the value, if present, otherwise {@code false}
+     */
+    public boolean orDefault() {
+        return value;
     }
 
     /**

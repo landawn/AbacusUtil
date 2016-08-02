@@ -118,7 +118,7 @@ public final class OptionalDouble {
      *
      * @see OptionalDouble#isPresent()
      */
-    public double getAsDouble() {
+    public double get() {
         if (!isPresent) {
             throw new NoSuchElementException("No value present");
         }
@@ -145,6 +145,15 @@ public final class OptionalDouble {
     public void ifPresent(DoubleConsumer consumer) {
         if (isPresent)
             consumer.accept(value);
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code 0}.
+     *
+     * @return the value, if present, otherwise {@code 0}
+     */
+    public double orDefault() {
+        return value;
     }
 
     /**

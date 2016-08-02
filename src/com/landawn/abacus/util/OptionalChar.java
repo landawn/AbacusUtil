@@ -118,7 +118,7 @@ public final class OptionalChar {
      *
      * @see OptionalChar#isPresent()
      */
-    public char getAsChar() {
+    public char get() {
         if (!isPresent) {
             throw new NoSuchElementException("No value present");
         }
@@ -145,6 +145,15 @@ public final class OptionalChar {
     public void ifPresent(CharConsumer consumer) {
         if (isPresent)
             consumer.accept(value);
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code 0}.
+     *
+     * @return the value, if present, otherwise {@code 0}
+     */
+    public char orDefault() {
+        return value;
     }
 
     /**

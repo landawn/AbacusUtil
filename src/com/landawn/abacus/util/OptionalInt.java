@@ -118,7 +118,7 @@ public final class OptionalInt {
      *
      * @see OptionalInt#isPresent()
      */
-    public int getAsInt() {
+    public int get() {
         if (!isPresent) {
             throw new NoSuchElementException("No value present");
         }
@@ -145,6 +145,15 @@ public final class OptionalInt {
     public void ifPresent(IntConsumer consumer) {
         if (isPresent)
             consumer.accept(value);
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code 0}.
+     *
+     * @return the value, if present, otherwise {@code 0}
+     */
+    public int orDefault() {
+        return value;
     }
 
     /**

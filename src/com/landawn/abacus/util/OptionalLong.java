@@ -118,7 +118,7 @@ public final class OptionalLong {
      *
      * @see OptionalLong#isPresent()
      */
-    public long getAsLong() {
+    public long get() {
         if (!isPresent) {
             throw new NoSuchElementException("No value present");
         }
@@ -145,6 +145,15 @@ public final class OptionalLong {
     public void ifPresent(LongConsumer consumer) {
         if (isPresent)
             consumer.accept(value);
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code 0}.
+     *
+     * @return the value, if present, otherwise {@code 0}
+     */
+    public long orDefault() {
+        return value;
     }
 
     /**
