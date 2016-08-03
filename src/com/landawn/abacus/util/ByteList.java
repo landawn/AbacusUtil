@@ -464,7 +464,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     public byte min() {
-        return min(0, size());
+        return N.min(elementData, 0, size);
     }
 
     public byte min(final int fromIndex, final int toIndex) {
@@ -474,7 +474,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     public byte max() {
-        return max(0, size());
+        return N.max(elementData, 0, size);
     }
 
     public byte max(final int fromIndex, final int toIndex) {
@@ -784,11 +784,11 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
 
     @Override
     public ByteList trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override

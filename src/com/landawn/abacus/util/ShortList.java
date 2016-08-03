@@ -464,7 +464,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     }
 
     public short min() {
-        return min(0, size());
+        return N.min(elementData, 0, size);
     }
 
     public short min(final int fromIndex, final int toIndex) {
@@ -474,7 +474,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     }
 
     public short max() {
-        return max(0, size());
+        return N.max(elementData, 0, size);
     }
 
     public short max(final int fromIndex, final int toIndex) {
@@ -748,20 +748,24 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return result;
     }
 
+    @Override
     public ShortList top(final int top) {
         return top(0, size(), top);
     }
 
+    @Override
     public ShortList top(final int fromIndex, final int toIndex, final int top) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.top(elementData, fromIndex, toIndex, top));
     }
 
+    @Override
     public ShortList top(final int top, Comparator<Short> cmp) {
         return top(0, size(), top, cmp);
     }
 
+    @Override
     public ShortList top(final int fromIndex, final int toIndex, final int top, Comparator<Short> cmp) {
         checkIndex(fromIndex, toIndex);
 
@@ -784,11 +788,11 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
 
     @Override
     public ShortList trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override

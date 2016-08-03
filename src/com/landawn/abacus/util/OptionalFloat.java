@@ -36,10 +36,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * A container object which may or may not contain a {@code float} value.
  * If a value is present, {@code isPresent()} will return {@code true} and
- * {@code getAsFloat()} will return the value.
+ * {@code get()} will return the value.
  *
  * <p>Additional methods that depend on the presence or absence of a contained
- * value are provided, such as {@link #orElse(float) orElse()}
+ * value are provided, such as {@link #or(float) orElse()}
  * (return a default value if value not present) and
  * {@link #ifPresent(java.util.function.FloatConsumer) ifPresent()} (execute a block
  * of code if the value is present).
@@ -80,7 +80,7 @@ public final class OptionalFloat {
      *
      * @apiNote Though it may be tempting to do so, avoid testing if an object
      * is empty by comparing with {@code ==} against instances returned by
-     * {@code Option.empty()}. There is no guarantee that it is a singleton.
+     * {@code OptionalFloat.empty()}. There is no guarantee that it is a singleton.
      * Instead, use {@link #isPresent()}.
      *
      *  @return an empty {@code OptionalFloat}.
@@ -148,21 +148,12 @@ public final class OptionalFloat {
     }
 
     /**
-     * Return the value if present, otherwise return {@code 0}.
-     *
-     * @return the value, if present, otherwise {@code 0}
-     */
-    public float orDefault() {
-        return value;
-    }
-
-    /**
      * Return the value if present, otherwise return {@code other}.
      *
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public float orElse(float other) {
+    public float or(float other) {
         return isPresent ? value : other;
     }
 
@@ -176,7 +167,7 @@ public final class OptionalFloat {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public float orElseGet(FloatSupplier other) {
+    public float orGet(FloatSupplier other) {
         return isPresent ? value : other.getAsFloat();
     }
 
@@ -196,12 +187,21 @@ public final class OptionalFloat {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> float orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> float orThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code 0}.
+     *
+     * @return the value, if present, otherwise {@code 0}
+     */
+    public float orZero() {
+        return value;
     }
 
     /**

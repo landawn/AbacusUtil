@@ -5,53 +5,51 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.landawn.abacus.util.Array;
-import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.OptionalLong;
+import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.LongBinaryOperator;
-import com.landawn.abacus.util.function.LongConsumer;
-import com.landawn.abacus.util.function.LongFunction;
-import com.landawn.abacus.util.function.LongPredicate;
-import com.landawn.abacus.util.function.LongToDoubleFunction;
-import com.landawn.abacus.util.function.LongToIntFunction;
-import com.landawn.abacus.util.function.LongUnaryOperator;
-import com.landawn.abacus.util.function.ObjLongConsumer;
+import com.landawn.abacus.util.function.CharBinaryOperator;
+import com.landawn.abacus.util.function.CharConsumer;
+import com.landawn.abacus.util.function.CharFunction;
+import com.landawn.abacus.util.function.CharPredicate;
+import com.landawn.abacus.util.function.CharToIntFunction;
+import com.landawn.abacus.util.function.CharUnaryOperator;
+import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class LongStreamImpl implements LongStream {
-    private final long[] values;
+final class CharStreamImpl implements CharStream {
+    private final char[] values;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
     private final List<Runnable> closeHandlers;
 
-    LongStreamImpl(long[] values) {
+    CharStreamImpl(char[] values) {
         this(values, null);
     }
 
-    LongStreamImpl(long[] values, List<Runnable> closeHandlers) {
+    CharStreamImpl(char[] values, List<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    LongStreamImpl(long[] values, boolean sorted, List<Runnable> closeHandlers) {
+    CharStreamImpl(char[] values, boolean sorted, List<Runnable> closeHandlers) {
         this(values, 0, values.length, sorted, closeHandlers);
     }
 
-    LongStreamImpl(long[] values, int fromIndex, int toIndex) {
+    CharStreamImpl(char[] values, int fromIndex, int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    LongStreamImpl(long[] values, int fromIndex, int toIndex, List<Runnable> closeHandlers) {
+    CharStreamImpl(char[] values, int fromIndex, int toIndex, List<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    LongStreamImpl(long[] values, int fromIndex, int toIndex, boolean sorted, List<Runnable> closeHandlers) {
+    CharStreamImpl(char[] values, int fromIndex, int toIndex, boolean sorted, List<Runnable> closeHandlers) {
         if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
             throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
         }
@@ -64,8 +62,8 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
-    public LongStream filter(LongPredicate predicate) {
-        final LongList list = new LongList();
+    public CharStream filter(CharPredicate predicate) {
+        final CharList list = new CharList();
 
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(values[i])) {
@@ -73,22 +71,22 @@ final class LongStreamImpl implements LongStream {
             }
         }
 
-        return new LongStreamImpl(list.trimToSize().array(), closeHandlers);
+        return new CharStreamImpl(list.trimToSize().array(), closeHandlers);
     }
 
     @Override
-    public LongStream map(LongUnaryOperator mapper) {
-        final long[] a = new long[toIndex - fromIndex];
+    public CharStream map(CharUnaryOperator mapper) {
+        final char[] a = new char[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsLong(values[i]);
+            a[j] = mapper.applyAsChar(values[i]);
         }
 
-        return new LongStreamImpl(a, closeHandlers);
+        return new CharStreamImpl(a, closeHandlers);
     }
 
     @Override
-    public <U> Stream<U> mapToObj(LongFunction<? extends U> mapper) {
+    public <U> Stream<U> mapToObj(CharFunction<? extends U> mapper) {
         final Object[] a = new Object[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
@@ -99,7 +97,7 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
-    public IntStream mapToInt(LongToIntFunction mapper) {
+    public IntStream mapToInt(CharToIntFunction mapper) {
         final int[] a = new int[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
@@ -110,121 +108,110 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
-    public DoubleStream mapToDouble(LongToDoubleFunction mapper) {
-        final double[] a = new double[toIndex - fromIndex];
-
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsDouble(values[i]);
-        }
-
-        return new DoubleStreamImpl(a, closeHandlers);
-    }
-
-    @Override
-    public LongStream flatMap(LongFunction<? extends LongStream> mapper) {
-        final List<long[]> listOfArray = new ArrayList<long[]>();
+    public CharStream flatMap(CharFunction<? extends CharStream> mapper) {
+        final List<char[]> listOfArray = new ArrayList<char[]>();
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final long[] tmp = mapper.apply(values[i]).toArray();
+            final char[] tmp = mapper.apply(values[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
 
-        final long[] arrayOfAll = new long[lengthOfAll];
+        final char[] arrayOfAll = new char[lengthOfAll];
         int from = 0;
-        for (long[] tmp : listOfArray) {
+        for (char[] tmp : listOfArray) {
             N.copy(tmp, 0, arrayOfAll, from, tmp.length);
             from += tmp.length;
         }
 
-        return new LongStreamImpl(arrayOfAll, closeHandlers);
+        return new CharStreamImpl(arrayOfAll, closeHandlers);
     }
 
     @Override
-    public LongStream distinct() {
-        return new LongStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), closeHandlers);
+    public CharStream distinct() {
+        return new CharStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), closeHandlers);
     }
 
     @Override
-    public LongStream sorted() {
+    public CharStream sorted() {
         if (sorted) {
-            return new LongStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+            return new CharStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
         }
 
-        final long[] a = N.copyOfRange(values, fromIndex, toIndex);
+        final char[] a = N.copyOfRange(values, fromIndex, toIndex);
         N.sort(a);
-        return new LongStreamImpl(a, true, closeHandlers);
+        return new CharStreamImpl(a, true, closeHandlers);
     }
 
     @Override
-    public LongStream peek(LongConsumer action) {
+    public CharStream peek(CharConsumer action) {
         for (int i = fromIndex; i < toIndex; i++) {
             action.accept(values[i]);
         }
 
-        // return new LongStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+        // return new CharStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
         return this;
     }
 
     @Override
-    public LongStream limit(long maxSize) {
+    public CharStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new LongStreamImpl(values, fromIndex, toIndex, closeHandlers);
+            return new CharStreamImpl(values, fromIndex, toIndex, closeHandlers);
         } else {
-            return new LongStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), closeHandlers);
+            return new CharStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), closeHandlers);
         }
     }
 
     @Override
-    public LongStream skip(long n) {
+    public CharStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new LongStreamImpl(N.EMPTY_LONG_ARRAY, closeHandlers);
+            return new CharStreamImpl(N.EMPTY_CHAR_ARRAY, closeHandlers);
         } else {
-            return new LongStreamImpl(values, (int) (fromIndex + n), toIndex, closeHandlers);
+            return new CharStreamImpl(values, (int) (fromIndex + n), toIndex, closeHandlers);
         }
     }
 
     @Override
-    public void forEach(LongConsumer action) {
+    public void forEach(CharConsumer action) {
         for (int i = fromIndex; i < toIndex; i++) {
             action.accept(values[i]);
         }
     }
 
     @Override
-    public long[] toArray() {
+    public char[] toArray() {
         return N.copyOfRange(values, fromIndex, toIndex);
     }
 
     @Override
-    public long reduce(long identity, LongBinaryOperator op) {
-        long result = identity;
+    public char reduce(char identity, CharBinaryOperator op) {
+        char result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsLong(result, values[i]);
+            result = op.applyAsChar(result, values[i]);
         }
 
         return result;
     }
 
     @Override
-    public OptionalLong reduce(LongBinaryOperator op) {
+    public OptionalChar reduce(CharBinaryOperator op) {
         if (count() == 0) {
-            return OptionalLong.empty();
+            return OptionalChar.empty();
         }
 
-        long result = values[fromIndex];
+        char result = values[fromIndex];
 
         for (int i = fromIndex + 1; i < toIndex; i++) {
-            result = op.applyAsLong(result, values[i]);
+            result = op.applyAsChar(result, values[i]);
         }
 
-        return OptionalLong.of(result);
+        return OptionalChar.of(result);
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner) {
+    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner) {
         final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -235,26 +222,21 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
-    public long sum() {
-        return N.sum(values, fromIndex, toIndex).longValue();
+    public OptionalChar min() {
+        if (count() == 0) {
+            return OptionalChar.empty();
+        }
+
+        return OptionalChar.of(N.min(values, fromIndex, toIndex));
     }
 
     @Override
-    public OptionalLong min() {
+    public OptionalChar max() {
         if (count() == 0) {
-            return OptionalLong.empty();
+            return OptionalChar.empty();
         }
 
-        return OptionalLong.of(N.min(values, fromIndex, toIndex));
-    }
-
-    @Override
-    public OptionalLong max() {
-        if (count() == 0) {
-            return OptionalLong.empty();
-        }
-
-        return OptionalLong.of(N.max(values, fromIndex, toIndex));
+        return OptionalChar.of(N.max(values, fromIndex, toIndex));
     }
 
     @Override
@@ -263,16 +245,7 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
-    public OptionalDouble average() {
-        if (count() == 0) {
-            return OptionalDouble.empty();
-        }
-
-        return OptionalDouble.of(N.avg(values, fromIndex, toIndex).doubleValue());
-    }
-
-    @Override
-    public boolean anyMatch(LongPredicate predicate) {
+    public boolean anyMatch(CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(values[i])) {
                 return true;
@@ -283,7 +256,7 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
-    public boolean allMatch(LongPredicate predicate) {
+    public boolean allMatch(CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(values[i]) == false) {
                 return false;
@@ -294,7 +267,7 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
-    public boolean noneMatch(LongPredicate predicate) {
+    public boolean noneMatch(CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(values[i])) {
                 return false;
@@ -305,38 +278,38 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
-    public OptionalLong findFirst() {
-        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(values[fromIndex]);
+    public OptionalChar findFirst() {
+        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(values[fromIndex]);
     }
 
     @Override
-    public OptionalLong findAny() {
-        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(values[fromIndex]);
+    public OptionalChar findAny() {
+        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(values[fromIndex]);
     }
 
     @Override
-    public DoubleStream asDoubleStream() {
-        final double[] a = new double[toIndex - fromIndex];
+    public IntStream asIntStream() {
+        final int[] a = new int[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
             a[j] = values[i];
         }
 
-        return new DoubleStreamImpl(a, closeHandlers);
+        return new IntStreamImpl(a, closeHandlers);
     }
 
     @Override
-    public Stream<Long> boxed() {
-        return new ArrayStream<Long>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
+    public Stream<Character> boxed() {
+        return new ArrayStream<Character>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
     }
 
     @Override
-    public Iterator<Long> iterator() {
-        return new LongIterator(values, fromIndex, toIndex);
+    public Iterator<Character> iterator() {
+        return new CharacterIterator(values, fromIndex, toIndex);
     }
 
     @Override
-    public LongStream onClose(Runnable closeHandler) {
+    public CharStream onClose(Runnable closeHandler) {
         final List<Runnable> closeHandlerList = N.newArrayList(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
@@ -345,7 +318,7 @@ final class LongStreamImpl implements LongStream {
 
         closeHandlerList.add(closeHandler);
 
-        return new LongStreamImpl(values, fromIndex, toIndex, closeHandlerList);
+        return new CharStreamImpl(values, fromIndex, toIndex, closeHandlerList);
     }
 
     @Override
@@ -371,12 +344,12 @@ final class LongStreamImpl implements LongStream {
         }
     }
 
-    static class LongIterator extends ImmutableIterator<Long> {
-        private final long[] values;
+    static class CharacterIterator extends ImmutableIterator<Character> {
+        private final char[] values;
         private final int toIndex;
         private int cursor;
 
-        LongIterator(long[] array, int fromIndex, int toIndex) {
+        CharacterIterator(char[] array, int fromIndex, int toIndex) {
             this.values = array;
             this.toIndex = toIndex;
             this.cursor = fromIndex;
@@ -388,7 +361,7 @@ final class LongStreamImpl implements LongStream {
         }
 
         @Override
-        public Long next() {
+        public Character next() {
             return values[cursor++];
         }
     }

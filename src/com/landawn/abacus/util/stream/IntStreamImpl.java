@@ -14,6 +14,7 @@ import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.function.IntToCharFunction;
 import com.landawn.abacus.util.function.IntToDoubleFunction;
 import com.landawn.abacus.util.function.IntToLongFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
@@ -99,6 +100,17 @@ final class IntStreamImpl implements IntStream {
     }
 
     @Override
+    public CharStream mapToChar(IntToCharFunction mapper) {
+        final char[] a = new char[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.applyAsChar(values[i]);
+        }
+
+        return new CharStreamImpl(a, closeHandlers);
+    }
+
+    @Override
     public LongStream mapToLong(IntToLongFunction mapper) {
         final long[] a = new long[toIndex - fromIndex];
 
@@ -163,7 +175,8 @@ final class IntStreamImpl implements IntStream {
             action.accept(values[i]);
         }
 
-        return new IntStreamImpl(values, fromIndex, toIndex, closeHandlers);
+        // return new IntStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+        return this;
     }
 
     @Override
@@ -311,6 +324,21 @@ final class IntStreamImpl implements IntStream {
     @Override
     public OptionalInt findAny() {
         return count() == 0 ? OptionalInt.empty() : OptionalInt.of(values[fromIndex]);
+    }
+
+    @Override
+    public CharStream asCharStream() {
+        final char[] a = new char[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            if (values[i] < Character.MIN_VALUE || values[i] > Character.MAX_VALUE) {
+                throw new ArithmeticException("overflow");
+            }
+
+            a[j] = (char) values[i];
+        }
+
+        return new CharStreamImpl(a, closeHandlers);
     }
 
     @Override

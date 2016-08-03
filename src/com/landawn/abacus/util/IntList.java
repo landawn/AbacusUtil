@@ -562,7 +562,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     }
 
     public int min() {
-        return min(0, size());
+        return N.min(elementData, 0, size);
     }
 
     public int min(final int fromIndex, final int toIndex) {
@@ -572,7 +572,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     }
 
     public int max() {
-        return max(0, size());
+        return N.max(elementData, 0, size);
     }
 
     public int max(final int fromIndex, final int toIndex) {
@@ -886,11 +886,11 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
 
     @Override
     public IntList trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override

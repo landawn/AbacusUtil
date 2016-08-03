@@ -16,7 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +26,7 @@ import java.util.Set;
  *
  * @author Haiyang Li
  */
-public abstract class AbastractPrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E, A, L>> implements PrimitiveList<C, P, E, A, L> {
+public abstract class AbastractArrayList<C, P, E, A, L extends ArrayList<C, P, E, A, L>> implements ArrayList<C, P, E, A, L> {
     /**
      * Default initial capacity.
      */
@@ -101,7 +100,7 @@ public abstract class AbastractPrimitiveList<C, P, E, A, L extends PrimitiveList
     public List<E> toList(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        final List<E> result = new ArrayList<E>(toIndex - fromIndex);
+        final List<E> result = N.newArrayList(toIndex - fromIndex);
 
         toList(result, fromIndex, toIndex);
 

@@ -22,7 +22,7 @@ package com.landawn.abacus.util;
  *
  * @author Haiyang Li
  */
-public abstract class PrimitiveNumberList<C, P, E, A, L extends PrimitiveList<C, P, E, A, L>> extends AbastractPrimitiveList<C, P, E, A, L> {
+public abstract class PrimitiveNumberList<C, P, E, A, L extends ArrayList<C, P, E, A, L>> extends AbastractArrayList<C, P, E, A, L> {
 
     public Number sum() {
         return sum(0, size());

@@ -44,6 +44,7 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
@@ -232,6 +233,20 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      *               function to apply to each element
      * @return the new stream
      */
+    public abstract CharStream mapToChar(ToCharFunction<? super T> mapper);
+
+    /**
+     * Returns an {@code IntStream} consisting of the results of applying the
+     * given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">
+     *     intermediate operation</a>.
+     *
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
     public abstract IntStream mapToInt(ToIntFunction<? super T> mapper);
 
     /**
@@ -305,6 +320,26 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return the new stream
      */
     public abstract <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper);
+
+    /**
+     * Returns an {@code IntStream} consisting of the results of replacing each
+     * element of this stream with the contents of a mapped stream produced by
+     * applying the provided mapping function to each element.  Each mapped
+     * stream is {@link java.util.stream.BaseStream#close() closed} after its
+     * contents have been placed into this stream.  (If a mapped stream is
+     * {@code null} an empty stream is used, instead.)
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
+     * operation</a>.
+     *
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element which produces a stream
+     *               of new values
+     * @return the new stream
+     * @see #flatMap(Function)
+     */
+    public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 
     /**
      * Returns an {@code IntStream} consisting of the results of replacing each
@@ -455,7 +490,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param action a <a href="package-summary.html#NonInterference">
      *                 non-interfering</a> action to perform on the elements as
      *                 they are consumed from the stream
-     * @return the new stream
+     * @return this stream or a new stream with same elements.
      */
     public abstract Stream<T> peek(Consumer<? super T> action);
 
@@ -976,7 +1011,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param e
      * @return
      */
-    static IntStream of(final char e) {
+    static CharStream of(final char e) {
         return of(Array.of(e));
     }
 
@@ -986,7 +1021,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static IntStream of(final char[] a) {
+    public static CharStream of(final char[] a) {
         return of(a, 0, a.length);
     }
 
@@ -998,14 +1033,16 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param toIndex
      * @return
      */
-    public static IntStream of(final char[] a, final int fromIndex, final int toIndex) {
-        final int[] values = new int[toIndex - fromIndex];
+    public static CharStream of(final char[] a, final int fromIndex, final int toIndex) {
+        //        final int[] values = new int[toIndex - fromIndex];
+        //
+        //        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
+        //            values[i] = a[j];
+        //        }
+        //
+        //        return new CharStreamImpl(values);
 
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            values[i] = a[j];
-        }
-
-        return new IntStreamImpl(values);
+        return new CharStreamImpl(a, fromIndex, toIndex);
     }
 
     /**

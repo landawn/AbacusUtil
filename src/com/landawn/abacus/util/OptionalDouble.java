@@ -36,10 +36,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * A container object which may or may not contain a {@code double} value.
  * If a value is present, {@code isPresent()} will return {@code true} and
- * {@code getAsDouble()} will return the value.
+ * {@code get()} will return the value.
  *
  * <p>Additional methods that depend on the presence or absence of a contained
- * value are provided, such as {@link #orElse(double) orElse()}
+ * value are provided, such as {@link #or(double) orElse()}
  * (return a default value if value not present) and
  * {@link #ifPresent(java.util.function.DoubleConsumer) ifPresent()} (execute a block
  * of code if the value is present).
@@ -80,7 +80,7 @@ public final class OptionalDouble {
      *
      * @apiNote Though it may be tempting to do so, avoid testing if an object
      * is empty by comparing with {@code ==} against instances returned by
-     * {@code Option.empty()}. There is no guarantee that it is a singleton.
+     * {@code OptionalDouble.empty()}. There is no guarantee that it is a singleton.
      * Instead, use {@link #isPresent()}.
      *
      *  @return an empty {@code OptionalDouble}.
@@ -148,21 +148,12 @@ public final class OptionalDouble {
     }
 
     /**
-     * Return the value if present, otherwise return {@code 0}.
-     *
-     * @return the value, if present, otherwise {@code 0}
-     */
-    public double orDefault() {
-        return value;
-    }
-
-    /**
      * Return the value if present, otherwise return {@code other}.
      *
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public double orElse(double other) {
+    public double or(double other) {
         return isPresent ? value : other;
     }
 
@@ -176,7 +167,7 @@ public final class OptionalDouble {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public double orElseGet(DoubleSupplier other) {
+    public double orGet(DoubleSupplier other) {
         return isPresent ? value : other.getAsDouble();
     }
 
@@ -196,12 +187,21 @@ public final class OptionalDouble {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> double orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> double orThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code 0}.
+     *
+     * @return the value, if present, otherwise {@code 0}
+     */
+    public double orZero() {
+        return value;
     }
 
     /**

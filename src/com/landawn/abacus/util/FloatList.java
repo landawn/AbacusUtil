@@ -500,7 +500,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     }
 
     public float min() {
-        return min(0, size());
+        return N.min(elementData, 0, size);
     }
 
     public float min(final int fromIndex, final int toIndex) {
@@ -510,7 +510,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     }
 
     public float max() {
-        return max(0, size());
+        return N.max(elementData, 0, size);
     }
 
     public float max(final int fromIndex, final int toIndex) {
@@ -784,20 +784,24 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return result;
     }
 
+    @Override
     public FloatList top(final int top) {
         return top(0, size(), top);
     }
 
+    @Override
     public FloatList top(final int fromIndex, final int toIndex, final int top) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.top(elementData, fromIndex, toIndex, top));
     }
 
+    @Override
     public FloatList top(final int top, Comparator<Float> cmp) {
         return top(0, size(), top, cmp);
     }
 
+    @Override
     public FloatList top(final int fromIndex, final int toIndex, final int top, Comparator<Float> cmp) {
         checkIndex(fromIndex, toIndex);
 
@@ -820,11 +824,11 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
 
     @Override
     public FloatList trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override

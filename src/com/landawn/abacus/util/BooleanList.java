@@ -37,7 +37,7 @@ import com.landawn.abacus.util.function.BooleanPredicate;
  * 
  * @author Haiyang Li
  */
-public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
+public final class BooleanList extends AbastractArrayList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
     private boolean[] elementData = N.EMPTY_BOOLEAN_ARRAY;
     private int size = 0;
 
@@ -720,11 +720,11 @@ public final class BooleanList extends AbastractPrimitiveList<BooleanConsumer, B
 
     @Override
     public BooleanList trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override

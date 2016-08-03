@@ -40,7 +40,7 @@ import com.landawn.abacus.util.function.Supplier;
  * {@code get()} will return the value.
  *
  * <p>Additional methods that depend on the presence or absence of a contained
- * value are provided, such as {@link #orElse(java.lang.Object) orElse()}
+ * value are provided, such as {@link #or(java.lang.Object) orElse()}
  * (return a default value if value not present) and
  * {@link #ifPresent(java.util.function.Consumer) ifPresent()} (execute a block
  * of code if the value is present).
@@ -79,7 +79,7 @@ public final class Optional<T> {
      *
      * @apiNote Though it may be tempting to do so, avoid testing if an object
      * is empty by comparing with {@code ==} against instances returned by
-     * {@code Option.empty()}. There is no guarantee that it is a singleton.
+     * {@code Optional.empty()}. There is no guarantee that it is a singleton.
      * Instead, use {@link #isPresent()}.
      *
      * @param <T> Type of the non-existent value
@@ -248,22 +248,13 @@ public final class Optional<T> {
     }
 
     /**
-     * Return the value if present, otherwise return {@code null}.
-     *
-     * @return the value, if present, otherwise {@code null}
-     */
-    public T orNull() {
-        return value;
-    }
-
-    /**
      * Return the value if present, otherwise return {@code other}.
      *
      * @param other the value to be returned if there is no value present, may
      * be null
      * @return the value, if present, otherwise {@code other}
      */
-    public T orElse(T other) {
+    public T or(T other) {
         return value != null ? value : other;
     }
 
@@ -277,7 +268,7 @@ public final class Optional<T> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public T orElseGet(Supplier<? extends T> other) {
+    public T orGet(Supplier<? extends T> other) {
         return value != null ? value : other.get();
     }
 
@@ -297,12 +288,21 @@ public final class Optional<T> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+    public <X extends Throwable> T orThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (value != null) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code null}.
+     *
+     * @return the value, if present, otherwise {@code null}
+     */
+    public T orNull() {
+        return isPresent() ? value : null;
     }
 
     /**

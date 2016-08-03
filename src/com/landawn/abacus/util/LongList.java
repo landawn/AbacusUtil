@@ -504,7 +504,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     public long min() {
-        return min(0, size());
+        return N.min(elementData, 0, size);
     }
 
     public long min(final int fromIndex, final int toIndex) {
@@ -514,7 +514,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     public long max() {
-        return max(0, size());
+        return N.max(elementData, 0, size);
     }
 
     public long max(final int fromIndex, final int toIndex) {
@@ -788,20 +788,24 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return result;
     }
 
+    @Override
     public LongList top(final int top) {
         return top(0, size(), top);
     }
 
+    @Override
     public LongList top(final int fromIndex, final int toIndex, final int top) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.top(elementData, fromIndex, toIndex, top));
     }
 
+    @Override
     public LongList top(final int top, Comparator<Long> cmp) {
         return top(0, size(), top, cmp);
     }
 
+    @Override
     public LongList top(final int fromIndex, final int toIndex, final int top, Comparator<Long> cmp) {
         checkIndex(fromIndex, toIndex);
 
@@ -824,11 +828,11 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
 
     @Override
     public LongList trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override

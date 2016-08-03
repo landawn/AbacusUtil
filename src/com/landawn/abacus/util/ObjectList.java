@@ -38,7 +38,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate<T>, T, T[], ObjectList<T>> {
+public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>, T, T[], ObjectList<T>> {
     private T[] elementData = null;
     private int size = 0;
 
@@ -84,21 +84,52 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
     }
 
     /**
-     * Return the first element of the array list.
+     * Return the first element of the array list, or {@code OptionalNullable.empty()} if there is no element.
      * @return
      */
     @Beta
-    public Optional<T> findFirst() {
-        return size() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elementData[0]);
+    public OptionalNullable<T> findFirst() {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[0]);
     }
 
     /**
-     * Return the last element of the array list.
+     * Return the last element of the array list, or {@code OptionalNullable.empty()} if there is no element.
+     * 
      * @return
      */
     @Beta
-    public Optional<T> findLast() {
-        return size() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elementData[size - 1]);
+    public OptionalNullable<T> findFirstNonNull() {
+        for (int i = 0; i < size; i++) {
+            if (elementData[i] != null) {
+                return OptionalNullable.of(elementData[i]);
+            }
+        }
+
+        return OptionalNullable.empty();
+    }
+
+    /**
+     * Return the last non-null element of the array list, or {@code OptionalNullable.empty()} if there is no non-null element.
+     * @return
+     */
+    @Beta
+    public OptionalNullable<T> findLast() {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[size - 1]);
+    }
+
+    /**
+     * Return the last non-null element of the array list.
+     * @return
+     */
+    @Beta
+    public OptionalNullable<T> findLastNonNull() {
+        for (int i = size - 1; i >= 0; i--) {
+            if (elementData[i] != null) {
+                return OptionalNullable.of(elementData[i]);
+            }
+        }
+
+        return OptionalNullable.empty();
     }
 
     public T get(int index) {
@@ -357,7 +388,7 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
     }
 
     public T min() {
-        return min(0, size());
+        return (T) N.min((Comparable[]) elementData, 0, size);
     }
 
     public T min(final int fromIndex, final int toIndex) {
@@ -367,7 +398,7 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
     }
 
     public T min(Comparator<T> cmp) {
-        return min(0, size(), cmp);
+        return N.min(elementData, 0, size, cmp);
     }
 
     public T min(final int fromIndex, final int toIndex, Comparator<T> cmp) {
@@ -377,7 +408,7 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
     }
 
     public T max() {
-        return max(0, size());
+        return (T) N.max((Comparable[]) elementData, 0, size);
     }
 
     public T max(final int fromIndex, final int toIndex) {
@@ -387,7 +418,7 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
     }
 
     public T max(Comparator<T> cmp) {
-        return min(0, size(), cmp);
+        return N.max(elementData, 0, size, cmp);
     }
 
     public T max(final int fromIndex, final int toIndex, Comparator<T> cmp) {
@@ -688,11 +719,11 @@ public class ObjectList<T> extends AbastractPrimitiveList<Consumer<T>, Predicate
 
     @Override
     public ObjectList<T> trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override

@@ -36,10 +36,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * A container object which may or may not contain a {@code boolean} value.
  * If a value is present, {@code isPresent()} will return {@code true} and
- * {@code getAsBoolean()} will return the value.
+ * {@code get()} will return the value.
  *
  * <p>Additional methods that depend on the presence or absence of a contained
- * value are provided, such as {@link #orElse(boolean) orElse()}
+ * value are provided, such as {@link #or(boolean) orElse()}
  * (return a default value if value not present) and
  * {@link #ifPresent(java.util.function.BooleanConsumer) ifPresent()} (execute a block
  * of code if the value is present).
@@ -80,7 +80,7 @@ public final class OptionalBoolean {
      *
      * @apiNote Though it may be tempting to do so, avoid testing if an object
      * is empty by comparing with {@code ==} against instances returned by
-     * {@code Option.empty()}. There is no guarantee that it is a singleton.
+     * {@code OptionalBoolean.empty()}. There is no guarantee that it is a singleton.
      * Instead, use {@link #isPresent()}.
      *
      *  @return an empty {@code OptionalBoolean}
@@ -148,21 +148,12 @@ public final class OptionalBoolean {
     }
 
     /**
-     * Return the value if present, otherwise return {@code false}.
-     *
-     * @return the value, if present, otherwise {@code false}
-     */
-    public boolean orDefault() {
-        return value;
-    }
-
-    /**
      * Return the value if present, otherwise return {@code other}.
      *
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public boolean orElse(boolean other) {
+    public boolean or(boolean other) {
         return isPresent ? value : other;
     }
 
@@ -172,11 +163,11 @@ public final class OptionalBoolean {
      *
      * @param other a {@code BooleanSupplier} whose result is returned if no value
      * is present
-     * @return the value if present otherwise the result of {@code other.getAsBoolean()}
+     * @return the value if present otherwise the result of {@code other.get()}
      * @throws NullPobooleanerException if value is not present and {@code other} is
      * null
      */
-    public boolean orElseGet(BooleanSupplier other) {
+    public boolean orGet(BooleanSupplier other) {
         return isPresent ? value : other.getAsBoolean();
     }
 
@@ -196,12 +187,21 @@ public final class OptionalBoolean {
      * @throws NullPobooleanerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> boolean orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> boolean orThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
+    }
+
+    /**
+     * Return the value if present, otherwise return {@code false}.
+     *
+     * @return the value, if present, otherwise {@code false}
+     */
+    public boolean orFalse() {
+        return value;
     }
 
     /**

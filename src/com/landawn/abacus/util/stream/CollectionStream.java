@@ -20,6 +20,7 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
@@ -66,6 +67,18 @@ final class CollectionStream<T> extends Stream<T> implements BaseStream<T, Strea
         }
 
         return new CollectionStream<R>(c, closeHandlers);
+    }
+
+    @Override
+    public CharStream mapToChar(ToCharFunction<? super T> mapper) {
+        final char[] a = new char[values.size()];
+
+        int idx = 0;
+        for (T e : values) {
+            a[idx++] = mapper.applyAsChar(e);
+        }
+
+        return new CharStreamImpl(a, closeHandlers);
     }
 
     @Override
@@ -117,6 +130,27 @@ final class CollectionStream<T> extends Stream<T> implements BaseStream<T, Strea
         }
 
         return new CollectionStream<R>(c, closeHandlers);
+    }
+
+    @Override
+    public CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper) {
+        final List<char[]> listOfArray = new ArrayList<char[]>();
+
+        int lengthOfAll = 0;
+        for (T e : values) {
+            final char[] tmp = mapper.apply(e).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final char[] arrayOfAll = new char[lengthOfAll];
+        int from = 0;
+        for (char[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new CharStreamImpl(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -213,14 +247,20 @@ final class CollectionStream<T> extends Stream<T> implements BaseStream<T, Strea
 
     @Override
     public Stream<T> peek(Consumer<? super T> action) {
-        final Collection<T> c = newCollection(values.getClass(), values.size());
+        //        final Collection<T> c = newCollection(values.getClass(), values.size());
+        //
+        //        for (T e : values) {
+        //            action.accept(e);
+        //            c.add(e);
+        //        }
+        //
+        //         return new CollectionStream<T>(c, closeHandlers);
 
         for (T e : values) {
             action.accept(e);
-            c.add(e);
         }
 
-        return new CollectionStream<T>(c, closeHandlers);
+        return this;
     }
 
     @Override

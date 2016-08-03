@@ -162,7 +162,8 @@ final class DoubleStreamImpl implements DoubleStream {
             action.accept(values[i]);
         }
 
-        return new DoubleStreamImpl(values, fromIndex, toIndex, closeHandlers);
+        // return new DoubleStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+        return this;
     }
 
     @Override

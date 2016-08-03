@@ -25,7 +25,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Set;
-import java.util.stream.Collector.Characteristics;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;

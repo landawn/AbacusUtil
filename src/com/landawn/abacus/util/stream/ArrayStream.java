@@ -16,6 +16,7 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
@@ -89,6 +90,17 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public CharStream mapToChar(ToCharFunction<? super T> mapper) {
+        final char[] a = new char[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.applyAsChar(values[i]);
+        }
+
+        return new CharStreamImpl(a, closeHandlers);
+    }
+
+    @Override
     public IntStream mapToInt(ToIntFunction<? super T> mapper) {
         final int[] a = new int[toIndex - fromIndex];
 
@@ -140,6 +152,27 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         return new ArrayStream<R>((R[]) arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper) {
+        final List<char[]> listOfArray = new ArrayList<char[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final char[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final char[] arrayOfAll = new char[lengthOfAll];
+        int from = 0;
+        for (char[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new CharStreamImpl(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -234,7 +267,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
             action.accept(values[i]);
         }
 
-        return new ArrayStream<T>(values, fromIndex, toIndex, closeHandlers);
+        // return new ArrayStream<T>(values, fromIndex, toIndex, sorted, closeHandlers);
+        return this;
     }
 
     @Override

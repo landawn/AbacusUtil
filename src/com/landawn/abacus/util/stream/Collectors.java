@@ -56,6 +56,7 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.StringJoiner;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -358,16 +359,37 @@ public final class Collectors {
         return toArray((T[]) N.newArray(arrayClass.getComponentType(), 0));
     }
 
-    @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, T[]> toArray(final T[] array) {
-        final Collector<T, List<T>, List<T>> collector = (Collector) toList();
-
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), new Function<List<T>, T[]>() {
+        final Supplier<ObjectList<T>> supplier = new Supplier<ObjectList<T>>() {
             @Override
-            public T[] apply(List<T> t) {
-                return t.toArray(array);
+            public ObjectList<T> get() {
+                return new ObjectList<T>(array, 0);
             }
-        }, collector.characteristics());
+        };
+
+        final BiConsumer<ObjectList<T>, T> accumulator = new BiConsumer<ObjectList<T>, T>() {
+            @Override
+            public void accept(ObjectList<T> c, T t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<ObjectList<T>> combiner = new BinaryOperator<ObjectList<T>>() {
+            @Override
+            public ObjectList<T> apply(ObjectList<T> a, ObjectList<T> b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        Function<ObjectList<T>, T[]> finisher = new Function<ObjectList<T>, T[]>() {
+            @Override
+            public T[] apply(ObjectList<T> t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     /**
@@ -2194,14 +2216,14 @@ public final class Collectors {
 
     public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
         final BinaryOperator<U> mergeFunction = throwingMerger();
-    
+
         return toBiMap(keyMapper, valueMapper, mergeFunction);
     }
 
     public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper, final Supplier<BiMap<K, U>> mapSupplier) {
         final BinaryOperator<U> mergeFunction = throwingMerger();
-    
+
         return toBiMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
@@ -2213,7 +2235,7 @@ public final class Collectors {
                 return new BiMap<>();
             }
         };
-    
+
         return toBiMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 

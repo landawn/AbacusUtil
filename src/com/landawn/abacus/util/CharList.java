@@ -30,7 +30,7 @@ import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
-import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.CharStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -39,7 +39,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class CharList extends AbastractPrimitiveList<CharConsumer, CharPredicate, Character, char[], CharList> {
+public final class CharList extends AbastractArrayList<CharConsumer, CharPredicate, Character, char[], CharList> {
     private char[] elementData = N.EMPTY_CHAR_ARRAY;
     private int size = 0;
 
@@ -438,7 +438,7 @@ public final class CharList extends AbastractPrimitiveList<CharConsumer, CharPre
     }
 
     public char min() {
-        return min(0, size());
+        return N.min(elementData, 0, size);
     }
 
     public char min(final int fromIndex, final int toIndex) {
@@ -448,7 +448,7 @@ public final class CharList extends AbastractPrimitiveList<CharConsumer, CharPre
     }
 
     public char max() {
-        return max(0, size());
+        return N.max(elementData, 0, size);
     }
 
     public char max(final int fromIndex, final int toIndex) {
@@ -744,11 +744,11 @@ public final class CharList extends AbastractPrimitiveList<CharConsumer, CharPre
 
     @Override
     public CharList trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override
@@ -797,11 +797,11 @@ public final class CharList extends AbastractPrimitiveList<CharConsumer, CharPre
         }
     }
 
-    public IntStream stream() {
+    public CharStream stream() {
         return stream(0, size());
     }
 
-    public IntStream stream(final int fromIndex, final int toIndex) {
+    public CharStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return Stream.of(elementData, fromIndex, toIndex);

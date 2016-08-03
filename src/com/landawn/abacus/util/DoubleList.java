@@ -470,7 +470,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     public double min() {
-        return min(0, size());
+        return N.min(elementData, 0, size);
     }
 
     public double min(final int fromIndex, final int toIndex) {
@@ -480,7 +480,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     public double max() {
-        return max(0, size());
+        return N.max(elementData, 0, size);
     }
 
     public double max(final int fromIndex, final int toIndex) {
@@ -754,20 +754,24 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return result;
     }
 
+    @Override
     public DoubleList top(final int top) {
         return top(0, size(), top);
     }
 
+    @Override
     public DoubleList top(final int fromIndex, final int toIndex, final int top) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.top(elementData, fromIndex, toIndex, top));
     }
 
+    @Override
     public DoubleList top(final int top, Comparator<Double> cmp) {
         return top(0, size(), top, cmp);
     }
 
+    @Override
     public DoubleList top(final int fromIndex, final int toIndex, final int top, Comparator<Double> cmp) {
         checkIndex(fromIndex, toIndex);
 
@@ -790,11 +794,11 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
 
     @Override
     public DoubleList trimToSize() {
-        if (elementData.length == size) {
-            return this;
+        if (elementData.length != size) {
+            elementData = N.copyOfRange(elementData, 0, size);
         }
 
-        return of(N.copyOfRange(elementData, 0, size));
+        return this;
     }
 
     @Override

@@ -24,19 +24,16 @@
  */
 package com.landawn.abacus.util.stream;
 
-import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.OptionalInt;
+import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.CharBinaryOperator;
+import com.landawn.abacus.util.function.CharConsumer;
+import com.landawn.abacus.util.function.CharFunction;
+import com.landawn.abacus.util.function.CharPredicate;
+import com.landawn.abacus.util.function.CharToIntFunction;
+import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IntBinaryOperator;
-import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.IntPredicate;
-import com.landawn.abacus.util.function.IntToCharFunction;
-import com.landawn.abacus.util.function.IntToDoubleFunction;
-import com.landawn.abacus.util.function.IntToLongFunction;
-import com.landawn.abacus.util.function.IntUnaryOperator;
-import com.landawn.abacus.util.function.ObjIntConsumer;
+import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
@@ -48,13 +45,13 @@ import com.landawn.abacus.util.function.Supplier;
  * {@link Stream}.
  *
  * <p>The following example illustrates an aggregate operation using
- * {@link Stream} and {@link IntStream}, computing the sum of the weights of the
+ * {@link Stream} and {@link CharStream}, computing the sum of the weights of the
  * red widgets:
  *
  * <pre>{@code
  *     int sum = widgets.stream()
  *                      .filter(w -> w.getColor() == RED)
- *                      .mapToInt(w -> w.getWeight())
+ *                      .mapToChar(w -> w.getWeight())
  *                      .sum();
  * }</pre>
  *
@@ -67,7 +64,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public interface IntStream extends BaseStream<Integer, IntStream> {
+public interface CharStream extends BaseStream<Character, CharStream> {
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -76,13 +73,13 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
      * operation</a>.
      *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     * @param predicate a <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *                  <a href="package-summary.html#Statelessness">stateless</a>
      *                  predicate to apply to each element to determine if it
      *                  should be included
      * @return the new stream
      */
-    IntStream filter(IntPredicate predicate);
+    CharStream filter(CharPredicate predicate);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -91,41 +88,12 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
      * operation</a>.
      *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     * @param mapper a <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *               <a href="package-summary.html#Statelessness">stateless</a>
      *               function to apply to each element
      * @return the new stream
      */
-    IntStream map(IntUnaryOperator mapper);
-
-    /**
-     * Returns an object-valued {@code Stream} consisting of the results of
-     * applying the given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param <U> the element type of the new stream
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
-    <U> Stream<U> mapToObj(IntFunction<? extends U> mapper);
-
-    /**
-     * Returns a {@code CharStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
-    CharStream mapToChar(IntToCharFunction mapper);
+    CharStream map(CharUnaryOperator mapper);
 
     /**
      * Returns a {@code LongStream} consisting of the results of applying the
@@ -139,21 +107,22 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    LongStream mapToLong(IntToLongFunction mapper);
+    IntStream mapToInt(CharToIntFunction mapper);
 
     /**
-     * Returns a {@code DoubleStream} consisting of the results of applying the
-     * given function to the elements of this stream.
+     * Returns an object-valued {@code Stream} consisting of the results of
+     * applying the given function to the elements of this stream.
      *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
+     * <p>This is an <a href="package-summary.html#StreamOps">
+     *     intermediate operation</a>.
      *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     * @param <U> the element type of the new stream
+     * @param mapper a <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *               <a href="package-summary.html#Statelessness">stateless</a>
      *               function to apply to each element
      * @return the new stream
      */
-    DoubleStream mapToDouble(IntToDoubleFunction mapper);
+    <U> Stream<U> mapToObj(CharFunction<? extends U> mapper);
 
     /**
      * Returns a stream consisting of the results of replacing each element of
@@ -166,14 +135,14 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
      * operation</a>.
      *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     * @param mapper a <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *               <a href="package-summary.html#Statelessness">stateless</a>
      *               function to apply to each element which produces an
-     *               {@code IntStream} of new values
+     *               {@code CharStream} of new values
      * @return the new stream
      * @see Stream#flatMap(Function)
      */
-    IntStream flatMap(IntFunction<? extends IntStream> mapper);
+    CharStream flatMap(CharFunction<? extends CharStream> mapper);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -183,7 +152,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @return the new stream
      */
-    IntStream distinct();
+    CharStream distinct();
 
     /**
      * Returns a stream consisting of the elements of this stream in sorted
@@ -194,7 +163,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @return the new stream
      */
-    IntStream sorted();
+    CharStream sorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -212,7 +181,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @apiNote This method exists mainly to support debugging, where you want
      * to see the elements as they flow past a certain point in a pipeline:
      * <pre>{@code
-     *     IntStream.of(1, 2, 3, 4)
+     *     CharStream.of(1, 2, 3, 4)
      *         .filter(e -> e > 2)
      *         .peek(e -> System.out.println("Filtered value: " + e))
      *         .map(e -> e * e)
@@ -220,12 +189,12 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *         .sum();
      * }</pre>
      *
-     * @param action a <a href="package-summary.html#NonInterference">
+     * @param action a <a href="package-summary.html#NonCharerference">
      *               non-interfering</a> action to perform on the elements as
      *               they are consumed from the stream
      * @return the new stream
      */
-    IntStream peek(IntConsumer action);
+    CharStream peek(CharConsumer action);
 
     /**
      * Returns a stream consisting of the elements of this stream, truncated
@@ -252,7 +221,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code maxSize} is negative
      */
-    IntStream limit(long maxSize);
+    CharStream limit(long maxSize);
 
     /**
      * Returns a stream consisting of the remaining elements of this stream
@@ -281,7 +250,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code n} is negative
      */
-    IntStream skip(long n);
+    CharStream skip(long n);
 
     /**
      * Performs an action for each element of this stream.
@@ -296,10 +265,10 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * library chooses.  If the action accesses shared state, it is
      * responsible for providing the required synchronization.
      *
-     * @param action a <a href="package-summary.html#NonInterference">
+     * @param action a <a href="package-summary.html#NonCharerference">
      *               non-interfering</a> action to perform on the elements
      */
-    void forEach(IntConsumer action);
+    void forEach(CharConsumer action);
 
     /**
      * Returns an array containing the elements of this stream.
@@ -309,7 +278,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @return an array containing the elements of this stream
      */
-    int[] toArray();
+    char[] toArray();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -320,7 +289,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * <pre>{@code
      *     int result = identity;
      *     for (int element : this stream)
-     *         result = accumulator.applyAsInt(result, element)
+     *         result = accumulator.applyAsChar(result, element)
      *     return result;
      * }</pre>
      *
@@ -345,7 +314,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * or more compactly:
      *
      * <pre>{@code
-     *     int sum = integers.reduce(0, Integer::sum);
+     *     int sum = integers.reduce(0, Chareger::sum);
      * }</pre>
      *
      * <p>While this may seem a more roundabout way to perform an aggregation
@@ -355,7 +324,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @param identity the identity value for the accumulating function
      * @param op an <a href="package-summary.html#Associativity">associative</a>,
-     *           <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *           <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *           <a href="package-summary.html#Statelessness">stateless</a>
      *           function for combining two values
      * @return the result of the reduction
@@ -364,13 +333,13 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @see #max()
      * @see #average()
      */
-    int reduce(int identity, IntBinaryOperator op);
+    char reduce(char identity, CharBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
      * elements of this stream, using an
      * <a href="package-summary.html#Associativity">associative</a> accumulation
-     * function, and returns an {@code OptionalInt} describing the reduced value,
+     * function, and returns an {@code OptionalChar} describing the reduced value,
      * if any. This is equivalent to:
      * <pre>{@code
      *     boolean foundAny = false;
@@ -381,9 +350,9 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *             result = element;
      *         }
      *         else
-     *             result = accumulator.applyAsInt(result, element);
+     *             result = accumulator.applyAsChar(result, element);
      *     }
-     *     return foundAny ? OptionalInt.of(result) : OptionalInt.empty();
+     *     return foundAny ? OptionalChar.of(result) : OptionalChar.empty();
      * }</pre>
      *
      * but is not constrained to execute sequentially.
@@ -395,13 +364,13 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * operation</a>.
      *
      * @param op an <a href="package-summary.html#Associativity">associative</a>,
-     *           <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *           <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *           <a href="package-summary.html#Statelessness">stateless</a>
      *           function for combining two values
      * @return the result of the reduction
-     * @see #reduce(int, IntBinaryOperator)
+     * @see #reduce(int, CharBinaryOperator)
      */
-    OptionalInt reduce(IntBinaryOperator op);
+    OptionalChar reduce(CharBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable
@@ -417,7 +386,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *     return result;
      * }</pre>
      *
-     * <p>Like {@link #reduce(int, IntBinaryOperator)}, {@code collect} operations
+     * <p>Like {@link #reduce(int, CharBinaryOperator)}, {@code collect} operations
      * can be parallelized without requiring additional synchronization.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -428,66 +397,51 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *                 parallel execution, this function may be called
      *                 multiple times and must return a fresh value each time.
      * @param accumulator an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *                    <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
      * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
-     *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *                    <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
      *                    compatible with the accumulator function
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * Returns the sum of elements in this stream.  This is a special case
-     * of a <a href="package-summary.html#Reduction">reduction</a>
-     * and is equivalent to:
-     * <pre>{@code
-     *     return reduce(0, Integer::sum);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return the sum of elements in this stream
-     */
-    int sum();
-
-    /**
-     * Returns an {@code OptionalInt} describing the minimum element of this
+     * Returns an {@code OptionalChar} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>
      * and is equivalent to:
      * <pre>{@code
-     *     return reduce(Integer::min);
+     *     return reduce(Chareger::min);
      * }</pre>
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
      *
-     * @return an {@code OptionalInt} containing the minimum element of this
-     * stream, or an empty {@code OptionalInt} if the stream is empty
+     * @return an {@code OptionalChar} containing the minimum element of this
+     * stream, or an empty {@code OptionalChar} if the stream is empty
      */
-    OptionalInt min();
+    OptionalChar min();
 
     /**
-     * Returns an {@code OptionalInt} describing the maximum element of this
+     * Returns an {@code OptionalChar} describing the maximum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>
      * and is equivalent to:
      * <pre>{@code
-     *     return reduce(Integer::max);
+     *     return reduce(Chareger::max);
      * }</pre>
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
      * operation</a>.
      *
-     * @return an {@code OptionalInt} containing the maximum element of this
-     * stream, or an empty {@code OptionalInt} if the stream is empty
+     * @return an {@code OptionalChar} containing the maximum element of this
+     * stream, or an empty {@code OptionalChar} if the stream is empty
      */
-    OptionalInt max();
+    OptionalChar max();
 
     /**
      * Returns the count of elements in this stream.  This is a special case of
@@ -504,20 +458,6 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
     long count();
 
     /**
-     * Returns an {@code OptionalDouble} describing the arithmetic mean of elements of
-     * this stream, or an empty optional if this stream is empty.  This is a
-     * special case of a
-     * <a href="package-summary.html#Reduction">reduction</a>.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an {@code OptionalDouble} containing the average element of this
-     * stream, or an empty optional if the stream is empty
-     */
-    OptionalDouble average();
-
-    /**
      * Returns whether any elements of this stream match the provided
      * predicate.  May not evaluate the predicate on all elements if not
      * necessary for determining the result.  If the stream is empty then
@@ -530,13 +470,13 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * This method evaluates the <em>existential quantification</em> of the
      * predicate over the elements of the stream (for some x P(x)).
      *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     * @param predicate a <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *                  <a href="package-summary.html#Statelessness">stateless</a>
      *                  predicate to apply to elements of this stream
      * @return {@code true} if any elements of the stream match the provided
      * predicate, otherwise {@code false}
      */
-    boolean anyMatch(IntPredicate predicate);
+    boolean anyMatch(CharPredicate predicate);
 
     /**
      * Returns whether all elements of this stream match the provided predicate.
@@ -553,13 +493,13 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * stream is empty, the quantification is said to be <em>vacuously
      * satisfied</em> and is always {@code true} (regardless of P(x)).
      *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     * @param predicate a <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *                  <a href="package-summary.html#Statelessness">stateless</a>
      *                  predicate to apply to elements of this stream
      * @return {@code true} if either all elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean allMatch(IntPredicate predicate);
+    boolean allMatch(CharPredicate predicate);
 
     /**
      * Returns whether no elements of this stream match the provided predicate.
@@ -576,30 +516,30 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * the stream is empty, the quantification is said to be vacuously satisfied
      * and is always {@code true}, regardless of P(x).
      *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     * @param predicate a <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *                  <a href="package-summary.html#Statelessness">stateless</a>
      *                  predicate to apply to elements of this stream
      * @return {@code true} if either no elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean noneMatch(IntPredicate predicate);
+    boolean noneMatch(CharPredicate predicate);
 
     /**
-     * Returns an {@link OptionalInt} describing the first element of this
-     * stream, or an empty {@code OptionalInt} if the stream is empty.  If the
+     * Returns an {@link OptionalChar} describing the first element of this
+     * stream, or an empty {@code OptionalChar} if the stream is empty.  If the
      * stream has no encounter order, then any element may be returned.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
      * terminal operation</a>.
      *
-     * @return an {@code OptionalInt} describing the first element of this stream,
-     * or an empty {@code OptionalInt} if the stream is empty
+     * @return an {@code OptionalChar} describing the first element of this stream,
+     * or an empty {@code OptionalChar} if the stream is empty
      */
-    OptionalInt findFirst();
+    OptionalChar findFirst();
 
     /**
-     * Returns an {@link OptionalInt} describing some element of the stream, or
-     * an empty {@code OptionalInt} if the stream is empty.
+     * Returns an {@link OptionalChar} describing some element of the stream, or
+     * an empty {@code OptionalChar} if the stream is empty.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
      * terminal operation</a>.
@@ -610,23 +550,11 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * on the same source may not return the same result.  (If a stable result
      * is desired, use {@link #findFirst()} instead.)
      *
-     * @return an {@code OptionalInt} describing some element of this stream, or
-     * an empty {@code OptionalInt} if the stream is empty
+     * @return an {@code OptionalChar} describing some element of this stream, or
+     * an empty {@code OptionalChar} if the stream is empty
      * @see #findFirst()
      */
-    OptionalInt findAny();
-
-    /**
-     * Returns a {@code CharStream} consisting of the elements of this stream,
-     * converted to {@code long}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code CharStream} consisting of the elements of this stream,
-     * converted to {@code long}
-     */
-    CharStream asCharStream();
+    OptionalChar findAny();
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -638,31 +566,19 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}
      */
-    LongStream asLongStream();
-
-    /**
-     * Returns a {@code DoubleStream} consisting of the elements of this stream,
-     * converted to {@code double}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code DoubleStream} consisting of the elements of this stream,
-     * converted to {@code double}
-     */
-    DoubleStream asDoubleStream();
+    IntStream asIntStream();
 
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
-     * each boxed to an {@code Integer}.
+     * each boxed to an {@code Chareger}.
      *
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
      * operation</a>.
      *
      * @return a {@code Stream} consistent of the elements of this stream,
-     * each boxed to an {@code Integer}
+     * each boxed to an {@code Chareger}
      */
-    Stream<Integer> boxed();
+    Stream<Character> boxed();
 
     // Static factories
 }
