@@ -201,7 +201,7 @@ public final class OptionalBoolean {
      * @return the value, if present, otherwise {@code false}
      */
     public boolean orFalse() {
-        return value;
+        return isPresent ? value : false;
     }
 
     /**

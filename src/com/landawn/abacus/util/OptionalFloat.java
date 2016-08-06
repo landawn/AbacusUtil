@@ -201,7 +201,7 @@ public final class OptionalFloat {
      * @return the value, if present, otherwise {@code 0}
      */
     public float orZero() {
-        return value;
+        return isPresent ? value : 0f;
     }
 
     /**

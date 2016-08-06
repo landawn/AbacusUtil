@@ -201,7 +201,7 @@ public final class OptionalLong {
      * @return the value, if present, otherwise {@code 0}
      */
     public long orZero() {
-        return value;
+        return isPresent ? value : 0L;
     }
 
     /**

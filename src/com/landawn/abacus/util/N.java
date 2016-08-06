@@ -23342,7 +23342,7 @@ public final class N {
      * @param op
      * @return
      */
-    static char reduce(final char[] a, final CharBinaryOperator op) {
+    public static char reduce(final char[] a, final CharBinaryOperator op) {
         return reduce(a, 0, a.length, op);
     }
 
@@ -23357,7 +23357,7 @@ public final class N {
      * @param op
      * @return
      */
-    static char reduce(final char[] a, final int fromIndex, final int toIndex, final CharBinaryOperator op) {
+    public static char reduce(final char[] a, final int fromIndex, final int toIndex, final CharBinaryOperator op) {
         boolean foundAny = false;
         char result = 0;
 
@@ -23383,7 +23383,7 @@ public final class N {
      * @param op
      * @return
      */
-    static char reduce(final char[] a, final char identity, final CharBinaryOperator op) {
+    public static char reduce(final char[] a, final char identity, final CharBinaryOperator op) {
         return reduce(a, 0, a.length, identity, op);
     }
 
@@ -23399,7 +23399,7 @@ public final class N {
      * @param op
      * @return
      */
-    static char reduce(final char[] a, final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator op) {
+    public static char reduce(final char[] a, final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator op) {
         char result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -24863,7 +24863,7 @@ public final class N {
      * @return
      * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
      */
-    public static <T, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex) {
+    static <T, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Set<T> keySet = new HashSet<>();
@@ -24941,7 +24941,7 @@ public final class N {
      * @param toIndex
      * @return
      */
-    public static <T, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+    static <T, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Set<T> keySet = new HashSet<>();
@@ -25033,7 +25033,7 @@ public final class N {
      * @return
      * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
      */
-    public static <T, K, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex,
+    static <T, K, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
@@ -25121,7 +25121,7 @@ public final class N {
      * @param func
      * @return
      */
-    public static <T, K, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    static <T, K, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
@@ -25226,8 +25226,7 @@ public final class N {
      * @return
      * @see java.util.stream.Collectors#groupingBy(java.util.cmption.Function)
      */
-    public static <T, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex,
-            final Comparator<? super T> cmp) {
+    static <T, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         final Set<T> sortedSet = new TreeSet<T>(cmp);
         boolean hasNull = false;
 
@@ -25335,7 +25334,7 @@ public final class N {
      * @param cmp
      * @return
      */
-    public static <T, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    static <T, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex);
 
@@ -30509,7 +30508,7 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
@@ -30542,7 +30541,7 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
@@ -30575,7 +30574,7 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
@@ -30608,7 +30607,7 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
@@ -30641,7 +30640,7 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
@@ -30674,7 +30673,7 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
@@ -30702,17 +30701,17 @@ public final class N {
             return 0d;
         }
 
-        double sum = 0d;
-
-        for (Number n : a) {
-            sum += n.doubleValue();
-        }
-
-        return sum;
+        return sum(a, 0, a.length);
     }
 
     public static <T extends Number> Number sum(final T[] a, final int from, final int to) {
+        checkIndex(from, to);
+
         if (N.isNullOrEmpty(a)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
             return 0d;
         }
 
@@ -30725,22 +30724,53 @@ public final class N {
         return sum;
     }
 
+    public static Number sum(final Collection<? extends Number> c) {
+        if (N.isNullOrEmpty(c)) {
+            return 0d;
+        }
+
+        return sum(c, 0, c.size());
+    }
+
     /**
      * Limitation: only works for real byte/short/int/long/float/double number.
      *
-     * @param numList
+     * @param c
+     * @param from
+     * @param to
      * @return a double number. <code>0d</code> is returned if list is empty or
      *         null.
      */
-    public static Number sum(final Collection<? extends Number> numList) {
-        if (N.isNullOrEmpty(numList)) {
+    public static Number sum(final Collection<? extends Number> c, final int from, final int to) {
+        checkIndex(from, to);
+
+        if (N.isNullOrEmpty(c)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
             return 0d;
         }
 
         double sum = 0d;
 
-        for (Number n : numList) {
-            sum += n.doubleValue();
+        if (c instanceof ArrayList) {
+            final List<Number> list = (List<Number>) c;
+
+            for (int i = from; i < to; i++) {
+                sum += list.get(i).doubleValue();
+            }
+        } else {
+            final Iterator<? extends Number> it = c.iterator();
+
+            for (int i = 0; i < to; i++) {
+                if (i < from) {
+                    it.next();
+                    continue;
+                } else {
+                    sum += it.next().doubleValue();
+                }
+            }
         }
 
         return sum;
@@ -30763,14 +30793,14 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
             return 0d;
         }
 
-        return sum(a, from, to).doubleValue() / a.length;
+        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
     }
 
     /**
@@ -30790,14 +30820,14 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
             return 0d;
         }
 
-        return sum(a, from, to).doubleValue() / a.length;
+        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
     }
 
     /**
@@ -30817,14 +30847,14 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
             return 0d;
         }
 
-        return sum(a, from, to).doubleValue() / a.length;
+        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
     }
 
     /**
@@ -30844,14 +30874,14 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
             return 0d;
         }
 
-        return sum(a, from, to).doubleValue() / a.length;
+        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
     }
 
     /**
@@ -30871,14 +30901,14 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
             return 0d;
         }
 
-        return sum(a, from, to).doubleValue() / a.length;
+        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
     }
 
     /**
@@ -30898,14 +30928,14 @@ public final class N {
         checkIndex(from, to);
 
         if (N.isNullOrEmpty(a)) {
-            if (from > 0) {
+            if (to > 0) {
                 throw new IndexOutOfBoundsException();
             }
 
             return 0d;
         }
 
-        return sum(a, from, to).doubleValue() / a.length;
+        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
     }
 
     /**
@@ -30924,26 +30954,48 @@ public final class N {
     }
 
     public static <T extends Number> Number avg(final T[] a, final int from, final int to) {
+        checkIndex(from, to);
+
         if (N.isNullOrEmpty(a)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
             return 0d;
         }
 
-        return sum(a, from, to).doubleValue() / a.length;
+        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+    }
+
+    public static Number avg(final Collection<? extends Number> c) {
+        if (N.isNullOrEmpty(c)) {
+            return 0d;
+        }
+
+        return avg(c, 0, c.size());
     }
 
     /**
      * Limitation: only works for real byte/short/int/long/float/double number.
      *
-     * @param numList
+     * @param c
+     * @param from
+     * @param to
      * @return a double number. <code>0d</code> is returned if list is empty or
      *         null.
      */
-    public static Number avg(final Collection<? extends Number> numList) {
-        if (N.isNullOrEmpty(numList)) {
+    public static Number avg(final Collection<? extends Number> c, final int from, final int to) {
+        checkIndex(from, to);
+
+        if (N.isNullOrEmpty(c)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
             return 0d;
         }
 
-        return sum(numList).doubleValue() / numList.size();
+        return from == to ? 0d : sum(c, from, to).doubleValue() / (to - from);
     }
 
     /**
@@ -31507,50 +31559,78 @@ public final class N {
         return candidate;
     }
 
-    /**
-     * Returns the minimum element in the collection.
-     *
-     * @param c
-     *            a collection, must not be null or empty
-     * @return the minimum value in the Collection
-     */
     public static <T extends Comparable<? super T>> T min(final Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) min(c, comparableCmp);
+        return min(c, 0, c.size());
+    }
+
+    public static <T extends Comparable<? super T>> T min(final Collection<? extends T> c, final int from, final int to) {
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return (T) min(c, from, to, comparableCmp);
+    }
+
+    public static <T> T min(final Collection<T> c, Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return min(c, 0, c.size(), cmp);
     }
 
     /**
      * Returns the minimum element in the collection.
-     *
-     *
+     * 
      * @param c
-     *            a collection, must not be null or empty
+     * @param from
+     * @param to
      * @param cmp
      * @return the minimum value in the Collection
      */
-    public static <T> T min(final Collection<T> c, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(c)) {
+    public static <T> T min(final Collection<T> c, final int from, final int to, Comparator<? super T> cmp) {
+        checkIndex(from, to);
+
+        if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
             throw new IllegalArgumentException("The size of collection can't be null or empty");
         }
 
         cmp = cmp == null ? comparableCmp : cmp;
 
-        Iterator<? extends T> it = c.iterator();
-        T candidate = it.next();
+        T candidate = null;
         T e = null;
 
-        for (; it.hasNext();) {
-            e = it.next();
+        if (c instanceof ArrayList) {
+            final List<T> list = (List<T>) c;
+            candidate = list.get(from);
 
-            if (cmp.compare(e, candidate) < 0) {
-                candidate = e;
+            for (int i = from + 1; i < to; i++) {
+                e = list.get(i);
+
+                if (cmp.compare(e, candidate) < 0) {
+                    candidate = e;
+                }
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
 
-            if (candidate == null) {
-                return null;
+            for (int i = 0; i < to; i++) {
+                if (i < from) {
+                    it.next();
+                    continue;
+                } else if (i == from) {
+                    candidate = it.next();
+                } else {
+                    e = it.next();
+
+                    if (cmp.compare(e, candidate) < 0) {
+                        candidate = e;
+                    }
+                }
             }
         }
 
@@ -32128,46 +32208,78 @@ public final class N {
         return candidate;
     }
 
-    /**
-     * Returns the maximum element in the collection.
-     *
-     * @param c
-     *            a collection, must not be null or empty
-     * @return the maximum value in the Collection
-     */
     public static <T extends Comparable<? super T>> T max(final Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) max(c, comparableCmp);
+        return max(c, 0, c.size());
     }
 
-    /**
-     * Returns the maximum element in the collection.
-     *
-     *
-     * @param c
-     *            a collection, must not be null or empty
-     * @param cmp
-     * @return the maximum value in the Collection
-     */
+    public static <T extends Comparable<? super T>> T max(final Collection<? extends T> c, final int from, final int to) {
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return (T) max(c, from, to, comparableCmp);
+    }
+
     public static <T> T max(final Collection<T> c, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
+        return max(c, 0, c.size(), cmp);
+    }
+
+    /**
+     * Returns the maximum element in the collection.
+     * 
+     * @param c
+     * @param from
+     * @param to
+     * @param cmp
+     * @return the maximum value in the Collection
+     */
+    public static <T> T max(final Collection<T> c, final int from, final int to, Comparator<? super T> cmp) {
+        checkIndex(from, to);
+
+        if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
+            throw new IllegalArgumentException("The size of collection can't be null or empty");
+        }
+
         cmp = cmp == null ? comparableCmp : cmp;
 
-        Iterator<? extends T> it = c.iterator();
-        T candidate = it.next();
+        T candidate = null;
         T e = null;
 
-        for (; it.hasNext();) {
-            e = it.next();
+        if (c instanceof ArrayList) {
+            final List<T> list = (List<T>) c;
+            candidate = list.get(from);
 
-            if (cmp.compare(e, candidate) > 0) {
-                candidate = e;
+            for (int i = from + 1; i < to; i++) {
+                e = list.get(i);
+
+                if (cmp.compare(e, candidate) > 0) {
+                    candidate = e;
+                }
+            }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+
+            for (int i = 0; i < to; i++) {
+                if (i < from) {
+                    it.next();
+                    continue;
+                } else if (i == from) {
+                    candidate = it.next();
+                } else {
+                    e = it.next();
+
+                    if (cmp.compare(e, candidate) > 0) {
+                        candidate = e;
+                    }
+                }
             }
         }
 

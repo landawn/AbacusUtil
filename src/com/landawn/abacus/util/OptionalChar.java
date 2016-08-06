@@ -201,7 +201,7 @@ public final class OptionalChar {
      * @return the value, if present, otherwise {@code 0}
      */
     public char orZero() {
-        return value;
+        return isPresent ? value : 0;
     }
 
     /**

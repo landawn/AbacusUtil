@@ -201,7 +201,7 @@ public final class OptionalByte {
      * @return the value, if present, otherwise {@code 0}
      */
     public byte orZero() {
-        return value;
+        return isPresent ? value : 0;
     }
 
     /**

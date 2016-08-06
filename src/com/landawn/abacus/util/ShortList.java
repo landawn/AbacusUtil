@@ -495,10 +495,10 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     }
 
     @Override
-    public Number avg(final int fromIndex, final int toIndex) {
+    public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.avg(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.avg(elementData, fromIndex, toIndex).doubleValue());
     }
 
     @Override

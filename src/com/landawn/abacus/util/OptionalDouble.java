@@ -201,7 +201,7 @@ public final class OptionalDouble {
      * @return the value, if present, otherwise {@code 0}
      */
     public double orZero() {
-        return value;
+        return isPresent ? value : 0d;
     }
 
     /**
