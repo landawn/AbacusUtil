@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,7 @@ import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.ObjectPool;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalBoolean;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalChar;
@@ -121,10 +123,10 @@ public final class SQLiteExecutor {
     static DataSet extractData(Class<?> targetClass, Cursor cursor, int offset, int count) {
         final int columnCount = cursor.getColumnCount();
         final List<String> columnNameList = N.asList(cursor.getColumnNames());
-        final List<List<Object>> columnList = N.newArrayList(columnCount);
+        final List<List<Object>> columnList = new ArrayList<>(columnCount);
 
         for (int i = 0; i < columnCount; i++) {
-            columnList.add(N.newArrayList(count > 9 ? 9 : count));
+            columnList.add(new ArrayList<>(count > 9 ? 9 : count));
         }
 
         final Type<Object>[] selectColumnTypes = new Type[columnCount];
@@ -177,10 +179,10 @@ public final class SQLiteExecutor {
     static DataSet extractData(Cursor cursor, Type[] selectColumnTypes, int offset, int count) {
         final int columnCount = cursor.getColumnCount();
         final List<String> columnNameList = N.asList(cursor.getColumnNames());
-        final List<List<Object>> columnList = N.newArrayList(columnCount);
+        final List<List<Object>> columnList = new ArrayList<>(columnCount);
 
         for (int i = 0; i < columnCount; i++) {
-            columnList.add(N.newArrayList(count > 9 ? 9 : count));
+            columnList.add(new ArrayList<>(count > 9 ? 9 : count));
         }
 
         if (offset > 0) {
@@ -326,7 +328,7 @@ public final class SQLiteExecutor {
 
         if (targetClass.isAssignableFrom(Map.class)) {
             final Map<String, Object> map = (Map<String, Object>) ((Modifier.isAbstract(targetClass.getModifiers())
-                    ? N.newHashMap(N.initHashCapacity(contentValues.size())) : N.newInstance(targetClass)));
+                    ? new HashMap<>(N.initHashCapacity(contentValues.size())) : N.newInstance(targetClass)));
 
             Object propValue = null;
 
@@ -808,10 +810,10 @@ public final class SQLiteExecutor {
      */
     public <T> List<Long> insert(String table, Collection<T> records, boolean withTransaction) {
         if (N.isNullOrEmpty(records)) {
-            return N.newArrayList();
+            return new ArrayList<>();
         }
 
-        final List<Long> ret = N.newArrayList(records.size());
+        final List<Long> ret = new ArrayList<>(records.size());
 
         table = formatName(table);
 
@@ -1300,7 +1302,7 @@ public final class SQLiteExecutor {
     //        return queryForEntity(targetClass, selectColumnNames, null);
     //    }
 
-    public <T> OptionalNullable<T> queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
+    public <T> Optional<T> queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
         return queryForEntity(targetClass, selectColumnNames, whereClause, null);
     }
 
@@ -1315,10 +1317,10 @@ public final class SQLiteExecutor {
      * @param orderby How to order the rows, formatted as an SQL ORDER BY clause (excluding the ORDER BY itself). Passing null will use the default sort order, which may be unordered.
      * @return
      */
-    public <T> OptionalNullable<T> queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
+    public <T> Optional<T> queryForEntity(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause, String orderBy) {
         final List<T> resultList = find(targetClass, selectColumnNames, whereClause, orderBy, 0, 1);
 
-        return N.isNullOrEmpty(resultList) ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultList.get(0));
+        return N.isNullOrEmpty(resultList) ? (Optional<T>) Optional.empty() : Optional.of(resultList.get(0));
     }
 
     /**
@@ -1336,10 +1338,10 @@ public final class SQLiteExecutor {
      * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
      * @return
      */
-    public <T> OptionalNullable<T> queryForEntity(final Class<T> targetClass, final String sql, Object... parameters) {
+    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, Object... parameters) {
         final DataSet rs = query(targetClass, sql, 0, 1, parameters);
 
-        return N.isNullOrEmpty(rs) ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(rs.getRow(targetClass, 0));
+        return N.isNullOrEmpty(rs) ? (Optional<T>) Optional.empty() : Optional.of(rs.getRow(targetClass, 0));
     }
 
     //    public <T> Optional<T> queryForEntity2(final Class<T> targetClass, Collection<String> selectColumnNames, Condition whereClause) {
@@ -1428,7 +1430,7 @@ public final class SQLiteExecutor {
         final DataSet rs = query(targetClass, selectColumnNames, whereClause, groupBy, having, orderBy, offset, count);
 
         if (N.isNullOrEmpty(rs)) {
-            return N.newArrayList();
+            return new ArrayList<>();
         } else {
             return rs.toList(targetClass);
         }
@@ -1450,7 +1452,7 @@ public final class SQLiteExecutor {
         final DataSet rs = query(targetClass, sql, 0, Integer.MAX_VALUE, parameters);
 
         if (N.isNullOrEmpty(rs)) {
-            return N.newArrayList();
+            return new ArrayList<>();
         } else {
             return rs.toList(targetClass);
         }
@@ -2002,7 +2004,7 @@ public final class SQLiteExecutor {
         if (conditionList.size() == 1) {
             return interpretCondition(conditionList.get(0));
         } else {
-            final List<String> argList = N.newArrayList();
+            final List<String> argList = new ArrayList<>();
             final StringBuilder sb = ObjectFactory.createStringBuilder();
 
             try {

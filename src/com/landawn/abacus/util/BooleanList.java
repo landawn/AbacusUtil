@@ -71,7 +71,11 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         this.size = size;
     }
 
-    public static BooleanList of(boolean[] a) {
+    public static BooleanList empty() {
+        return new BooleanList(N.EMPTY_BOOLEAN_ARRAY);
+    }
+
+    public static BooleanList of(boolean... a) {
         return new BooleanList(a);
     }
 
@@ -79,29 +83,29 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         return new BooleanList(a, size);
     }
 
-    public static BooleanList of(String[] a) {
-        return of(a, 0, a.length);
+    public static BooleanList from(String... a) {
+        return from(a, 0, a.length);
     }
 
-    public static BooleanList of(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static BooleanList from(String[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final boolean[] elementData = new boolean[toIndex - fromIndex];
+        final boolean[] elementData = new boolean[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = Boolean.valueOf(a[i]);
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = Boolean.valueOf(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static BooleanList of(List<String> c) {
-        return of(c, false);
+    public static BooleanList from(List<String> c) {
+        return from(c, false);
     }
 
-    public static BooleanList of(List<String> c, boolean defaultValueForNull) {
+    public static BooleanList from(List<String> c, boolean defaultValueForNull) {
         final boolean[] a = new boolean[c.size()];
         int idx = 0;
 
@@ -112,11 +116,11 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         return of(a);
     }
 
-    public static BooleanList of(Collection<Boolean> c) {
-        return of(c, false);
+    public static BooleanList from(Collection<Boolean> c) {
+        return from(c, false);
     }
 
-    public static BooleanList of(Collection<Boolean> c, boolean defaultValueForNull) {
+    public static BooleanList from(Collection<Boolean> c, boolean defaultValueForNull) {
         final boolean[] a = new boolean[c.size()];
         int idx = 0;
 
@@ -612,12 +616,14 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         return outputResult;
     }
 
-    public boolean reduce(final BooleanBinaryOperator accumulator) {
-        return reduce(0, size(), accumulator);
+    public OptionalBoolean reduce(final BooleanBinaryOperator accumulator) {
+        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(reduce(false, accumulator));
     }
 
-    public boolean reduce(final int fromIndex, final int toIndex, final BooleanBinaryOperator accumulator) {
-        return reduce(fromIndex, toIndex, false, accumulator);
+    public OptionalBoolean reduce(final int fromIndex, final int toIndex, final BooleanBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalBoolean.empty() : OptionalBoolean.of(reduce(fromIndex, toIndex, false, accumulator));
     }
 
     public boolean reduce(final boolean identity, final BooleanBinaryOperator accumulator) {
@@ -664,7 +670,7 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         final List<BooleanList> result = new ArrayList<>(list.size());
 
         for (boolean[] a : list) {
-            result.add(BooleanList.of(a));
+            result.add(of(a));
         }
 
         return result;
@@ -771,6 +777,63 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
+    }
+
+    public <K, U> Map<K, U> toMap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, keyMapper, valueMapper);
+    }
+
+    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final BooleanFunction<? extends K> keyMapper,
+            final BooleanFunction<? extends U> valueMapper) {
+        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
+            final BooleanFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+            final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Map<K, U> map = N.newInstance(outputClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return (R) map;
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
+        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
+            final BooleanFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return multimap;
     }
 
     @Override

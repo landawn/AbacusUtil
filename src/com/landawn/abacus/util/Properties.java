@@ -27,12 +27,27 @@ public class Properties<K, V> implements Map<K, V> {
      * 
      * @param valueMap The valueMap and this Properties share the same data; any changes to one will appear in the other.
      */
-    protected Properties(final Map<K, V> valueMap) {
-        this.values = valueMap;
+    protected Properties(final Map<? extends K, ? extends V> valueMap) {
+        this.values = (Map<K, V>) valueMap;
     }
 
-    public static <K, V> Properties<K, V> of(Object... a) {
-        return new Properties<K, V>((Map<K, V>) N.asMap(a));
+    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1) {
+        final Map<K, V> m = N.asMap(k1, v1);
+        return new Properties<K, V>(m);
+    }
+
+    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2) {
+        final Map<K, V> m = N.asMap(k1, v1, k2, v2);
+        return new Properties<K, V>(m);
+    }
+
+    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
+        final Map<K, V> m = N.asMap(k1, v1, k2, v2, k3, v3);
+        return new Properties<K, V>(m);
+    }
+
+    public static <K, V> Properties<K, V> from(final Map<? extends K, ? extends V> map) {
+        return new Properties<K, V>(new HashMap<K, V>(map));
     }
 
     @Override

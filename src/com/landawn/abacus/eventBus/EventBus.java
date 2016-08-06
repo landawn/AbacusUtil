@@ -19,6 +19,7 @@ package com.landawn.abacus.eventBus;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,7 +76,7 @@ public class EventBus {
             List<Method> methods = classSubscriberMethodMap.get(cls);
 
             if (methods == null) {
-                methods = N.newArrayList();
+                methods = new ArrayList<>();
 
                 if (subscriber instanceof Subscriber) {
                     for (Method method : cls.getDeclaredMethods()) {
@@ -221,7 +222,7 @@ public class EventBus {
     }
 
     private static final class MethodIdentifier {
-        final Map<Class<?>, Boolean> cachedClasses = N.newHashMap();
+        final Map<Class<?>, Boolean> cachedClasses = new HashMap<>();
         final Object obj;
         final Method method;
         final Class<?> parameterType;
@@ -233,7 +234,8 @@ public class EventBus {
             this.obj = obj;
             this.method = method;
             this.parameterType = method.getParameterTypes()[0];
-            this.parameterType2 = N.isPrimitive(parameterType) ? Array.wrap(parameterType) : (N.isPrimitiveWapper(parameterType) ? Array.unwrap(parameterType) : null);
+            this.parameterType2 = N.isPrimitive(parameterType) ? Array.wrap(parameterType)
+                    : (N.isPrimitiveWapper(parameterType) ? Array.unwrap(parameterType) : null);
             this.eventId = eventId;
             this.threadMode = threadMode;
         }

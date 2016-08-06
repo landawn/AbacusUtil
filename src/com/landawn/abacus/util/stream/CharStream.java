@@ -24,6 +24,9 @@
  */
 package com.landawn.abacus.util.stream;
 
+import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.CharBinaryOperator;
@@ -64,7 +67,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public interface CharStream extends BaseStream<Character, CharStream> {
+public abstract class CharStream implements BaseStream<Character, CharStream> {
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -79,7 +82,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *                  should be included
      * @return the new stream
      */
-    CharStream filter(CharPredicate predicate);
+    public abstract CharStream filter(CharPredicate predicate);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -93,7 +96,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    CharStream map(CharUnaryOperator mapper);
+    public abstract CharStream map(CharUnaryOperator mapper);
 
     /**
      * Returns a {@code LongStream} consisting of the results of applying the
@@ -107,7 +110,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    IntStream mapToInt(CharToIntFunction mapper);
+    public abstract IntStream mapToInt(CharToIntFunction mapper);
 
     /**
      * Returns an object-valued {@code Stream} consisting of the results of
@@ -122,7 +125,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    <U> Stream<U> mapToObj(CharFunction<? extends U> mapper);
+    public abstract <U> Stream<U> mapToObj(CharFunction<? extends U> mapper);
 
     /**
      * Returns a stream consisting of the results of replacing each element of
@@ -142,7 +145,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return the new stream
      * @see Stream#flatMap(Function)
      */
-    CharStream flatMap(CharFunction<? extends CharStream> mapper);
+    public abstract CharStream flatMap(CharFunction<? extends CharStream> mapper);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -152,7 +155,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *
      * @return the new stream
      */
-    CharStream distinct();
+    public abstract CharStream distinct();
 
     /**
      * Returns a stream consisting of the elements of this stream in sorted
@@ -163,7 +166,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *
      * @return the new stream
      */
-    CharStream sorted();
+    public abstract CharStream sorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -194,7 +197,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *               they are consumed from the stream
      * @return the new stream
      */
-    CharStream peek(CharConsumer action);
+    public abstract CharStream peek(CharConsumer action);
 
     /**
      * Returns a stream consisting of the elements of this stream, truncated
@@ -221,7 +224,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code maxSize} is negative
      */
-    CharStream limit(long maxSize);
+    public abstract CharStream limit(long maxSize);
 
     /**
      * Returns a stream consisting of the remaining elements of this stream
@@ -250,7 +253,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code n} is negative
      */
-    CharStream skip(long n);
+    public abstract CharStream skip(long n);
 
     /**
      * Performs an action for each element of this stream.
@@ -268,7 +271,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @param action a <a href="package-summary.html#NonCharerference">
      *               non-interfering</a> action to perform on the elements
      */
-    void forEach(CharConsumer action);
+    public abstract void forEach(CharConsumer action);
 
     /**
      * Returns an array containing the elements of this stream.
@@ -278,7 +281,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *
      * @return an array containing the elements of this stream
      */
-    char[] toArray();
+    public abstract char[] toArray();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -333,7 +336,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @see #max()
      * @see #average()
      */
-    char reduce(char identity, CharBinaryOperator op);
+    public abstract char reduce(char identity, CharBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -370,7 +373,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return the result of the reduction
      * @see #reduce(int, CharBinaryOperator)
      */
-    OptionalChar reduce(CharBinaryOperator op);
+    public abstract OptionalChar reduce(CharBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable
@@ -408,7 +411,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * Returns an {@code OptionalChar} describing the minimum element of this
@@ -424,7 +427,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return an {@code OptionalChar} containing the minimum element of this
      * stream, or an empty {@code OptionalChar} if the stream is empty
      */
-    OptionalChar min();
+    public abstract OptionalChar min();
 
     /**
      * Returns an {@code OptionalChar} describing the maximum element of this
@@ -441,7 +444,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return an {@code OptionalChar} containing the maximum element of this
      * stream, or an empty {@code OptionalChar} if the stream is empty
      */
-    OptionalChar max();
+    public abstract OptionalChar max();
 
     /**
      * Returns the count of elements in this stream.  This is a special case of
@@ -455,7 +458,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      *
      * @return the count of elements in this stream
      */
-    long count();
+    public abstract long count();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -476,7 +479,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return {@code true} if any elements of the stream match the provided
      * predicate, otherwise {@code false}
      */
-    boolean anyMatch(CharPredicate predicate);
+    public abstract boolean anyMatch(CharPredicate predicate);
 
     /**
      * Returns whether all elements of this stream match the provided predicate.
@@ -499,7 +502,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return {@code true} if either all elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean allMatch(CharPredicate predicate);
+    public abstract boolean allMatch(CharPredicate predicate);
 
     /**
      * Returns whether no elements of this stream match the provided predicate.
@@ -522,7 +525,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return {@code true} if either no elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean noneMatch(CharPredicate predicate);
+    public abstract boolean noneMatch(CharPredicate predicate);
 
     /**
      * Returns an {@link OptionalChar} describing the first element of this
@@ -535,7 +538,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return an {@code OptionalChar} describing the first element of this stream,
      * or an empty {@code OptionalChar} if the stream is empty
      */
-    OptionalChar findFirst();
+    public abstract OptionalChar findFirst();
 
     /**
      * Returns an {@link OptionalChar} describing some element of the stream, or
@@ -554,7 +557,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * an empty {@code OptionalChar} if the stream is empty
      * @see #findFirst()
      */
-    OptionalChar findAny();
+    public abstract OptionalChar findAny();
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -566,7 +569,7 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}
      */
-    IntStream asIntStream();
+    public abstract IntStream asIntStream();
 
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
@@ -578,7 +581,27 @@ public interface CharStream extends BaseStream<Character, CharStream> {
      * @return a {@code Stream} consistent of the elements of this stream,
      * each boxed to an {@code Chareger}
      */
-    Stream<Character> boxed();
+    public abstract Stream<Character> boxed();
 
     // Static factories
+
+    public static CharStream empty() {
+        return of(N.EMPTY_CHAR_ARRAY);
+    }
+
+    public static CharStream of(final char... a) {
+        return Stream.from(a);
+    }
+
+    public static CharStream from(final int... a) {
+        return Stream.from(CharList.from(a).trimToSize().array());
+    }
+
+    public static CharStream range(final char startInclusive, final char endExclusive) {
+        return Stream.from(Array.range(startInclusive, endExclusive));
+    }
+
+    public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
+        return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+    }
 }

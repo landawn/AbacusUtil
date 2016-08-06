@@ -17,6 +17,7 @@
 package com.landawn.abacus.util;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -105,7 +106,7 @@ public class AsyncExecutor {
     }
 
     public List<CompletableFuture<Void>> execute(final List<? extends Runnable> commands) {
-        final List<CompletableFuture<Void>> results = N.newArrayList(commands.size());
+        final List<CompletableFuture<Void>> results = new ArrayList<>(commands.size());
         CompletableFuture<Void> future = null;
 
         for (Runnable cmd : commands) {
@@ -140,7 +141,7 @@ public class AsyncExecutor {
     }
 
     public <T> List<CompletableFuture<T>> execute(final Collection<? extends Callable<T>> commands) {
-        final List<CompletableFuture<T>> results = N.newArrayList(commands.size());
+        final List<CompletableFuture<T>> results = new ArrayList<>(commands.size());
         CompletableFuture<T> future = null;
 
         for (Callable<T> cmd : commands) {

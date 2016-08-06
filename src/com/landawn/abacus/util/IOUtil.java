@@ -38,6 +38,7 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -823,7 +824,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final Reader reader, int offset, int count) {
-        final List<String> res = N.newArrayList();
+        final List<String> res = new ArrayList<>();
         final BufferedReader br = reader instanceof BufferedReader ? (BufferedReader) reader : ObjectFactory.createBufferedReader(reader);
 
         try {
@@ -1501,7 +1502,7 @@ public final class IOUtil {
     public static void write(final Writer out, final char[] chars, final int offset, final int len, final boolean flush) {
         try {
             out.write(chars, offset, len);
-    
+
             if (flush) {
                 out.flush();
             }
@@ -1516,18 +1517,18 @@ public final class IOUtil {
 
     public static long write(final File output, final InputStream input, final long offset, final long len) {
         OutputStream os = null;
-    
+
         try {
             if (!output.exists()) {
                 output.createNewFile();
             }
-    
+
             os = new FileOutputStream(output);
-    
+
             long result = write(os, input, offset, len);
-    
+
             os.flush();
-    
+
             return result;
         } catch (IOException e) {
             throw new AbacusIOException(e);
@@ -2715,7 +2716,7 @@ public final class IOUtil {
     }
 
     public static List<String> list(File path, final boolean recursively, final boolean excludeDirectory) {
-        List<String> files = N.newArrayList();
+        List<String> files = new ArrayList<>();
 
         if (!path.exists()) {
             return files;
@@ -2747,7 +2748,7 @@ public final class IOUtil {
     }
 
     public static List<String> list(File path, final boolean recursively, final FileFilter filter) {
-        List<String> files = N.newArrayList();
+        List<String> files = new ArrayList<>();
 
         if (!path.exists()) {
             return files;
@@ -2779,7 +2780,7 @@ public final class IOUtil {
     }
 
     public static List<File> listFiles(final File path, final boolean recursively, final boolean excludeDirectory) {
-        List<File> files = N.newArrayList();
+        List<File> files = new ArrayList<>();
 
         if (!path.exists()) {
             return files;
@@ -2809,7 +2810,7 @@ public final class IOUtil {
     }
 
     public static List<File> listFiles(final File path, final boolean recursively, final FileFilter filter) {
-        List<File> files = N.newArrayList();
+        List<File> files = new ArrayList<>();
 
         if (!path.exists()) {
             return files;
@@ -2839,7 +2840,7 @@ public final class IOUtil {
     }
 
     public static List<File> listDirectories(final File path, final boolean recursively) {
-        List<File> files = N.newArrayList();
+        List<File> files = new ArrayList<>();
 
         if (!path.exists()) {
             return files;
@@ -2865,7 +2866,7 @@ public final class IOUtil {
     }
 
     public static List<File> listDirectories(final File path, final boolean recursively, final FileFilter filter) {
-        List<File> files = N.newArrayList();
+        List<File> files = new ArrayList<>();
 
         if (!path.exists()) {
             return files;
@@ -3066,10 +3067,10 @@ public final class IOUtil {
 
     public static List<File> toFiles(final Collection<URL> urls) {
         if (N.isNullOrEmpty(urls)) {
-            return N.newArrayList();
+            return new ArrayList<>();
         }
 
-        final List<File> files = N.newArrayList(urls.size());
+        final List<File> files = new ArrayList<>(urls.size());
 
         for (URL url : urls) {
             files.add(toFile(url));
@@ -3106,10 +3107,10 @@ public final class IOUtil {
 
     public static List<URL> toURLs(final Collection<File> files) {
         if (N.isNullOrEmpty(files)) {
-            return N.newArrayList();
+            return new ArrayList<>();
         }
 
-        final List<URL> urls = N.newArrayList(files.size());
+        final List<URL> urls = new ArrayList<>(files.size());
 
         try {
             for (File file : files) {

@@ -58,7 +58,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
      * 
      * @param a
      */
-    public DoubleList(double[] a) {
+    public DoubleList(double... a) {
         this();
 
         elementData = a;
@@ -76,7 +76,11 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         this.size = size;
     }
 
-    public static DoubleList of(double[] a) {
+    public static DoubleList empty() {
+        return new DoubleList(N.EMPTY_DOUBLE_ARRAY);
+    }
+
+    public static DoubleList of(double... a) {
         return new DoubleList(a);
     }
 
@@ -84,83 +88,83 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return new DoubleList(a, size);
     }
 
-    public static DoubleList of(int[] a) {
-        return of(a, 0, a.length);
+    public static DoubleList from(int... a) {
+        return from(a, 0, a.length);
     }
 
-    public static DoubleList of(int[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static DoubleList from(int[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final double[] elementData = new double[toIndex - fromIndex];
+        final double[] elementData = new double[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    public static DoubleList of(long[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static DoubleList of(long[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final double[] elementData = new double[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
         }
 
         return of(elementData);
     }
 
-    public static DoubleList of(float[] a) {
-        return of(a, 0, a.length);
+    public static DoubleList from(long... a) {
+        return from(a, 0, a.length);
     }
 
-    public static DoubleList of(float[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static DoubleList from(long[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final double[] elementData = new double[toIndex - fromIndex];
+        final double[] elementData = new double[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    public static DoubleList of(String[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static DoubleList of(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final double[] elementData = new double[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = N.asDouble(a[i]);
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
         }
 
         return of(elementData);
     }
 
-    public static DoubleList of(List<String> c) {
-        return of(c, 0d);
+    public static DoubleList from(float... a) {
+        return from(a, 0, a.length);
     }
 
-    public static DoubleList of(List<String> c, double defaultValueForNull) {
+    public static DoubleList from(float[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
+        }
+
+        final double[] elementData = new double[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
+        }
+
+        return of(elementData);
+    }
+
+    public static DoubleList from(String... a) {
+        return from(a, 0, a.length);
+    }
+
+    public static DoubleList from(String[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
+        }
+
+        final double[] elementData = new double[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = N.asDouble(a[i]);
+        }
+
+        return of(elementData);
+    }
+
+    public static DoubleList from(List<String> c) {
+        return from(c, 0d);
+    }
+
+    public static DoubleList from(List<String> c, double defaultValueForNull) {
         final double[] a = new double[c.size()];
         int idx = 0;
 
@@ -171,11 +175,11 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return of(a);
     }
 
-    public static DoubleList of(Collection<? extends Number> c) {
-        return of(c, 0d);
+    public static DoubleList from(Collection<? extends Number> c) {
+        return from(c, 0d);
     }
 
-    public static DoubleList of(Collection<? extends Number> c, double defaultValueForNull) {
+    public static DoubleList from(Collection<? extends Number> c, double defaultValueForNull) {
         final double[] a = new double[c.size()];
         int idx = 0;
 
@@ -469,24 +473,24 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return -1;
     }
 
-    public double min() {
-        return N.min(elementData, 0, size);
+    public OptionalDouble min() {
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(N.min(elementData, 0, size));
     }
 
-    public double min(final int fromIndex, final int toIndex) {
+    public OptionalDouble min(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.min(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.min(elementData, fromIndex, toIndex));
     }
 
-    public double max() {
-        return N.max(elementData, 0, size);
+    public OptionalDouble max() {
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(N.max(elementData, 0, size));
     }
 
-    public double max(final int fromIndex, final int toIndex) {
+    public OptionalDouble max(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.max(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.max(elementData, fromIndex, toIndex));
     }
 
     @Override
@@ -705,12 +709,14 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return outputResult;
     }
 
-    public double reduce(final DoubleBinaryOperator accumulator) {
-        return reduce(0, size(), accumulator);
+    public OptionalDouble reduce(final DoubleBinaryOperator accumulator) {
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(reduce(0, accumulator));
     }
 
-    public double reduce(final int fromIndex, final int toIndex, final DoubleBinaryOperator accumulator) {
-        return reduce(fromIndex, toIndex, 0, accumulator);
+    public OptionalDouble reduce(final int fromIndex, final int toIndex, final DoubleBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(reduce(fromIndex, toIndex, 0, accumulator));
     }
 
     public double reduce(final double identity, final DoubleBinaryOperator accumulator) {
@@ -847,6 +853,63 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         }
     }
 
+    public <K, U> Map<K, U> toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, keyMapper, valueMapper);
+    }
+
+    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final DoubleFunction<? extends K> keyMapper,
+            final DoubleFunction<? extends U> valueMapper) {
+        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
+            final DoubleFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+            final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Map<K, U> map = N.newInstance(outputClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return (R) map;
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
+            final DoubleFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return multimap;
+    }
+
     public DoubleStream stream() {
         return stream(0, size());
     }
@@ -854,7 +917,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     public DoubleStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.of(elementData, fromIndex, toIndex);
+        return Stream.from(elementData, fromIndex, toIndex);
     }
 
     @Override

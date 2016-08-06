@@ -27,12 +27,18 @@ import java.util.List;
  * @author Haiyang Li
  */
 public abstract class BigIntegerList extends ObjectList<BigInteger> {
+    private static final BigInteger[] EMPTY_BIG_INTEGER_ARRAY = new BigInteger[0];
+
     private BigIntegerList() {
         super(new BigInteger[0]);
         // utility class
     }
 
-    public static ObjectList<BigInteger> of(BigInteger[] a) {
+    public static ObjectList<BigInteger> empty() {
+        return new ObjectList<BigInteger>(EMPTY_BIG_INTEGER_ARRAY);
+    }
+
+    public static ObjectList<BigInteger> of(BigInteger... a) {
         return new ObjectList<BigInteger>(a);
     }
 
@@ -40,29 +46,29 @@ public abstract class BigIntegerList extends ObjectList<BigInteger> {
         return new ObjectList<BigInteger>(a, size);
     }
 
-    public static ObjectList<BigInteger> of(String[] a) {
-        return of(a, 0, a.length);
+    public static ObjectList<BigInteger> from(String... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ObjectList<BigInteger> of(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ObjectList<BigInteger> from(String[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final BigInteger[] elementData = new BigInteger[toIndex - fromIndex];
+        final BigInteger[] elementData = new BigInteger[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i] == null ? null : new BigInteger(a[i]);
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i] == null ? null : new BigInteger(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static ObjectList<BigInteger> of(List<String> c) {
-        return of(c, null);
+    public static ObjectList<BigInteger> from(List<String> c) {
+        return from(c, null);
     }
 
-    public static ObjectList<BigInteger> of(List<String> c, BigInteger defaultValueForNull) {
+    public static ObjectList<BigInteger> from(List<String> c, BigInteger defaultValueForNull) {
         final BigInteger[] a = new BigInteger[c.size()];
         int idx = 0;
 
@@ -73,11 +79,11 @@ public abstract class BigIntegerList extends ObjectList<BigInteger> {
         return of(a);
     }
 
-    public static ObjectList<BigInteger> of(Collection<BigInteger> c) {
-        return of(c, null);
+    public static ObjectList<BigInteger> from(Collection<BigInteger> c) {
+        return from(c, null);
     }
 
-    public static ObjectList<BigInteger> of(Collection<BigInteger> c, BigInteger defaultValueForNull) {
+    public static ObjectList<BigInteger> from(Collection<BigInteger> c, BigInteger defaultValueForNull) {
         final BigInteger[] a = new BigInteger[c.size()];
         int idx = 0;
 

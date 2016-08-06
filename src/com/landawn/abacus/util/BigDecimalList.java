@@ -27,12 +27,18 @@ import java.util.List;
  * @author Haiyang Li
  */
 public abstract class BigDecimalList extends ObjectList<BigDecimal> {
+    private static final BigDecimal[] EMPTY_BIG_DECIMAL_ARRAY = new BigDecimal[0];
+
     private BigDecimalList() {
         super(new BigDecimal[0]);
         // utility class
     }
 
-    public static ObjectList<BigDecimal> of(BigDecimal[] a) {
+    public static ObjectList<BigDecimal> empty() {
+        return new ObjectList<BigDecimal>(EMPTY_BIG_DECIMAL_ARRAY);
+    }
+
+    public static ObjectList<BigDecimal> of(BigDecimal... a) {
         return new ObjectList<BigDecimal>(a);
     }
 
@@ -40,29 +46,29 @@ public abstract class BigDecimalList extends ObjectList<BigDecimal> {
         return new ObjectList<BigDecimal>(a, size);
     }
 
-    public static ObjectList<BigDecimal> of(String[] a) {
-        return of(a, 0, a.length);
+    public static ObjectList<BigDecimal> from(String... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ObjectList<BigDecimal> of(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ObjectList<BigDecimal> from(String[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final BigDecimal[] elementData = new BigDecimal[toIndex - fromIndex];
+        final BigDecimal[] elementData = new BigDecimal[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i] == null ? null : new BigDecimal(a[i]);
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i] == null ? null : new BigDecimal(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static ObjectList<BigDecimal> of(List<String> c) {
-        return of(c, null);
+    public static ObjectList<BigDecimal> from(List<String> c) {
+        return from(c, null);
     }
 
-    public static ObjectList<BigDecimal> of(List<String> c, BigDecimal defaultValueForNull) {
+    public static ObjectList<BigDecimal> from(List<String> c, BigDecimal defaultValueForNull) {
         final BigDecimal[] a = new BigDecimal[c.size()];
         int idx = 0;
 
@@ -73,11 +79,11 @@ public abstract class BigDecimalList extends ObjectList<BigDecimal> {
         return of(a);
     }
 
-    public static ObjectList<BigDecimal> of(Collection<BigDecimal> c) {
-        return of(c, null);
+    public static ObjectList<BigDecimal> from(Collection<BigDecimal> c) {
+        return from(c, null);
     }
 
-    public static ObjectList<BigDecimal> of(Collection<BigDecimal> c, BigDecimal defaultValueForNull) {
+    public static ObjectList<BigDecimal> from(Collection<BigDecimal> c, BigDecimal defaultValueForNull) {
         final BigDecimal[] a = new BigDecimal[c.size()];
         int idx = 0;
 

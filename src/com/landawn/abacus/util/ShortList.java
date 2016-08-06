@@ -30,7 +30,7 @@ import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
-import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.ShortStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -58,7 +58,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
      * 
      * @param a
      */
-    public ShortList(short[] a) {
+    public ShortList(short... a) {
         this();
 
         elementData = a;
@@ -76,7 +76,11 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         this.size = size;
     }
 
-    public static ShortList of(short[] a) {
+    public static ShortList empty() {
+        return new ShortList(N.EMPTY_SHORT_ARRAY);
+    }
+
+    public static ShortList of(short... a) {
         return new ShortList(a);
     }
 
@@ -84,57 +88,57 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return new ShortList(a, size);
     }
 
-    public static ShortList of(int[] a) {
-        return of(a, 0, a.length);
+    public static ShortList from(int... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ShortList of(int[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ShortList from(int[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final short[] elementData = new short[toIndex - fromIndex];
+        final short[] elementData = new short[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             if (a[i] < Short.MIN_VALUE || a[i] > Short.MAX_VALUE) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (short) a[i];
+            elementData[i - startIndex] = (short) a[i];
         }
 
         return of(elementData);
     }
 
-    public static ShortList of(String[] a) {
-        return of(a, 0, a.length);
+    public static ShortList from(String... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ShortList of(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ShortList from(String[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final short[] elementData = new short[toIndex - fromIndex];
+        final short[] elementData = new short[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             double val = N.asDouble(a[i]);
 
             if (N.compare(val, Short.MIN_VALUE) < 0 || N.compare(val, Short.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (short) val;
+            elementData[i - startIndex] = (short) val;
         }
 
         return of(elementData);
     }
 
-    public static ShortList of(List<String> c) {
-        return of(c, (short) 0);
+    public static ShortList from(List<String> c) {
+        return from(c, (short) 0);
     }
 
-    public static ShortList of(List<String> c, short defaultValueForNull) {
+    public static ShortList from(List<String> c, short defaultValueForNull) {
         final short[] a = new short[c.size()];
         int idx = 0;
 
@@ -155,11 +159,11 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return of(a);
     }
 
-    public static ShortList of(Collection<? extends Number> c) {
-        return of(c, (short) 0);
+    public static ShortList from(Collection<? extends Number> c) {
+        return from(c, (short) 0);
     }
 
-    public static ShortList of(Collection<? extends Number> c, short defaultValueForNull) {
+    public static ShortList from(Collection<? extends Number> c, short defaultValueForNull) {
         final short[] a = new short[c.size()];
         int idx = 0;
 
@@ -463,24 +467,24 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return -1;
     }
 
-    public short min() {
-        return N.min(elementData, 0, size);
+    public OptionalShort min() {
+        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(N.min(elementData, 0, size));
     }
 
-    public short min(final int fromIndex, final int toIndex) {
+    public OptionalShort min(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.min(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(N.min(elementData, fromIndex, toIndex));
     }
 
-    public short max() {
-        return N.max(elementData, 0, size);
+    public OptionalShort max() {
+        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(N.max(elementData, 0, size));
     }
 
-    public short max(final int fromIndex, final int toIndex) {
+    public OptionalShort max(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.max(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(N.max(elementData, fromIndex, toIndex));
     }
 
     @Override
@@ -699,12 +703,14 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return outputResult;
     }
 
-    public short reduce(final ShortBinaryOperator accumulator) {
-        return reduce(0, size(), accumulator);
+    public OptionalShort reduce(final ShortBinaryOperator accumulator) {
+        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(reduce((short) 0, accumulator));
     }
 
-    public short reduce(final int fromIndex, final int toIndex, final ShortBinaryOperator accumulator) {
-        return reduce(fromIndex, toIndex, (short) 0, accumulator);
+    public OptionalShort reduce(final int fromIndex, final int toIndex, final ShortBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(reduce(fromIndex, toIndex, (short) 0, accumulator));
     }
 
     public short reduce(final short identity, final ShortBinaryOperator accumulator) {
@@ -841,14 +847,71 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         }
     }
 
-    public IntStream stream() {
+    public <K, U> Map<K, U> toMap(final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, keyMapper, valueMapper);
+    }
+
+    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final ShortFunction<? extends K> keyMapper,
+            final ShortFunction<? extends U> valueMapper) {
+        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final ShortFunction<? extends K> keyMapper,
+            final ShortFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+            final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Map<K, U> map = N.newInstance(outputClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return (R) map;
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends U> valueMapper) {
+        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final ShortFunction<? extends K> keyMapper,
+            final ShortFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return multimap;
+    }
+
+    public ShortStream stream() {
         return stream(0, size());
     }
 
-    public IntStream stream(final int fromIndex, final int toIndex) {
+    public ShortStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.of(elementData, fromIndex, toIndex);
+        return Stream.from(elementData, fromIndex, toIndex);
     }
 
     @Override

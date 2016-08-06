@@ -31,6 +31,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.BitSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -187,7 +188,7 @@ public final class URLEncodedUtil {
     }
 
     public static Map<String, String> decode(final String urlQuery, final Charset charset) {
-        final Map<String, String> result = N.newLinkedHashMap();
+        final Map<String, String> result = new LinkedHashMap<>();
 
         if (N.isNullOrEmpty(urlQuery)) {
             return result;

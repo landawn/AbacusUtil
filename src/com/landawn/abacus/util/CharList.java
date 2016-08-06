@@ -76,29 +76,11 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         this.size = size;
     }
 
-    public static CharList of(int[] a) {
-        return of(a, 0, a.length);
+    public static CharList empty() {
+        return new CharList(N.EMPTY_CHAR_ARRAY);
     }
 
-    public static CharList of(int[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final char[] elementData = new char[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] < Character.MIN_VALUE || a[i] > Character.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - fromIndex] = (char) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    public static CharList of(char[] a) {
+    public static CharList of(char... a) {
         return new CharList(a);
     }
 
@@ -106,29 +88,51 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return new CharList(a, size);
     }
 
-    public static CharList of(String[] a) {
-        return of(a, 0, a.length);
+    public static CharList from(int... a) {
+        return from(a, 0, a.length);
     }
 
-    public static CharList of(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static CharList from(int[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final char[] elementData = new char[toIndex - fromIndex];
+        final char[] elementData = new char[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = N.asChar(a[i]);
+        for (int i = startIndex; i < endIndex; i++) {
+            if (a[i] < Character.MIN_VALUE || a[i] > Character.MAX_VALUE) {
+                throw new ArithmeticException("overflow");
+            }
+
+            elementData[i - startIndex] = (char) a[i];
         }
 
         return of(elementData);
     }
 
-    public static CharList of(List<String> c) {
-        return of(c, (char) 0);
+    public static CharList from(String... a) {
+        return from(a, 0, a.length);
     }
 
-    public static CharList of(List<String> c, char defaultValueForNull) {
+    public static CharList from(String[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
+        }
+
+        final char[] elementData = new char[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = N.asChar(a[i]);
+        }
+
+        return of(elementData);
+    }
+
+    public static CharList from(List<String> c) {
+        return from(c, (char) 0);
+    }
+
+    public static CharList from(List<String> c, char defaultValueForNull) {
         final char[] a = new char[c.size()];
         int idx = 0;
 
@@ -139,11 +143,11 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return of(a);
     }
 
-    public static CharList of(Collection<Character> c) {
-        return of(c, (char) 0);
+    public static CharList from(Collection<Character> c) {
+        return from(c, (char) 0);
     }
 
-    public static CharList of(Collection<Character> c, char defaultValueForNull) {
+    public static CharList from(Collection<Character> c, char defaultValueForNull) {
         final char[] a = new char[c.size()];
         int idx = 0;
 
@@ -437,24 +441,24 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return -1;
     }
 
-    public char min() {
-        return N.min(elementData, 0, size);
+    public OptionalChar min() {
+        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.min(elementData, 0, size));
     }
 
-    public char min(final int fromIndex, final int toIndex) {
+    public OptionalChar min(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.min(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.min(elementData, fromIndex, toIndex));
     }
 
-    public char max() {
-        return N.max(elementData, 0, size);
+    public OptionalChar max() {
+        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.max(elementData, 0, size));
     }
 
-    public char max(final int fromIndex, final int toIndex) {
+    public OptionalChar max(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.max(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.max(elementData, fromIndex, toIndex));
     }
 
     @Override
@@ -659,12 +663,14 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return outputResult;
     }
 
-    public char reduce(final CharBinaryOperator accumulator) {
-        return reduce(0, size(), accumulator);
+    public OptionalChar reduce(final CharBinaryOperator accumulator) {
+        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(reduce((char) 0, accumulator));
     }
 
-    public char reduce(final int fromIndex, final int toIndex, final CharBinaryOperator accumulator) {
-        return reduce(fromIndex, toIndex, (char) 0, accumulator);
+    public OptionalChar reduce(final int fromIndex, final int toIndex, final CharBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(reduce(fromIndex, toIndex, (char) 0, accumulator));
     }
 
     public char reduce(final char identity, final CharBinaryOperator accumulator) {
@@ -702,7 +708,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         final List<CharList> result = new ArrayList<>(list.size());
 
         for (char[] a : list) {
-            result.add(CharList.of(a));
+            result.add(of(a));
         }
 
         return result;
@@ -797,6 +803,63 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         }
     }
 
+    public <K, U> Map<K, U> toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, keyMapper, valueMapper);
+    }
+
+    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final CharFunction<? extends K> keyMapper,
+            final CharFunction<? extends U> valueMapper) {
+        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
+            final CharFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+            final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Map<K, U> map = N.newInstance(outputClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return (R) map;
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
+            final CharFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return multimap;
+    }
+
     public CharStream stream() {
         return stream(0, size());
     }
@@ -804,7 +867,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     public CharStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.of(elementData, fromIndex, toIndex);
+        return Stream.from(elementData, fromIndex, toIndex);
     }
 
     @Override

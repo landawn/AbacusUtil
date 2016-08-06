@@ -18,12 +18,17 @@ import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +89,7 @@ public final class PropertiesUtil {
                         if (method != null) {
                             if (method.getName().equals("setIncludedServers") || method.getName().equals("setExcludedServers")) {
                                 if (propValue == null || N.isNullOrEmpty(propValue.toString().trim())) {
-                                    propValue = N.newArrayList();
+                                    propValue = new ArrayList<>();
                                 } else {
                                     propValue = N.string2List(propValue.toString().trim(), N.ELEMENT_SEPARATOR, true);
                                 }
@@ -109,7 +114,7 @@ public final class PropertiesUtil {
     };
 
     private static final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(64);
-    private static final Map<Resource, Properties<?, ?>> registeredAutoRefreshProperties = N.newConcurrentHashMap(256);
+    private static final Map<Resource, Properties<?, ?>> registeredAutoRefreshProperties = new ConcurrentHashMap<>(256);
 
     static {
         TimerTask refreshTask = new TimerTask() {
@@ -151,7 +156,7 @@ public final class PropertiesUtil {
                                     }
 
                                     if (m == null) {
-                                        m = N.newHashMap();
+                                        m = new HashMap<>();
                                     }
 
                                     m.put(properties, resource);
@@ -221,7 +226,7 @@ public final class PropertiesUtil {
                                         }
 
                                         if (m == null) {
-                                            m = N.newHashMap();
+                                            m = new HashMap<>();
                                         }
 
                                         m.put(properties, resource);
@@ -370,7 +375,7 @@ public final class PropertiesUtil {
             properties = targetProperties;
         }
 
-        Set<String> newKeySet = N.newHashSet();
+        Set<String> newKeySet = new HashSet<>();
         Enumeration<?> it = newProperties.propertyNames();
         String propName = null;
 
@@ -381,7 +386,7 @@ public final class PropertiesUtil {
         }
 
         if (targetProperties != null) {
-            Set<String> oldKeySet = N.newHashSet(properties.keySet());
+            Set<String> oldKeySet = new HashSet<>(properties.keySet());
 
             for (String key : oldKeySet) {
                 if (!newKeySet.contains(key)) {
@@ -521,7 +526,7 @@ public final class PropertiesUtil {
 
         NodeList propNodes = node.getChildNodes();
         int propNodeLength = (propNodes == null) ? 0 : propNodes.getLength();
-        Set<String> newKeySet = N.newHashSet();
+        Set<String> newKeySet = new HashSet<>();
         Node propNode = null;
         String typeAttr = null;
         String propName = null;
@@ -599,7 +604,7 @@ public final class PropertiesUtil {
 
         if (targetProperties != null) {
 
-            Set<String> oldKeySet = N.newHashSet(properties.keySet());
+            Set<String> oldKeySet = new HashSet<>(properties.keySet());
             Method removeMethod = null;
             for (String key : oldKeySet) {
                 if (!newKeySet.contains(key)) {
@@ -921,7 +926,7 @@ public final class PropertiesUtil {
 
         if ((childNodes != null) && (childNodes.getLength() > 0)) {
             Set<String> duplicatedPropNameSet = getDuplicatedPropNameSet(node);
-            Set<String> propNameSet = N.newHashSet();
+            Set<String> propNameSet = new HashSet<>();
 
             Node childNode = null;
             String propName = null;
@@ -1048,7 +1053,7 @@ public final class PropertiesUtil {
     }
 
     private static Set<String> getImportType(Node node) {
-        Set<String> result = N.newLinkedHashSet();
+        Set<String> result = new LinkedHashSet<>();
         NodeList childNodes = node.getChildNodes();
 
         if ((childNodes == null) || (childNodes.getLength() == 0)) {
@@ -1169,7 +1174,7 @@ public final class PropertiesUtil {
         String propName = null;
         Node childNode = null;
 
-        Set<String> propNameSet = N.newHashSet();
+        Set<String> propNameSet = new HashSet<>();
 
         for (int i = 0; i < childNodes.getLength(); i++) {
             childNode = childNodes.item(i);
@@ -1195,11 +1200,11 @@ public final class PropertiesUtil {
     private static Set<String> getDuplicatedPropNameSet(Node node) {
         NodeList childNodes = node.getChildNodes();
         if (childNodes == null || childNodes.getLength() == 0) {
-            return N.newHashSet();
+            return new HashSet<>();
         }
 
-        Set<String> propNameSet = N.newHashSet();
-        Set<String> duplicatedPropNameSet = N.newHashSet();
+        Set<String> propNameSet = new HashSet<>();
+        Set<String> duplicatedPropNameSet = new HashSet<>();
 
         Node childNode = null;
         String propName = null;

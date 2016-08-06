@@ -8,12 +8,23 @@ import java.util.Set;
 public final class ImmutableMap<K, V> implements Map<K, V> {
     private final Map<K, V> map;
 
-    ImmutableMap(Map<K, V> map) {
-        this.map = map;
+    ImmutableMap(final Map<? extends K, ? extends V> map) {
+        this.map = (Map<K, V>) map;
     }
 
-    public static <K, V> ImmutableMap<K, V> of(Object... a) {
-        return new ImmutableMap<K, V>((ImmutableMap<K, V>) N.asUnmodifiableMap(a));
+    public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final k k1, final v v1) {
+        final Map<k, v> map = N.asUnmodifiableMap(k1, v1);
+        return new ImmutableMap<K, V>(map);
+    }
+
+    public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final k k1, final v v1, final k k2, final v v2) {
+        final Map<k, v> map = N.asUnmodifiableMap(k1, v1, k2, v2);
+        return new ImmutableMap<K, V>(map);
+    }
+
+    public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
+        final Map<k, v> map = N.asUnmodifiableMap(k1, v1, k2, v2, k3, v3);
+        return new ImmutableMap<K, V>(map);
     }
 
     /**
@@ -21,7 +32,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
      * @param map the elements in this <code>map</code> are shared by the returned ImmutableMap.
      * @return
      */
-    public static <K, V> ImmutableMap<K, V> of(Map<K, V> map) {
+    public static <K, V> ImmutableMap<K, V> from(Map<? extends K, ? extends V> map) {
         return new ImmutableMap<K, V>(N.asUnmodifiableMap(map));
     }
 

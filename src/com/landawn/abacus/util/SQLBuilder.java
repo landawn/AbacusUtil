@@ -21,11 +21,17 @@ import static com.landawn.abacus.util.D._PARENTHESES_R;
 import static com.landawn.abacus.util.D._SPACE;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
@@ -149,14 +155,14 @@ public abstract class SQLBuilder<T> {
     static final char[] _COMMA_SPACE = D.COMMA_SPACE.toCharArray();
 
     private static final Map<String, Map<String, String>> entityTablePropColumnNameMap = new ObjectPool<String, Map<String, String>>(1024);
-    private static final Map<String, char[]> tableDeleteFrom = N.newConcurrentHashMap();
-    private static final Map<Class<?>, List<String>> classPropNameListPool = N.newConcurrentHashMap();
-    private static final Map<Class<?>, Set<String>> classPropNameSetPool = N.newConcurrentHashMap();
+    private static final Map<String, char[]> tableDeleteFrom = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, List<String>> classPropNameListPool = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Set<String>> classPropNameSetPool = new ConcurrentHashMap<>();
     private static final AtomicInteger activeStringBuilderCounter = new AtomicInteger();
 
     private final NamingPolicy namingPolicy;
     private final SQLPolicy sqlPolicy;
-    private final List<Object> parameters = N.newArrayList();
+    private final List<Object> parameters = new ArrayList<>();
     private StringBuilder sb;
 
     private OperationType op;
@@ -187,7 +193,7 @@ public abstract class SQLBuilder<T> {
      * @param propColumnNameMap
      */
     public static void registerColumnName(final String entityTableName, final Map<String, String> propColumnNameMap) {
-        final Map<String, String> m = N.newHashMap(propColumnNameMap);
+        final Map<String, String> m = new HashMap<>(propColumnNameMap);
 
         entityTablePropColumnNameMap.put(entityTableName, m);
         entityTablePropColumnNameMap.put(entityTableName.toLowerCase(), m);
@@ -211,7 +217,7 @@ public abstract class SQLBuilder<T> {
                 final String entityName = (String) cls.getField(D.UNDERSCORE).get(null);
                 final Map<String, String> entityPCM = (Map<String, String>) cls.getField(PCM).get(null);
 
-                final Map<String, String> propColumnNameMap = N.newHashMap(_pcm);
+                final Map<String, String> propColumnNameMap = new HashMap<>(_pcm);
                 propColumnNameMap.putAll(entityPCM);
 
                 registerColumnName(entityName, propColumnNameMap);
@@ -235,7 +241,7 @@ public abstract class SQLBuilder<T> {
                 propNameList = classPropNameListPool.get(entityClass);
 
                 if (propNameList == null) {
-                    propNameList = N.asUnmodifiableList(N.newArrayList(N.getPropGetMethodList(entityClass).keySet()));
+                    propNameList = N.asUnmodifiableList(new ArrayList<>(N.getPropGetMethodList(entityClass).keySet()));
                     classPropNameListPool.put(entityClass, propNameList);
                 }
             }
@@ -258,7 +264,7 @@ public abstract class SQLBuilder<T> {
                 propNameSet = classPropNameSetPool.get(entityClass);
 
                 if (propNameSet == null) {
-                    propNameSet = N.asUnmodifiableSet(N.newLinkedHashSet(N.getPropGetMethodList(entityClass).keySet()));
+                    propNameSet = N.asUnmodifiableSet(new LinkedHashSet<>(N.getPropGetMethodList(entityClass).keySet()));
                     classPropNameSetPool.put(entityClass, propNameSet);
                 }
             }
@@ -269,7 +275,7 @@ public abstract class SQLBuilder<T> {
 
     @Beta
     static Map<String, Expression> named(final String... propNames) {
-        final Map<String, Expression> m = N.newLinkedHashMap(N.initHashCapacity(propNames.length));
+        final Map<String, Expression> m = new LinkedHashMap<>(N.initHashCapacity(propNames.length));
 
         for (String propName : propNames) {
             m.put(propName, L.QME);
@@ -280,7 +286,7 @@ public abstract class SQLBuilder<T> {
 
     @Beta
     static Map<String, Expression> named(final Collection<String> propNames) {
-        final Map<String, Expression> m = N.newLinkedHashMap(N.initHashCapacity(propNames.size()));
+        final Map<String, Expression> m = new LinkedHashMap<>(N.initHashCapacity(propNames.size()));
 
         for (String propName : propNames) {
             m.put(propName, L.QME);
@@ -1467,7 +1473,7 @@ public abstract class SQLBuilder<T> {
             if (N.isDirtyMarker(entity.getClass())) {
                 final DirtyMarker dirtyMarkerEntity = ((DirtyMarker) entity);
                 final Set<String> updatedPropNames = dirtyMarkerEntity.dirtyPropNames();
-                final Map<String, Object> updateProps = N.newHashMap();
+                final Map<String, Object> updateProps = new HashMap<>();
 
                 for (String propName : updatedPropNames) {
                     updateProps.put(propName, N.getPropValue(dirtyMarkerEntity, propName));
@@ -1604,7 +1610,7 @@ public abstract class SQLBuilder<T> {
         }
 
         if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-            return sqlExecutor.queryForEntity(targetClass, sql(), this.parameters);
+            return OptionalNullable.from(sqlExecutor.queryForEntity(targetClass, sql(), this.parameters));
         } else {
             return sqlExecutor.queryForSingleResult(targetClass, sql(), this.parameters);
         }
@@ -1626,13 +1632,13 @@ public abstract class SQLBuilder<T> {
 
         if (N.isNullOrEmpty(parameters)) {
             if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-                return sqlExecutor.queryForEntity(targetClass, sql(), this.parameters);
+                return OptionalNullable.from(sqlExecutor.queryForEntity(targetClass, sql(), this.parameters));
             } else {
                 return sqlExecutor.queryForSingleResult(targetClass, sql(), this.parameters);
             }
         } else {
             if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-                return sqlExecutor.queryForEntity(targetClass, sql(), parameters);
+                return OptionalNullable.from(sqlExecutor.queryForEntity(targetClass, sql(), parameters));
             } else {
                 return sqlExecutor.queryForSingleResult(targetClass, sql(), parameters);
             }
@@ -1677,11 +1683,12 @@ public abstract class SQLBuilder<T> {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
 
-        if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-            return sqlExecutor.asyncSQLExecutor().queryForEntity(targetClass, sql(), this.parameters);
-        } else {
-            return sqlExecutor.asyncSQLExecutor().queryForSingleResult(targetClass, sql(), this.parameters);
-        }
+        return sqlExecutor.asyncSQLExecutor().asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
+            @Override
+            public OptionalNullable<R> call() throws Exception {
+                return execute(targetClass, sqlExecutor);
+            }
+        });
     }
 
     @Beta
@@ -1690,19 +1697,12 @@ public abstract class SQLBuilder<T> {
             throw new IllegalArgumentException("Only SELECT statement is supported");
         }
 
-        if (N.isNullOrEmpty(parameters)) {
-            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-                return sqlExecutor.asyncSQLExecutor().queryForEntity(targetClass, sql(), this.parameters);
-            } else {
-                return sqlExecutor.asyncSQLExecutor().queryForSingleResult(targetClass, sql(), this.parameters);
+        return sqlExecutor.asyncSQLExecutor().asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
+            @Override
+            public OptionalNullable<R> call() throws Exception {
+                return execute(targetClass, sqlExecutor, parameters);
             }
-        } else {
-            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-                return sqlExecutor.asyncSQLExecutor().queryForEntity(targetClass, sql(), parameters);
-            } else {
-                return sqlExecutor.asyncSQLExecutor().queryForSingleResult(targetClass, sql(), parameters);
-            }
-        }
+        });
     }
 
     void init() {
@@ -2090,7 +2090,7 @@ public abstract class SQLBuilder<T> {
             if (N.isNullOrEmpty(excludedPropNames)) {
                 instance.props = (Map<String, Object>) entity;
             } else {
-                instance.props = N.newLinkedHashMap((Map<String, Object>) entity);
+                instance.props = new LinkedHashMap<>((Map<String, Object>) entity);
 
                 for (String propName : excludedPropNames) {
                     instance.props.remove(propName);
@@ -2108,7 +2108,7 @@ public abstract class SQLBuilder<T> {
         if (first instanceof Map) {
             return (List<Map<String, Object>>) propsList;
         } else {
-            final List<Map<String, Object>> newPropsList = N.newArrayList(propsList.size());
+            final List<Map<String, Object>> newPropsList = new ArrayList<>(propsList.size());
             newPropsList.add(N.entity2Map(first));
 
             while (it.hasNext()) {
@@ -2123,7 +2123,7 @@ public abstract class SQLBuilder<T> {
         if (N.isNullOrEmpty(excludedPropNames)) {
             return propNameList(entityClass);
         } else {
-            final Set<String> entityPropNameSet = N.newLinkedHashSet(N.getPropGetMethodList(entityClass).keySet());
+            final Set<String> entityPropNameSet = new LinkedHashSet<>(N.getPropGetMethodList(entityClass).keySet());
 
             Method propGetMethod = null;
             for (String propName : excludedPropNames) {

@@ -26,7 +26,6 @@ package com.landawn.abacus.util;
  * @param <M>
  * @param <R>
  */
-@SuppressWarnings("hiding")
 public final class Triple<L, M, R> {
     public L left;
     public M middle;

@@ -100,7 +100,7 @@ public abstract class AbastractArrayList<C, P, E, A, L extends ArrayList<C, P, E
     public List<E> toList(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        final List<E> result = N.newArrayList(toIndex - fromIndex);
+        final List<E> result = new java.util.ArrayList<>(toIndex - fromIndex);
 
         toList(result, fromIndex, toIndex);
 
@@ -155,14 +155,10 @@ public abstract class AbastractArrayList<C, P, E, A, L extends ArrayList<C, P, E
     }
 
     protected void checkIndex(final int fromIndex, final int toIndex) {
-        if (fromIndex < 0) {
-            throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
-        }
-        if (toIndex > size()) {
-            throw new IndexOutOfBoundsException("toIndex = " + toIndex);
-        }
-        if (fromIndex > toIndex) {
-            throw new IllegalArgumentException("fromIndex(" + fromIndex + ") > toIndex(" + toIndex + ")");
-        }
+        N.checkIndex(fromIndex, toIndex, size());
+    }
+
+    public void println() {
+        N.println(toString());
     }
 }

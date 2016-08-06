@@ -20,7 +20,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,8 +49,8 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     private boolean initialized = false;
 
     public ArraySheet(Collection<R> rowKeySet, Collection<C> columnKeySet) {
-        this.rowKeySet = N.newLinkedHashSet(rowKeySet);
-        this.columnKeySet = N.newLinkedHashSet(columnKeySet);
+        this.rowKeySet = new LinkedHashSet<>(rowKeySet);
+        this.columnKeySet = new LinkedHashSet<>(columnKeySet);
     }
 
     @Override
@@ -370,7 +373,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     @Override
     public Map<C, E> row(R rowKey) {
         final int columnLength = columnKeySet.size();
-        Map<C, E> row = N.newHashMap(N.initHashCapacity(columnLength));
+        Map<C, E> row = new HashMap<>(N.initHashCapacity(columnLength));
 
         if (initialized) {
             final int rowIndex = getRowIndex(rowKey);
@@ -395,12 +398,12 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     @Override
     public Map<R, Map<C, E>> rowMap() {
         final int columnLength = columnKeySet.size();
-        final Map<R, Map<C, E>> rowMap = N.newHashMap(N.initHashCapacity(this.rowKeySet().size()));
+        final Map<R, Map<C, E>> rowMap = new HashMap<>(N.initHashCapacity(this.rowKeySet().size()));
 
         if (initialized) {
             for (R rowKey : this.rowKeySet()) {
                 final int rowIndex = getRowIndex(rowKey);
-                final Map<C, E> row = N.newHashMap(N.initHashCapacity(columnLength));
+                final Map<C, E> row = new HashMap<>(N.initHashCapacity(columnLength));
                 Object value = null;
 
                 for (int i = 0; i < columnLength; i++) {
@@ -412,7 +415,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             }
         } else {
             for (R rowKey : this.rowKeySet()) {
-                final Map<C, E> row = N.newHashMap(N.initHashCapacity(columnLength));
+                final Map<C, E> row = new HashMap<>(N.initHashCapacity(columnLength));
 
                 for (C columnKey : this.columnKeySet()) {
                     row.put(columnKey, null);
@@ -580,7 +583,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     @Override
     public Map<R, E> column(C columnKey) {
         final int rowLength = rowKeySet.size();
-        final Map<R, E> column = N.newHashMap(N.initHashCapacity(rowLength));
+        final Map<R, E> column = new HashMap<>(N.initHashCapacity(rowLength));
 
         if (initialized) {
             final int columnIndex = getColumnIndex(columnKey);
@@ -604,12 +607,12 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     @Override
     public Map<C, Map<R, E>> columnMap() {
         final int rowLength = rowKeySet.size();
-        final Map<C, Map<R, E>> columnMap = N.newHashMap(N.initHashCapacity(this.columnKeySet().size()));
+        final Map<C, Map<R, E>> columnMap = new HashMap<>(N.initHashCapacity(this.columnKeySet().size()));
 
         if (initialized) {
             for (C columnKey : this.columnKeySet()) {
                 final int columnIndex = getColumnIndex(columnKey);
-                final Map<R, E> column = N.newHashMap(N.initHashCapacity(rowLength));
+                final Map<R, E> column = new HashMap<>(N.initHashCapacity(rowLength));
                 Object value = null;
 
                 for (int i = 0; i < rowLength; i++) {
@@ -622,7 +625,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             }
         } else {
             for (C columnKey : this.columnKeySet()) {
-                final Map<R, E> column = N.newHashMap(N.initHashCapacity(rowLength));
+                final Map<R, E> column = new HashMap<>(N.initHashCapacity(rowLength));
 
                 for (R rowKey : this.rowKeySet()) {
                     column.put(rowKey, null);
@@ -647,7 +650,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
 
     @Override
     public List<E> values() {
-        final List<E> coll = N.newArrayList(count);
+        final List<E> coll = new ArrayList<>(count);
 
         if (initialized) {
             final int rowLength = rowKeySet.size();
@@ -670,7 +673,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
 
     @Override
     public Set<E> valueSet() {
-        final Set<E> coll = N.newHashSet();
+        final Set<E> coll = new HashSet<>();
 
         if (initialized) {
             final int rowLength = rowKeySet.size();
@@ -720,13 +723,13 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             final int rowLength = copy.rowKeySet.size();
             final int columnLength = copy.columnKeySet.size();
 
-            copy.rowKeyIndexMap = N.newBiMap(N.initHashCapacity(rowLength));
+            copy.rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
             int index = 0;
             for (R e : copy.rowKeySet) {
                 copy.rowKeyIndexMap.put(e, index++);
             }
 
-            copy.columnKeyIndexMap = N.newBiMap(N.initHashCapacity(columnLength));
+            copy.columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
             index = 0;
             for (C e : copy.columnKeySet) {
                 copy.columnKeyIndexMap.put(e, index++);
@@ -766,14 +769,14 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     private void init() {
         if (!initialized) {
             final int rowLength = rowKeySet.size();
-            rowKeyIndexMap = N.newBiMap(N.initHashCapacity(rowLength));
+            rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
             int index = 0;
             for (R e : rowKeySet) {
                 rowKeyIndexMap.put(e, index++);
             }
 
             final int columnLength = columnKeySet.size();
-            columnKeyIndexMap = N.newBiMap(N.initHashCapacity(columnLength));
+            columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
             index = 0;
             for (C e : columnKeySet) {
                 columnKeyIndexMap.put(e, index++);

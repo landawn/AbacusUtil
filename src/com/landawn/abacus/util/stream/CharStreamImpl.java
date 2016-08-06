@@ -22,7 +22,7 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class CharStreamImpl implements CharStream {
+final class CharStreamImpl extends CharStream {
     private final char[] values;
     private final int fromIndex;
     private final int toIndex;
@@ -58,7 +58,7 @@ final class CharStreamImpl implements CharStream {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : N.newArrayList(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
     }
 
     @Override
@@ -310,7 +310,7 @@ final class CharStreamImpl implements CharStream {
 
     @Override
     public CharStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = N.newArrayList(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             closeHandlerList.addAll(this.closeHandlers);

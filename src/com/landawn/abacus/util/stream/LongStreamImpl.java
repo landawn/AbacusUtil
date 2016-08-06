@@ -15,6 +15,7 @@ import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongToDoubleFunction;
+import com.landawn.abacus.util.function.LongToFloatFunction;
 import com.landawn.abacus.util.function.LongToIntFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
@@ -24,7 +25,7 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class LongStreamImpl implements LongStream {
+final class LongStreamImpl extends LongStream {
     private final long[] values;
     private final int fromIndex;
     private final int toIndex;
@@ -60,7 +61,7 @@ final class LongStreamImpl implements LongStream {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : N.newArrayList(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
     }
 
     @Override
@@ -107,6 +108,17 @@ final class LongStreamImpl implements LongStream {
         }
 
         return new IntStreamImpl(a, closeHandlers);
+    }
+
+    @Override
+    public FloatStream mapToFloat(LongToFloatFunction mapper) {
+        final float[] a = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.applyAsFloat(values[i]);
+        }
+
+        return new FloatStreamImpl(a, closeHandlers);
     }
 
     @Override
@@ -315,6 +327,17 @@ final class LongStreamImpl implements LongStream {
     }
 
     @Override
+    public FloatStream asFloatStream() {
+        final float[] a = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = values[i];
+        }
+
+        return new FloatStreamImpl(a, closeHandlers);
+    }
+
+    @Override
     public DoubleStream asDoubleStream() {
         final double[] a = new double[toIndex - fromIndex];
 
@@ -337,7 +360,7 @@ final class LongStreamImpl implements LongStream {
 
     @Override
     public LongStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = N.newArrayList(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             closeHandlerList.addAll(this.closeHandlers);

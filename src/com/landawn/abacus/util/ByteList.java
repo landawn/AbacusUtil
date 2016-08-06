@@ -30,7 +30,7 @@ import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
-import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.ByteStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -58,7 +58,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * 
      * @param a
      */
-    public ByteList(byte[] a) {
+    public ByteList(byte... a) {
         this();
 
         elementData = a;
@@ -76,7 +76,11 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         this.size = size;
     }
 
-    public static ByteList of(byte[] a) {
+    public static ByteList empty() {
+        return new ByteList(N.EMPTY_BYTE_ARRAY);
+    }
+
+    public static ByteList of(byte... a) {
         return new ByteList(a);
     }
 
@@ -84,57 +88,57 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return new ByteList(a, size);
     }
 
-    public static ByteList of(int[] a) {
-        return of(a, 0, a.length);
+    public static ByteList from(int... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ByteList of(int[] a, final int fromIndex, final int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ByteList from(int[] a, final int startIndex, final int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final byte[] elementData = new byte[toIndex - fromIndex];
+        final byte[] elementData = new byte[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             if (a[i] < Byte.MIN_VALUE || a[i] > Byte.MAX_VALUE) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (byte) a[i];
+            elementData[i - startIndex] = (byte) a[i];
         }
 
         return of(elementData);
     }
 
-    public static ByteList of(String[] a) {
-        return of(a, 0, a.length);
+    public static ByteList from(String... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ByteList of(String[] a, final int fromIndex, final int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ByteList from(String[] a, final int startIndex, final int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final byte[] elementData = new byte[toIndex - fromIndex];
+        final byte[] elementData = new byte[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             double val = N.asDouble(a[i]);
 
             if (N.compare(val, Byte.MIN_VALUE) < 0 || N.compare(val, Byte.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (byte) val;
+            elementData[i - startIndex] = (byte) val;
         }
 
         return of(elementData);
     }
 
-    public static ByteList of(List<String> c) {
-        return of(c, (byte) 0);
+    public static ByteList from(List<String> c) {
+        return from(c, (byte) 0);
     }
 
-    public static ByteList of(List<String> c, byte defaultValueForNull) {
+    public static ByteList from(List<String> c, byte defaultValueForNull) {
         final byte[] a = new byte[c.size()];
         int idx = 0;
 
@@ -155,11 +159,11 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return of(a);
     }
 
-    public static ByteList of(Collection<? extends Number> c) {
-        return of(c, (byte) 0);
+    public static ByteList from(Collection<? extends Number> c) {
+        return from(c, (byte) 0);
     }
 
-    public static ByteList of(Collection<? extends Number> c, byte defaultValueForNull) {
+    public static ByteList from(Collection<? extends Number> c, byte defaultValueForNull) {
         final byte[] a = new byte[c.size()];
         int idx = 0;
 
@@ -463,24 +467,24 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return -1;
     }
 
-    public byte min() {
-        return N.min(elementData, 0, size);
+    public OptionalByte min() {
+        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(N.min(elementData, 0, size));
     }
 
-    public byte min(final int fromIndex, final int toIndex) {
+    public OptionalByte min(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.min(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.min(elementData, fromIndex, toIndex));
     }
 
-    public byte max() {
-        return N.max(elementData, 0, size);
+    public OptionalByte max() {
+        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(N.max(elementData, 0, size));
     }
 
-    public byte max(final int fromIndex, final int toIndex) {
+    public OptionalByte max(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.max(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.max(elementData, fromIndex, toIndex));
     }
 
     @Override
@@ -699,12 +703,14 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return outputResult;
     }
 
-    public byte reduce(final ByteBinaryOperator accumulator) {
-        return reduce(0, size(), accumulator);
+    public OptionalByte reduce(final ByteBinaryOperator accumulator) {
+        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(reduce((byte) 0, accumulator));
     }
 
-    public byte reduce(final int fromIndex, final int toIndex, final ByteBinaryOperator accumulator) {
-        return reduce(fromIndex, toIndex, (byte) 0, accumulator);
+    public OptionalByte reduce(final int fromIndex, final int toIndex, final ByteBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(reduce(fromIndex, toIndex, (byte) 0, accumulator));
     }
 
     public byte reduce(final byte identity, final ByteBinaryOperator accumulator) {
@@ -742,7 +748,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         final List<ByteList> result = new ArrayList<>(list.size());
 
         for (byte[] a : list) {
-            result.add(ByteList.of(a));
+            result.add(of(a));
         }
 
         return result;
@@ -837,14 +843,71 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         }
     }
 
-    public IntStream stream() {
+    public <K, U> Map<K, U> toMap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, keyMapper, valueMapper);
+    }
+
+    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final ByteFunction<? extends K> keyMapper,
+            final ByteFunction<? extends U> valueMapper) {
+        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
+            final ByteFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+            final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Map<K, U> map = N.newInstance(outputClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return (R) map;
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
+        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
+            final ByteFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return multimap;
+    }
+
+    public ByteStream stream() {
         return stream(0, size());
     }
 
-    public IntStream stream(final int fromIndex, final int toIndex) {
+    public ByteStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.of(elementData, fromIndex, toIndex);
+        return Stream.from(elementData, fromIndex, toIndex);
     }
 
     @Override

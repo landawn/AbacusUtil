@@ -24,6 +24,8 @@
  */
 package com.landawn.abacus.util.stream;
 
+import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -33,6 +35,7 @@ import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongToDoubleFunction;
+import com.landawn.abacus.util.function.LongToFloatFunction;
 import com.landawn.abacus.util.function.LongToIntFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
@@ -66,7 +69,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public interface LongStream extends BaseStream<Long, LongStream> {
+public abstract class LongStream implements BaseStream<Long, LongStream> {
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -81,7 +84,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *                  should be included
      * @return the new stream
      */
-    LongStream filter(LongPredicate predicate);
+    public abstract LongStream filter(LongPredicate predicate);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -95,7 +98,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    LongStream map(LongUnaryOperator mapper);
+    public abstract LongStream map(LongUnaryOperator mapper);
 
     /**
      * Returns an object-valued {@code Stream} consisting of the results of
@@ -110,7 +113,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    <U> Stream<U> mapToObj(LongFunction<? extends U> mapper);
+    public abstract <U> Stream<U> mapToObj(LongFunction<? extends U> mapper);
 
     /**
      * Returns an {@code IntStream} consisting of the results of applying the
@@ -124,7 +127,21 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    IntStream mapToInt(LongToIntFunction mapper);
+    public abstract IntStream mapToInt(LongToIntFunction mapper);
+
+    /**
+     * Returns a {@code FloatStream} consisting of the results of applying the
+     * given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
+     * operation</a>.
+     *
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract FloatStream mapToFloat(LongToFloatFunction mapper);
 
     /**
      * Returns a {@code DoubleStream} consisting of the results of applying the
@@ -138,7 +155,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    DoubleStream mapToDouble(LongToDoubleFunction mapper);
+    public abstract DoubleStream mapToDouble(LongToDoubleFunction mapper);
 
     /**
      * Returns a stream consisting of the results of replacing each element of
@@ -158,7 +175,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return the new stream
      * @see Stream#flatMap(Function)
      */
-    LongStream flatMap(LongFunction<? extends LongStream> mapper);
+    public abstract LongStream flatMap(LongFunction<? extends LongStream> mapper);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -168,7 +185,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *
      * @return the new stream
      */
-    LongStream distinct();
+    public abstract LongStream distinct();
 
     /**
      * Returns a stream consisting of the elements of this stream in sorted
@@ -179,7 +196,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *
      * @return the new stream
      */
-    LongStream sorted();
+    public abstract LongStream sorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -210,7 +227,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *               they are consumed from the stream
      * @return the new stream
      */
-    LongStream peek(LongConsumer action);
+    public abstract LongStream peek(LongConsumer action);
 
     /**
      * Returns a stream consisting of the elements of this stream, truncated
@@ -237,7 +254,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code maxSize} is negative
      */
-    LongStream limit(long maxSize);
+    public abstract LongStream limit(long maxSize);
 
     /**
      * Returns a stream consisting of the remaining elements of this stream
@@ -266,7 +283,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code n} is negative
      */
-    LongStream skip(long n);
+    public abstract LongStream skip(long n);
 
     /**
      * Performs an action for each element of this stream.
@@ -284,7 +301,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @param action a <a href="package-summary.html#NonInterference">
      *               non-interfering</a> action to perform on the elements
      */
-    void forEach(LongConsumer action);
+    public abstract void forEach(LongConsumer action);
 
     /**
      * Returns an array containing the elements of this stream.
@@ -294,7 +311,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *
      * @return an array containing the elements of this stream
      */
-    long[] toArray();
+    public abstract long[] toArray();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -349,7 +366,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @see #max()
      * @see #average()
      */
-    long reduce(long identity, LongBinaryOperator op);
+    public abstract long reduce(long identity, LongBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -386,7 +403,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return the result of the reduction
      * @see #reduce(long, LongBinaryOperator)
      */
-    OptionalLong reduce(LongBinaryOperator op);
+    public abstract OptionalLong reduce(LongBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable
@@ -424,7 +441,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * Returns the sum of elements in this stream.  This is a special case
@@ -439,7 +456,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *
      * @return the sum of elements in this stream
      */
-    long sum();
+    public abstract long sum();
 
     /**
      * Returns an {@code OptionalLong} describing the minimum element of this
@@ -455,7 +472,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return an {@code OptionalLong} containing the minimum element of this
      * stream, or an empty {@code OptionalLong} if the stream is empty
      */
-    OptionalLong min();
+    public abstract OptionalLong min();
 
     /**
      * Returns an {@code OptionalLong} describing the maximum element of this
@@ -472,7 +489,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return an {@code OptionalLong} containing the maximum element of this
      * stream, or an empty {@code OptionalLong} if the stream is empty
      */
-    OptionalLong max();
+    public abstract OptionalLong max();
 
     /**
      * Returns the count of elements in this stream.  This is a special case of
@@ -486,7 +503,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *
      * @return the count of elements in this stream
      */
-    long count();
+    public abstract long count();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic mean of elements of
@@ -500,7 +517,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return an {@code OptionalDouble} containing the average element of this
      * stream, or an empty optional if the stream is empty
      */
-    OptionalDouble average();
+    public abstract OptionalDouble average();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -521,7 +538,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return {@code true} if any elements of the stream match the provided
      * predicate, otherwise {@code false}
      */
-    boolean anyMatch(LongPredicate predicate);
+    public abstract boolean anyMatch(LongPredicate predicate);
 
     /**
      * Returns whether all elements of this stream match the provided predicate.
@@ -544,7 +561,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return {@code true} if either all elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean allMatch(LongPredicate predicate);
+    public abstract boolean allMatch(LongPredicate predicate);
 
     /**
      * Returns whether no elements of this stream match the provided predicate.
@@ -567,7 +584,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return {@code true} if either no elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean noneMatch(LongPredicate predicate);
+    public abstract boolean noneMatch(LongPredicate predicate);
 
     /**
      * Returns an {@link OptionalLong} describing the first element of this
@@ -580,7 +597,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return an {@code OptionalLong} describing the first element of this
      * stream, or an empty {@code OptionalLong} if the stream is empty
      */
-    OptionalLong findFirst();
+    public abstract OptionalLong findFirst();
 
     /**
      * Returns an {@link OptionalLong} describing some element of the stream, or
@@ -599,7 +616,19 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * or an empty {@code OptionalLong} if the stream is empty
      * @see #findFirst()
      */
-    OptionalLong findAny();
+    public abstract OptionalLong findAny();
+
+    /**
+     * Returns a {@code FloatStream} consisting of the elements of this stream,
+     * converted to {@code double}.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
+     * operation</a>.
+     *
+     * @return a {@code FloatStream} consisting of the elements of this stream,
+     * converted to {@code double}
+     */
+    public abstract FloatStream asFloatStream();
 
     /**
      * Returns a {@code DoubleStream} consisting of the elements of this stream,
@@ -611,7 +640,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return a {@code DoubleStream} consisting of the elements of this stream,
      * converted to {@code double}
      */
-    DoubleStream asDoubleStream();
+    public abstract DoubleStream asDoubleStream();
 
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
@@ -623,7 +652,23 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return a {@code Stream} consistent of the elements of this stream,
      * each boxed to {@code Long}
      */
-    Stream<Long> boxed();
+    public abstract Stream<Long> boxed();
 
     // Static factories
+
+    public static LongStream empty() {
+        return of(N.EMPTY_LONG_ARRAY);
+    }
+
+    public static LongStream of(final long... a) {
+        return Stream.from(a);
+    }
+
+    public static LongStream range(final long startInclusive, final long endExclusive) {
+        return Stream.from(Array.range(startInclusive, endExclusive));
+    }
+
+    public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
+        return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+    }
 }

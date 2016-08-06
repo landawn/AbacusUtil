@@ -383,14 +383,19 @@ public abstract class Util {
         return SQLiteExecutor.toContentValues(obj, namingPolicy);
     }
 
-    /**
-     * 
-     * @param a pair of column name and types.
-     * @return
-     */
     @SuppressWarnings("rawtypes")
-    public static Map<String, Class> asColumnTypes(Object... a) {
-        return N.asMap(a);
+    public static Map<String, Class> asColumnTypes(String c1, Class t1) {
+        return N.asMap(c1, t1);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static Map<String, Class> asColumnTypes(String c1, Class t1, String c2, Class t2) {
+        return N.asMap(c1, t1, c2, t2);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static Map<String, Class> asColumnTypes(String c1, Class t1, String c2, Class t2, String c3, Class t3) {
+        return N.asMap(c1, t1, c2, t2, c3, t3);
     }
 
     public static ContentResolver getContentResolver() {

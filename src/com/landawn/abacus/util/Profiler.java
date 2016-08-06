@@ -680,7 +680,7 @@ public final class Profiler {
 
         @Override
         public List<MethodStatistics> getMethodStatisticsList(final String methodName) {
-            List<MethodStatistics> result = N.newArrayList(getMethodSize(methodName));
+            List<MethodStatistics> result = new ArrayList<>(getMethodSize(methodName));
 
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
@@ -915,7 +915,7 @@ public final class Profiler {
 
         @Override
         public List<MethodStatistics> getMethodStatisticsList(final String methodName) {
-            List<MethodStatistics> methodStatisticsList = N.newArrayList(getMethodSize(methodName));
+            List<MethodStatistics> methodStatisticsList = new ArrayList<>(getMethodSize(methodName));
 
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {

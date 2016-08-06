@@ -24,12 +24,14 @@
  */
 package com.landawn.abacus.util.stream;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.DoubleToFloatFunction;
 import com.landawn.abacus.util.function.DoubleToIntFunction;
 import com.landawn.abacus.util.function.DoubleToLongFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
@@ -65,7 +67,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public interface DoubleStream extends BaseStream<Double, DoubleStream> {
+public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -80,7 +82,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *                  should be included
      * @return the new stream
      */
-    DoubleStream filter(DoublePredicate predicate);
+    public abstract DoubleStream filter(DoublePredicate predicate);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -94,7 +96,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    DoubleStream map(DoubleUnaryOperator mapper);
+    public abstract DoubleStream map(DoubleUnaryOperator mapper);
 
     /**
      * Returns an object-valued {@code Stream} consisting of the results of
@@ -109,7 +111,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    <U> Stream<U> mapToObj(DoubleFunction<? extends U> mapper);
+    public abstract <U> Stream<U> mapToObj(DoubleFunction<? extends U> mapper);
 
     /**
      * Returns an {@code IntStream} consisting of the results of applying the
@@ -123,7 +125,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    IntStream mapToInt(DoubleToIntFunction mapper);
+    public abstract IntStream mapToInt(DoubleToIntFunction mapper);
 
     /**
      * Returns a {@code LongStream} consisting of the results of applying the
@@ -137,7 +139,21 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    LongStream mapToLong(DoubleToLongFunction mapper);
+    public abstract LongStream mapToLong(DoubleToLongFunction mapper);
+
+    /**
+     * Returns a {@code FloatStream} consisting of the results of applying the
+     * given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
+     * operation</a>.
+     *
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract FloatStream mapToFloat(DoubleToFloatFunction mapper);
 
     /**
      * Returns a stream consisting of the results of replacing each element of
@@ -157,7 +173,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return the new stream
      * @see Stream#flatMap(Function)
      */
-    DoubleStream flatMap(DoubleFunction<? extends DoubleStream> mapper);
+    public abstract DoubleStream flatMap(DoubleFunction<? extends DoubleStream> mapper);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -169,7 +185,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *
      * @return the result stream
      */
-    DoubleStream distinct();
+    public abstract DoubleStream distinct();
 
     /**
      * Returns a stream consisting of the elements of this stream in sorted
@@ -181,7 +197,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *
      * @return the result stream
      */
-    DoubleStream sorted();
+    public abstract DoubleStream sorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -212,7 +228,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *               they are consumed from the stream
      * @return the new stream
      */
-    DoubleStream peek(DoubleConsumer action);
+    public abstract DoubleStream peek(DoubleConsumer action);
 
     /**
      * Returns a stream consisting of the elements of this stream, truncated
@@ -239,7 +255,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code maxSize} is negative
      */
-    DoubleStream limit(long maxSize);
+    public abstract DoubleStream limit(long maxSize);
 
     /**
      * Returns a stream consisting of the remaining elements of this stream
@@ -268,7 +284,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code n} is negative
      */
-    DoubleStream skip(long n);
+    public abstract DoubleStream skip(long n);
 
     /**
      * Performs an action for each element of this stream.
@@ -286,7 +302,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @param action a <a href="package-summary.html#NonInterference">
      *               non-interfering</a> action to perform on the elements
      */
-    void forEach(DoubleConsumer action);
+    public abstract void forEach(DoubleConsumer action);
 
     /**
      * Returns an array containing the elements of this stream.
@@ -296,7 +312,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *
      * @return an array containing the elements of this stream
      */
-    double[] toArray();
+    public abstract double[] toArray();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -351,7 +367,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @see #max()
      * @see #average()
      */
-    double reduce(double identity, DoubleBinaryOperator op);
+    public abstract double reduce(double identity, DoubleBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -388,7 +404,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return the result of the reduction
      * @see #reduce(double, DoubleBinaryOperator)
      */
-    OptionalDouble reduce(DoubleBinaryOperator op);
+    public abstract OptionalDouble reduce(DoubleBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable
@@ -427,7 +443,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * Returns the sum of elements in this stream.
@@ -468,7 +484,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *
      * @return the sum of elements in this stream
      */
-    double sum();
+    public abstract double sum();
 
     /**
      * Returns an {@code OptionalDouble} describing the minimum element of this
@@ -488,7 +504,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return an {@code OptionalDouble} containing the minimum element of this
      * stream, or an empty optional if the stream is empty
      */
-    OptionalDouble min();
+    public abstract OptionalDouble min();
 
     /**
      * Returns an {@code OptionalDouble} describing the maximum element of this
@@ -509,7 +525,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return an {@code OptionalDouble} containing the maximum element of this
      * stream, or an empty optional if the stream is empty
      */
-    OptionalDouble max();
+    public abstract OptionalDouble max();
 
     /**
      * Returns the count of elements in this stream.  This is a special case of
@@ -523,7 +539,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      *
      * @return the count of elements in this stream
      */
-    long count();
+    public abstract long count();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic
@@ -552,7 +568,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return an {@code OptionalDouble} containing the average element of this
      * stream, or an empty optional if the stream is empty
      */
-    OptionalDouble average();
+    public abstract OptionalDouble average();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -573,7 +589,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return {@code true} if any elements of the stream match the provided
      * predicate, otherwise {@code false}
      */
-    boolean anyMatch(DoublePredicate predicate);
+    public abstract boolean anyMatch(DoublePredicate predicate);
 
     /**
      * Returns whether all elements of this stream match the provided predicate.
@@ -596,7 +612,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return {@code true} if either all elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean allMatch(DoublePredicate predicate);
+    public abstract boolean allMatch(DoublePredicate predicate);
 
     /**
      * Returns whether no elements of this stream match the provided predicate.
@@ -619,7 +635,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return {@code true} if either no elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean noneMatch(DoublePredicate predicate);
+    public abstract boolean noneMatch(DoublePredicate predicate);
 
     /**
      * Returns an {@link OptionalDouble} describing the first element of this
@@ -632,7 +648,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return an {@code OptionalDouble} describing the first element of this
      * stream, or an empty {@code OptionalDouble} if the stream is empty
      */
-    OptionalDouble findFirst();
+    public abstract OptionalDouble findFirst();
 
     /**
      * Returns an {@link OptionalDouble} describing some element of the stream,
@@ -651,7 +667,7 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * or an empty {@code OptionalDouble} if the stream is empty
      * @see #findFirst()
      */
-    OptionalDouble findAny();
+    public abstract OptionalDouble findAny();
 
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
@@ -663,7 +679,15 @@ public interface DoubleStream extends BaseStream<Double, DoubleStream> {
      * @return a {@code Stream} consistent of the elements of this stream,
      * each boxed to a {@code Double}
      */
-    Stream<Double> boxed();
+    public abstract Stream<Double> boxed();
 
     // Static factories
+
+    public static DoubleStream empty() {
+        return of(N.EMPTY_DOUBLE_ARRAY);
+    }
+
+    public static DoubleStream of(final double... a) {
+        return Stream.from(a);
+    }
 }

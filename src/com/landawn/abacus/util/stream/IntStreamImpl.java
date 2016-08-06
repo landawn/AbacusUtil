@@ -16,6 +16,7 @@ import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntToCharFunction;
 import com.landawn.abacus.util.function.IntToDoubleFunction;
+import com.landawn.abacus.util.function.IntToFloatFunction;
 import com.landawn.abacus.util.function.IntToLongFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
@@ -25,7 +26,7 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class IntStreamImpl implements IntStream {
+final class IntStreamImpl extends IntStream {
     private final int[] values;
     private final int fromIndex;
     private final int toIndex;
@@ -61,7 +62,7 @@ final class IntStreamImpl implements IntStream {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : N.newArrayList(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
     }
 
     @Override
@@ -119,6 +120,17 @@ final class IntStreamImpl implements IntStream {
         }
 
         return new LongStreamImpl(a, closeHandlers);
+    }
+
+    @Override
+    public FloatStream mapToFloat(IntToFloatFunction mapper) {
+        final float[] a = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.applyAsFloat(values[i]);
+        }
+
+        return new FloatStreamImpl(a, closeHandlers);
     }
 
     @Override
@@ -353,6 +365,17 @@ final class IntStreamImpl implements IntStream {
     }
 
     @Override
+    public FloatStream asFloatStream() {
+        final float[] a = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = values[i];
+        }
+
+        return new FloatStreamImpl(a, closeHandlers);
+    }
+
+    @Override
     public DoubleStream asDoubleStream() {
         final double[] a = new double[toIndex - fromIndex];
 
@@ -375,7 +398,7 @@ final class IntStreamImpl implements IntStream {
 
     @Override
     public IntStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = N.newArrayList(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             closeHandlerList.addAll(this.closeHandlers);

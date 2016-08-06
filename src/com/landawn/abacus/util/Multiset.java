@@ -20,7 +20,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,6 +30,7 @@ import java.util.SortedMap;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * A collection that supports order-independent equality, like {@link Set}, but
@@ -114,14 +117,14 @@ public final class Multiset<E> implements Iterable<E> {
         return multiset;
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T> Multiset<T> from(final Class<? extends Map> valueMapType, final Map<? extends T, Integer> m) {
-        final Multiset<T> multiset = new Multiset<T>(valueMapType);
-
-        multiset.setAll(m);
-
-        return multiset;
-    }
+    //    @SuppressWarnings("rawtypes")
+    //    public static <T> Multiset<T> from(final Class<? extends Map> valueMapType, final Map<? extends T, Integer> m) {
+    //        final Multiset<T> multiset = new Multiset<T>(valueMapType);
+    //
+    //        multiset.setAll(m);
+    //
+    //        return multiset;
+    //    }
 
     /**
      *
@@ -302,7 +305,7 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     public Map<E, Integer> toMap() {
-        final Map<E, Integer> result = N.newLinkedHashMap(N.initHashCapacity(size()));
+        final Map<E, Integer> result = new LinkedHashMap<>(N.initHashCapacity(size()));
 
         for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().intValue());
@@ -313,7 +316,7 @@ public final class Multiset<E> implements Iterable<E> {
 
     public Map<E, Integer> toMapSortedByCount() {
         if (N.isNullOrEmpty(valueMap)) {
-            return N.newLinkedHashMap();
+            return new LinkedHashMap<>();
         }
 
         final Map.Entry<E, MutableInt>[] entries = entrySet().toArray(new Map.Entry[size()]);
@@ -327,7 +330,7 @@ public final class Multiset<E> implements Iterable<E> {
 
         Arrays.sort(entries, cmp);
 
-        final Map<E, Integer> sortedValues = N.newLinkedHashMap(N.initHashCapacity(size()));
+        final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
 
         for (Map.Entry<E, MutableInt> entry : entries) {
             sortedValues.put(entry.getKey(), entry.getValue().intValue());
@@ -338,7 +341,7 @@ public final class Multiset<E> implements Iterable<E> {
 
     public Map<E, Integer> toMapSortedByElement() {
         if (N.isNullOrEmpty(valueMap)) {
-            return N.newLinkedHashMap();
+            return new LinkedHashMap<>();
         }
 
         if (valueMap instanceof SortedMap) {
@@ -355,7 +358,7 @@ public final class Multiset<E> implements Iterable<E> {
 
             Arrays.sort(entries, cmp);
 
-            final Map<E, Integer> sortedValues = N.newLinkedHashMap(N.initHashCapacity(size()));
+            final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
             Map.Entry<E, MutableInt>[] newEntries = (Entry<E, MutableInt>[]) entries;
 
             for (Map.Entry<E, MutableInt> entry : newEntries) {
@@ -368,7 +371,7 @@ public final class Multiset<E> implements Iterable<E> {
 
     public Map<E, Integer> toMapSortedByElement(final Comparator<? super E> cmp) {
         if (N.isNullOrEmpty(valueMap)) {
-            return N.newLinkedHashMap();
+            return new LinkedHashMap<>();
         }
 
         if (valueMap instanceof SortedMap && cmp == null) {
@@ -385,7 +388,7 @@ public final class Multiset<E> implements Iterable<E> {
 
             Arrays.sort(entries, entryCmp);
 
-            final Map<E, Integer> sortedValues = N.newLinkedHashMap(N.initHashCapacity(size()));
+            final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
 
             for (Map.Entry<E, MutableInt> entry : entries) {
                 sortedValues.put(entry.getKey(), entry.getValue().intValue());
@@ -629,7 +632,7 @@ public final class Multiset<E> implements Iterable<E> {
         for (E e : valueMap.keySet()) {
             if (!c.contains(e)) {
                 if (others == null) {
-                    others = N.newHashSet(valueMap.size());
+                    others = new HashSet<>(valueMap.size());
                 }
 
                 others.add(e);
@@ -670,6 +673,10 @@ public final class Multiset<E> implements Iterable<E> {
 
     public <T> T[] toArray(final T[] a) {
         return valueMap.keySet().toArray(a);
+    }
+
+    public Stream<Map.Entry<E, MutableInt>> stream() {
+        return Stream.from(valueMap.entrySet());
     }
 
     @Override

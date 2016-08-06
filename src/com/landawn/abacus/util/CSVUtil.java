@@ -32,7 +32,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -158,21 +160,21 @@ public final class CSVUtil {
         final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : ObjectFactory.createBufferedReader(csvReader);
 
         try {
-            List<String> tmp = N.newArrayList();
+            List<String> tmp = new ArrayList<>();
             String line = br.readLine();
             jsonParser.readString(tmp, line);
             final String[] titles = tmp.toArray(new String[tmp.size()]);
 
             final int columnCount = titles.length;
             final Type<?>[] columnTypes = new Type<?>[columnCount];
-            final List<String> columnNameList = N.newArrayList(selectColumnNames == null ? columnCount : selectColumnNames.size());
-            final List<List<Object>> columnList = N.newArrayList(selectColumnNames == null ? columnCount : selectColumnNames.size());
-            final Set<String> selectPropNameSet = selectColumnNames == null ? null : N.newHashSet(selectColumnNames);
+            final List<String> columnNameList = new ArrayList<>(selectColumnNames == null ? columnCount : selectColumnNames.size());
+            final List<List<Object>> columnList = new ArrayList<>(selectColumnNames == null ? columnCount : selectColumnNames.size());
+            final Set<String> selectPropNameSet = selectColumnNames == null ? null : new HashSet<>(selectColumnNames);
 
             for (int i = 0; i < columnCount; i++) {
                 if (selectPropNameSet == null || selectPropNameSet.remove(titles[i])) {
                     columnNameList.add(titles[i]);
-                    columnList.add(N.newArrayList());
+                    columnList.add(new ArrayList<>());
                     columnTypes[i] = N.getType(String.class);
                 }
             }
@@ -310,16 +312,16 @@ public final class CSVUtil {
         final EntityInfo entityInfo = ParserUtil.getEntityInfo(entityClass);
 
         try {
-            List<String> tmp = N.newArrayList();
+            List<String> tmp = new ArrayList<>();
             String line = br.readLine();
             jsonParser.readString(tmp, line);
             final String[] titles = tmp.toArray(new String[tmp.size()]);
 
             final int columnCount = titles.length;
             final Type<?>[] columnTypes = new Type<?>[columnCount];
-            final List<String> columnNameList = N.newArrayList(selectColumnNames == null ? columnCount : selectColumnNames.size());
-            final List<List<Object>> columnList = N.newArrayList(selectColumnNames == null ? columnCount : selectColumnNames.size());
-            final Set<String> selectPropNameSet = selectColumnNames == null ? null : N.newHashSet(selectColumnNames);
+            final List<String> columnNameList = new ArrayList<>(selectColumnNames == null ? columnCount : selectColumnNames.size());
+            final List<List<Object>> columnList = new ArrayList<>(selectColumnNames == null ? columnCount : selectColumnNames.size());
+            final Set<String> selectPropNameSet = selectColumnNames == null ? null : new HashSet<>(selectColumnNames);
 
             for (int i = 0; i < columnCount; i++) {
                 if (selectPropNameSet == null || selectPropNameSet.remove(titles[i])) {
@@ -332,7 +334,7 @@ public final class CSVUtil {
                     if (propInfo != null) {
                         columnTypes[i] = propInfo.type;
                         columnNameList.add(titles[i]);
-                        columnList.add(N.newArrayList());
+                        columnList.add(new ArrayList<>());
                     }
                 }
             }
@@ -466,26 +468,26 @@ public final class CSVUtil {
         final BufferedReader br = csvReader instanceof BufferedReader ? (BufferedReader) csvReader : ObjectFactory.createBufferedReader(csvReader);
 
         try {
-            List<String> tmp = N.newArrayList();
+            List<String> tmp = new ArrayList<>();
             String line = br.readLine();
             jsonParser.readString(tmp, line);
             final String[] titles = tmp.toArray(new String[tmp.size()]);
 
             final int columnCount = titles.length;
             final Type<?>[] columnTypes = new Type<?>[columnCount];
-            final List<String> columnNameList = N.newArrayList(columnTypeMap.size());
-            final List<List<Object>> columnList = N.newArrayList(columnTypeMap.size());
+            final List<String> columnNameList = new ArrayList<>(columnTypeMap.size());
+            final List<List<Object>> columnList = new ArrayList<>(columnTypeMap.size());
 
             for (int i = 0; i < columnCount; i++) {
                 if (columnTypeMap.containsKey(titles[i])) {
                     columnTypes[i] = columnTypeMap.get(titles[i]);
                     columnNameList.add(titles[i]);
-                    columnList.add(N.newArrayList());
+                    columnList.add(new ArrayList<>());
                 }
             }
 
             if (columnNameList.size() != columnTypeMap.size()) {
-                final List<String> keys = N.newArrayList(columnTypeMap.keySet());
+                final List<String> keys = new ArrayList<>(columnTypeMap.keySet());
                 keys.removeAll(columnNameList);
                 throw new AbacusException(keys + " are not included in titles: " + N.toString(titles));
             }
@@ -616,19 +618,19 @@ public final class CSVUtil {
         final Type<?>[] columnTypes = columnTypeList.toArray(new Type[columnTypeList.size()]);
 
         try {
-            List<String> tmp = N.newArrayList();
+            List<String> tmp = new ArrayList<>();
             String line = br.readLine();
             jsonParser.readString(tmp, line);
             final String[] titles = tmp.toArray(new String[tmp.size()]);
 
             final int columnCount = titles.length;
-            final List<String> columnNameList = N.newArrayList(columnCount);
-            final List<List<Object>> columnList = N.newArrayList();
+            final List<String> columnNameList = new ArrayList<>(columnCount);
+            final List<List<Object>> columnList = new ArrayList<>();
 
             for (int i = 0; i < columnCount; i++) {
                 if (columnTypes[i] != null) {
                     columnNameList.add(titles[i]);
-                    columnList.add(N.newArrayList());
+                    columnList.add(new ArrayList<>());
                 }
             }
 
@@ -952,7 +954,7 @@ public final class CSVUtil {
             final ResultSetMetaData metaData = rs.getMetaData();
             final int columnCount = metaData.getColumnCount();
             final String[] columnNames = new String[columnCount];
-            final Set<String> columnNameSet = selectColumnNames == null ? null : N.newHashSet(selectColumnNames);
+            final Set<String> columnNameSet = selectColumnNames == null ? null : new HashSet<>(selectColumnNames);
             String label = null;
 
             for (int i = 0; i < columnCount; i++) {
@@ -1404,13 +1406,13 @@ public final class CSVUtil {
         final BufferedReader br = ObjectFactory.createBufferedReader(reader);
 
         try {
-            List<String> tmp = N.newArrayList();
+            List<String> tmp = new ArrayList<>();
             String line = br.readLine();
             jsonParser.readString(tmp, line);
             final String[] titles = tmp.toArray(new String[tmp.size()]);
 
             final Type<Object>[] columnTypes = new Type[titles.length];
-            final List<String> columnNameList = N.newArrayList(columnTypeMap.size());
+            final List<String> columnNameList = new ArrayList<>(columnTypeMap.size());
 
             for (int i = 0, columnCount = titles.length; i < columnCount; i++) {
                 if (columnTypeMap.containsKey(titles[i])) {
@@ -1420,7 +1422,7 @@ public final class CSVUtil {
             }
 
             if (columnNameList.size() != columnTypeMap.size()) {
-                final List<String> keys = N.newArrayList(columnTypeMap.keySet());
+                final List<String> keys = new ArrayList<>(columnTypeMap.keySet());
                 keys.removeAll(columnNameList);
                 throw new AbacusException(keys + " are not included in titles: " + N.toString(titles));
             }

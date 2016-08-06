@@ -33,7 +33,11 @@ public abstract class StringList extends ObjectList<String> {
         // utility class
     }
 
-    public static ObjectList<String> of(String[] a) {
+    public static ObjectList<String> empty() {
+        return new ObjectList<String>(N.EMPTY_STRING_ARRAY);
+    }
+
+    public static ObjectList<String> of(String... a) {
         return new ObjectList<String>(a);
     }
 
@@ -41,173 +45,173 @@ public abstract class StringList extends ObjectList<String> {
         return new ObjectList<String>(a, size);
     }
 
-    public static ObjectList<String> of(boolean[] a) {
-        return of(a, 0, a.length);
+    public static ObjectList<String> from(boolean... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ObjectList<String> of(boolean[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ObjectList<String> from(boolean[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final String[] elementData = new String[toIndex - fromIndex];
+        final String[] elementData = new String[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = String.valueOf(a[i]);
-        }
-
-        return of(elementData);
-    }
-
-    public static ObjectList<String> of(char[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static ObjectList<String> of(char[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final String[] elementData = new String[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = String.valueOf(a[i]);
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = String.valueOf(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static ObjectList<String> of(byte[] a) {
-        return of(a, 0, a.length);
+    public static ObjectList<String> from(char... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ObjectList<String> of(byte[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ObjectList<String> from(char[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final String[] elementData = new String[toIndex - fromIndex];
+        final String[] elementData = new String[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = String.valueOf(a[i]);
-        }
-
-        return of(elementData);
-    }
-
-    public static ObjectList<String> of(short[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static ObjectList<String> of(short[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final String[] elementData = new String[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = String.valueOf(a[i]);
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = String.valueOf(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static ObjectList<String> of(long[] a) {
-        return of(a, 0, a.length);
+    public static ObjectList<String> from(byte... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ObjectList<String> of(long[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ObjectList<String> from(byte[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final String[] elementData = new String[toIndex - fromIndex];
+        final String[] elementData = new String[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = String.valueOf(a[i]);
-        }
-
-        return of(elementData);
-    }
-
-    public static ObjectList<String> of(float[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static ObjectList<String> of(float[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final String[] elementData = new String[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = String.valueOf(a[i]);
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = String.valueOf(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static ObjectList<String> of(double[] a) {
-        return of(a, 0, a.length);
+    public static ObjectList<String> from(short... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ObjectList<String> of(double[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ObjectList<String> from(short[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final String[] elementData = new String[toIndex - fromIndex];
+        final String[] elementData = new String[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = String.valueOf(a[i]);
-        }
-
-        return of(elementData);
-    }
-
-    public static ObjectList<String> of(BigInteger[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static ObjectList<String> of(BigInteger[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final String[] elementData = new String[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i] == null ? null : a[i].toString();
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = String.valueOf(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static ObjectList<String> of(BigDecimal[] a) {
-        return of(a, 0, a.length);
+    public static ObjectList<String> from(long... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ObjectList<String> of(BigDecimal[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static ObjectList<String> from(long[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final String[] elementData = new String[toIndex - fromIndex];
+        final String[] elementData = new String[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i] == null ? null : a[i].toString();
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = String.valueOf(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static ObjectList<String> of(List<Number> c) {
-        return of(c, null);
+    public static ObjectList<String> from(float... a) {
+        return from(a, 0, a.length);
     }
 
-    public static ObjectList<String> of(List<Number> c, String defaultValueForNull) {
+    public static ObjectList<String> from(float[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
+        }
+
+        final String[] elementData = new String[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = String.valueOf(a[i]);
+        }
+
+        return of(elementData);
+    }
+
+    public static ObjectList<String> from(double... a) {
+        return from(a, 0, a.length);
+    }
+
+    public static ObjectList<String> from(double[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
+        }
+
+        final String[] elementData = new String[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = String.valueOf(a[i]);
+        }
+
+        return of(elementData);
+    }
+
+    public static ObjectList<String> from(BigInteger... a) {
+        return from(a, 0, a.length);
+    }
+
+    public static ObjectList<String> from(BigInteger[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
+        }
+
+        final String[] elementData = new String[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i] == null ? null : a[i].toString();
+        }
+
+        return of(elementData);
+    }
+
+    public static ObjectList<String> from(BigDecimal... a) {
+        return from(a, 0, a.length);
+    }
+
+    public static ObjectList<String> from(BigDecimal[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
+        }
+
+        final String[] elementData = new String[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i] == null ? null : a[i].toString();
+        }
+
+        return of(elementData);
+    }
+
+    public static ObjectList<String> from(List<Number> c) {
+        return from(c, null);
+    }
+
+    public static ObjectList<String> from(List<Number> c, String defaultValueForNull) {
         final String[] a = new String[c.size()];
         int idx = 0;
 
@@ -218,11 +222,11 @@ public abstract class StringList extends ObjectList<String> {
         return of(a);
     }
 
-    public static ObjectList<String> of(Collection<String> c) {
-        return of(c, null);
+    public static ObjectList<String> from(Collection<String> c) {
+        return from(c, null);
     }
 
-    public static ObjectList<String> of(Collection<String> c, String defaultValueForNull) {
+    public static ObjectList<String> from(Collection<String> c, String defaultValueForNull) {
         final String[] a = new String[c.size()];
         int idx = 0;
 

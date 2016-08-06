@@ -78,11 +78,19 @@ public final class BiMap<K, V> implements Map<K, V> {
         this.valueMap = valueMap;
     }
 
-    public static <K, V> BiMap<K, V> of(final Object... a) {
-        return N.asBiMap(a);
+    public static <K, V, k extends K, v extends V> BiMap<K, V> of(final k k1, final v v1) {
+        return N.asBiMap(k1, v1);
     }
 
-    public static <K, V> BiMap<K, V> of(final Map<? extends K, ? extends V> map) {
+    public static <K, V, k extends K, v extends V> BiMap<K, V> of(final k k1, final v v1, final k k2, final v v2) {
+        return N.asBiMap(k1, v1, k2, v2);
+    }
+
+    public static <K, V, k extends K, v extends V> BiMap<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
+        return N.asBiMap(k1, v1, k2, v2, k3, v3);
+    }
+
+    public static <K, V> BiMap<K, V> from(final Map<? extends K, ? extends V> map) {
         final BiMap<K, V> biMap = new BiMap<>(N.initHashCapacity(map.size()));
 
         biMap.putAll(map);

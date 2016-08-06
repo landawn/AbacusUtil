@@ -16,10 +16,13 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -62,7 +65,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : N.newArrayList(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
     }
 
     @Override
@@ -101,6 +104,28 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public ByteStream mapToByte(ToByteFunction<? super T> mapper) {
+        final byte[] a = new byte[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.applyAsByte(values[i]);
+        }
+
+        return new ByteStreamImpl(a, closeHandlers);
+    }
+
+    @Override
+    public ShortStream mapToShort(ToShortFunction<? super T> mapper) {
+        final short[] a = new short[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.applyAsShort(values[i]);
+        }
+
+        return new ShortStreamImpl(a, closeHandlers);
+    }
+
+    @Override
     public IntStream mapToInt(ToIntFunction<? super T> mapper) {
         final int[] a = new int[toIndex - fromIndex];
 
@@ -120,6 +145,17 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         return new LongStreamImpl(a, closeHandlers);
+    }
+
+    @Override
+    public FloatStream mapToFloat(ToFloatFunction<? super T> mapper) {
+        final float[] a = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.applyAsFloat(values[i]);
+        }
+
+        return new FloatStreamImpl(a, closeHandlers);
     }
 
     @Override
@@ -176,6 +212,48 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public ByteStream flatMapToByte(Function<? super T, ? extends ByteStream> mapper) {
+        final List<byte[]> listOfArray = new ArrayList<byte[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final byte[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final byte[] arrayOfAll = new byte[lengthOfAll];
+        int from = 0;
+        for (byte[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new ByteStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper) {
+        final List<short[]> listOfArray = new ArrayList<short[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final short[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final short[] arrayOfAll = new short[lengthOfAll];
+        int from = 0;
+        for (short[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new ShortStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
     public IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper) {
         final List<int[]> listOfArray = new ArrayList<int[]>();
 
@@ -215,6 +293,27 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         return new LongStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper) {
+        final List<float[]> listOfArray = new ArrayList<float[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final float[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final float[] arrayOfAll = new float[lengthOfAll];
+        int from = 0;
+        for (float[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new FloatStreamImpl(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -445,7 +544,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Stream<T> onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = N.newArrayList(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             closeHandlerList.addAll(this.closeHandlers);

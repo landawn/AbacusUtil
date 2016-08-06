@@ -30,7 +30,7 @@ import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
-import com.landawn.abacus.util.stream.DoubleStream;
+import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -58,7 +58,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
      * 
      * @param a
      */
-    public FloatList(float[] a) {
+    public FloatList(float... a) {
         this();
 
         elementData = a;
@@ -76,7 +76,11 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         this.size = size;
     }
 
-    public static FloatList of(float[] a) {
+    public static FloatList empty() {
+        return new FloatList(N.EMPTY_FLOAT_ARRAY);
+    }
+
+    public static FloatList of(float... a) {
         return new FloatList(a);
     }
 
@@ -84,93 +88,93 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return new FloatList(a, size);
     }
 
-    public static FloatList of(int[] a) {
-        return of(a, 0, a.length);
+    public static FloatList from(int... a) {
+        return from(a, 0, a.length);
     }
 
-    public static FloatList of(int[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static FloatList from(int[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final float[] elementData = new float[toIndex - fromIndex];
+        final float[] elementData = new float[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    public static FloatList of(long[] a) {
-        return of(a, 0, a.length);
-    }
-
-    public static FloatList of(long[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
-
-        final float[] elementData = new float[toIndex - fromIndex];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
         }
 
         return of(elementData);
     }
 
-    public static FloatList of(double[] a) {
-        return of(a, 0, a.length);
+    public static FloatList from(long... a) {
+        return from(a, 0, a.length);
     }
 
-    public static FloatList of(double[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static FloatList from(long[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final float[] elementData = new float[toIndex - fromIndex];
+        final float[] elementData = new float[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
+        }
+
+        return of(elementData);
+    }
+
+    public static FloatList from(double... a) {
+        return from(a, 0, a.length);
+    }
+
+    public static FloatList from(double[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
+        }
+
+        final float[] elementData = new float[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
             if (N.compare(a[i], Float.MIN_VALUE) < 0 || N.compare(a[i], Float.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (float) a[i];
+            elementData[i - startIndex] = (float) a[i];
         }
 
         return of(elementData);
     }
 
-    public static FloatList of(String[] a) {
-        return of(a, 0, a.length);
+    public static FloatList from(String... a) {
+        return from(a, 0, a.length);
     }
 
-    public static FloatList of(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static FloatList from(String[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final float[] elementData = new float[toIndex - fromIndex];
+        final float[] elementData = new float[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             double val = N.asDouble(a[i]);
 
             if (N.compare(val, Float.MIN_VALUE) < 0 || N.compare(val, Float.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (float) val;
+            elementData[i - startIndex] = (float) val;
         }
 
         return of(elementData);
     }
 
-    public static FloatList of(List<String> c) {
-        return of(c, 0f);
+    public static FloatList from(List<String> c) {
+        return from(c, 0f);
     }
 
-    public static FloatList of(List<String> c, float defaultValueForNull) {
+    public static FloatList from(List<String> c, float defaultValueForNull) {
         final float[] a = new float[c.size()];
         int idx = 0;
 
@@ -191,11 +195,11 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return of(a);
     }
 
-    public static FloatList of(Collection<? extends Number> c) {
-        return of(c, 0f);
+    public static FloatList from(Collection<? extends Number> c) {
+        return from(c, 0f);
     }
 
-    public static FloatList of(Collection<? extends Number> c, float defaultValueForNull) {
+    public static FloatList from(Collection<? extends Number> c, float defaultValueForNull) {
         final float[] a = new float[c.size()];
         int idx = 0;
 
@@ -499,24 +503,24 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return -1;
     }
 
-    public float min() {
-        return N.min(elementData, 0, size);
+    public OptionalFloat min() {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(N.min(elementData, 0, size));
     }
 
-    public float min(final int fromIndex, final int toIndex) {
+    public OptionalFloat min(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.min(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(N.min(elementData, fromIndex, toIndex));
     }
 
-    public float max() {
-        return N.max(elementData, 0, size);
+    public OptionalFloat max() {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(N.max(elementData, 0, size));
     }
 
-    public float max(final int fromIndex, final int toIndex) {
+    public OptionalFloat max(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.max(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(N.max(elementData, fromIndex, toIndex));
     }
 
     @Override
@@ -735,12 +739,14 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return outputResult;
     }
 
-    public float reduce(final FloatBinaryOperator accumulator) {
-        return reduce(0, size(), accumulator);
+    public OptionalFloat reduce(final FloatBinaryOperator accumulator) {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(reduce(0, accumulator));
     }
 
-    public float reduce(final int fromIndex, final int toIndex, final FloatBinaryOperator accumulator) {
-        return reduce(fromIndex, toIndex, 0, accumulator);
+    public OptionalFloat reduce(final int fromIndex, final int toIndex, final FloatBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(reduce(fromIndex, toIndex, 0, accumulator));
     }
 
     public float reduce(final float identity, final FloatBinaryOperator accumulator) {
@@ -877,14 +883,71 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         }
     }
 
-    public DoubleStream stream() {
+    public <K, U> Map<K, U> toMap(final FloatFunction<? extends K> keyMapper, final FloatFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, keyMapper, valueMapper);
+    }
+
+    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final FloatFunction<? extends K> keyMapper,
+            final FloatFunction<? extends U> valueMapper) {
+        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final FloatFunction<? extends K> keyMapper,
+            final FloatFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+            final FloatFunction<? extends K> keyMapper, final FloatFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Map<K, U> map = N.newInstance(outputClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return (R) map;
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final FloatFunction<? extends K> keyMapper, final FloatFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final FloatFunction<? extends K> keyMapper, final FloatFunction<? extends U> valueMapper) {
+        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final FloatFunction<? extends K> keyMapper,
+            final FloatFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final FloatFunction<? extends K> keyMapper, final FloatFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return multimap;
+    }
+
+    public FloatStream stream() {
         return stream(0, size());
     }
 
-    public DoubleStream stream(final int fromIndex, final int toIndex) {
+    public FloatStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.of(elementData, fromIndex, toIndex);
+        return Stream.from(elementData, fromIndex, toIndex);
     }
 
     @Override

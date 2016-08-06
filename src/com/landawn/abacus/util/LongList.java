@@ -58,7 +58,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
      * 
      * @param a
      */
-    public LongList(long[] a) {
+    public LongList(long... a) {
         this();
 
         elementData = a;
@@ -76,7 +76,11 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         this.size = size;
     }
 
-    public static LongList of(long[] a) {
+    public static LongList empty() {
+        return new LongList(N.EMPTY_LONG_ARRAY);
+    }
+
+    public static LongList of(long... a) {
         return new LongList(a);
     }
 
@@ -84,97 +88,97 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return new LongList(a, size);
     }
 
-    public static LongList of(int[] a) {
-        return of(a, 0, a.length);
+    public static LongList from(int... a) {
+        return from(a, 0, a.length);
     }
 
-    public static LongList of(int[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static LongList from(int[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final long[] elementData = new long[toIndex - fromIndex];
+        final long[] elementData = new long[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
         }
 
         return of(elementData);
     }
 
-    public static LongList of(float[] a) {
-        return of(a, 0, a.length);
+    public static LongList from(float... a) {
+        return from(a, 0, a.length);
     }
 
-    public static LongList of(float[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static LongList from(float[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final long[] elementData = new long[toIndex - fromIndex];
+        final long[] elementData = new long[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             if (N.compare(a[i], Long.MIN_VALUE) < 0 || N.compare(a[i], Long.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (long) a[i];
+            elementData[i - startIndex] = (long) a[i];
         }
 
         return of(elementData);
     }
 
-    public static LongList of(double[] a) {
-        return of(a, 0, a.length);
+    public static LongList from(double... a) {
+        return from(a, 0, a.length);
     }
 
-    public static LongList of(double[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static LongList from(double[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final long[] elementData = new long[toIndex - fromIndex];
+        final long[] elementData = new long[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             if (N.compare(a[i], Long.MIN_VALUE) < 0 || N.compare(a[i], Long.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (long) a[i];
+            elementData[i - startIndex] = (long) a[i];
         }
 
         return of(elementData);
     }
 
-    public static LongList of(String[] a) {
-        return of(a, 0, a.length);
+    public static LongList from(String... a) {
+        return from(a, 0, a.length);
     }
 
-    public static LongList of(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
+    public static LongList from(String[] a, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
         }
 
-        final long[] elementData = new long[toIndex - fromIndex];
+        final long[] elementData = new long[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             double val = N.asDouble(a[i]);
 
             if (N.compare(val, Long.MIN_VALUE) < 0 || N.compare(val, Long.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (long) val;
+            elementData[i - startIndex] = (long) val;
         }
 
         return of(elementData);
     }
 
-    public static LongList of(List<String> c) {
-        return of(c, 0);
+    public static LongList from(List<String> c) {
+        return from(c, 0);
     }
 
-    public static LongList of(List<String> c, long defaultValueForNull) {
+    public static LongList from(List<String> c, long defaultValueForNull) {
         final long[] a = new long[c.size()];
         int idx = 0;
 
@@ -195,11 +199,11 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return of(a);
     }
 
-    public static LongList of(Collection<? extends Number> c) {
-        return of(c, 0);
+    public static LongList from(Collection<? extends Number> c) {
+        return from(c, 0);
     }
 
-    public static LongList of(Collection<? extends Number> c, long defaultValueForNull) {
+    public static LongList from(Collection<? extends Number> c, long defaultValueForNull) {
         final long[] a = new long[c.size()];
         int idx = 0;
 
@@ -503,24 +507,24 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return -1;
     }
 
-    public long min() {
-        return N.min(elementData, 0, size);
+    public OptionalLong min() {
+        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(N.min(elementData, 0, size));
     }
 
-    public long min(final int fromIndex, final int toIndex) {
+    public OptionalLong min(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.min(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(N.min(elementData, fromIndex, toIndex));
     }
 
-    public long max() {
-        return N.max(elementData, 0, size);
+    public OptionalLong max() {
+        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(N.max(elementData, 0, size));
     }
 
-    public long max(final int fromIndex, final int toIndex) {
+    public OptionalLong max(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return N.max(elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(N.max(elementData, fromIndex, toIndex));
     }
 
     @Override
@@ -739,12 +743,14 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return outputResult;
     }
 
-    public long reduce(final LongBinaryOperator accumulator) {
-        return reduce(0, size(), accumulator);
+    public OptionalLong reduce(final LongBinaryOperator accumulator) {
+        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(reduce(0, accumulator));
     }
 
-    public long reduce(final int fromIndex, final int toIndex, final LongBinaryOperator accumulator) {
-        return reduce(fromIndex, toIndex, 0, accumulator);
+    public OptionalLong reduce(final int fromIndex, final int toIndex, final LongBinaryOperator accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(reduce(fromIndex, toIndex, 0, accumulator));
     }
 
     public long reduce(final long identity, final LongBinaryOperator accumulator) {
@@ -881,6 +887,63 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         }
     }
 
+    public <K, U> Map<K, U> toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, keyMapper, valueMapper);
+    }
+
+    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final LongFunction<? extends K> keyMapper,
+            final LongFunction<? extends U> valueMapper) {
+        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
+            final LongFunction<? extends U> valueMapper) {
+        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+            final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Map<K, U> map = N.newInstance(outputClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return (R) map;
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
+        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
+            final LongFunction<? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return multimap;
+    }
+
     public LongStream stream() {
         return stream(0, size());
     }
@@ -888,7 +951,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     public LongStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.of(elementData, fromIndex, toIndex);
+        return Stream.from(elementData, fromIndex, toIndex);
     }
 
     @Override

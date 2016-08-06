@@ -13,6 +13,7 @@ import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.DoubleToFloatFunction;
 import com.landawn.abacus.util.function.DoubleToIntFunction;
 import com.landawn.abacus.util.function.DoubleToLongFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
@@ -23,7 +24,7 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class DoubleStreamImpl implements DoubleStream {
+final class DoubleStreamImpl extends DoubleStream {
     private final double[] values;
     private final int fromIndex;
     private final int toIndex;
@@ -59,7 +60,7 @@ final class DoubleStreamImpl implements DoubleStream {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : N.newArrayList(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
     }
 
     @Override
@@ -117,6 +118,17 @@ final class DoubleStreamImpl implements DoubleStream {
         }
 
         return new LongStreamImpl(a, closeHandlers);
+    }
+
+    @Override
+    public FloatStream mapToFloat(DoubleToFloatFunction mapper) {
+        final float[] a = new float[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.applyAsFloat(values[i]);
+        }
+
+        return new FloatStreamImpl(a, closeHandlers);
     }
 
     @Override
@@ -325,7 +337,7 @@ final class DoubleStreamImpl implements DoubleStream {
 
     @Override
     public DoubleStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = N.newArrayList(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
 
         if (N.notNullOrEmpty(this.closeHandlers)) {
             closeHandlerList.addAll(this.closeHandlers);

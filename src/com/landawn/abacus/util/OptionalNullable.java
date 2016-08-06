@@ -108,6 +108,10 @@ public final class OptionalNullable<T> {
         return new OptionalNullable<>(value);
     }
 
+    public static <T> OptionalNullable<T> from(Optional<T> optional) {
+        return optional.isPresent() ? new OptionalNullable<T>(optional.get()) : (OptionalNullable<T>) empty();
+    }
+
     /**
      * If a value is present in this {@code OptionalNullable}, returns the value,
      * otherwise throws {@code NoSuchElementException}.

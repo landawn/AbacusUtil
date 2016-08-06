@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -44,10 +45,13 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -236,6 +240,34 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract CharStream mapToChar(ToCharFunction<? super T> mapper);
 
     /**
+     * Returns an {@code ByteStream} consisting of the results of applying the
+     * given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">
+     *     intermediate operation</a>.
+     *
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract ByteStream mapToByte(ToByteFunction<? super T> mapper);
+
+    /**
+     * Returns an {@code FloatStream} consisting of the results of applying the
+     * given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">
+     *     intermediate operation</a>.
+     *
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract ShortStream mapToShort(ToShortFunction<? super T> mapper);
+
+    /**
      * Returns an {@code IntStream} consisting of the results of applying the
      * given function to the elements of this stream.
      *
@@ -262,6 +294,20 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return the new stream
      */
     public abstract LongStream mapToLong(ToLongFunction<? super T> mapper);
+
+    /**
+     * Returns a {@code FloatStream} consisting of the results of applying the
+     * given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
+     * operation</a>.
+     *
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract FloatStream mapToFloat(ToFloatFunction<? super T> mapper);
 
     /**
      * Returns a {@code DoubleStream} consisting of the results of applying the
@@ -341,6 +387,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 
+    public abstract ByteStream flatMapToByte(Function<? super T, ? extends ByteStream> mapper);
+
+    public abstract ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper);
+
     /**
      * Returns an {@code IntStream} consisting of the results of replacing each
      * element of this stream with the contents of a mapped stream produced by
@@ -380,6 +430,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @see #flatMap(Function)
      */
     public abstract LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper);
+
+    public abstract FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper);
 
     /**
      * Returns an {@code DoubleStream} consisting of the results of replacing
@@ -1005,44 +1057,136 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     // Static factories
 
+    // Static factories
+
+    public static <T> Stream<T> empty() {
+        return from((T[]) N.EMPTY_OBJECT_ARRAY);
+    }
+
+    public static <T> Stream<T> of(final T... a) {
+        return from(a);
+    }
+
+    // Static factories
+
     /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     * Returns a sequential, stateful and immutable <code>CharStream</code>.
      *
      * @param e
      * @return
      */
-    static CharStream of(final char e) {
-        return of(Array.of(e));
+    static CharStream from(final char e) {
+        return from(Array.of(e));
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     * Returns a sequential, stateful and immutable <code>CharStream</code>.
      *
      * @param a
      * @return
      */
-    public static CharStream of(final char[] a) {
-        return of(a, 0, a.length);
+    public static CharStream from(final char[] a) {
+        return from(a, 0, a.length);
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     * Returns a sequential, stateful and immutable <code>CharStream</code>.
      *
      * @param a
-     * @param fromIndex
-     * @param toIndex
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    public static CharStream of(final char[] a, final int fromIndex, final int toIndex) {
-        //        final int[] values = new int[toIndex - fromIndex];
+    public static CharStream from(final char[] a, final int startIndex, final int endIndex) {
+        //        final int[] values = new int[endIndex - startIndex];
         //
-        //        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
+        //        for (int i = 0, j = startIndex; j < endIndex; i++, j++) {
         //            values[i] = a[j];
         //        }
         //
         //        return new CharStreamImpl(values);
 
-        return new CharStreamImpl(a, fromIndex, toIndex);
+        return new CharStreamImpl(a, startIndex, endIndex);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>ByteStream</code>.
+     *
+     * @param e
+     * @return
+     */
+    static ByteStream from(final byte e) {
+        return from(Array.of(e));
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>ByteStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static ByteStream from(final byte[] a) {
+        return from(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>ByteStream</code>.
+     *
+     * @param a
+     * @param startIndex
+     * @param endIndex
+     * @return
+     */
+    public static ByteStream from(final byte[] a, final int startIndex, final int endIndex) {
+        //        final int[] values = new int[endIndex - startIndex];
+        //
+        //        for (int i = 0, j = startIndex; j < endIndex; i++, j++) {
+        //            values[i] = a[j];
+        //        }
+        //
+        //        return new IntStreamImpl(values);
+
+        return new ByteStreamImpl(a, startIndex, endIndex);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>ShortStream</code>.
+     *
+     * @param e
+     * @return
+     */
+    static ShortStream from(final short e) {
+        return from(Array.of(e));
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>ShortStream</code>.
+     *
+     * @param a
+     * @return
+     */
+    public static ShortStream from(final short[] a) {
+        return from(a, 0, a.length);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>ShortStream</code>.
+     *
+     * @param a
+     * @param startIndex
+     * @param endIndex
+     * @return
+     */
+    public static ShortStream from(final short[] a, final int startIndex, final int endIndex) {
+        //        final int[] values = new int[endIndex - startIndex];
+        //
+        //        for (int i = 0, j = startIndex; j < endIndex; i++, j++) {
+        //            values[i] = a[j];
+        //        }
+        //
+        //        return new IntStreamImpl(values);
+
+        return new ShortStreamImpl(a, startIndex, endIndex);
     }
 
     /**
@@ -1051,8 +1195,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param e
      * @return
      */
-    static IntStream of(final byte e) {
-        return of(Array.of(e));
+    static IntStream from(final int e) {
+        return from(Array.of(e));
     }
 
     /**
@@ -1061,26 +1205,20 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static IntStream of(final byte[] a) {
-        return of(a, 0, a.length);
+    public static IntStream from(final int[] a) {
+        return from(a, 0, a.length);
     }
 
     /**
      * Returns a sequential, stateful and immutable <code>IntStream</code>.
      *
      * @param a
-     * @param fromIndex
-     * @param toIndex
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    public static IntStream of(final byte[] a, final int fromIndex, final int toIndex) {
-        final int[] values = new int[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            values[i] = a[j];
-        }
-
-        return new IntStreamImpl(values);
+    public static IntStream from(final int[] a, final int startIndex, final int endIndex) {
+        return new IntStreamImpl(a, startIndex, endIndex);
     }
 
     /**
@@ -1089,78 +1227,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param e
      * @return
      */
-    static IntStream of(final short e) {
-        return of(Array.of(e));
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-     *
-     * @param a
-     * @return
-     */
-    public static IntStream of(final short[] a) {
-        return of(a, 0, a.length);
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-     *
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     */
-    public static IntStream of(final short[] a, final int fromIndex, final int toIndex) {
-        final int[] values = new int[toIndex - fromIndex];
-
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            values[i] = a[j];
-        }
-
-        return new IntStreamImpl(values);
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-     *
-     * @param e
-     * @return
-     */
-    static IntStream of(final int e) {
-        return of(Array.of(e));
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-     *
-     * @param a
-     * @return
-     */
-    public static IntStream of(final int[] a) {
-        return of(a, 0, a.length);
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-     *
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     */
-    public static IntStream of(final int[] a, final int fromIndex, final int toIndex) {
-        return new IntStreamImpl(a, fromIndex, toIndex);
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
-     *
-     * @param e
-     * @return
-     */
-    static LongStream of(final long e) {
-        return of(Array.of(e));
+    static LongStream from(final long e) {
+        return from(Array.of(e));
     }
 
     /**
@@ -1169,68 +1237,70 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static LongStream of(final long[] a) {
-        return of(a, 0, a.length);
+    public static LongStream from(final long[] a) {
+        return from(a, 0, a.length);
     }
 
     /**
      * Returns a sequential, stateful and immutable <code>LongStream</code>.
      *
      * @param a
-     * @param fromIndex
-     * @param toIndex
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    public static LongStream of(final long[] a, final int fromIndex, final int toIndex) {
-        return new LongStreamImpl(a, fromIndex, toIndex);
+    public static LongStream from(final long[] a, final int startIndex, final int endIndex) {
+        return new LongStreamImpl(a, startIndex, endIndex);
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     * Returns a sequential, stateful and immutable <code>FloatStream</code>.
      *
      * @param e
      * @return
      */
-    static DoubleStream of(final float e) {
-        return of(Array.of(e));
+    static FloatStream from(final float e) {
+        return from(Array.of(e));
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     * Returns a sequential, stateful and immutable <code>FloatStream</code>.
      *
      * @param a
      * @return
      */
-    public static DoubleStream of(final float[] a) {
-        return of(a, 0, a.length);
+    public static FloatStream from(final float[] a) {
+        return from(a, 0, a.length);
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     * Returns a sequential, stateful and immutable <code>FloatStream</code>.
      *
      * @param a
-     * @param fromIndex
-     * @param toIndex
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    public static DoubleStream of(final float[] a, final int fromIndex, final int toIndex) {
-        final double[] values = new double[toIndex - fromIndex];
+    public static FloatStream from(final float[] a, final int startIndex, final int endIndex) {
+        //        final double[] values = new double[endIndex - startIndex];
+        //
+        //        for (int i = 0, j = startIndex; j < endIndex; i++, j++) {
+        //            values[i] = a[j];
+        //        }
+        //
+        //        return new DoubleStreamImpl(values);
 
-        for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
-            values[i] = a[j];
-        }
-
-        return new DoubleStreamImpl(values);
+        return new FloatStreamImpl(a, 0, a.length);
     }
 
     /**
-     * Returns a sequential, stateful and immutable <code>IntStream</code>.
+     * Returns a sequential, stateful and immutable <code>DoubleStream</code>.
      *
      * @param e
      * @return
      */
-    static DoubleStream of(final double e) {
-        return of(Array.of(e));
+    static DoubleStream from(final double e) {
+        return from(Array.of(e));
     }
 
     /**
@@ -1239,20 +1309,20 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static DoubleStream of(final double[] a) {
-        return of(a, 0, a.length);
+    public static DoubleStream from(final double[] a) {
+        return from(a, 0, a.length);
     }
 
     /**
      * Returns a sequential, stateful and immutable <code>DoubleStream</code>.
      *
      * @param a
-     * @param fromIndex
-     * @param toIndex
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    public static DoubleStream of(final double[] a, final int fromIndex, final int toIndex) {
-        return new DoubleStreamImpl(a, fromIndex, toIndex);
+    public static DoubleStream from(final double[] a, final int startIndex, final int endIndex) {
+        return new DoubleStreamImpl(a, startIndex, endIndex);
     }
 
     /**
@@ -1261,20 +1331,20 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static <T> Stream<T> of(final T[] a) {
-        return of(a, 0, a.length);
+    public static <T> Stream<T> from(final T[] a) {
+        return from(a, 0, a.length);
     }
 
     /**
      * Returns a sequential, stateful and immutable <code>Stream</code>.
      *
      * @param a
-     * @param fromIndex
-     * @param toIndex
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    public static <T> Stream<T> of(final T[] a, final int fromIndex, final int toIndex) {
-        return new ArrayStream<T>(a, fromIndex, toIndex);
+    public static <T> Stream<T> from(final T[] a, final int startIndex, final int endIndex) {
+        return new ArrayStream<T>(a, startIndex, endIndex);
     }
 
     /**
@@ -1283,21 +1353,21 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param c
      * @return
      */
-    public static <T> Stream<T> of(final Collection<T> c) {
-        return of(c, 0, c.size());
+    public static <T> Stream<T> from(final Collection<T> c) {
+        return from(c, 0, c.size());
     }
 
     /**
      * Returns a sequential, stateful and immutable <code>Stream</code>.
      * 
      * @param c
-     * @param fromIndex
-     * @param toIndex
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    public static <T> Stream<T> of(final Collection<T> c, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < fromIndex || toIndex > c.size()) {
-            throw new IllegalArgumentException("fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ") is invalid");
+    public static <T> Stream<T> from(final Collection<T> c, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < startIndex || endIndex > c.size()) {
+            throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
         }
 
         // return new CollectionStream<T>(c);
@@ -1314,18 +1384,18 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             }
 
             if (array != null) {
-                return of(array, fromIndex, toIndex);
+                return from(array, startIndex, endIndex);
             }
         }
 
-        if (fromIndex == 0 && toIndex == c.size()) {
+        if (startIndex == 0 && endIndex == c.size()) {
             // return (c.size() > 10 && (c.size() < 1000 || (c.size() < 100000 && c instanceof ArrayList))) ? streamOf((T[]) c.toArray()) : c.stream();
             return new CollectionStream<T>(c);
         } else {
-            final T[] a = (T[]) new Object[toIndex - fromIndex];
+            final T[] a = (T[]) new Object[endIndex - startIndex];
             final Iterator<T> iter = c.iterator();
 
-            while (fromIndex-- > 0) {
+            while (startIndex-- > 0) {
                 iter.next();
             }
 
@@ -1337,7 +1407,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                 i++;
             }
 
-            return of(a);
+            return from(a);
         }
     }
 
@@ -1348,37 +1418,44 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     @Deprecated
-    static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m) {
-        return of(m, 0, m.size());
+    static <K, V> Stream<Map.Entry<K, V>> from(final Map<K, V> m) {
+        return from(m, 0, m.size());
     }
 
     /**
      * Returns a sequential, stateful and immutable <code>Stream</code>.
      * 
      * @param m
-     * @param fromIndex
-     * @param toIndex
+     * @param startIndex
+     * @param endIndex
      * @return
      */
     @Deprecated
-    static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m, final int fromIndex, final int toIndex) {
-        return of(m.entrySet(), fromIndex, toIndex);
+    static <K, V> Stream<Map.Entry<K, V>> from(final Map<K, V> m, final int startIndex, final int endIndex) {
+        return from(m.entrySet(), startIndex, endIndex);
+    }
+
+    public static CharStream range(final char startInclusive, final char endExclusive) {
+        return from(Array.range(startInclusive, endExclusive));
     }
 
     public static IntStream range(final int startInclusive, final int endExclusive) {
-        return of(Array.range(startInclusive, endExclusive));
+        return from(Array.range(startInclusive, endExclusive));
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {
-        return of(Array.range(startInclusive, endExclusive));
+        return from(Array.range(startInclusive, endExclusive));
+    }
+
+    public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
+        return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
     public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
-        return of(Array.rangeClosed(startInclusive, endInclusive));
+        return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
     public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
-        return of(Array.rangeClosed(startInclusive, endInclusive));
+        return from(Array.rangeClosed(startInclusive, endInclusive));
     }
-
 }

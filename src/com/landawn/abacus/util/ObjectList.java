@@ -65,7 +65,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         this.size = size;
     }
 
-    public static <T> ObjectList<T> of(T[] a) {
+    public static <T> ObjectList<T> of(T... a) {
         return new ObjectList<T>(a);
     }
 
@@ -98,14 +98,14 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
      * @return
      */
     @Beta
-    public OptionalNullable<T> findFirstNonNull() {
+    public Optional<T> findFirstNonNull() {
         for (int i = 0; i < size; i++) {
             if (elementData[i] != null) {
-                return OptionalNullable.of(elementData[i]);
+                return Optional.of(elementData[i]);
             }
         }
 
-        return OptionalNullable.empty();
+        return Optional.empty();
     }
 
     /**
@@ -122,14 +122,14 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
      * @return
      */
     @Beta
-    public OptionalNullable<T> findLastNonNull() {
+    public Optional<T> findLastNonNull() {
         for (int i = size - 1; i >= 0; i--) {
             if (elementData[i] != null) {
-                return OptionalNullable.of(elementData[i]);
+                return Optional.of(elementData[i]);
             }
         }
 
-        return OptionalNullable.empty();
+        return Optional.empty();
     }
 
     public T get(int index) {
@@ -387,44 +387,46 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         return -1;
     }
 
-    public T min() {
-        return (T) N.min((Comparable[]) elementData, 0, size);
+    public OptionalNullable<T> min() {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.min((Comparable[]) elementData, 0, size));
     }
 
-    public T min(final int fromIndex, final int toIndex) {
+    public OptionalNullable<T> min(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return (T) N.min((Comparable[]) elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
+                : OptionalNullable.of((T) N.min((Comparable[]) elementData, fromIndex, toIndex));
     }
 
-    public T min(Comparator<T> cmp) {
-        return N.min(elementData, 0, size, cmp);
+    public OptionalNullable<T> min(Comparator<T> cmp) {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(elementData, 0, size, cmp));
     }
 
-    public T min(final int fromIndex, final int toIndex, Comparator<T> cmp) {
+    public OptionalNullable<T> min(final int fromIndex, final int toIndex, Comparator<T> cmp) {
         checkIndex(fromIndex, toIndex);
 
-        return N.min(elementData, fromIndex, toIndex, cmp);
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(elementData, fromIndex, toIndex, cmp));
     }
 
-    public T max() {
-        return (T) N.max((Comparable[]) elementData, 0, size);
+    public OptionalNullable<T> max() {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.max((Comparable[]) elementData, 0, size));
     }
 
-    public T max(final int fromIndex, final int toIndex) {
+    public OptionalNullable<T> max(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return (T) N.max((Comparable[]) elementData, fromIndex, toIndex);
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
+                : OptionalNullable.of((T) N.max((Comparable[]) elementData, fromIndex, toIndex));
     }
 
-    public T max(Comparator<T> cmp) {
-        return N.max(elementData, 0, size, cmp);
+    public OptionalNullable<T> max(Comparator<T> cmp) {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(elementData, 0, size, cmp));
     }
 
-    public T max(final int fromIndex, final int toIndex, Comparator<T> cmp) {
+    public OptionalNullable<T> max(final int fromIndex, final int toIndex, Comparator<T> cmp) {
         checkIndex(fromIndex, toIndex);
 
-        return N.max(elementData, fromIndex, toIndex, cmp);
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(elementData, fromIndex, toIndex, cmp));
     }
 
     @Override
@@ -630,12 +632,14 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         return outputResult;
     }
 
-    public T reduce(final BiFunction<T, T, T> accumulator) {
-        return reduce(0, size(), accumulator);
+    public OptionalNullable<T> reduce(final BiFunction<T, T, T> accumulator) {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(reduce(null, accumulator));
     }
 
-    public T reduce(final int fromIndex, final int toIndex, final BiFunction<T, T, T> accumulator) {
-        return reduce(fromIndex, toIndex, null, accumulator);
+    public OptionalNullable<T> reduce(final int fromIndex, final int toIndex, final BiFunction<T, T, T> accumulator) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(reduce(fromIndex, toIndex, null, accumulator));
     }
 
     public T reduce(final T identity, final BiFunction<T, T, T> accumulator) {
@@ -673,7 +677,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         final List<ObjectList<T>> result = new ArrayList<>(list.size());
 
         for (T[] a : list) {
-            result.add(ObjectList.of(a));
+            result.add(of(a));
         }
 
         return result;
@@ -772,6 +776,63 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         }
     }
 
+    public <K, U> Map<K, U> toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+        return toMap(HashMap.class, keyMapper, valueMapper);
+    }
+
+    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper) {
+        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper) {
+        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Map<K, U> map = N.newInstance(outputClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return (R) map;
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    }
+
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper) {
+        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
+            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+        }
+
+        return multimap;
+    }
+
     public Stream<T> stream() {
         return stream(0, size());
     }
@@ -779,7 +840,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     public Stream<T> stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.of(elementData, fromIndex, toIndex);
+        return Stream.from(elementData, fromIndex, toIndex);
     }
 
     @Override

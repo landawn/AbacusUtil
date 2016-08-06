@@ -18,6 +18,7 @@ package com.landawn.abacus.util;
 
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -36,11 +37,11 @@ public final class ArrayHashMap<K, V> implements Map<K, V> {
     private final Map<ArrayWrapper<K>, V> map;
 
     public ArrayHashMap() {
-        map = N.newHashMap();
+        map = new HashMap<>();
     }
 
     public ArrayHashMap(final int initialCapacity) {
-        map = N.newHashMap(initialCapacity);
+        map = new HashMap<>(initialCapacity);
     }
 
     @SuppressWarnings("rawtypes")
@@ -72,9 +73,9 @@ public final class ArrayHashMap<K, V> implements Map<K, V> {
 
     public ArrayHashMap(final Map<? extends K, ? extends V> m) {
         if (N.isNullOrEmpty(m)) {
-            map = N.newHashMap();
+            map = new HashMap<>();
         } else {
-            map = N.newHashMap(N.initHashCapacity(m.size()));
+            map = new HashMap<>(N.initHashCapacity(m.size()));
         }
 
         putAll(m);

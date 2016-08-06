@@ -16,7 +16,9 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -33,11 +35,11 @@ public final class ArrayHashSet<E> implements Set<E> {
     private final Set<ArrayWrapper<E>> set;
 
     public ArrayHashSet() {
-        this.set = N.newHashSet();
+        this.set = new HashSet<>();
     }
 
     public ArrayHashSet(final int initialCapacity) {
-        this.set = N.newHashSet(initialCapacity);
+        this.set = new HashSet<>(initialCapacity);
     }
 
     @SuppressWarnings("rawtypes")
@@ -47,9 +49,9 @@ public final class ArrayHashSet<E> implements Set<E> {
 
     public ArrayHashSet(final Collection<? extends E> coll) {
         if (N.isNullOrEmpty(coll)) {
-            set = N.newHashSet();
+            set = new HashSet<>();
         } else {
-            set = N.newHashSet(N.initHashCapacity(coll.size()));
+            set = new HashSet<>(N.initHashCapacity(coll.size()));
         }
 
         addAll(coll);
@@ -111,7 +113,7 @@ public final class ArrayHashSet<E> implements Set<E> {
             }
         }
 
-        List<ArrayWrapper<?>> list = N.newArrayList(c.size());
+        List<ArrayWrapper<?>> list = new ArrayList<>(c.size());
 
         for (Object e : c) {
             list.add(ArrayWrapper.of(e));

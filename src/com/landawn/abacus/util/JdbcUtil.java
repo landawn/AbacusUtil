@@ -43,6 +43,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +117,7 @@ public final class JdbcUtil {
         }
     };
 
-    private static final Set<String> sqlStateForTableNotExists = N.newHashSet();
+    private static final Set<String> sqlStateForTableNotExists = new HashSet<>();
 
     static {
         sqlStateForTableNotExists.add("42S02"); // for MySQL.
@@ -224,7 +227,7 @@ public final class JdbcUtil {
 
             Element rootElement = doc.getDocumentElement();
 
-            final Map<String, String> props = N.newHashMap();
+            final Map<String, String> props = new HashMap<>();
             List<Element> propertiesElementList = XMLUtil.getElementsByTagName(rootElement, AbacusConfiguration.PROPERTIES);
 
             if (N.notNullOrEmpty(propertiesElementList)) {
@@ -298,7 +301,7 @@ public final class JdbcUtil {
             }
         }
 
-        final Map<String, String> newProps = N.newHashMap();
+        final Map<String, String> newProps = new HashMap<>();
         final java.util.Properties properties = new java.util.Properties();
 
         try {
@@ -345,7 +348,7 @@ public final class JdbcUtil {
      */
     public static DataSource createDataSource(final Class<? extends Driver> driverClass, final String url, final String user, final String password,
             final Map<String, ?> props) {
-        Map<String, Object> newProps = N.newHashMap();
+        Map<String, Object> newProps = new HashMap<>();
 
         if (N.notNullOrEmpty(props)) {
             for (Map.Entry<String, ?> entry : props.entrySet()) {
@@ -871,12 +874,12 @@ public final class JdbcUtil {
             // TODO [performance improvement]. it will improve performance a lot if MetaData is cached.
             final ResultSetMetaData metaData = rs.getMetaData();
             final int columnCount = metaData.getColumnCount();
-            final List<String> columnNameList = N.newArrayList(columnCount);
-            final List<List<Object>> columnList = N.newArrayList(columnCount);
+            final List<String> columnNameList = new ArrayList<>(columnCount);
+            final List<List<Object>> columnList = new ArrayList<>(columnCount);
 
             for (int i = 0; i < columnCount;) {
                 columnNameList.add(metaData.getColumnLabel(++i));
-                columnList.add(N.newArrayList());
+                columnList.add(new ArrayList<>());
             }
 
             while (offset-- > 0 && rs.next()) {
@@ -910,7 +913,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
@@ -928,7 +931,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre> 
@@ -948,7 +951,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
@@ -969,7 +972,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>  
@@ -992,7 +995,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
@@ -1024,7 +1027,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
@@ -1045,7 +1048,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
@@ -1067,7 +1070,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
@@ -1091,7 +1094,7 @@ public final class JdbcUtil {
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
-        List<String> columnNameList = N.newArrayList(dataset.columnNameList());
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
@@ -1183,7 +1186,7 @@ public final class JdbcUtil {
     public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final PreparedStatement stmt,
             final int batchSize, final int batchInterval, final Predicate<Object[]> filter) {
         final Type<?> objType = N.getType(Object.class);
-        final Map<String, Type<?>> columnTypeMap = N.newHashMap();
+        final Map<String, Type<?>> columnTypeMap = new HashMap<>();
 
         for (String propName : selectColumnNames) {
             columnTypeMap.put(propName, objType);
@@ -1265,7 +1268,7 @@ public final class JdbcUtil {
             final List<String> columnNameList = dataset.columnNameList();
             final int[] columnIndexes = new int[columnCount];
             final Type<Object>[] columnTypes = new Type[columnCount];
-            final Set<String> columnNameSet = N.newHashSet(columnCount);
+            final Set<String> columnNameSet = new HashSet<>(columnCount);
 
             int idx = 0;
             for (String columnName : columnNameList) {
@@ -1278,7 +1281,7 @@ public final class JdbcUtil {
             }
 
             if (columnNameSet.size() != columnTypeMap.size()) {
-                final List<String> keys = N.newArrayList(columnTypeMap.keySet());
+                final List<String> keys = new ArrayList<>(columnTypeMap.keySet());
                 keys.removeAll(columnNameSet);
                 throw new AbacusException(keys + " are not included in titles: " + N.toString(columnNameList));
             }
@@ -2150,7 +2153,7 @@ public final class JdbcUtil {
      */
     public static List<String> getColumnNameList(final Connection conn, final String tableName) {
         DataSet dataSet = executeQuery(conn, "SELECT * FROM " + tableName + " WHERE 1 > 2");
-        List<String> columnNameList = N.newArrayList(dataSet.columnNameList().size());
+        List<String> columnNameList = new ArrayList<>(dataSet.columnNameList().size());
 
         for (String columName : dataSet.columnNameList()) {
             columnNameList.add(columName.intern());
@@ -2187,7 +2190,7 @@ public final class JdbcUtil {
         static final String PRIMARY = "primary";
 
         private final javax.sql.DataSource sqlDataSource;
-        private final Properties<String, String> props = Properties.of();
+        private final Properties<String, String> props = new Properties<>();
         private final SliceSelector sliceSelector = new NonSliceSelector();
 
         private final Method closeMethod;
@@ -2316,7 +2319,7 @@ public final class JdbcUtil {
     static class SimpleDataSourceManager implements DataSourceManager {
         private final DataSource primaryDataSource;
         private final Map<String, DataSource> activeDataSources;
-        private final Properties<String, String> props = Properties.of();
+        private final Properties<String, String> props = new Properties<>();
         private final DataSourceSelector dataSourceSelector = new SimpleSourceSelector();
         private boolean isClosed = false;
 

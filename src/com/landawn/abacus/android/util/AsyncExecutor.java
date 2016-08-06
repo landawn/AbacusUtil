@@ -16,12 +16,12 @@
 
 package com.landawn.abacus.android.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.util.N;
 
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -58,7 +58,7 @@ public class AsyncExecutor {
 
     @Beta
     static List<CompletableFuture<Void>> execute(final List<? extends Runnable> actions) {
-        final List<CompletableFuture<Void>> results = N.newArrayList(actions.size());
+        final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
 
         for (Runnable cmd : actions) {
             results.add(execute(cmd));
@@ -85,7 +85,7 @@ public class AsyncExecutor {
      */
     @Beta
     static <T> List<CompletableFuture<T>> execute(final Collection<? extends Callable<T>> actions) {
-        final List<CompletableFuture<T>> results = N.newArrayList(actions.size());
+        final List<CompletableFuture<T>> results = new ArrayList<>(actions.size());
 
         for (Callable<T> cmd : actions) {
             results.add(execute(cmd));
@@ -118,7 +118,7 @@ public class AsyncExecutor {
      */
     @Beta
     static List<CompletableFuture<Void>> executeInParallel(final List<? extends Runnable> actions) {
-        final List<CompletableFuture<Void>> results = N.newArrayList(actions.size());
+        final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
 
         for (Runnable cmd : actions) {
             results.add(executeInParallel(cmd));
@@ -145,7 +145,7 @@ public class AsyncExecutor {
      */
     @Beta
     static <T> List<CompletableFuture<T>> executeInParallel(final Collection<? extends Callable<T>> actions) {
-        final List<CompletableFuture<T>> results = N.newArrayList(actions.size());
+        final List<CompletableFuture<T>> results = new ArrayList<>(actions.size());
 
         for (Callable<T> cmd : actions) {
             results.add(executeInParallel(cmd));
@@ -189,7 +189,7 @@ public class AsyncExecutor {
      */
     @Beta
     static List<CompletableFuture<Void>> executeOnUiThread(final List<? extends Runnable> actions) {
-        final List<CompletableFuture<Void>> results = N.newArrayList(actions.size());
+        final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
 
         for (Runnable cmd : actions) {
             results.add(executeOnUiThread(cmd));
@@ -207,7 +207,7 @@ public class AsyncExecutor {
      */
     @Beta
     static List<CompletableFuture<Void>> executeOnUiThread(final List<? extends Runnable> actions, final long delay) {
-        final List<CompletableFuture<Void>> results = N.newArrayList(actions.size());
+        final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
 
         for (Runnable cmd : actions) {
             results.add(executeOnUiThread(cmd, delay));
@@ -245,7 +245,7 @@ public class AsyncExecutor {
      */
     @Beta
     static <T> List<CompletableFuture<T>> executeOnUiThread(final Collection<? extends Callable<T>> actions) {
-        final List<CompletableFuture<T>> results = N.newArrayList(actions.size());
+        final List<CompletableFuture<T>> results = new ArrayList<>(actions.size());
 
         for (Callable<T> cmd : actions) {
             results.add(executeOnUiThread(cmd));
@@ -263,7 +263,7 @@ public class AsyncExecutor {
      */
     @Beta
     static <T> List<CompletableFuture<T>> executeOnUiThread(final Collection<? extends Callable<T>> actions, final long delay) {
-        final List<CompletableFuture<T>> results = N.newArrayList(actions.size());
+        final List<CompletableFuture<T>> results = new ArrayList<>(actions.size());
 
         for (Callable<T> cmd : actions) {
             results.add(executeOnUiThread(cmd, delay));

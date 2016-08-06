@@ -235,7 +235,7 @@ public interface ArrayList<C, P, E, A, L extends ArrayList<C, P, E, A, L>> {
     /**
      * 
      *
-     * @return  A this List with trailing unused space removed.
+     * @return this List with trailing unused space removed.
      */
     L trimToSize();
 

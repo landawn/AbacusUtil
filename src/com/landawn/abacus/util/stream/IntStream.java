@@ -24,6 +24,9 @@
  */
 package com.landawn.abacus.util.stream;
 
+import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -34,6 +37,7 @@ import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntToCharFunction;
 import com.landawn.abacus.util.function.IntToDoubleFunction;
+import com.landawn.abacus.util.function.IntToFloatFunction;
 import com.landawn.abacus.util.function.IntToLongFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
@@ -67,7 +71,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public interface IntStream extends BaseStream<Integer, IntStream> {
+public abstract class IntStream implements BaseStream<Integer, IntStream> {
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -82,7 +86,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *                  should be included
      * @return the new stream
      */
-    IntStream filter(IntPredicate predicate);
+    public abstract IntStream filter(IntPredicate predicate);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -96,7 +100,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    IntStream map(IntUnaryOperator mapper);
+    public abstract IntStream map(IntUnaryOperator mapper);
 
     /**
      * Returns an object-valued {@code Stream} consisting of the results of
@@ -111,7 +115,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    <U> Stream<U> mapToObj(IntFunction<? extends U> mapper);
+    public abstract <U> Stream<U> mapToObj(IntFunction<? extends U> mapper);
 
     /**
      * Returns a {@code CharStream} consisting of the results of applying the
@@ -125,7 +129,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    CharStream mapToChar(IntToCharFunction mapper);
+    public abstract CharStream mapToChar(IntToCharFunction mapper);
 
     /**
      * Returns a {@code LongStream} consisting of the results of applying the
@@ -139,7 +143,21 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    LongStream mapToLong(IntToLongFunction mapper);
+    public abstract LongStream mapToLong(IntToLongFunction mapper);
+
+    /**
+     * Returns a {@code FloatStream} consisting of the results of applying the
+     * given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
+     * operation</a>.
+     *
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract FloatStream mapToFloat(IntToFloatFunction mapper);
 
     /**
      * Returns a {@code DoubleStream} consisting of the results of applying the
@@ -153,7 +171,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *               function to apply to each element
      * @return the new stream
      */
-    DoubleStream mapToDouble(IntToDoubleFunction mapper);
+    public abstract DoubleStream mapToDouble(IntToDoubleFunction mapper);
 
     /**
      * Returns a stream consisting of the results of replacing each element of
@@ -173,7 +191,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return the new stream
      * @see Stream#flatMap(Function)
      */
-    IntStream flatMap(IntFunction<? extends IntStream> mapper);
+    public abstract IntStream flatMap(IntFunction<? extends IntStream> mapper);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -183,7 +201,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @return the new stream
      */
-    IntStream distinct();
+    public abstract IntStream distinct();
 
     /**
      * Returns a stream consisting of the elements of this stream in sorted
@@ -194,7 +212,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @return the new stream
      */
-    IntStream sorted();
+    public abstract IntStream sorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -225,7 +243,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *               they are consumed from the stream
      * @return the new stream
      */
-    IntStream peek(IntConsumer action);
+    public abstract IntStream peek(IntConsumer action);
 
     /**
      * Returns a stream consisting of the elements of this stream, truncated
@@ -252,7 +270,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code maxSize} is negative
      */
-    IntStream limit(long maxSize);
+    public abstract IntStream limit(long maxSize);
 
     /**
      * Returns a stream consisting of the remaining elements of this stream
@@ -281,7 +299,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return the new stream
      * @throws IllegalArgumentException if {@code n} is negative
      */
-    IntStream skip(long n);
+    public abstract IntStream skip(long n);
 
     /**
      * Performs an action for each element of this stream.
@@ -299,7 +317,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @param action a <a href="package-summary.html#NonInterference">
      *               non-interfering</a> action to perform on the elements
      */
-    void forEach(IntConsumer action);
+    public abstract void forEach(IntConsumer action);
 
     /**
      * Returns an array containing the elements of this stream.
@@ -309,7 +327,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @return an array containing the elements of this stream
      */
-    int[] toArray();
+    public abstract int[] toArray();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -364,7 +382,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @see #max()
      * @see #average()
      */
-    int reduce(int identity, IntBinaryOperator op);
+    public abstract int reduce(int identity, IntBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -401,7 +419,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return the result of the reduction
      * @see #reduce(int, IntBinaryOperator)
      */
-    OptionalInt reduce(IntBinaryOperator op);
+    public abstract OptionalInt reduce(IntBinaryOperator op);
 
     /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable
@@ -439,7 +457,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * Returns the sum of elements in this stream.  This is a special case
@@ -454,7 +472,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @return the sum of elements in this stream
      */
-    int sum();
+    public abstract int sum();
 
     /**
      * Returns an {@code OptionalInt} describing the minimum element of this
@@ -470,7 +488,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return an {@code OptionalInt} containing the minimum element of this
      * stream, or an empty {@code OptionalInt} if the stream is empty
      */
-    OptionalInt min();
+    public abstract OptionalInt min();
 
     /**
      * Returns an {@code OptionalInt} describing the maximum element of this
@@ -487,7 +505,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return an {@code OptionalInt} containing the maximum element of this
      * stream, or an empty {@code OptionalInt} if the stream is empty
      */
-    OptionalInt max();
+    public abstract OptionalInt max();
 
     /**
      * Returns the count of elements in this stream.  This is a special case of
@@ -501,7 +519,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      *
      * @return the count of elements in this stream
      */
-    long count();
+    public abstract long count();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic mean of elements of
@@ -515,7 +533,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return an {@code OptionalDouble} containing the average element of this
      * stream, or an empty optional if the stream is empty
      */
-    OptionalDouble average();
+    public abstract OptionalDouble average();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -536,7 +554,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return {@code true} if any elements of the stream match the provided
      * predicate, otherwise {@code false}
      */
-    boolean anyMatch(IntPredicate predicate);
+    public abstract boolean anyMatch(IntPredicate predicate);
 
     /**
      * Returns whether all elements of this stream match the provided predicate.
@@ -559,7 +577,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return {@code true} if either all elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean allMatch(IntPredicate predicate);
+    public abstract boolean allMatch(IntPredicate predicate);
 
     /**
      * Returns whether no elements of this stream match the provided predicate.
@@ -582,7 +600,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return {@code true} if either no elements of the stream match the
      * provided predicate or the stream is empty, otherwise {@code false}
      */
-    boolean noneMatch(IntPredicate predicate);
+    public abstract boolean noneMatch(IntPredicate predicate);
 
     /**
      * Returns an {@link OptionalInt} describing the first element of this
@@ -595,7 +613,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return an {@code OptionalInt} describing the first element of this stream,
      * or an empty {@code OptionalInt} if the stream is empty
      */
-    OptionalInt findFirst();
+    public abstract OptionalInt findFirst();
 
     /**
      * Returns an {@link OptionalInt} describing some element of the stream, or
@@ -614,7 +632,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * an empty {@code OptionalInt} if the stream is empty
      * @see #findFirst()
      */
-    OptionalInt findAny();
+    public abstract OptionalInt findAny();
 
     /**
      * Returns a {@code CharStream} consisting of the elements of this stream,
@@ -626,7 +644,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return a {@code CharStream} consisting of the elements of this stream,
      * converted to {@code long}
      */
-    CharStream asCharStream();
+    public abstract CharStream asCharStream();
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -638,7 +656,19 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}
      */
-    LongStream asLongStream();
+    public abstract LongStream asLongStream();
+
+    /**
+     * Returns a {@code FloatStream} consisting of the elements of this stream,
+     * converted to {@code double}.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
+     * operation</a>.
+     *
+     * @return a {@code FloatStream} consisting of the elements of this stream,
+     * converted to {@code double}
+     */
+    public abstract FloatStream asFloatStream();
 
     /**
      * Returns a {@code DoubleStream} consisting of the elements of this stream,
@@ -650,7 +680,7 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return a {@code DoubleStream} consisting of the elements of this stream,
      * converted to {@code double}
      */
-    DoubleStream asDoubleStream();
+    public abstract DoubleStream asDoubleStream();
 
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
@@ -662,7 +692,35 @@ public interface IntStream extends BaseStream<Integer, IntStream> {
      * @return a {@code Stream} consistent of the elements of this stream,
      * each boxed to an {@code Integer}
      */
-    Stream<Integer> boxed();
+    public abstract Stream<Integer> boxed();
 
     // Static factories
+
+    public static IntStream empty() {
+        return of(N.EMPTY_INT_ARRAY);
+    }
+
+    public static IntStream of(final int... a) {
+        return Stream.from(a);
+    }
+
+    public static IntStream from(final char... a) {
+        return Stream.from(IntList.from(a).trimToSize().array());
+    }
+
+    public static IntStream from(final byte... a) {
+        return Stream.from(IntList.from(a).trimToSize().array());
+    }
+
+    public static IntStream from(final short... a) {
+        return Stream.from(IntList.from(a).trimToSize().array());
+    }
+
+    public static IntStream range(final int startInclusive, final int endExclusive) {
+        return Stream.from(Array.range(startInclusive, endExclusive));
+    }
+
+    public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
+        return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+    }
 }
