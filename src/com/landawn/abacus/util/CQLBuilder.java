@@ -498,7 +498,7 @@ public abstract class CQLBuilder<T> {
 
                     sb.append(formalizeName(propColumnNameMap, columnNames[i]));
 
-                    if (namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                    if (op == OperationType.QUERY && namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
                         sb.append(_SPACE_AS_SPACE);
 
                         sb.append(D._QUOTATION_D);
@@ -516,7 +516,7 @@ public abstract class CQLBuilder<T> {
 
                 sb.append(formalizeName(propColumnNameMap, columnName));
 
-                if (namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnName)) {
+                if (op == OperationType.QUERY && namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnName)) {
                     sb.append(_SPACE_AS_SPACE);
 
                     sb.append(D._QUOTATION_D);
