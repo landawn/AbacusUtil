@@ -51,7 +51,7 @@ import com.landawn.abacus.util.function.Supplier;
  *
  * @since 1.8
  */
-public final class OptionalDouble {
+public final class OptionalDouble implements Comparable<OptionalDouble> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -202,6 +202,19 @@ public final class OptionalDouble {
      */
     public double orZero() {
         return isPresent ? value : 0d;
+    }
+
+    @Override
+    public int compareTo(OptionalDouble optional) {
+        if (optional == null || optional.isPresent() == false) {
+            return isPresent() ? 1 : 0;
+        }
+
+        if (isPresent() == false) {
+            return optional.isPresent() ? -1 : 0;
+        }
+
+        return Double.compare(this.get(), optional.get());
     }
 
     /**

@@ -148,6 +148,10 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      */
     public abstract ByteStream flatMap(ByteFunction<? extends ByteStream> mapper);
 
+    public abstract IntStream flatMapToInt(ByteFunction<? extends IntStream> mapper);
+
+    public abstract <T> Stream<T> flatMapToObj(ByteFunction<? extends Stream<T>> mapper);
+
     /**
      * Returns a stream consisting of the distinct elements of this stream.
      *
@@ -283,6 +287,8 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @return an array containing the elements of this stream
      */
     public abstract byte[] toArray();
+
+    public abstract ByteList toByteList();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -596,6 +602,10 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
 
     public static ByteStream of(final byte... a) {
         return Stream.from(a);
+    }
+
+    public static ByteStream of(final byte[] a, final int startIndex, final int endIndex) {
+        return new ByteStreamImpl(a, startIndex, endIndex);
     }
 
     public static ByteStream from(final int... a) {

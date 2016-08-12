@@ -25,6 +25,7 @@
 package com.landawn.abacus.util.stream;
 
 import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
@@ -101,21 +102,6 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract LongStream map(LongUnaryOperator mapper);
 
     /**
-     * Returns an object-valued {@code Stream} consisting of the results of
-     * applying the given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param <U> the element type of the new stream
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
-    public abstract <U> Stream<U> mapToObj(LongFunction<? extends U> mapper);
-
-    /**
      * Returns an {@code IntStream} consisting of the results of applying the
      * given function to the elements of this stream.
      *
@@ -158,6 +144,21 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract DoubleStream mapToDouble(LongToDoubleFunction mapper);
 
     /**
+     * Returns an object-valued {@code Stream} consisting of the results of
+     * applying the given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">
+     *     intermediate operation</a>.
+     *
+     * @param <U> the element type of the new stream
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract <U> Stream<U> mapToObj(LongFunction<? extends U> mapper);
+
+    /**
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
      * the provided mapping function to each element.  Each mapped stream is
@@ -176,6 +177,14 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @see Stream#flatMap(Function)
      */
     public abstract LongStream flatMap(LongFunction<? extends LongStream> mapper);
+
+    public abstract IntStream flatMapToInt(LongFunction<? extends IntStream> mapper);
+
+    public abstract FloatStream flatMapToFloat(LongFunction<? extends FloatStream> mapper);
+
+    public abstract DoubleStream flatMapToDouble(LongFunction<? extends DoubleStream> mapper);
+
+    public abstract <T> Stream<T> flatMapToObj(LongFunction<? extends Stream<T>> mapper);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -312,6 +321,8 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @return an array containing the elements of this stream
      */
     public abstract long[] toArray();
+
+    public abstract LongList toLongList();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -662,6 +673,10 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
 
     public static LongStream of(final long... a) {
         return Stream.from(a);
+    }
+
+    public static LongStream of(final long[] a, final int startIndex, final int endIndex) {
+        return new LongStreamImpl(a, startIndex, endIndex);
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {

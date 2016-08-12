@@ -93,9 +93,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     }
 
     public static ShortList from(int[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final short[] elementData = new short[endIndex - startIndex];
 
@@ -115,9 +113,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     }
 
     public static ShortList from(String[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final short[] elementData = new short[endIndex - startIndex];
 
@@ -672,18 +668,18 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Short>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Short>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
             final ShortFunction<? extends K> func) {
 
         return groupBy(outputClass, List.class, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Short>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Short>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
             final int fromIndex, final int toIndex, final ShortFunction<? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
-        final R outputResult = N.newInstance(outputClass);
+        final M outputResult = N.newInstance(outputClass);
 
         K key = null;
         V values = null;
@@ -733,7 +729,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     public ShortList distinct(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        if (size > 1) {
+        if (toIndex - fromIndex > 1) {
             return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
@@ -820,6 +816,22 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return size;
     }
 
+    public ObjectList<Short> boxed() {
+        return boxed(0, size);
+    }
+
+    public ObjectList<Short> boxed(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        final Short[] b = new Short[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            b[j] = elementData[i];
+        }
+
+        return ObjectList.of(b);
+    }
+
     @Override
     public void toList(List<Short> list, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
@@ -851,7 +863,8 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return toMap(HashMap.class, keyMapper, valueMapper);
     }
 
-    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final ShortFunction<? extends K> keyMapper,
+    @SuppressWarnings("rawtypes")
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final ShortFunction<? extends K> keyMapper,
             final ShortFunction<? extends U> valueMapper) {
         return toMap(outputClass, 0, size(), keyMapper, valueMapper);
     }
@@ -862,7 +875,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
             final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex);
 
@@ -872,7 +885,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
             map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
         }
 
-        return (R) map;
+        return (M) map;
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends U> valueMapper) {

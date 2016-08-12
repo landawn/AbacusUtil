@@ -32,10 +32,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -453,6 +455,15 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper);
 
+    public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
+
+    public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, List<T>>> mapFactory);
+
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
+
+    public abstract <K, D, A> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, D>> mapFactory,
+            final Collector<? super T, A, D> downstream);
+
     /**
      * Returns a stream consisting of the distinct elements (according to
      * {@link Object#equals(Object)}) of this stream.
@@ -631,6 +642,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract Object[] toArray();
 
+    public abstract <A> A[] toArray(A[] a);
+
     /**
      * Returns an array containing the elements of this stream, using the
      * provided {@code generator} function to allocate the returned array, as
@@ -659,6 +672,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * element in this stream
      */
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
+
+    public abstract ObjectList<T> toObjectList(Class<T> cls);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -1060,14 +1075,112 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     // Static factories
 
     public static <T> Stream<T> empty() {
-        return from((T[]) N.EMPTY_OBJECT_ARRAY);
+        return of((T[]) N.EMPTY_OBJECT_ARRAY);
     }
 
     public static <T> Stream<T> of(final T... a) {
-        return from(a);
+        return of(a, 0, a.length);
     }
 
-    // Static factories
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     *
+     * @param a
+     * @param startIndex
+     * @param endIndex
+     * @return
+     */
+    public static <T> Stream<T> of(final T[] a, final int startIndex, final int endIndex) {
+        return new ArrayStream<T>(a, startIndex, endIndex);
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     *
+     * @param c
+     * @return
+     */
+    public static <T> Stream<T> of(final Collection<T> c) {
+        return of(c, 0, c.size());
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     * 
+     * @param c
+     * @param startIndex
+     * @param endIndex
+     * @return
+     */
+    public static <T> Stream<T> of(final Collection<T> c, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < startIndex || endIndex > c.size()) {
+            throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
+        }
+
+        // return new CollectionStream<T>(c);
+        // return new ArrayStream<T>((T[]) c.toArray()); // faster
+
+        if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
+            T[] array = null;
+
+            try {
+                array = (T[]) listElementDataField.get(c);
+            } catch (Exception e) {
+                // ignore;
+                isListElementDataFieldGettable = false;
+            }
+
+            if (array != null) {
+                return of(array, startIndex, endIndex);
+            }
+        }
+
+        if (startIndex == 0 && endIndex == c.size()) {
+            // return (c.size() > 10 && (c.size() < 1000 || (c.size() < 100000 && c instanceof ArrayList))) ? streamOf((T[]) c.toArray()) : c.stream();
+            return new CollectionStream<T>(c);
+        } else {
+            final T[] a = (T[]) new Object[endIndex - startIndex];
+            final Iterator<T> iter = c.iterator();
+
+            while (startIndex-- > 0) {
+                iter.next();
+            }
+
+            final int len = a.length;
+            int i = 0;
+
+            while (i < len) {
+                a[i] = iter.next();
+                i++;
+            }
+
+            return of(a);
+        }
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     *
+     * @param m
+     * @return
+     */
+    @Deprecated
+    static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m) {
+        return of(m, 0, m.size());
+    }
+
+    /**
+     * Returns a sequential, stateful and immutable <code>Stream</code>.
+     * 
+     * @param m
+     * @param startIndex
+     * @param endIndex
+     * @return
+     */
+    @Deprecated
+    static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m, final int startIndex, final int endIndex) {
+        return of(m.entrySet(), startIndex, endIndex);
+    }
 
     /**
      * Returns a sequential, stateful and immutable <code>CharStream</code>.
@@ -1323,116 +1436,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static DoubleStream from(final double[] a, final int startIndex, final int endIndex) {
         return new DoubleStreamImpl(a, startIndex, endIndex);
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
-     *
-     * @param a
-     * @return
-     */
-    public static <T> Stream<T> from(final T[] a) {
-        return from(a, 0, a.length);
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
-     *
-     * @param a
-     * @param startIndex
-     * @param endIndex
-     * @return
-     */
-    public static <T> Stream<T> from(final T[] a, final int startIndex, final int endIndex) {
-        return new ArrayStream<T>(a, startIndex, endIndex);
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
-     *
-     * @param c
-     * @return
-     */
-    public static <T> Stream<T> from(final Collection<T> c) {
-        return from(c, 0, c.size());
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
-     * 
-     * @param c
-     * @param startIndex
-     * @param endIndex
-     * @return
-     */
-    public static <T> Stream<T> from(final Collection<T> c, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < startIndex || endIndex > c.size()) {
-            throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
-        }
-
-        // return new CollectionStream<T>(c);
-        // return new ArrayStream<T>((T[]) c.toArray()); // faster
-
-        if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
-            T[] array = null;
-
-            try {
-                array = (T[]) listElementDataField.get(c);
-            } catch (Exception e) {
-                // ignore;
-                isListElementDataFieldGettable = false;
-            }
-
-            if (array != null) {
-                return from(array, startIndex, endIndex);
-            }
-        }
-
-        if (startIndex == 0 && endIndex == c.size()) {
-            // return (c.size() > 10 && (c.size() < 1000 || (c.size() < 100000 && c instanceof ArrayList))) ? streamOf((T[]) c.toArray()) : c.stream();
-            return new CollectionStream<T>(c);
-        } else {
-            final T[] a = (T[]) new Object[endIndex - startIndex];
-            final Iterator<T> iter = c.iterator();
-
-            while (startIndex-- > 0) {
-                iter.next();
-            }
-
-            final int len = a.length;
-            int i = 0;
-
-            while (i < len) {
-                a[i] = iter.next();
-                i++;
-            }
-
-            return from(a);
-        }
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
-     *
-     * @param m
-     * @return
-     */
-    @Deprecated
-    static <K, V> Stream<Map.Entry<K, V>> from(final Map<K, V> m) {
-        return from(m, 0, m.size());
-    }
-
-    /**
-     * Returns a sequential, stateful and immutable <code>Stream</code>.
-     * 
-     * @param m
-     * @param startIndex
-     * @param endIndex
-     * @return
-     */
-    @Deprecated
-    static <K, V> Stream<Map.Entry<K, V>> from(final Map<K, V> m, final int startIndex, final int endIndex) {
-        return from(m.entrySet(), startIndex, endIndex);
     }
 
     public static CharStream range(final char startInclusive, final char endExclusive) {

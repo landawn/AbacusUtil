@@ -87,17 +87,6 @@ final class ByteStreamImpl extends ByteStream {
     }
 
     @Override
-    public <U> Stream<U> mapToObj(ByteFunction<? extends U> mapper) {
-        final Object[] a = new Object[toIndex - fromIndex];
-
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.apply(values[i]);
-        }
-
-        return new ArrayStream<U>((U[]) a, closeHandlers);
-    }
-
-    @Override
     public IntStream mapToInt(ByteToIntFunction mapper) {
         final int[] a = new int[toIndex - fromIndex];
 
@@ -106,6 +95,17 @@ final class ByteStreamImpl extends ByteStream {
         }
 
         return new IntStreamImpl(a, closeHandlers);
+    }
+
+    @Override
+    public <U> Stream<U> mapToObj(ByteFunction<? extends U> mapper) {
+        final Object[] a = new Object[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.apply(values[i]);
+        }
+
+        return new ArrayStream<U>((U[]) a, closeHandlers);
     }
 
     @Override
@@ -127,6 +127,49 @@ final class ByteStreamImpl extends ByteStream {
         }
 
         return new ByteStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public IntStream flatMapToInt(ByteFunction<? extends IntStream> mapper) {
+        final List<int[]> listOfArray = new ArrayList<int[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final int[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final int[] arrayOfAll = new int[lengthOfAll];
+        int from = 0;
+        for (int[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new IntStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public <T> Stream<T> flatMapToObj(ByteFunction<? extends Stream<T>> mapper) {
+        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        int lengthOfAll = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            final Object[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final Object[] arrayOfAll = new Object[lengthOfAll];
+        int from = 0;
+
+        for (Object[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -183,6 +226,11 @@ final class ByteStreamImpl extends ByteStream {
     @Override
     public byte[] toArray() {
         return N.copyOfRange(values, fromIndex, toIndex);
+    }
+
+    @Override
+    public ByteList toByteList() {
+        return ByteList.of(N.copyOfRange(values, fromIndex, toIndex));
     }
 
     @Override
@@ -315,7 +363,7 @@ final class ByteStreamImpl extends ByteStream {
 
     @Override
     public Stream<Byte> boxed() {
-        return new ArrayStream<Byte>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Byte>(Array.box(values, fromIndex, toIndex), closeHandlers);
     }
 
     @Override

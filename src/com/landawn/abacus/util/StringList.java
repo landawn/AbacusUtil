@@ -50,9 +50,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(boolean[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -68,9 +66,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(char[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -86,9 +82,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(byte[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -104,9 +98,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(short[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -122,9 +114,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(long[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -140,9 +130,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(float[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -158,9 +146,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(double[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -176,9 +162,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(BigInteger[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -194,9 +178,7 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(BigDecimal[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 

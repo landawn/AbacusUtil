@@ -51,7 +51,7 @@ import com.landawn.abacus.util.function.Supplier;
  *
  * @since 1.8
  */
-public final class OptionalFloat {
+public final class OptionalFloat implements Comparable<OptionalFloat> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -202,6 +202,19 @@ public final class OptionalFloat {
      */
     public float orZero() {
         return isPresent ? value : 0f;
+    }
+
+    @Override
+    public int compareTo(OptionalFloat optional) {
+        if (optional == null || optional.isPresent() == false) {
+            return isPresent() ? 1 : 0;
+        }
+
+        if (isPresent() == false) {
+            return optional.isPresent() ? -1 : 0;
+        }
+
+        return Float.compare(this.get(), optional.get());
     }
 
     /**

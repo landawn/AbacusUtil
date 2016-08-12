@@ -754,7 +754,7 @@ public final class PropertiesUtil {
                                 bw.write("<" + elementPropName + ">");
                             } else {
                                 if (N.isPrimitiveWapper(type.getTypeClass())) {
-                                    bw.write("<" + elementPropName + " type=\"" + N.getSimpleClassName(Array.unwrap(type.getTypeClass())) + "\">");
+                                    bw.write("<" + elementPropName + " type=\"" + N.getSimpleClassName(Array.unbox(type.getTypeClass())) + "\">");
                                 } else {
                                     bw.write("<" + elementPropName + " type=\"" + type.getDeclaringName() + "\">");
                                 }
@@ -777,7 +777,7 @@ public final class PropertiesUtil {
                         bw.write("<" + propName + ">");
                     } else {
                         if (N.isPrimitiveWapper(type.getTypeClass())) {
-                            bw.write("<" + propName + " type=\"" + N.getSimpleClassName(Array.unwrap(type.getTypeClass())) + "\">");
+                            bw.write("<" + propName + " type=\"" + N.getSimpleClassName(Array.unbox(type.getTypeClass())) + "\">");
                         } else {
                             bw.write("<" + propName + " type=\"" + type.getDeclaringName() + "\">");
                         }
@@ -953,7 +953,7 @@ public final class PropertiesUtil {
 
                 if (duplicatedPropNameSet.contains(propName)) {
                     String listPropName = propName + "List";
-                    String elementTypeName = N.getType(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.wrap(N.getType(typeName).getTypeClass()))
+                    String elementTypeName = N.getType(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.box(N.getType(typeName).getTypeClass()))
                             : typeName;
 
                     writer.write(spaces + "    " + (isPublicField ? "public " : "private ") + "List<" + elementTypeName + "> " + listPropName
@@ -1097,7 +1097,7 @@ public final class PropertiesUtil {
 
     private static void writeMethod(Writer writer, String spaces, String propName, String typeName, Set<String> duplicatedPropNameSet) throws IOException {
         String listPropName = propName + "List";
-        String elementTypeName = N.getType(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.wrap(N.getType(typeName).getTypeClass())) : typeName;
+        String elementTypeName = N.getType(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.box(N.getType(typeName).getTypeClass())) : typeName;
 
         writer.write(spaces + "public " + typeName + " get" + N.capitalize(propName) + "() {" + N.LINE_SEPARATOR);
         writer.write(spaces + "    " + "return " + propName + ";" + N.LINE_SEPARATOR);

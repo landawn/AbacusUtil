@@ -402,7 +402,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(elementData, 0, size, cmp));
     }
 
-    public OptionalNullable<T> min(final int fromIndex, final int toIndex, Comparator<T> cmp) {
+    public OptionalNullable<T> min(final int fromIndex, final int toIndex, final Comparator<T> cmp) {
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(elementData, fromIndex, toIndex, cmp));
@@ -423,7 +423,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(elementData, 0, size, cmp));
     }
 
-    public OptionalNullable<T> max(final int fromIndex, final int toIndex, Comparator<T> cmp) {
+    public OptionalNullable<T> max(final int fromIndex, final int toIndex, final Comparator<T> cmp) {
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(elementData, fromIndex, toIndex, cmp));
@@ -601,18 +601,18 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<T>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
             final Function<? super T, ? extends K> func) {
 
         return groupBy(outputClass, List.class, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<T>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
             final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
-        final R outputResult = N.newInstance(outputClass);
+        final M outputResult = N.newInstance(outputClass);
 
         K key = null;
         V values = null;
@@ -662,7 +662,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     public ObjectList<T> distinct(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        if (size > 1) {
+        if (toIndex - fromIndex > 1) {
             return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
@@ -696,12 +696,12 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     }
 
     @Override
-    public ObjectList<T> top(final int top, Comparator<T> cmp) {
+    public ObjectList<T> top(final int top, final Comparator<T> cmp) {
         return top(0, size(), top, cmp);
     }
 
     @Override
-    public ObjectList<T> top(final int fromIndex, final int toIndex, final int top, Comparator<T> cmp) {
+    public ObjectList<T> top(final int fromIndex, final int toIndex, final int top, final Comparator<T> cmp) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.top(elementData, fromIndex, toIndex, top, cmp));
@@ -749,6 +749,36 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         return size;
     }
 
+    public <R> R unboxed() {
+        return unboxed(0, size);
+    }
+
+    public <R> R unboxed(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        final Class<?> cls = elementData.getClass().getComponentType();
+
+        if (cls.equals(Integer.class)) {
+            return (R) IntList.of(Array.unbox((Integer[]) elementData, fromIndex, toIndex, 0));
+        } else if (cls.equals(Long.class)) {
+            return (R) LongList.of(Array.unbox((Long[]) elementData, fromIndex, toIndex, 0));
+        } else if (cls.equals(Float.class)) {
+            return (R) FloatList.of(Array.unbox((Float[]) elementData, fromIndex, toIndex, 0));
+        } else if (cls.equals(Double.class)) {
+            return (R) DoubleList.of(Array.unbox((Double[]) elementData, fromIndex, toIndex, 0));
+        } else if (cls.equals(Boolean.class)) {
+            return (R) BooleanList.of(Array.unbox((Boolean[]) elementData, fromIndex, toIndex, false));
+        } else if (cls.equals(Character.class)) {
+            return (R) CharList.of(Array.unbox((Character[]) elementData, fromIndex, toIndex, (char) 0));
+        } else if (cls.equals(Byte.class)) {
+            return (R) ByteList.of(Array.unbox((Byte[]) elementData, fromIndex, toIndex, (byte) 0));
+        } else if (cls.equals(Short.class)) {
+            return (R) ShortList.of(Array.unbox((Short[]) elementData, fromIndex, toIndex, (short) 0));
+        } else {
+            throw new IllegalArgumentException(N.getClassName(cls) + " is not a wrapper of primitive type");
+        }
+    }
+
     @Override
     public void toList(List<T> list, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
@@ -780,7 +810,8 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
         return toMap(HashMap.class, keyMapper, valueMapper);
     }
 
-    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final Function<? super T, ? extends K> keyMapper,
+    @SuppressWarnings("rawtypes")
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
         return toMap(outputClass, 0, size(), keyMapper, valueMapper);
     }
@@ -791,7 +822,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex);
 
@@ -801,7 +832,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
             map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
         }
 
-        return (R) map;
+        return (M) map;
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
@@ -840,7 +871,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     public Stream<T> stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return Stream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

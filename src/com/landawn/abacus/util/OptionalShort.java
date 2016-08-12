@@ -51,7 +51,7 @@ import com.landawn.abacus.util.function.Supplier;
  *
  * @since 1.8
  */
-public final class OptionalShort {
+public final class OptionalShort implements Comparable<OptionalShort> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -202,6 +202,19 @@ public final class OptionalShort {
      */
     public short orZero() {
         return isPresent ? value : 0;
+    }
+
+    @Override
+    public int compareTo(OptionalShort optional) {
+        if (optional == null || optional.isPresent() == false) {
+            return isPresent() ? 1 : 0;
+        }
+
+        if (isPresent() == false) {
+            return optional.isPresent() ? -1 : 0;
+        }
+
+        return Short.compare(this.get(), optional.get());
     }
 
     /**

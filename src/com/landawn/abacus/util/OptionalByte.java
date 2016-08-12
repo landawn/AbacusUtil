@@ -51,7 +51,7 @@ import com.landawn.abacus.util.function.Supplier;
  *
  * @since 1.8
  */
-public final class OptionalByte {
+public final class OptionalByte implements Comparable<OptionalByte> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -202,6 +202,19 @@ public final class OptionalByte {
      */
     public byte orZero() {
         return isPresent ? value : 0;
+    }
+
+    @Override
+    public int compareTo(OptionalByte optional) {
+        if (optional == null || optional.isPresent() == false) {
+            return isPresent() ? 1 : 0;
+        }
+
+        if (isPresent() == false) {
+            return optional.isPresent() ? -1 : 0;
+        }
+
+        return Byte.compare(this.get(), optional.get());
     }
 
     /**

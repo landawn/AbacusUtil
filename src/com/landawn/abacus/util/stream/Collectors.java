@@ -49,15 +49,24 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.landawn.abacus.DataSet;
 import com.landawn.abacus.util.BiMap;
+import com.landawn.abacus.util.BooleanList;
+import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
+import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.StringJoiner;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -355,15 +364,11 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
-    public static <T> Collector<T, ?, T[]> toArray(final Class<T[]> arrayClass) {
-        return toArray((T[]) N.newArray(arrayClass.getComponentType(), 0));
-    }
-
-    public static <T> Collector<T, ?, T[]> toArray(final T[] array) {
+    public static <T> Collector<T, ?, ObjectList<T>> toObjectList(final Class<T> cls) {
         final Supplier<ObjectList<T>> supplier = new Supplier<ObjectList<T>>() {
             @Override
             public ObjectList<T> get() {
-                return new ObjectList<T>(array, 0);
+                return new ObjectList<T>((T[]) N.newArray(cls, 0));
             }
         };
 
@@ -382,9 +387,615 @@ public final class Collectors {
             }
         };
 
-        Function<ObjectList<T>, T[]> finisher = new Function<ObjectList<T>, T[]>() {
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T> Collector<T, ?, T[]> toArray(final Class<T[]> arrayClass) {
+        return toArray((T[]) N.newArray(arrayClass.getComponentType(), 0));
+    }
+
+    public static <T> Collector<T, ?, T[]> toArray(final T[] array) {
+        return toArray(array, 0);
+    }
+
+    static <T> Collector<T, ?, T[]> toArray(final T[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<ObjectList<T>> supplier = new Supplier<ObjectList<T>>() {
+            @Override
+            public ObjectList<T> get() {
+                return new ObjectList<T>(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<ObjectList<T>, T> accumulator = new BiConsumer<ObjectList<T>, T>() {
+            @Override
+            public void accept(ObjectList<T> c, T t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<ObjectList<T>> combiner = new BinaryOperator<ObjectList<T>>() {
+            @Override
+            public ObjectList<T> apply(ObjectList<T> a, ObjectList<T> b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<ObjectList<T>, T[]> finisher = new Function<ObjectList<T>, T[]>() {
             @Override
             public T[] apply(ObjectList<T> t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static Collector<Boolean, ?, BooleanList> toBooleanList() {
+        final Supplier<BooleanList> supplier = new Supplier<BooleanList>() {
+            @Override
+            public BooleanList get() {
+                return new BooleanList();
+            }
+        };
+
+        final BiConsumer<BooleanList, Boolean> accumulator = new BiConsumer<BooleanList, Boolean>() {
+            @Override
+            public void accept(BooleanList c, Boolean t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<BooleanList> combiner = new BinaryOperator<BooleanList>() {
+            @Override
+            public BooleanList apply(BooleanList a, BooleanList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static Collector<Boolean, ?, boolean[]> toBooleanArray() {
+        return toBooleanArray(N.EMPTY_BOOLEAN_ARRAY);
+    }
+
+    public static Collector<Boolean, ?, boolean[]> toBooleanArray(final boolean[] array) {
+        return toBooleanArray(array, 0);
+    }
+
+    static Collector<Boolean, ?, boolean[]> toBooleanArray(final boolean[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<BooleanList> supplier = new Supplier<BooleanList>() {
+            @Override
+            public BooleanList get() {
+                return new BooleanList(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<BooleanList, Boolean> accumulator = new BiConsumer<BooleanList, Boolean>() {
+            @Override
+            public void accept(BooleanList c, Boolean t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<BooleanList> combiner = new BinaryOperator<BooleanList>() {
+            @Override
+            public BooleanList apply(BooleanList a, BooleanList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<BooleanList, boolean[]> finisher = new Function<BooleanList, boolean[]>() {
+            @Override
+            public boolean[] apply(BooleanList t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static Collector<Character, ?, CharList> toCharList() {
+        final Supplier<CharList> supplier = new Supplier<CharList>() {
+            @Override
+            public CharList get() {
+                return new CharList();
+            }
+        };
+
+        final BiConsumer<CharList, Character> accumulator = new BiConsumer<CharList, Character>() {
+            @Override
+            public void accept(CharList c, Character t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<CharList> combiner = new BinaryOperator<CharList>() {
+            @Override
+            public CharList apply(CharList a, CharList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static Collector<Character, ?, char[]> toCharArray() {
+        return toCharArray(N.EMPTY_CHAR_ARRAY);
+    }
+
+    public static Collector<Character, ?, char[]> toCharArray(final char[] array) {
+        return toCharArray(array, 0);
+    }
+
+    static Collector<Character, ?, char[]> toCharArray(final char[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<CharList> supplier = new Supplier<CharList>() {
+            @Override
+            public CharList get() {
+                return new CharList(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<CharList, Character> accumulator = new BiConsumer<CharList, Character>() {
+            @Override
+            public void accept(CharList c, Character t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<CharList> combiner = new BinaryOperator<CharList>() {
+            @Override
+            public CharList apply(CharList a, CharList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<CharList, char[]> finisher = new Function<CharList, char[]>() {
+            @Override
+            public char[] apply(CharList t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static Collector<Byte, ?, ByteList> toByteList() {
+        final Supplier<ByteList> supplier = new Supplier<ByteList>() {
+            @Override
+            public ByteList get() {
+                return new ByteList();
+            }
+        };
+
+        final BiConsumer<ByteList, Byte> accumulator = new BiConsumer<ByteList, Byte>() {
+            @Override
+            public void accept(ByteList c, Byte t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<ByteList> combiner = new BinaryOperator<ByteList>() {
+            @Override
+            public ByteList apply(ByteList a, ByteList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T extends Number> Collector<T, ?, byte[]> toByteArray() {
+        return toByteArray(N.EMPTY_BYTE_ARRAY);
+    }
+
+    public static <T extends Number> Collector<T, ?, byte[]> toByteArray(final byte[] array) {
+        return toByteArray(array, 0);
+    }
+
+    static <T extends Number> Collector<T, ?, byte[]> toByteArray(final byte[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<ByteList> supplier = new Supplier<ByteList>() {
+            @Override
+            public ByteList get() {
+                return new ByteList(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<ByteList, T> accumulator = new BiConsumer<ByteList, T>() {
+            @Override
+            public void accept(ByteList c, T t) {
+                c.add(t.byteValue());
+            }
+        };
+
+        final BinaryOperator<ByteList> combiner = new BinaryOperator<ByteList>() {
+            @Override
+            public ByteList apply(ByteList a, ByteList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<ByteList, byte[]> finisher = new Function<ByteList, byte[]>() {
+            @Override
+            public byte[] apply(ByteList t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static Collector<Short, ?, ShortList> toShortList() {
+        final Supplier<ShortList> supplier = new Supplier<ShortList>() {
+            @Override
+            public ShortList get() {
+                return new ShortList();
+            }
+        };
+
+        final BiConsumer<ShortList, Short> accumulator = new BiConsumer<ShortList, Short>() {
+            @Override
+            public void accept(ShortList c, Short t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<ShortList> combiner = new BinaryOperator<ShortList>() {
+            @Override
+            public ShortList apply(ShortList a, ShortList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T extends Number> Collector<T, ?, short[]> toShortArray() {
+        return toShortArray(N.EMPTY_SHORT_ARRAY);
+    }
+
+    public static <T extends Number> Collector<T, ?, short[]> toShortArray(final short[] array) {
+        return toShortArray(array, 0);
+    }
+
+    static <T extends Number> Collector<T, ?, short[]> toShortArray(final short[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<ShortList> supplier = new Supplier<ShortList>() {
+            @Override
+            public ShortList get() {
+                return new ShortList(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<ShortList, T> accumulator = new BiConsumer<ShortList, T>() {
+            @Override
+            public void accept(ShortList c, T t) {
+                c.add(t.shortValue());
+            }
+        };
+
+        final BinaryOperator<ShortList> combiner = new BinaryOperator<ShortList>() {
+            @Override
+            public ShortList apply(ShortList a, ShortList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<ShortList, short[]> finisher = new Function<ShortList, short[]>() {
+            @Override
+            public short[] apply(ShortList t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static Collector<Integer, ?, IntList> toIntList() {
+        final Supplier<IntList> supplier = new Supplier<IntList>() {
+            @Override
+            public IntList get() {
+                return new IntList();
+            }
+        };
+
+        final BiConsumer<IntList, Integer> accumulator = new BiConsumer<IntList, Integer>() {
+            @Override
+            public void accept(IntList c, Integer t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<IntList> combiner = new BinaryOperator<IntList>() {
+            @Override
+            public IntList apply(IntList a, IntList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T extends Number> Collector<T, ?, int[]> toIntArray() {
+        return toIntArray(N.EMPTY_INT_ARRAY);
+    }
+
+    public static <T extends Number> Collector<T, ?, int[]> toIntArray(final int[] array) {
+        return toIntArray(array, 0);
+    }
+
+    static <T extends Number> Collector<T, ?, int[]> toIntArray(final int[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<IntList> supplier = new Supplier<IntList>() {
+            @Override
+            public IntList get() {
+                return new IntList(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<IntList, T> accumulator = new BiConsumer<IntList, T>() {
+            @Override
+            public void accept(IntList c, T t) {
+                c.add(t.intValue());
+            }
+        };
+
+        final BinaryOperator<IntList> combiner = new BinaryOperator<IntList>() {
+            @Override
+            public IntList apply(IntList a, IntList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<IntList, int[]> finisher = new Function<IntList, int[]>() {
+            @Override
+            public int[] apply(IntList t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static Collector<Long, ?, LongList> toLongList() {
+        final Supplier<LongList> supplier = new Supplier<LongList>() {
+            @Override
+            public LongList get() {
+                return new LongList();
+            }
+        };
+
+        final BiConsumer<LongList, Long> accumulator = new BiConsumer<LongList, Long>() {
+            @Override
+            public void accept(LongList c, Long t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<LongList> combiner = new BinaryOperator<LongList>() {
+            @Override
+            public LongList apply(LongList a, LongList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T extends Number> Collector<T, ?, long[]> toLongArray() {
+        return toLongArray(N.EMPTY_LONG_ARRAY);
+    }
+
+    public static <T extends Number> Collector<T, ?, long[]> toLongArray(final long[] array) {
+        return toLongArray(array, 0);
+    }
+
+    static <T extends Number> Collector<T, ?, long[]> toLongArray(final long[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<LongList> supplier = new Supplier<LongList>() {
+            @Override
+            public LongList get() {
+                return new LongList(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<LongList, T> accumulator = new BiConsumer<LongList, T>() {
+            @Override
+            public void accept(LongList c, T t) {
+                c.add(t.longValue());
+            }
+        };
+
+        final BinaryOperator<LongList> combiner = new BinaryOperator<LongList>() {
+            @Override
+            public LongList apply(LongList a, LongList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<LongList, long[]> finisher = new Function<LongList, long[]>() {
+            @Override
+            public long[] apply(LongList t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static Collector<Float, ?, FloatList> toFloatList() {
+        final Supplier<FloatList> supplier = new Supplier<FloatList>() {
+            @Override
+            public FloatList get() {
+                return new FloatList();
+            }
+        };
+
+        final BiConsumer<FloatList, Float> accumulator = new BiConsumer<FloatList, Float>() {
+            @Override
+            public void accept(FloatList c, Float t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<FloatList> combiner = new BinaryOperator<FloatList>() {
+            @Override
+            public FloatList apply(FloatList a, FloatList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T extends Number> Collector<T, ?, float[]> toFloatArray() {
+        return toFloatArray(N.EMPTY_FLOAT_ARRAY);
+    }
+
+    public static <T extends Number> Collector<T, ?, float[]> toFloatArray(final float[] array) {
+        return toFloatArray(array, 0);
+    }
+
+    static <T extends Number> Collector<T, ?, float[]> toFloatArray(final float[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<FloatList> supplier = new Supplier<FloatList>() {
+            @Override
+            public FloatList get() {
+                return new FloatList(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<FloatList, T> accumulator = new BiConsumer<FloatList, T>() {
+            @Override
+            public void accept(FloatList c, T t) {
+                c.add(t.floatValue());
+            }
+        };
+
+        final BinaryOperator<FloatList> combiner = new BinaryOperator<FloatList>() {
+            @Override
+            public FloatList apply(FloatList a, FloatList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<FloatList, float[]> finisher = new Function<FloatList, float[]>() {
+            @Override
+            public float[] apply(FloatList t) {
+                return t.array() == array ? array : t.trimToSize().array();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static Collector<Double, ?, DoubleList> toDoubleList() {
+        final Supplier<DoubleList> supplier = new Supplier<DoubleList>() {
+            @Override
+            public DoubleList get() {
+                return new DoubleList();
+            }
+        };
+
+        final BiConsumer<DoubleList, Double> accumulator = new BiConsumer<DoubleList, Double>() {
+            @Override
+            public void accept(DoubleList c, Double t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<DoubleList> combiner = new BinaryOperator<DoubleList>() {
+            @Override
+            public DoubleList apply(DoubleList a, DoubleList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T extends Number> Collector<T, ?, double[]> toDoubleArray() {
+        return toDoubleArray(N.EMPTY_DOUBLE_ARRAY);
+    }
+
+    public static <T extends Number> Collector<T, ?, double[]> toDoubleArray(final double[] array) {
+        return toDoubleArray(array, 0);
+    }
+
+    static <T extends Number> Collector<T, ?, double[]> toDoubleArray(final double[] array, final int fromIndex) {
+        if (fromIndex < 0 || fromIndex > array.length) {
+            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
+        }
+
+        final Supplier<DoubleList> supplier = new Supplier<DoubleList>() {
+            @Override
+            public DoubleList get() {
+                return new DoubleList(array, fromIndex);
+            }
+        };
+
+        final BiConsumer<DoubleList, T> accumulator = new BiConsumer<DoubleList, T>() {
+            @Override
+            public void accept(DoubleList c, T t) {
+                c.add(t.doubleValue());
+            }
+        };
+
+        final BinaryOperator<DoubleList> combiner = new BinaryOperator<DoubleList>() {
+            @Override
+            public DoubleList apply(DoubleList a, DoubleList b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        final Function<DoubleList, double[]> finisher = new Function<DoubleList, double[]>() {
+            @Override
+            public double[] apply(DoubleList t) {
                 return t.array() == array ? array : t.trimToSize().array();
             }
         };
@@ -2268,6 +2879,24 @@ public final class Collectors {
         final BinaryOperator<Multimap<K, U, V>> combiner = mapMerger3();
 
         return new CollectorImpl<>(mapSupplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T> Collector<T, ?, DataSet> toDataSet(final List<String> columnNames) {
+        return toDataSet(null, Map.class, columnNames);
+    }
+
+    public static <T> Collector<T, ?, DataSet> toDataSet(final String entityName, final Class<?> entityClass, final List<String> columnNames) {
+        @SuppressWarnings("rawtypes")
+        final Collector<T, List<T>, List<T>> collector = (Collector) toList();
+
+        final Function<List<T>, DataSet> finisher = new Function<List<T>, DataSet>() {
+            @Override
+            public DataSet apply(List<T> t) {
+                return N.asDataSet(entityName, entityClass, columnNames, t);
+            }
+        };
+
+        return new CollectorImpl<T, List<T>, DataSet>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     /**

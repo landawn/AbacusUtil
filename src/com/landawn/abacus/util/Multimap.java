@@ -29,6 +29,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -441,8 +442,14 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return valueMap.entrySet();
     }
 
+    public void forEach(BiConsumer<? super K, ? super V> action) {
+        for (Map.Entry<K, V> entry : valueMap.entrySet()) {
+            action.accept(entry.getKey(), entry.getValue());
+        }
+    }
+
     public Stream<Map.Entry<K, V>> stream() {
-        return Stream.from(valueMap.entrySet());
+        return Stream.of(valueMap.entrySet());
     }
 
     public void clear() {

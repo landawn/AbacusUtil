@@ -7,10 +7,13 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -319,6 +322,27 @@ final class CollectionStream<T> extends Stream<T> implements BaseStream<T, Strea
     }
 
     @Override
+    public <K> Stream<Entry<K, List<T>>> groupBy(Function<? super T, ? extends K> classifier) {
+        return Stream.of(((Map<K, List<T>>) collect(Collectors.groupingBy(classifier))).entrySet());
+    }
+
+    @Override
+    public <K> Stream<Entry<K, List<T>>> groupBy(Function<? super T, ? extends K> classifier, Supplier<Map<K, List<T>>> mapFactory) {
+        return Stream.of(collect(Collectors.groupingBy(classifier, mapFactory)).entrySet());
+    }
+
+    @Override
+    public <K, A, D> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
+        return Stream.of(((Map<K, D>) collect(Collectors.groupingBy(classifier, downstream))).entrySet());
+    }
+
+    @Override
+    public <K, D, A> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Supplier<Map<K, D>> mapFactory,
+            Collector<? super T, A, D> downstream) {
+        return Stream.of(collect(Collectors.groupingBy(classifier, mapFactory, downstream)).entrySet());
+    }
+
+    @Override
     public Stream<T> distinct() {
         final Set<T> set = new LinkedHashSet<T>();
 
@@ -335,7 +359,7 @@ final class CollectionStream<T> extends Stream<T> implements BaseStream<T, Strea
 
         Arrays.sort(a);
 
-        return new ArrayStream<T>(a, true, closeHandlers);
+        return new ArrayStream<T>(a, true, null, closeHandlers);
     }
 
     @Override
@@ -344,7 +368,7 @@ final class CollectionStream<T> extends Stream<T> implements BaseStream<T, Strea
 
         Arrays.sort(a, comparator);
 
-        return new ArrayStream<T>(a, true, closeHandlers);
+        return new ArrayStream<T>(a, true, comparator, closeHandlers);
     }
 
     @Override
@@ -410,6 +434,11 @@ final class CollectionStream<T> extends Stream<T> implements BaseStream<T, Strea
     }
 
     @Override
+    public <A> A[] toArray(A[] a) {
+        return values.toArray(a);
+    }
+
+    @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
         final A[] a = generator.apply(values.size());
         int idx = 0;
@@ -419,6 +448,11 @@ final class CollectionStream<T> extends Stream<T> implements BaseStream<T, Strea
         }
 
         return a;
+    }
+
+    @Override
+    public ObjectList<T> toObjectList(Class<T> cls) {
+        return ObjectList.of(values.toArray((T[]) N.newArray(cls, values.size())));
     }
 
     @Override

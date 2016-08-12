@@ -26,10 +26,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -51,6 +51,13 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public final class Multiset<E> implements Iterable<E> {
+    private static final Comparator<Map.Entry<?, MutableInt>> cmpByCount = new Comparator<Map.Entry<?, MutableInt>>() {
+        @Override
+        public int compare(Entry<?, MutableInt> a, Entry<?, MutableInt> b) {
+            return N.compare(a.getValue().intValue(), b.getValue().intValue());
+        }
+    };
+
     private final Map<E, MutableInt> valueMap;
 
     public Multiset() {
@@ -202,88 +209,9 @@ public final class Multiset<E> implements Iterable<E> {
         }
     }
 
-    public int maxCount() {
-        if (valueMap.size() == 0) {
-            return 0;
-        }
-
-        int maxCount = 0;
-
-        for (MutableInt count : valueMap.values()) {
-            if (count.intValue() > maxCount) {
-                maxCount = count.intValue();
-            }
-        }
-
-        return maxCount;
-    }
-
-    public int minCount() {
-        if (valueMap.size() == 0) {
-            return 0;
-        }
-
-        int minCount = Integer.MAX_VALUE;
-
-        for (MutableInt count : valueMap.values()) {
-            if (count.intValue() < minCount) {
-                minCount = count.intValue();
-            }
-        }
-
-        return minCount;
-    }
-
-    public long sumCount() {
-        long sum = 0;
-
-        for (MutableInt count : valueMap.values()) {
-            sum += count.intValue();
-        }
-
-        return sum;
-    }
-
-    public double avgCount() {
+    public Optional<Map.Entry<E, Integer>> minCount() {
         if (size() == 0) {
-            return 0d;
-        }
-
-        double sum = sumCount();
-
-        return sum / size();
-    }
-
-    @Beta
-    int countOf(final Object e) {
-        return get(e);
-    }
-
-    public E elementOfMaxCount() {
-        if (size() == 0) {
-            return null;
-        }
-
-        final Iterator<Map.Entry<E, MutableInt>> it = valueMap.entrySet().iterator();
-        Map.Entry<E, MutableInt> entry = it.next();
-        E maxCountElement = entry.getKey();
-        int maxCount = entry.getValue().intValue();
-
-        while (it.hasNext()) {
-            entry = it.next();
-
-            if (entry.getValue().intValue() > maxCount) {
-                maxCountElement = entry.getKey();
-                maxCount = entry.getValue().intValue();
-            }
-        }
-
-        return maxCountElement;
-    }
-
-    public E elementOfMinCount() {
-        if (size() == 0) {
-            return null;
+            return Optional.empty();
         }
 
         final Iterator<Map.Entry<E, MutableInt>> it = valueMap.entrySet().iterator();
@@ -300,8 +228,54 @@ public final class Multiset<E> implements Iterable<E> {
             }
         }
 
-        return minCountElement;
+        return Optional.of((Map.Entry<E, Integer>) new MapEntry<E, Integer>(minCountElement, minCount));
+    }
 
+    public Optional<Map.Entry<E, Integer>> maxCount() {
+        if (size() == 0) {
+            return Optional.empty();
+        }
+
+        final Iterator<Map.Entry<E, MutableInt>> it = valueMap.entrySet().iterator();
+        Map.Entry<E, MutableInt> entry = it.next();
+        E maxCountElement = entry.getKey();
+        int maxCount = entry.getValue().intValue();
+
+        while (it.hasNext()) {
+            entry = it.next();
+
+            if (entry.getValue().intValue() > maxCount) {
+                maxCountElement = entry.getKey();
+                maxCount = entry.getValue().intValue();
+            }
+        }
+
+        return Optional.of((Map.Entry<E, Integer>) new MapEntry<E, Integer>(maxCountElement, maxCount));
+    }
+
+    public long sumCount() {
+        long sum = 0;
+
+        for (MutableInt count : valueMap.values()) {
+            sum += count.intValue();
+        }
+
+        return sum;
+    }
+
+    public OptionalDouble avgCount() {
+        if (size() == 0) {
+            return OptionalDouble.empty();
+        }
+
+        double sum = sumCount();
+
+        return OptionalDouble.of(sum / size());
+    }
+
+    @Beta
+    int countOf(final Object e) {
+        return get(e);
     }
 
     public Map<E, Integer> toMap() {
@@ -314,20 +288,17 @@ public final class Multiset<E> implements Iterable<E> {
         return result;
     }
 
+    @SuppressWarnings("rawtypes")
     public Map<E, Integer> toMapSortedByCount() {
+        return toMapSortedBy((Comparator) cmpByCount);
+    }
+
+    public Map<E, Integer> toMapSortedBy(final Comparator<Map.Entry<E, MutableInt>> cmp) {
         if (N.isNullOrEmpty(valueMap)) {
             return new LinkedHashMap<>();
         }
 
         final Map.Entry<E, MutableInt>[] entries = entrySet().toArray(new Map.Entry[size()]);
-
-        final Comparator<Map.Entry<E, MutableInt>> cmp = new Comparator<Map.Entry<E, MutableInt>>() {
-            @Override
-            public int compare(final Map.Entry<E, MutableInt> o1, final Map.Entry<E, MutableInt> o2) {
-                return o1.getValue().intValue() - o2.getValue().intValue();
-            }
-        };
-
         Arrays.sort(entries, cmp);
 
         final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
@@ -337,65 +308,6 @@ public final class Multiset<E> implements Iterable<E> {
         }
 
         return sortedValues;
-    }
-
-    public Map<E, Integer> toMapSortedByElement() {
-        if (N.isNullOrEmpty(valueMap)) {
-            return new LinkedHashMap<>();
-        }
-
-        if (valueMap instanceof SortedMap) {
-            return toMap();
-        } else {
-            final Map.Entry<? extends Comparable<E>, MutableInt>[] entries = entrySet().toArray(new Map.Entry[size()]);
-
-            final Comparator<Map.Entry<? extends Comparable<E>, MutableInt>> cmp = new Comparator<Map.Entry<? extends Comparable<E>, MutableInt>>() {
-                @Override
-                public int compare(final Map.Entry<? extends Comparable<E>, MutableInt> o1, final Map.Entry<? extends Comparable<E>, MutableInt> o2) {
-                    return (o1.getKey() == null) ? ((o2.getKey() == null) ? 0 : (-1)) : ((o2.getKey() == null) ? 1 : o1.getKey().compareTo((E) o2.getKey()));
-                }
-            };
-
-            Arrays.sort(entries, cmp);
-
-            final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
-            Map.Entry<E, MutableInt>[] newEntries = (Entry<E, MutableInt>[]) entries;
-
-            for (Map.Entry<E, MutableInt> entry : newEntries) {
-                sortedValues.put(entry.getKey(), entry.getValue().intValue());
-            }
-
-            return sortedValues;
-        }
-    }
-
-    public Map<E, Integer> toMapSortedByElement(final Comparator<? super E> cmp) {
-        if (N.isNullOrEmpty(valueMap)) {
-            return new LinkedHashMap<>();
-        }
-
-        if (valueMap instanceof SortedMap && cmp == null) {
-            return toMap();
-        } else {
-            final Comparator<? super E> comparator = cmp == null ? N.comparableCmp : cmp;
-            final Map.Entry<E, MutableInt>[] entries = entrySet().toArray(new Map.Entry[size()]);
-            final Comparator<Map.Entry<E, MutableInt>> entryCmp = new Comparator<Map.Entry<E, MutableInt>>() {
-                @Override
-                public int compare(final Map.Entry<E, MutableInt> o1, final Map.Entry<E, MutableInt> o2) {
-                    return comparator.compare(o1.getKey(), o2.getKey());
-                }
-            };
-
-            Arrays.sort(entries, entryCmp);
-
-            final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
-
-            for (Map.Entry<E, MutableInt> entry : entries) {
-                sortedValues.put(entry.getKey(), entry.getValue().intValue());
-            }
-
-            return sortedValues;
-        }
     }
 
     /**
@@ -675,8 +587,14 @@ public final class Multiset<E> implements Iterable<E> {
         return valueMap.keySet().toArray(a);
     }
 
+    public void forEach(BiConsumer<? super E, MutableInt> action) {
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            action.accept(entry.getKey(), entry.getValue());
+        }
+    }
+
     public Stream<Map.Entry<E, MutableInt>> stream() {
-        return Stream.from(valueMap.entrySet());
+        return Stream.of(valueMap.entrySet());
     }
 
     @Override

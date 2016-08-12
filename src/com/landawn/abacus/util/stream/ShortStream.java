@@ -148,6 +148,10 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract ShortStream flatMap(ShortFunction<? extends ShortStream> mapper);
 
+    public abstract IntStream flatMapToInt(ShortFunction<? extends IntStream> mapper);
+
+    public abstract <T> Stream<T> flatMapToObj(ShortFunction<? extends Stream<T>> mapper);
+
     /**
      * Returns a stream consisting of the distinct elements of this stream.
      *
@@ -283,6 +287,8 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return an array containing the elements of this stream
      */
     public abstract short[] toArray();
+
+    public abstract ShortList toShortList();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -596,6 +602,10 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
 
     public static ShortStream of(final short... a) {
         return Stream.from(a);
+    }
+
+    public static ShortStream of(final short[] a, final int startIndex, final int endIndex) {
+        return new ShortStreamImpl(a, startIndex, endIndex);
     }
 
     public static ShortStream from(final int... a) {

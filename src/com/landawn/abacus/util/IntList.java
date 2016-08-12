@@ -92,15 +92,13 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return from(a, 0, a.length);
     }
 
-    public static IntList from(char[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
+    public static IntList from(char[] a, int startIndex, int endIndex) {
+        N.checkIndex(startIndex, endIndex, a.length);
 
-        final int[] elementData = new int[toIndex - fromIndex];
+        final int[] elementData = new int[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
         }
 
         return of(elementData);
@@ -110,15 +108,13 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return from(a, 0, a.length);
     }
 
-    public static IntList from(byte[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
+    public static IntList from(byte[] a, int startIndex, int endIndex) {
+        N.checkIndex(startIndex, endIndex, a.length);
 
-        final int[] elementData = new int[toIndex - fromIndex];
+        final int[] elementData = new int[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
         }
 
         return of(elementData);
@@ -128,15 +124,13 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return from(a, 0, a.length);
     }
 
-    public static IntList from(short[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
+    public static IntList from(short[] a, int startIndex, int endIndex) {
+        N.checkIndex(startIndex, endIndex, a.length);
 
-        final int[] elementData = new int[toIndex - fromIndex];
+        final int[] elementData = new int[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            elementData[i - fromIndex] = a[i];
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = a[i];
         }
 
         return of(elementData);
@@ -146,19 +140,17 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return from(a, 0, a.length);
     }
 
-    public static IntList from(long[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
+    public static IntList from(long[] a, int startIndex, int endIndex) {
+        N.checkIndex(startIndex, endIndex, a.length);
 
-        final int[] elementData = new int[toIndex - fromIndex];
+        final int[] elementData = new int[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             if (a[i] < Integer.MIN_VALUE || a[i] > Integer.MAX_VALUE) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (int) a[i];
+            elementData[i - startIndex] = (int) a[i];
         }
 
         return of(elementData);
@@ -168,19 +160,17 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return from(a, 0, a.length);
     }
 
-    public static IntList from(float[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
+    public static IntList from(float[] a, int startIndex, int endIndex) {
+        N.checkIndex(startIndex, endIndex, a.length);
 
-        final int[] elementData = new int[toIndex - fromIndex];
+        final int[] elementData = new int[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             if (N.compare(a[i], Integer.MIN_VALUE) < 0 || N.compare(a[i], Integer.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (int) a[i];
+            elementData[i - startIndex] = (int) a[i];
         }
 
         return of(elementData);
@@ -190,19 +180,17 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return from(a, 0, a.length);
     }
 
-    public static IntList from(double[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
+    public static IntList from(double[] a, int startIndex, int endIndex) {
+        N.checkIndex(startIndex, endIndex, a.length);
 
-        final int[] elementData = new int[toIndex - fromIndex];
+        final int[] elementData = new int[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             if (N.compare(a[i], Integer.MIN_VALUE) < 0 || N.compare(a[i], Integer.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (int) a[i];
+            elementData[i - startIndex] = (int) a[i];
         }
 
         return of(elementData);
@@ -212,21 +200,19 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return from(a, 0, a.length);
     }
 
-    public static IntList from(String[] a, int fromIndex, int toIndex) {
-        if (fromIndex < 0 || toIndex < 0 || toIndex < fromIndex) {
-            throw new IllegalArgumentException("Invalid fromIndex or toIndex: " + fromIndex + ", " + toIndex);
-        }
+    public static IntList from(String[] a, int startIndex, int endIndex) {
+        N.checkIndex(startIndex, endIndex, a.length);
 
-        final int[] elementData = new int[toIndex - fromIndex];
+        final int[] elementData = new int[endIndex - startIndex];
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             double val = N.asDouble(a[i]);
 
             if (N.compare(val, Integer.MIN_VALUE) < 0 || N.compare(val, Integer.MAX_VALUE) > 0) {
                 throw new ArithmeticException("overflow");
             }
 
-            elementData[i - fromIndex] = (int) val;
+            elementData[i - startIndex] = (int) val;
         }
 
         return of(elementData);
@@ -770,18 +756,18 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Integer>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Integer>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
             final IntFunction<? extends K> func) {
 
         return groupBy(outputClass, List.class, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Integer>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Integer>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
             final int fromIndex, final int toIndex, final IntFunction<? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
-        final R outputResult = N.newInstance(outputClass);
+        final M outputResult = N.newInstance(outputClass);
 
         K key = null;
         V values = null;
@@ -831,7 +817,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     public IntList distinct(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        if (size > 1) {
+        if (toIndex - fromIndex > 1) {
             return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
@@ -918,6 +904,22 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return size;
     }
 
+    public ObjectList<Integer> boxed() {
+        return boxed(0, size);
+    }
+
+    public ObjectList<Integer> boxed(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        final Integer[] b = new Integer[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            b[j] = elementData[i];
+        }
+
+        return ObjectList.of(b);
+    }
+
     @Override
     public void toList(List<Integer> list, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
@@ -949,7 +951,8 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return toMap(HashMap.class, keyMapper, valueMapper);
     }
 
-    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final IntFunction<? extends K> keyMapper,
+    @SuppressWarnings("rawtypes")
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final IntFunction<? extends K> keyMapper,
             final IntFunction<? extends U> valueMapper) {
         return toMap(outputClass, 0, size(), keyMapper, valueMapper);
     }
@@ -960,7 +963,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
             final IntFunction<? extends K> keyMapper, final IntFunction<? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex);
 
@@ -970,7 +973,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
             map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
         }
 
-        return (R) map;
+        return (M) map;
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final IntFunction<? extends K> keyMapper, final IntFunction<? extends U> valueMapper) {

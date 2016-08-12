@@ -1269,7 +1269,7 @@ public final class SQLiteExecutor {
 
     @Deprecated
     <T> OptionalNullable<T> queryForSingleResult(final Class<T> targetClass, final String tableName, final String columnName, Condition whereClause) {
-        final DataSet rs = query(tableName, Array.of(columnName), Array.of(targetClass), whereClause, null, null, null, 0, 1);
+        final DataSet rs = query(tableName, Array.of(columnName), N.asArray(targetClass), whereClause, null, null, null, 0, 1);
 
         if (N.isNullOrEmpty(rs)) {
             return OptionalNullable.empty();

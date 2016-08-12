@@ -35,10 +35,12 @@ import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.function.IntToByteFunction;
 import com.landawn.abacus.util.function.IntToCharFunction;
 import com.landawn.abacus.util.function.IntToDoubleFunction;
 import com.landawn.abacus.util.function.IntToFloatFunction;
 import com.landawn.abacus.util.function.IntToLongFunction;
+import com.landawn.abacus.util.function.IntToShortFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -102,34 +104,11 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract IntStream map(IntUnaryOperator mapper);
 
-    /**
-     * Returns an object-valued {@code Stream} consisting of the results of
-     * applying the given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param <U> the element type of the new stream
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
-    public abstract <U> Stream<U> mapToObj(IntFunction<? extends U> mapper);
-
-    /**
-     * Returns a {@code CharStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract CharStream mapToChar(IntToCharFunction mapper);
+
+    public abstract ByteStream mapToByte(IntToByteFunction mapper);
+
+    public abstract ShortStream mapToShort(IntToShortFunction mapper);
 
     /**
      * Returns a {@code LongStream} consisting of the results of applying the
@@ -174,6 +153,21 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract DoubleStream mapToDouble(IntToDoubleFunction mapper);
 
     /**
+     * Returns an object-valued {@code Stream} consisting of the results of
+     * applying the given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">
+     *     intermediate operation</a>.
+     *
+     * @param <U> the element type of the new stream
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract <U> Stream<U> mapToObj(IntFunction<? extends U> mapper);
+
+    /**
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
      * the provided mapping function to each element.  Each mapped stream is
@@ -192,6 +186,20 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @see Stream#flatMap(Function)
      */
     public abstract IntStream flatMap(IntFunction<? extends IntStream> mapper);
+
+    public abstract CharStream flatMapToChar(IntFunction<? extends CharStream> mapper);
+
+    public abstract ByteStream flatMapToByte(IntFunction<? extends ByteStream> mapper);
+
+    public abstract ShortStream flatMapToShort(IntFunction<? extends ShortStream> mapper);
+
+    public abstract LongStream flatMapToLong(IntFunction<? extends LongStream> mapper);
+
+    public abstract FloatStream flatMapToFloat(IntFunction<? extends FloatStream> mapper);
+
+    public abstract DoubleStream flatMapToDouble(IntFunction<? extends DoubleStream> mapper);
+
+    public abstract <T> Stream<T> flatMapToObj(IntFunction<? extends Stream<T>> mapper);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -328,6 +336,8 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return an array containing the elements of this stream
      */
     public abstract int[] toArray();
+
+    public abstract IntList toIntList();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -635,18 +645,6 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract OptionalInt findAny();
 
     /**
-     * Returns a {@code CharStream} consisting of the elements of this stream,
-     * converted to {@code long}.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @return a {@code CharStream} consisting of the elements of this stream,
-     * converted to {@code long}
-     */
-    public abstract CharStream asCharStream();
-
-    /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
      *
@@ -702,6 +700,10 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
 
     public static IntStream of(final int... a) {
         return Stream.from(a);
+    }
+
+    public static IntStream of(final int[] a, final int startIndex, final int endIndex) {
+        return new IntStreamImpl(a, startIndex, endIndex);
     }
 
     public static IntStream from(final char... a) {

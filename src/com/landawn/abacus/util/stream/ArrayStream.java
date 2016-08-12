@@ -5,8 +5,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -34,6 +37,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
+    private final Comparator<? super T> cmp;
     private final List<Runnable> closeHandlers;
 
     ArrayStream(T[] values) {
@@ -44,8 +48,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayStream(T[] values, boolean sorted, List<Runnable> closeHandlers) {
-        this(values, 0, values.length, sorted, closeHandlers);
+    ArrayStream(T[] values, boolean sorted, Comparator<? super T> cmp, List<Runnable> closeHandlers) {
+        this(values, 0, values.length, sorted, cmp, closeHandlers);
     }
 
     ArrayStream(T[] values, int fromIndex, int toIndex) {
@@ -53,10 +57,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     ArrayStream(T[] values, int fromIndex, int toIndex, List<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, false, closeHandlers);
+        this(values, fromIndex, toIndex, false, null, closeHandlers);
     }
 
-    ArrayStream(T[] values, int fromIndex, int toIndex, boolean sorted, List<Runnable> closeHandlers) {
+    ArrayStream(T[] values, int fromIndex, int toIndex, boolean sorted, Comparator<? super T> cmp, List<Runnable> closeHandlers) {
         if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
             throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
         }
@@ -65,6 +69,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
+        this.cmp = cmp;
         this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
     }
 
@@ -338,26 +343,51 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public <K> Stream<Entry<K, List<T>>> groupBy(Function<? super T, ? extends K> classifier) {
+        return Stream.of(((Map<K, List<T>>) collect(Collectors.groupingBy(classifier))).entrySet());
+    }
+
+    @Override
+    public <K> Stream<Entry<K, List<T>>> groupBy(Function<? super T, ? extends K> classifier, Supplier<Map<K, List<T>>> mapFactory) {
+        return Stream.of(collect(Collectors.groupingBy(classifier, mapFactory)).entrySet());
+    }
+
+    @Override
+    public <K, A, D> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
+        return Stream.of(((Map<K, D>) collect(Collectors.groupingBy(classifier, downstream))).entrySet());
+    }
+
+    @Override
+    public <K, D, A> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Supplier<Map<K, D>> mapFactory,
+            Collector<? super T, A, D> downstream) {
+        return Stream.of(collect(Collectors.groupingBy(classifier, mapFactory, downstream)).entrySet());
+    }
+
+    @Override
     public Stream<T> distinct() {
         return new ArrayStream<T>(N.removeDuplicates(values, fromIndex, toIndex, sorted), closeHandlers);
     }
 
     @Override
     public Stream<T> sorted() {
-        if (sorted) {
-            return new ArrayStream<T>(values, fromIndex, toIndex, sorted, closeHandlers);
+        if (sorted && cmp == null) {
+            return new ArrayStream<T>(values, fromIndex, toIndex, sorted, cmp, closeHandlers);
         }
 
         final T[] a = N.copyOfRange(values, fromIndex, toIndex);
         Arrays.sort(a);
-        return new ArrayStream<T>(a, true, closeHandlers);
+        return new ArrayStream<T>(a, true, null, closeHandlers);
     }
 
     @Override
     public Stream<T> sorted(Comparator<? super T> comparator) {
+        if (sorted && this.cmp == comparator) {
+            return new ArrayStream<T>(values, fromIndex, toIndex, sorted, comparator, closeHandlers);
+        }
+
         final T[] a = N.copyOfRange(values, fromIndex, toIndex);
         Arrays.sort(a, comparator);
-        return new ArrayStream<T>(a, true, closeHandlers);
+        return new ArrayStream<T>(a, true, comparator, closeHandlers);
     }
 
     @Override
@@ -401,6 +431,17 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public <A> A[] toArray(A[] a) {
+        if (a.length < (toIndex - fromIndex)) {
+            a = N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);
+        }
+
+        N.copy(values, fromIndex, a, 0, toIndex - fromIndex);
+
+        return a;
+    }
+
+    @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
         final A[] a = generator.apply(toIndex - fromIndex);
 
@@ -409,6 +450,17 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         return a;
+    }
+
+    @Override
+    public ObjectList<T> toObjectList(Class<T> cls) {
+        final T[] a = N.newArray(cls, toIndex - fromIndex);
+
+        if (a.length > 0) {
+            N.copy(values, fromIndex, a, 0, a.length);
+        }
+
+        return ObjectList.of(a);
     }
 
     @Override

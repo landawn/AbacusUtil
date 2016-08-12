@@ -234,8 +234,8 @@ public class EventBus {
             this.obj = obj;
             this.method = method;
             this.parameterType = method.getParameterTypes()[0];
-            this.parameterType2 = N.isPrimitive(parameterType) ? Array.wrap(parameterType)
-                    : (N.isPrimitiveWapper(parameterType) ? Array.unwrap(parameterType) : null);
+            this.parameterType2 = N.isPrimitive(parameterType) ? Array.box(parameterType)
+                    : (N.isPrimitiveWapper(parameterType) ? Array.unbox(parameterType) : null);
             this.eventId = eventId;
             this.threadMode = threadMode;
         }

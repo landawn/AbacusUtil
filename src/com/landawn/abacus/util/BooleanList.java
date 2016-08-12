@@ -88,9 +88,7 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     public static BooleanList from(String[] a, int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) {
-            throw new IllegalArgumentException("Invalid startIndex or endIndex: " + startIndex + ", " + endIndex);
-        }
+        N.checkIndex(startIndex, endIndex, a.length);
 
         final boolean[] elementData = new boolean[endIndex - startIndex];
 
@@ -585,18 +583,18 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Boolean>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Boolean>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
             final BooleanFunction<? extends K> func) {
 
         return groupBy(outputClass, List.class, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Boolean>, R extends Map<? super K, V>> R groupBy(final Class<R> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Boolean>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
             final int fromIndex, final int toIndex, final BooleanFunction<? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
-        final R outputResult = N.newInstance(outputClass);
+        final M outputResult = N.newInstance(outputClass);
 
         K key = null;
         V values = null;
@@ -644,10 +642,12 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
 
     @Override
     public BooleanList distinct(final int fromIndex, final int toIndex) {
-        if (size > 1) {
+        checkIndex(fromIndex, toIndex);
+
+        if (toIndex - fromIndex > 1) {
             final Boolean[] a = new Boolean[2];
 
-            for (int i = 0; i < size; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (a[0] == null) {
                     a[0] = elementData[i];
                 } else if (a[0].booleanValue() != elementData[i]) {
@@ -656,9 +656,9 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
                 }
             }
 
-            return a[1] == null ? of(Array.of(a[0].booleanValue())) : of(Array.of(a[0].booleanValue(), a[1].booleanValue()));
+            return a[1] == null ? of(a[0].booleanValue()) : of(a[0].booleanValue(), a[1].booleanValue());
         } else {
-            return of(N.copyOfRange(elementData, 0, size));
+            return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
     }
 
@@ -752,6 +752,22 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         return size;
     }
 
+    public ObjectList<Boolean> boxed() {
+        return boxed(0, size);
+    }
+
+    public ObjectList<Boolean> boxed(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        final Boolean[] b = new Boolean[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            b[j] = elementData[i];
+        }
+
+        return ObjectList.of(b);
+    }
+
     @Override
     public void toList(List<Boolean> list, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
@@ -783,7 +799,8 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         return toMap(HashMap.class, keyMapper, valueMapper);
     }
 
-    public <K, U, R extends Map<K, U>> R toMap(final Class<R> outputClass, final BooleanFunction<? extends K> keyMapper,
+    @SuppressWarnings("rawtypes")
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final BooleanFunction<? extends K> keyMapper,
             final BooleanFunction<? extends U> valueMapper) {
         return toMap(outputClass, 0, size(), keyMapper, valueMapper);
     }
@@ -794,7 +811,7 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, U, R extends Map<K, U>> R toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
             final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex);
 
@@ -804,7 +821,7 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
             map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
         }
 
-        return (R) map;
+        return (M) map;
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {

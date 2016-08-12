@@ -19,27 +19,21 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.RandomAccess;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.landawn.abacus.DirtyMarker;
-import com.landawn.abacus.EntityId;
-import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.type.Type;
 
 /**
  *
@@ -277,146 +271,146 @@ public final class Array {
         return a;
     }
 
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Enum<T>> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends java.util.Date> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Calendar> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Runnable> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Callable<?>> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    public static Class[] of(final Class... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends EntityId> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends DirtyMarker> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Condition> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Type<?>> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends List<?>> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Set<?>> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Queue<?>> T[] of(final T... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    public static <T extends Map<?, ?>> T[] of(final T... a) {
-        return a;
-    }
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Enum<T>> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends java.util.Date> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Calendar> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Runnable> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Callable<?>> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    public static Class[] of(final Class... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends EntityId> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends DirtyMarker> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Condition> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Type<?>> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends List<?>> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Set<?>> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Queue<?>> T[] of(final T... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T extends Map<?, ?>> T[] of(final T... a) {
+    //        return a;
+    //    }
 
     //    // Only for Java 8. it's ambiguous in the Java version before 8.
     //    /**
@@ -958,7 +952,7 @@ public final class Array {
         return a;
     }
 
-    public static Class<?> wrap(final Class<?> cls) {
+    public static Class<?> box(final Class<?> cls) {
         Class<?> result = PRIMITIVE_2_WRAPPER.get(cls);
 
         if (result == null) {
@@ -981,15 +975,15 @@ public final class Array {
      *            a {@code boolean} array
      * @return a {@code Boolean} array, {@code null} if null array input
      */
-    public static Boolean[] wrap(final boolean[] a) {
+    public static Boolean[] box(final boolean... a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, a.length);
+        return box(a, 0, a.length);
     }
 
-    public static Boolean[] wrap(final boolean[] a, final int fromIndex, final int toIndex) {
+    public static Boolean[] box(final boolean[] a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1018,15 +1012,15 @@ public final class Array {
      *            a {@code char} array
      * @return a {@code Character} array, {@code null} if null array input
      */
-    public static Character[] wrap(final char[] a) {
+    public static Character[] box(final char... a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, a.length);
+        return box(a, 0, a.length);
     }
 
-    public static Character[] wrap(final char[] a, final int fromIndex, final int toIndex) {
+    public static Character[] box(final char[] a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1055,15 +1049,15 @@ public final class Array {
      *            a {@code byte} array
      * @return a {@code Byte} array, {@code null} if null array input
      */
-    public static Byte[] wrap(final byte[] a) {
+    public static Byte[] box(final byte... a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, a.length);
+        return box(a, 0, a.length);
     }
 
-    public static Byte[] wrap(final byte[] a, final int fromIndex, final int toIndex) {
+    public static Byte[] box(final byte[] a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1092,15 +1086,15 @@ public final class Array {
      *            a {@code short} array
      * @return a {@code Short} array, {@code null} if null array input
      */
-    public static Short[] wrap(final short[] a) {
+    public static Short[] box(final short... a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, a.length);
+        return box(a, 0, a.length);
     }
 
-    public static Short[] wrap(final short[] a, final int fromIndex, final int toIndex) {
+    public static Short[] box(final short[] a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1129,15 +1123,15 @@ public final class Array {
      *            an {@code int} array
      * @return an {@code Integer} array, {@code null} if null array input
      */
-    public static Integer[] wrap(final int[] a) {
+    public static Integer[] box(final int... a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, a.length);
+        return box(a, 0, a.length);
     }
 
-    public static Integer[] wrap(final int[] a, final int fromIndex, final int toIndex) {
+    public static Integer[] box(final int[] a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1166,15 +1160,15 @@ public final class Array {
      *            a {@code long} array
      * @return a {@code Long} array, {@code null} if null array input
      */
-    public static Long[] wrap(final long[] a) {
+    public static Long[] box(final long... a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, a.length);
+        return box(a, 0, a.length);
     }
 
-    public static Long[] wrap(final long[] a, final int fromIndex, final int toIndex) {
+    public static Long[] box(final long[] a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1203,15 +1197,15 @@ public final class Array {
      *            a {@code float} array
      * @return a {@code Float} array, {@code null} if null array input
      */
-    public static Float[] wrap(final float[] a) {
+    public static Float[] box(final float... a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, a.length);
+        return box(a, 0, a.length);
     }
 
-    public static Float[] wrap(final float[] a, final int fromIndex, final int toIndex) {
+    public static Float[] box(final float[] a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1240,15 +1234,15 @@ public final class Array {
      *            a {@code double} array
      * @return a {@code Double} array, {@code null} if null array input
      */
-    public static Double[] wrap(final double[] a) {
+    public static Double[] box(final double... a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, a.length);
+        return box(a, 0, a.length);
     }
 
-    public static Double[] wrap(final double[] a, final int fromIndex, final int toIndex) {
+    public static Double[] box(final double[] a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1264,15 +1258,15 @@ public final class Array {
         return result;
     }
 
-    public static <T> T wrap(final Object a) {
+    static <T> T box(final Object a) {
         if (a == null) {
             return null;
         }
 
-        return wrap(a, 0, getLength(a));
+        return box(a, 0, getLength(a));
     }
 
-    public static <T> T wrap(final Object a, final int fromIndex, final int toIndex) {
+    static <T> T box(final Object a, final int fromIndex, final int toIndex) {
         if (a == null) {
             return null;
         }
@@ -1286,35 +1280,35 @@ public final class Array {
 
         switch (enumInt) {
             case 11:
-                return (T) wrap((boolean[]) a, fromIndex, toIndex);
+                return (T) box((boolean[]) a, fromIndex, toIndex);
 
             case 12:
-                return (T) wrap((char[]) a, fromIndex, toIndex);
+                return (T) box((char[]) a, fromIndex, toIndex);
 
             case 13:
-                return (T) wrap((byte[]) a, fromIndex, toIndex);
+                return (T) box((byte[]) a, fromIndex, toIndex);
 
             case 14:
-                return (T) wrap((short[]) a, fromIndex, toIndex);
+                return (T) box((short[]) a, fromIndex, toIndex);
 
             case 15:
-                return (T) wrap((int[]) a, fromIndex, toIndex);
+                return (T) box((int[]) a, fromIndex, toIndex);
 
             case 16:
-                return (T) wrap((long[]) a, fromIndex, toIndex);
+                return (T) box((long[]) a, fromIndex, toIndex);
 
             case 17:
-                return (T) wrap((float[]) a, fromIndex, toIndex);
+                return (T) box((float[]) a, fromIndex, toIndex);
 
             case 18:
-                return (T) wrap((double[]) a, fromIndex, toIndex);
+                return (T) box((double[]) a, fromIndex, toIndex);
 
             default:
                 throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive array");
         }
     }
 
-    public static Class<?> unwrap(final Class<?> cls) {
+    public static Class<?> unbox(final Class<?> cls) {
         Class<?> result = PRIMITIVE_2_WRAPPER.getByValue(cls);
 
         if (result == null) {
@@ -1339,8 +1333,8 @@ public final class Array {
      *            a {@code Boolean} array, may be {@code null}
      * @return a {@code boolean} array, {@code null} if null array input
      */
-    public static boolean[] unwrap(final Boolean[] a) {
-        return unwrap(a, false);
+    public static boolean[] unbox(final Boolean... a) {
+        return unbox(a, false);
     }
 
     /**
@@ -1358,15 +1352,15 @@ public final class Array {
      *            the value to insert if {@code null} found
      * @return a {@code boolean} array, {@code null} if null array input
      */
-    public static boolean[] unwrap(final Boolean[] a, final boolean valueForNull) {
+    public static boolean[] unbox(final Boolean[] a, final boolean valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, a.length, valueForNull);
+        return unbox(a, 0, a.length, valueForNull);
     }
 
-    public static boolean[] unwrap(final Boolean[] a, final int fromIndex, final int toIndex, final boolean valueForNull) {
+    public static boolean[] unbox(final Boolean[] a, final int fromIndex, final int toIndex, final boolean valueForNull) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1397,8 +1391,8 @@ public final class Array {
      *            a {@code Character} array, may be {@code null}
      * @return a {@code char} array, {@code null} if null array input
      */
-    public static char[] unwrap(final Character[] a) {
-        return unwrap(a, (char) 0);
+    public static char[] unbox(final Character... a) {
+        return unbox(a, (char) 0);
     }
 
     /**
@@ -1417,15 +1411,15 @@ public final class Array {
      *            the value to insert if {@code null} found
      * @return a {@code char} array, {@code null} if null array input
      */
-    public static char[] unwrap(final Character[] a, final char valueForNull) {
+    public static char[] unbox(final Character[] a, final char valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, a.length, valueForNull);
+        return unbox(a, 0, a.length, valueForNull);
     }
 
-    public static char[] unwrap(final Character[] a, final int fromIndex, final int toIndex, final char valueForNull) {
+    public static char[] unbox(final Character[] a, final int fromIndex, final int toIndex, final char valueForNull) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1456,8 +1450,8 @@ public final class Array {
      *            a {@code Byte} array, may be {@code null}
      * @return a {@code byte} array, {@code null} if null array input
      */
-    public static byte[] unwrap(final Byte[] a) {
-        return unwrap(a, (byte) 0);
+    public static byte[] unbox(final Byte... a) {
+        return unbox(a, (byte) 0);
     }
 
     /**
@@ -1475,15 +1469,15 @@ public final class Array {
      *            the value to insert if {@code null} found
      * @return a {@code byte} array, {@code null} if null array input
      */
-    public static byte[] unwrap(final Byte[] a, final byte valueForNull) {
+    public static byte[] unbox(final Byte[] a, final byte valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, a.length, valueForNull);
+        return unbox(a, 0, a.length, valueForNull);
     }
 
-    public static byte[] unwrap(final Byte[] a, final int fromIndex, final int toIndex, final byte valueForNull) {
+    public static byte[] unbox(final Byte[] a, final int fromIndex, final int toIndex, final byte valueForNull) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1514,8 +1508,8 @@ public final class Array {
      *            a {@code Short} array, may be {@code null}
      * @return a {@code byte} array, {@code null} if null array input
      */
-    public static short[] unwrap(final Short[] a) {
-        return unwrap(a, (short) 0);
+    public static short[] unbox(final Short... a) {
+        return unbox(a, (short) 0);
     }
 
     /**
@@ -1533,15 +1527,15 @@ public final class Array {
      *            the value to insert if {@code null} found
      * @return a {@code byte} array, {@code null} if null array input
      */
-    public static short[] unwrap(final Short[] a, final short valueForNull) {
+    public static short[] unbox(final Short[] a, final short valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, a.length, valueForNull);
+        return unbox(a, 0, a.length, valueForNull);
     }
 
-    public static short[] unwrap(final Short[] a, final int fromIndex, final int toIndex, final short valueForNull) {
+    public static short[] unbox(final Short[] a, final int fromIndex, final int toIndex, final short valueForNull) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1572,8 +1566,8 @@ public final class Array {
      *            a {@code Integer} array, may be {@code null}
      * @return an {@code int} array, {@code null} if null array input
      */
-    public static int[] unwrap(final Integer[] a) {
-        return unwrap(a, 0);
+    public static int[] unbox(final Integer... a) {
+        return unbox(a, 0);
     }
 
     /**
@@ -1591,15 +1585,15 @@ public final class Array {
      *            the value to insert if {@code null} found
      * @return an {@code int} array, {@code null} if null array input
      */
-    public static int[] unwrap(final Integer[] a, final int valueForNull) {
+    public static int[] unbox(final Integer[] a, final int valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, a.length, valueForNull);
+        return unbox(a, 0, a.length, valueForNull);
     }
 
-    public static int[] unwrap(final Integer[] a, final int fromIndex, final int toIndex, final int valueForNull) {
+    public static int[] unbox(final Integer[] a, final int fromIndex, final int toIndex, final int valueForNull) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1630,8 +1624,8 @@ public final class Array {
      *            a {@code Long} array, may be {@code null}
      * @return a {@code long} array, {@code null} if null array input
      */
-    public static long[] unwrap(final Long[] a) {
-        return unwrap(a, 0L);
+    public static long[] unbox(final Long... a) {
+        return unbox(a, 0L);
     }
 
     /**
@@ -1649,15 +1643,15 @@ public final class Array {
      *            the value to insert if {@code null} found
      * @return a {@code long} array, {@code null} if null array input
      */
-    public static long[] unwrap(final Long[] a, final long valueForNull) {
+    public static long[] unbox(final Long[] a, final long valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, a.length, valueForNull);
+        return unbox(a, 0, a.length, valueForNull);
     }
 
-    public static long[] unwrap(final Long[] a, final int fromIndex, final int toIndex, final long valueForNull) {
+    public static long[] unbox(final Long[] a, final int fromIndex, final int toIndex, final long valueForNull) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1688,8 +1682,8 @@ public final class Array {
      *            a {@code Float} array, may be {@code null}
      * @return a {@code float} array, {@code null} if null array input
      */
-    public static float[] unwrap(final Float[] a) {
-        return unwrap(a, 0f);
+    public static float[] unbox(final Float... a) {
+        return unbox(a, 0f);
     }
 
     /**
@@ -1707,15 +1701,15 @@ public final class Array {
      *            the value to insert if {@code null} found
      * @return a {@code float} array, {@code null} if null array input
      */
-    public static float[] unwrap(final Float[] a, final float valueForNull) {
+    public static float[] unbox(final Float[] a, final float valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, a.length, valueForNull);
+        return unbox(a, 0, a.length, valueForNull);
     }
 
-    public static float[] unwrap(final Float[] a, final int fromIndex, final int toIndex, final float valueForNull) {
+    public static float[] unbox(final Float[] a, final int fromIndex, final int toIndex, final float valueForNull) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1746,8 +1740,8 @@ public final class Array {
      *            a {@code Double} array, may be {@code null}
      * @return a {@code double} array, {@code null} if null array input
      */
-    public static double[] unwrap(final Double[] a) {
-        return unwrap(a, 0d);
+    public static double[] unbox(final Double... a) {
+        return unbox(a, 0d);
     }
 
     /**
@@ -1765,15 +1759,15 @@ public final class Array {
      *            the value to insert if {@code null} found
      * @return a {@code double} array, {@code null} if null array input
      */
-    public static double[] unwrap(final Double[] a, final double valueForNull) {
+    public static double[] unbox(final Double[] a, final double valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, a.length, valueForNull);
+        return unbox(a, 0, a.length, valueForNull);
     }
 
-    public static double[] unwrap(final Double[] a, final int fromIndex, final int toIndex, final double valueForNull) {
+    public static double[] unbox(final Double[] a, final int fromIndex, final int toIndex, final double valueForNull) {
         if (a == null) {
             return null;
         } else if (toIndex - fromIndex == 0) {
@@ -1789,28 +1783,28 @@ public final class Array {
         return result;
     }
 
-    public static <T> T unwrap(final Object a) {
+    static <T> T unbox(final Object a) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, null);
+        return unbox(a, null);
     }
 
-    public static <T> T unwrap(final Object a, final Object valueForNull) {
+    static <T> T unbox(final Object a, final Object valueForNull) {
         if (a == null) {
             return null;
         }
 
-        return unwrap(a, 0, getLength(a), valueForNull);
+        return unbox(a, 0, getLength(a), valueForNull);
     }
 
-    public static <T> T unwrap(final Object a, final int fromIndex, final int toIndex, final Object valueForNull) {
+    static <T> T unbox(final Object a, final int fromIndex, final int toIndex, final Object valueForNull) {
         if (a == null) {
             return null;
         }
 
-        final Class<?> cls = unwrap(a.getClass());
+        final Class<?> cls = unbox(a.getClass());
         final Object defaultValue = valueForNull == null ? N.defaultValueOf(cls.getComponentType()) : valueForNull;
         final Integer enumInt = N.CLASS_TYPE_ENUM.get(cls);
 
@@ -1820,28 +1814,28 @@ public final class Array {
 
         switch (enumInt) {
             case 11:
-                return (T) unwrap((Boolean[]) a, fromIndex, toIndex, ((Boolean) defaultValue).booleanValue());
+                return (T) unbox((Boolean[]) a, fromIndex, toIndex, ((Boolean) defaultValue).booleanValue());
 
             case 12:
-                return (T) unwrap((Character[]) a, fromIndex, toIndex, ((Character) defaultValue).charValue());
+                return (T) unbox((Character[]) a, fromIndex, toIndex, ((Character) defaultValue).charValue());
 
             case 13:
-                return (T) unwrap((Byte[]) a, fromIndex, toIndex, ((Number) defaultValue).byteValue());
+                return (T) unbox((Byte[]) a, fromIndex, toIndex, ((Number) defaultValue).byteValue());
 
             case 14:
-                return (T) unwrap((Short[]) a, fromIndex, toIndex, ((Number) defaultValue).shortValue());
+                return (T) unbox((Short[]) a, fromIndex, toIndex, ((Number) defaultValue).shortValue());
 
             case 15:
-                return (T) unwrap((Integer[]) a, fromIndex, toIndex, ((Number) defaultValue).intValue());
+                return (T) unbox((Integer[]) a, fromIndex, toIndex, ((Number) defaultValue).intValue());
 
             case 16:
-                return (T) unwrap((Long[]) a, fromIndex, toIndex, ((Number) defaultValue).longValue());
+                return (T) unbox((Long[]) a, fromIndex, toIndex, ((Number) defaultValue).longValue());
 
             case 17:
-                return (T) unwrap((Float[]) a, fromIndex, toIndex, ((Number) defaultValue).floatValue());
+                return (T) unbox((Float[]) a, fromIndex, toIndex, ((Number) defaultValue).floatValue());
 
             case 18:
-                return (T) unwrap((Double[]) a, fromIndex, toIndex, ((Number) defaultValue).doubleValue());
+                return (T) unbox((Double[]) a, fromIndex, toIndex, ((Number) defaultValue).doubleValue());
 
             default:
                 throw new IllegalArgumentException(N.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
@@ -1873,7 +1867,7 @@ public final class Array {
     }
 
     static void sort(final char[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -1891,7 +1885,7 @@ public final class Array {
     }
 
     static void sort(final byte[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -1909,7 +1903,7 @@ public final class Array {
     }
 
     static void sort(final short[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -1927,7 +1921,7 @@ public final class Array {
     }
 
     static void sort(final int[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -1945,7 +1939,7 @@ public final class Array {
     }
 
     static void sort(final long[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -1963,7 +1957,7 @@ public final class Array {
     }
 
     static void sort(final float[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -1981,7 +1975,7 @@ public final class Array {
     }
 
     static void sort(final double[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2011,7 +2005,7 @@ public final class Array {
     }
 
     static <T> void sort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2179,7 +2173,7 @@ public final class Array {
     //    }
     //
     //    static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex);
+    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
     //
     //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
     //            return;
@@ -2243,7 +2237,7 @@ public final class Array {
     //    }
     //
     //    static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex);
+    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
     //
     //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
     //            return;
@@ -2307,7 +2301,7 @@ public final class Array {
     //    }
     //
     //    static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex);
+    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
     //
     //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
     //            return;
@@ -2371,7 +2365,7 @@ public final class Array {
     //    }
     //
     //    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex);
+    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
     //
     //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
     //            return;
@@ -2447,7 +2441,7 @@ public final class Array {
     //    }
     //
     //    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-    //        N.checkIndex(fromIndex, toIndex);
+    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
     //
     //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
     //            return;
@@ -4627,7 +4621,7 @@ public final class Array {
     }
 
     static void bucketSort(final int[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -4644,7 +4638,12 @@ public final class Array {
             multiset.add(a[i]);
         }
 
-        final Map<Integer, Integer> m = multiset.toMapSortedByElement();
+        final Map<Integer, Integer> m = multiset.toMapSortedBy(new Comparator<Map.Entry<Integer, MutableInt>>() {
+            @Override
+            public int compare(Entry<Integer, MutableInt> a, Entry<Integer, MutableInt> b) {
+                return N.compare(a.getKey().intValue(), a.getKey().intValue());
+            }
+        });
         int idx = fromIndex;
 
         for (Map.Entry<Integer, Integer> entry : m.entrySet()) {
@@ -4662,7 +4661,7 @@ public final class Array {
     }
 
     static void bucketSort(final long[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -4679,7 +4678,12 @@ public final class Array {
             multiset.add(a[i]);
         }
 
-        final Map<Long, Integer> m = multiset.toMapSortedByElement();
+        final Map<Long, Integer> m = multiset.toMapSortedBy(new Comparator<Map.Entry<Long, MutableInt>>() {
+            @Override
+            public int compare(Entry<Long, MutableInt> a, Entry<Long, MutableInt> b) {
+                return N.compare(a.getKey().longValue(), a.getKey().longValue());
+            }
+        });
         int idx = fromIndex;
 
         for (Map.Entry<Long, Integer> entry : m.entrySet()) {
@@ -4697,7 +4701,7 @@ public final class Array {
     }
 
     static void bucketSort(final float[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -4714,7 +4718,12 @@ public final class Array {
             multiset.add(a[i]);
         }
 
-        final Map<Float, Integer> m = multiset.toMapSortedByElement();
+        final Map<Float, Integer> m = multiset.toMapSortedBy(new Comparator<Map.Entry<Float, MutableInt>>() {
+            @Override
+            public int compare(Entry<Float, MutableInt> a, Entry<Float, MutableInt> b) {
+                return N.compare(a.getKey().floatValue(), a.getKey().floatValue());
+            }
+        });
         int idx = fromIndex;
 
         for (Map.Entry<Float, Integer> entry : m.entrySet()) {
@@ -4732,7 +4741,7 @@ public final class Array {
     }
 
     static void bucketSort(final double[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -4749,7 +4758,12 @@ public final class Array {
             multiset.add(a[i]);
         }
 
-        final Map<Double, Integer> m = multiset.toMapSortedByElement();
+        final Map<Double, Integer> m = multiset.toMapSortedBy(new Comparator<Map.Entry<Double, MutableInt>>() {
+            @Override
+            public int compare(Entry<Double, MutableInt> a, Entry<Double, MutableInt> b) {
+                return N.compare(a.getKey().doubleValue(), a.getKey().doubleValue());
+            }
+        });
         int idx = fromIndex;
 
         for (Map.Entry<Double, Integer> entry : m.entrySet()) {
@@ -4799,7 +4813,7 @@ public final class Array {
      * @param cmp
      */
     static <T> void bucketSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -4816,7 +4830,12 @@ public final class Array {
             multiset.add(a[i]);
         }
 
-        final Map<T, Integer> m = multiset.toMapSortedByElement(cmp);
+        final Map<T, Integer> m = multiset.toMapSortedBy(new Comparator<Map.Entry<T, MutableInt>>() {
+            @Override
+            public int compare(Entry<T, MutableInt> a, Entry<T, MutableInt> b) {
+                return cmp.compare(a.getKey(), a.getKey());
+            }
+        });
         int idx = fromIndex;
 
         for (Map.Entry<T, Integer> entry : m.entrySet()) {
@@ -4872,7 +4891,7 @@ public final class Array {
      * @param cmp
      */
     static <T> void bucketSort(final List<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex);
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -4895,7 +4914,13 @@ public final class Array {
             multiset.add(itr.next());
         }
 
-        final Map<T, Integer> m = multiset.toMapSortedByElement(cmp);
+        final Map<T, Integer> m = multiset.toMapSortedBy(new Comparator<Map.Entry<T, MutableInt>>() {
+            @Override
+            public int compare(Entry<T, MutableInt> a, Entry<T, MutableInt> b) {
+                return cmp.compare(a.getKey(), a.getKey());
+            }
+        });
+
         itr = (ListIterator<T>) c.listIterator(fromIndex);
 
         for (Map.Entry<T, Integer> entry : m.entrySet()) {

@@ -86,17 +86,6 @@ final class CharStreamImpl extends CharStream {
     }
 
     @Override
-    public <U> Stream<U> mapToObj(CharFunction<? extends U> mapper) {
-        final Object[] a = new Object[toIndex - fromIndex];
-
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.apply(values[i]);
-        }
-
-        return new ArrayStream<U>((U[]) a, closeHandlers);
-    }
-
-    @Override
     public IntStream mapToInt(CharToIntFunction mapper) {
         final int[] a = new int[toIndex - fromIndex];
 
@@ -105,6 +94,17 @@ final class CharStreamImpl extends CharStream {
         }
 
         return new IntStreamImpl(a, closeHandlers);
+    }
+
+    @Override
+    public <U> Stream<U> mapToObj(CharFunction<? extends U> mapper) {
+        final Object[] a = new Object[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.apply(values[i]);
+        }
+
+        return new ArrayStream<U>((U[]) a, closeHandlers);
     }
 
     @Override
@@ -126,6 +126,49 @@ final class CharStreamImpl extends CharStream {
         }
 
         return new CharStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public IntStream flatMapToInt(CharFunction<? extends IntStream> mapper) {
+        final List<int[]> listOfArray = new ArrayList<int[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final int[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final int[] arrayOfAll = new int[lengthOfAll];
+        int from = 0;
+        for (int[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new IntStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public <T> Stream<T> flatMapToObj(CharFunction<? extends Stream<T>> mapper) {
+        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        int lengthOfAll = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            final Object[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final Object[] arrayOfAll = new Object[lengthOfAll];
+        int from = 0;
+
+        for (Object[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -182,6 +225,11 @@ final class CharStreamImpl extends CharStream {
     @Override
     public char[] toArray() {
         return N.copyOfRange(values, fromIndex, toIndex);
+    }
+
+    @Override
+    public CharList toCharList() {
+        return CharList.of(N.copyOfRange(values, fromIndex, toIndex));
     }
 
     @Override
@@ -300,7 +348,7 @@ final class CharStreamImpl extends CharStream {
 
     @Override
     public Stream<Character> boxed() {
-        return new ArrayStream<Character>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Character>(Array.box(values, fromIndex, toIndex), closeHandlers);
     }
 
     @Override

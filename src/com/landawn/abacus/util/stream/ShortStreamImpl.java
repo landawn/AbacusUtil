@@ -87,17 +87,6 @@ final class ShortStreamImpl extends ShortStream {
     }
 
     @Override
-    public <U> Stream<U> mapToObj(ShortFunction<? extends U> mapper) {
-        final Object[] a = new Object[toIndex - fromIndex];
-
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.apply(values[i]);
-        }
-
-        return new ArrayStream<U>((U[]) a, closeHandlers);
-    }
-
-    @Override
     public IntStream mapToInt(ShortToIntFunction mapper) {
         final int[] a = new int[toIndex - fromIndex];
 
@@ -106,6 +95,17 @@ final class ShortStreamImpl extends ShortStream {
         }
 
         return new IntStreamImpl(a, closeHandlers);
+    }
+
+    @Override
+    public <U> Stream<U> mapToObj(ShortFunction<? extends U> mapper) {
+        final Object[] a = new Object[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.apply(values[i]);
+        }
+
+        return new ArrayStream<U>((U[]) a, closeHandlers);
     }
 
     @Override
@@ -127,6 +127,49 @@ final class ShortStreamImpl extends ShortStream {
         }
 
         return new ShortStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public IntStream flatMapToInt(ShortFunction<? extends IntStream> mapper) {
+        final List<int[]> listOfArray = new ArrayList<int[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final int[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final int[] arrayOfAll = new int[lengthOfAll];
+        int from = 0;
+        for (int[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new IntStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public <T> Stream<T> flatMapToObj(ShortFunction<? extends Stream<T>> mapper) {
+        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        int lengthOfAll = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            final Object[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final Object[] arrayOfAll = new Object[lengthOfAll];
+        int from = 0;
+
+        for (Object[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -183,6 +226,11 @@ final class ShortStreamImpl extends ShortStream {
     @Override
     public short[] toArray() {
         return N.copyOfRange(values, fromIndex, toIndex);
+    }
+
+    @Override
+    public ShortList toShortList() {
+        return ShortList.of(N.copyOfRange(values, fromIndex, toIndex));
     }
 
     @Override
@@ -315,7 +363,7 @@ final class ShortStreamImpl extends ShortStream {
 
     @Override
     public Stream<Short> boxed() {
-        return new ArrayStream<Short>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Short>(Array.box(values, fromIndex, toIndex), closeHandlers);
     }
 
     @Override

@@ -89,17 +89,6 @@ final class FloatStreamImpl extends FloatStream {
     }
 
     @Override
-    public <U> Stream<U> mapToObj(FloatFunction<? extends U> mapper) {
-        final Object[] a = new Object[toIndex - fromIndex];
-
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.apply(values[i]);
-        }
-
-        return new ArrayStream<U>((U[]) a, closeHandlers);
-    }
-
-    @Override
     public IntStream mapToInt(FloatToIntFunction mapper) {
         final int[] a = new int[toIndex - fromIndex];
 
@@ -133,6 +122,17 @@ final class FloatStreamImpl extends FloatStream {
     }
 
     @Override
+    public <U> Stream<U> mapToObj(FloatFunction<? extends U> mapper) {
+        final Object[] a = new Object[toIndex - fromIndex];
+
+        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+            a[j] = mapper.apply(values[i]);
+        }
+
+        return new ArrayStream<U>((U[]) a, closeHandlers);
+    }
+
+    @Override
     public FloatStream flatMap(FloatFunction<? extends FloatStream> mapper) {
         final List<float[]> listOfArray = new ArrayList<float[]>();
 
@@ -151,6 +151,91 @@ final class FloatStreamImpl extends FloatStream {
         }
 
         return new FloatStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public IntStream flatMapToInt(FloatFunction<? extends IntStream> mapper) {
+        final List<int[]> listOfArray = new ArrayList<int[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final int[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final int[] arrayOfAll = new int[lengthOfAll];
+        int from = 0;
+        for (int[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new IntStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public LongStream flatMapToLong(FloatFunction<? extends LongStream> mapper) {
+        final List<long[]> listOfArray = new ArrayList<long[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final long[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final long[] arrayOfAll = new long[lengthOfAll];
+        int from = 0;
+        for (long[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new LongStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public DoubleStream flatMapToDouble(FloatFunction<? extends DoubleStream> mapper) {
+        final List<double[]> listOfArray = new ArrayList<double[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final double[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final double[] arrayOfAll = new double[lengthOfAll];
+        int from = 0;
+        for (double[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new DoubleStreamImpl(arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public <T> Stream<T> flatMapToObj(FloatFunction<? extends Stream<T>> mapper) {
+        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        int lengthOfAll = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            final Object[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final Object[] arrayOfAll = new Object[lengthOfAll];
+        int from = 0;
+
+        for (Object[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -207,6 +292,11 @@ final class FloatStreamImpl extends FloatStream {
     @Override
     public float[] toArray() {
         return N.copyOfRange(values, fromIndex, toIndex);
+    }
+
+    @Override
+    public FloatList toFloatList() {
+        return FloatList.of(N.copyOfRange(values, fromIndex, toIndex));
     }
 
     @Override
@@ -339,7 +429,7 @@ final class FloatStreamImpl extends FloatStream {
 
     @Override
     public Stream<Float> boxed() {
-        return new ArrayStream<Float>(Array.wrap(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Float>(Array.box(values, fromIndex, toIndex), closeHandlers);
     }
 
     @Override

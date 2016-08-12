@@ -147,6 +147,10 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      */
     public abstract CharStream flatMap(CharFunction<? extends CharStream> mapper);
 
+    public abstract IntStream flatMapToInt(CharFunction<? extends IntStream> mapper);
+
+    public abstract <T> Stream<T> flatMapToObj(CharFunction<? extends Stream<T>> mapper);
+
     /**
      * Returns a stream consisting of the distinct elements of this stream.
      *
@@ -282,6 +286,8 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return an array containing the elements of this stream
      */
     public abstract char[] toArray();
+
+    public abstract CharList toCharList();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -591,6 +597,10 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
 
     public static CharStream of(final char... a) {
         return Stream.from(a);
+    }
+
+    public static CharStream of(final char[] a, final int startIndex, final int endIndex) {
+        return new CharStreamImpl(a, startIndex, endIndex);
     }
 
     public static CharStream from(final int... a) {

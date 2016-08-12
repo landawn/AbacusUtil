@@ -51,7 +51,7 @@ import com.landawn.abacus.util.function.Supplier;
  *
  * @since 1.8
  */
-public final class OptionalInt {
+public final class OptionalInt implements Comparable<OptionalInt> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -202,6 +202,19 @@ public final class OptionalInt {
      */
     public int orZero() {
         return isPresent ? value : 0;
+    }
+
+    @Override
+    public int compareTo(OptionalInt optional) {
+        if (optional == null || optional.isPresent() == false) {
+            return isPresent() ? 1 : 0;
+        }
+
+        if (isPresent() == false) {
+            return optional.isPresent() ? -1 : 0;
+        }
+
+        return Integer.compare(this.get(), optional.get());
     }
 
     /**

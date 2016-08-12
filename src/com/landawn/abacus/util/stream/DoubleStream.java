@@ -24,6 +24,7 @@
  */
 package com.landawn.abacus.util.stream;
 
+import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -99,21 +100,6 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract DoubleStream map(DoubleUnaryOperator mapper);
 
     /**
-     * Returns an object-valued {@code Stream} consisting of the results of
-     * applying the given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param <U> the element type of the new stream
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
-    public abstract <U> Stream<U> mapToObj(DoubleFunction<? extends U> mapper);
-
-    /**
      * Returns an {@code IntStream} consisting of the results of applying the
      * given function to the elements of this stream.
      *
@@ -156,6 +142,21 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract FloatStream mapToFloat(DoubleToFloatFunction mapper);
 
     /**
+     * Returns an object-valued {@code Stream} consisting of the results of
+     * applying the given function to the elements of this stream.
+     *
+     * <p>This is an <a href="package-summary.html#StreamOps">
+     *     intermediate operation</a>.
+     *
+     * @param <U> the element type of the new stream
+     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *               <a href="package-summary.html#Statelessness">stateless</a>
+     *               function to apply to each element
+     * @return the new stream
+     */
+    public abstract <U> Stream<U> mapToObj(DoubleFunction<? extends U> mapper);
+
+    /**
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
      * the provided mapping function to each element.  Each mapped stream is
@@ -174,6 +175,14 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @see Stream#flatMap(Function)
      */
     public abstract DoubleStream flatMap(DoubleFunction<? extends DoubleStream> mapper);
+
+    public abstract IntStream flatMapToInt(DoubleFunction<? extends IntStream> mapper);
+
+    public abstract LongStream flatMapToLong(DoubleFunction<? extends LongStream> mapper);
+
+    public abstract FloatStream flatMapToFloat(DoubleFunction<? extends FloatStream> mapper);
+
+    public abstract <T> Stream<T> flatMapToObj(DoubleFunction<? extends Stream<T>> mapper);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -313,6 +322,8 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @return an array containing the elements of this stream
      */
     public abstract double[] toArray();
+
+    public abstract DoubleList toDoubleList();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -689,5 +700,9 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
 
     public static DoubleStream of(final double... a) {
         return Stream.from(a);
+    }
+
+    public static DoubleStream of(final double[] a, final int startIndex, final int endIndex) {
+        return new DoubleStreamImpl(a, startIndex, endIndex);
     }
 }
