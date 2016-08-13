@@ -83,7 +83,9 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      *                  should be included
      * @return the new stream
      */
-    public abstract ShortStream filter(ShortPredicate predicate);
+    public abstract ShortStream filter(final ShortPredicate predicate);
+
+    public abstract ShortStream filter(final ShortPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

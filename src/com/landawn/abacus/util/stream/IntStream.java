@@ -88,7 +88,9 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      *                  should be included
      * @return the new stream
      */
-    public abstract IntStream filter(IntPredicate predicate);
+    public abstract IntStream filter(final IntPredicate predicate);
+
+    public abstract IntStream filter(final IntPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

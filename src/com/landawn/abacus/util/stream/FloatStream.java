@@ -84,7 +84,9 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      *                  should be included
      * @return the new stream
      */
-    public abstract FloatStream filter(FloatPredicate predicate);
+    public abstract FloatStream filter(final FloatPredicate predicate);
+
+    public abstract FloatStream filter(final FloatPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

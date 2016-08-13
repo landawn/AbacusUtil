@@ -599,6 +599,13 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
+    @Override
+    public FloatList filter(final int fromIndex, final int toIndex, FloatPredicate filter, final int max) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+    }
+
     public <R> List<R> map(final FloatFunction<? extends R> func) {
         return map(0, size(), func);
     }

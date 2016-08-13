@@ -655,6 +655,13 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
+    @Override
+    public IntList filter(final int fromIndex, final int toIndex, IntPredicate filter, final int max) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+    }
+
     public <R> List<R> map(final IntFunction<? extends R> func) {
         return map(0, size(), func);
     }

@@ -64,15 +64,12 @@ final class ByteStreamImpl extends ByteStream {
 
     @Override
     public ByteStream filter(BytePredicate predicate) {
-        final ByteList list = new ByteList();
+        return filter(predicate, Integer.MAX_VALUE);
+    }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
-            }
-        }
-
-        return new ByteStreamImpl(list.trimToSize().array(), closeHandlers);
+    @Override
+    public ByteStream filter(final BytePredicate predicate, final int max) {
+        return new ByteStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override

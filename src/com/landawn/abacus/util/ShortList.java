@@ -567,6 +567,13 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
+    @Override
+    public ShortList filter(final int fromIndex, final int toIndex, ShortPredicate filter, final int max) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+    }
+
     public <R> List<R> map(final ShortFunction<? extends R> func) {
         return map(0, size(), func);
     }

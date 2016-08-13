@@ -38,7 +38,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>, T, T[], ObjectList<T>> {
+public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? super T>, T, T[], ObjectList<T>> {
     private T[] elementData = null;
     private int size = 0;
 
@@ -441,7 +441,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     }
 
     @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, Predicate<T> filter) {
+    public boolean allMatch(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -456,7 +456,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     }
 
     @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, Predicate<T> filter) {
+    public boolean anyMatch(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -471,7 +471,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     }
 
     @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, Predicate<T> filter) {
+    public boolean noneMatch(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -486,17 +486,24 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<T>,
     }
 
     @Override
-    public int count(final int fromIndex, final int toIndex, Predicate<T> filter) {
+    public int count(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
-    public ObjectList<T> filter(final int fromIndex, final int toIndex, Predicate<T> filter) {
+    public ObjectList<T> filter(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.filter(elementData, fromIndex, toIndex, filter));
+    }
+
+    @Override
+    public ObjectList<T> filter(final int fromIndex, final int toIndex, Predicate<? super T> filter, final int max) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
     public <R> List<R> map(final Function<? super T, ? extends R> func) {

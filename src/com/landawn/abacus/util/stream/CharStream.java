@@ -82,7 +82,9 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      *                  should be included
      * @return the new stream
      */
-    public abstract CharStream filter(CharPredicate predicate);
+    public abstract CharStream filter(final CharPredicate predicate);
+
+    public abstract CharStream filter(final CharPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -605,6 +607,14 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
 
     public static CharStream from(final int... a) {
         return Stream.from(CharList.from(a).trimToSize().array());
+    }
+
+    public static CharStream from(final String str) {
+        return from(str, 0, str.length());
+    }
+
+    public static CharStream from(final String str, final int startIndex, final int endIndex) {
+        return of(N.getCharsForReadOnly(str), startIndex, endIndex);
     }
 
     public static CharStream range(final char startInclusive, final char endExclusive) {

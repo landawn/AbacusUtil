@@ -63,15 +63,12 @@ final class CharStreamImpl extends CharStream {
 
     @Override
     public CharStream filter(CharPredicate predicate) {
-        final CharList list = new CharList();
+        return filter(predicate, Integer.MAX_VALUE);
+    }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
-            }
-        }
-
-        return new CharStreamImpl(list.trimToSize().array(), closeHandlers);
+    @Override
+    public CharStream filter(final CharPredicate predicate, final int max) {
+        return new CharStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override

@@ -569,6 +569,13 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
+    @Override
+    public DoubleList filter(final int fromIndex, final int toIndex, DoublePredicate filter, final int max) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+    }
+
     public <R> List<R> map(final DoubleFunction<? extends R> func) {
         return map(0, size(), func);
     }

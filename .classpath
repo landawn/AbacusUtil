@@ -13,7 +13,7 @@
 	<classpathentry kind="lib" path="lib/commons-math3-3.5.jar"/>
 	<classpathentry kind="lib" path="lib/android.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.13.jar"/>
-	<classpathentry kind="lib" path="C:/Users/haiyangl/Landawn/AbacusUtil/trunk/lib/abacus-util-0.8.20.jar"/>
+	<classpathentry kind="lib" path="C:/Users/haiyangl/Landawn/AbacusUtil/trunk/lib/abacus-util-0.8.21.jar"/>
 	<classpathentry kind="lib" path="lib/android-support-v4.jar"/>
 	<classpathentry kind="lib" path="lib/android-support-v7-appcompat.jar"/>
 	<classpathentry kind="lib" path="lib/cassandra-driver-core-3.0.2.jar"/>

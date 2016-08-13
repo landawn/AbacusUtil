@@ -69,15 +69,12 @@ final class IntStreamImpl extends IntStream {
 
     @Override
     public IntStream filter(IntPredicate predicate) {
-        final IntList list = new IntList();
+        return filter(predicate, Integer.MAX_VALUE);
+    }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
-            }
-        }
-
-        return new IntStreamImpl(list.trimToSize().array(), closeHandlers);
+    @Override
+    public IntStream filter(final IntPredicate predicate, final int max) {
+        return new IntStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override

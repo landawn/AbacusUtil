@@ -1935,7 +1935,7 @@ public final class Collectors {
      * @return a {@code Collector} implementing the group-by operation
      *
      * @see #groupingBy(Function, Collector)
-     * @see #groupingBy(Function, Supplier, Collector)
+     * @see #groupingBy(Function, Collector, Supplier)
      * @see #groupingByConcurrent(Function)
      */
     public static <T, K> Collector<T, ?, Map<K, List<T>>> groupingBy(Function<? super T, ? extends K> classifier) {
@@ -1948,7 +1948,7 @@ public final class Collectors {
             final Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = toList();
 
-        return groupingBy(classifier, mapFactory, downstream);
+        return groupingBy(classifier, downstream, mapFactory);
     }
 
     /**
@@ -1990,7 +1990,7 @@ public final class Collectors {
      * @return a {@code Collector} implementing the cascaded group-by operation
      * @see #groupingBy(Function)
      *
-     * @see #groupingBy(Function, Supplier, Collector)
+     * @see #groupingBy(Function, Collector, Supplier)
      * @see #groupingByConcurrent(Function, Collector)
      */
     public static <T, K, A, D> Collector<T, ?, Map<K, D>> groupingBy(final Function<? super T, ? extends K> classifier,
@@ -2002,7 +2002,7 @@ public final class Collectors {
             }
         };
 
-        return groupingBy(classifier, mapFactory, downstream);
+        return groupingBy(classifier, downstream, mapFactory);
     }
 
     /**
@@ -2031,7 +2031,7 @@ public final class Collectors {
      * pipelines, the {@code combiner} function operates by merging the keys
      * from one map into another, which can be an expensive operation.  If
      * preservation of the order in which elements are presented to the downstream
-     * collector is not required, using {@link #groupingByConcurrent(Function, Supplier, Collector)}
+     * collector is not required, using {@link #groupingByConcurrent(Function, Collector, Supplier)}
      * may offer better parallel performance.
      *
      * @param <T> the type of the input elements
@@ -2040,17 +2040,17 @@ public final class Collectors {
      * @param <D> the result type of the downstream reduction
      * @param <M> the type of the resulting {@code Map}
      * @param classifier a classifier function mapping input elements to keys
+     * @param downstream a {@code Collector} implementing the downstream reduction
      * @param mapFactory a function which, when called, produces a new empty
      *                   {@code Map} of the desired type
-     * @param downstream a {@code Collector} implementing the downstream reduction
      * @return a {@code Collector} implementing the cascaded group-by operation
      *
      * @see #groupingBy(Function, Collector)
      * @see #groupingBy(Function)
-     * @see #groupingByConcurrent(Function, Supplier, Collector)
+     * @see #groupingByConcurrent(Function, Collector, Supplier)
      */
     public static <T, K, D, A, M extends Map<K, D>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
-            final Supplier<M> mapFactory, final Collector<? super T, A, D> downstream) {
+            final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
 
         //        Supplier<A> downstreamSupplier = downstream.supplier();
         //        BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
@@ -2159,7 +2159,7 @@ public final class Collectors {
      *
      * @see #groupingBy(Function)
      * @see #groupingByConcurrent(Function, Collector)
-     * @see #groupingByConcurrent(Function, Supplier, Collector)
+     * @see #groupingByConcurrent(Function, Collector, Supplier)
      */
     public static <T, K> Collector<T, ?, ConcurrentMap<K, List<T>>> groupingByConcurrent(Function<? super T, ? extends K> classifier) {
         final Collector<? super T, ?, List<T>> downstream = toList();
@@ -2171,7 +2171,7 @@ public final class Collectors {
             final Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = toList();
 
-        return groupingByConcurrent(classifier, mapFactory, downstream);
+        return groupingByConcurrent(classifier, downstream, mapFactory);
     }
 
     /**
@@ -2207,7 +2207,7 @@ public final class Collectors {
      *
      * @see #groupingBy(Function, Collector)
      * @see #groupingByConcurrent(Function)
-     * @see #groupingByConcurrent(Function, Supplier, Collector)
+     * @see #groupingByConcurrent(Function, Collector, Supplier)
      */
     public static <T, K, A, D> Collector<T, ?, ConcurrentMap<K, D>> groupingByConcurrent(Function<? super T, ? extends K> classifier,
             Collector<? super T, A, D> downstream) {
@@ -2218,7 +2218,7 @@ public final class Collectors {
             }
         };
 
-        return groupingByConcurrent(classifier, mapFactory, downstream);
+        return groupingByConcurrent(classifier, downstream, mapFactory);
     }
 
     /**
@@ -2259,10 +2259,10 @@ public final class Collectors {
      *
      * @see #groupingByConcurrent(Function)
      * @see #groupingByConcurrent(Function, Collector)
-     * @see #groupingBy(Function, Supplier, Collector)
+     * @see #groupingBy(Function, Collector, Supplier)
      */
     public static <T, K, A, D, M extends ConcurrentMap<K, D>> Collector<T, ?, M> groupingByConcurrent(final Function<? super T, ? extends K> classifier,
-            final Supplier<M> mapFactory, Collector<? super T, A, D> downstream) {
+            Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
         //        Supplier<A> downstreamSupplier = downstream.supplier();
         //        BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
         //        BinaryOperator<ConcurrentMap<K, A>> merger = Collectors.<K, A, ConcurrentMap<K, A>> mapMerger(downstream.combiner());

@@ -603,6 +603,13 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
+    @Override
+    public LongList filter(final int fromIndex, final int toIndex, LongPredicate filter, final int max) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+    }
+
     public <R> List<R> map(final LongFunction<? extends R> func) {
         return map(0, size(), func);
     }

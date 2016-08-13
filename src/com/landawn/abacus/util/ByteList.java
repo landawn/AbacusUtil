@@ -567,6 +567,13 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
+    @Override
+    public ByteList filter(final int fromIndex, final int toIndex, BytePredicate filter, final int max) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+    }
+
     public <R> List<R> map(final ByteFunction<? extends R> func) {
         return map(0, size(), func);
     }

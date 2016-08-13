@@ -424,7 +424,7 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+    public boolean allMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -439,7 +439,7 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+    public boolean anyMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -454,7 +454,7 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+    public boolean noneMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -469,17 +469,24 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     @Override
-    public int count(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+    public int count(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
-    public BooleanList filter(final int fromIndex, final int toIndex, BooleanPredicate filter) {
+    public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.filter(elementData, fromIndex, toIndex, filter));
+    }
+
+    @Override
+    public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter, int max) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
     public <R> List<R> map(final BooleanFunction<? extends R> func) {

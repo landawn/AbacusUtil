@@ -11554,30 +11554,47 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            int i = 0;
+            if (c instanceof List && c instanceof RandomAccess) {
+                final List<?> list = (List<?>) c;
 
-            if (N.isNullOrEmpty(separator)) {
-                for (Object e : c) {
-                    if (i++ >= fromIndex) {
-                        sb.append(trim ? toString(e).trim() : toString(e));
+                if (N.isNullOrEmpty(separator)) {
+                    for (int i = fromIndex; i < toIndex; i++) {
+                        sb.append(trim ? toString(list.get(i)).trim() : toString(list.get(i)));
                     }
+                } else {
+                    for (int i = fromIndex; i < toIndex; i++) {
+                        if (i > fromIndex) {
+                            sb.append(separator);
+                        }
 
-                    if (i >= toIndex) {
-                        break;
+                        sb.append(trim ? toString(list.get(i)).trim() : toString(list.get(i)));
                     }
                 }
             } else {
-                for (Object e : c) {
-                    if (i++ > fromIndex) {
-                        sb.append(separator);
-                    }
+                int i = 0;
+                if (N.isNullOrEmpty(separator)) {
+                    for (Object e : c) {
+                        if (i++ >= fromIndex) {
+                            sb.append(trim ? toString(e).trim() : toString(e));
+                        }
 
-                    if (i > fromIndex) {
-                        sb.append(trim ? toString(e).trim() : toString(e));
+                        if (i >= toIndex) {
+                            break;
+                        }
                     }
+                } else {
+                    for (Object e : c) {
+                        if (i++ > fromIndex) {
+                            sb.append(separator);
+                        }
 
-                    if (i >= toIndex) {
-                        break;
+                        if (i > fromIndex) {
+                            sb.append(trim ? toString(e).trim() : toString(e));
+                        }
+
+                        if (i >= toIndex) {
+                            break;
+                        }
                     }
                 }
             }
@@ -20222,19 +20239,18 @@ public final class N {
         return Collections.disjoint(c1, c2);
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
     public static boolean[] filter(final boolean[] a, final BooleanPredicate filter) {
         return filter(a, 0, a.length, filter);
     }
 
+    public static boolean[] filter(final boolean[] a, final BooleanPredicate filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static boolean[] filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20244,36 +20260,37 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max maximum return result.
      * @return
      */
-    public static boolean[] filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    public static boolean[] filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final BooleanList list = BooleanList.of(new boolean[min(9, (toIndex - fromIndex))], 0);
+        final BooleanList list = BooleanList.of(new boolean[min(9, max, (toIndex - fromIndex))], 0);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
         return list.trimToSize().array();
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
     public static char[] filter(final char[] a, final CharPredicate filter) {
         return filter(a, 0, a.length, filter);
     }
 
+    public static char[] filter(final char[] a, final CharPredicate filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static char[] filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20283,36 +20300,37 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max maximum return result.
      * @return
      */
-    public static char[] filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter) {
+    public static char[] filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final CharList list = CharList.of(new char[min(9, (toIndex - fromIndex))], 0);
+        final CharList list = CharList.of(new char[min(9, max, (toIndex - fromIndex))], 0);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
         return list.trimToSize().array();
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
     public static byte[] filter(final byte[] a, final BytePredicate filter) {
         return filter(a, 0, a.length, filter);
     }
 
+    public static byte[] filter(final byte[] a, final BytePredicate filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static byte[] filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20322,36 +20340,37 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max maximum return result.
      * @return
      */
-    public static byte[] filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter) {
+    public static byte[] filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final ByteList list = ByteList.of(new byte[min(9, (toIndex - fromIndex))], 0);
+        final ByteList list = ByteList.of(new byte[min(9, max, (toIndex - fromIndex))], 0);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
         return list.trimToSize().array();
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
     public static short[] filter(final short[] a, final ShortPredicate filter) {
         return filter(a, 0, a.length, filter);
     }
 
+    public static short[] filter(final short[] a, final ShortPredicate filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static short[] filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20361,36 +20380,37 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max maximum return result.
      * @return
      */
-    public static short[] filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter) {
+    public static short[] filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final ShortList list = ShortList.of(new short[min(9, (toIndex - fromIndex))], 0);
+        final ShortList list = ShortList.of(new short[min(9, max, (toIndex - fromIndex))], 0);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
         return list.trimToSize().array();
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
     public static int[] filter(final int[] a, final IntPredicate filter) {
         return filter(a, 0, a.length, filter);
     }
 
+    public static int[] filter(final int[] a, final IntPredicate filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static int[] filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20400,36 +20420,37 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max maximum return result.
      * @return
      */
-    public static int[] filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter) {
+    public static int[] filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final IntList list = IntList.of(new int[min(9, (toIndex - fromIndex))], 0);
+        final IntList list = IntList.of(new int[min(9, max, (toIndex - fromIndex))], 0);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
         return list.trimToSize().array();
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
     public static long[] filter(final long[] a, final LongPredicate filter) {
         return filter(a, 0, a.length, filter);
     }
 
+    public static long[] filter(final long[] a, final LongPredicate filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static long[] filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20439,36 +20460,37 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max maximum return result.
      * @return
      */
-    public static long[] filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter) {
+    public static long[] filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final LongList list = LongList.of(new long[min(9, (toIndex - fromIndex))], 0);
+        final LongList list = LongList.of(new long[min(9, max, (toIndex - fromIndex))], 0);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
         return list.trimToSize().array();
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
     public static float[] filter(final float[] a, final FloatPredicate filter) {
         return filter(a, 0, a.length, filter);
     }
 
+    public static float[] filter(final float[] a, final FloatPredicate filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static float[] filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20478,36 +20500,37 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max maximum return result.
      * @return
      */
-    public static float[] filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter) {
+    public static float[] filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final FloatList list = FloatList.of(new float[min(9, (toIndex - fromIndex))], 0);
+        final FloatList list = FloatList.of(new float[min(9, max, (toIndex - fromIndex))], 0);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
         return list.trimToSize().array();
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
     public static double[] filter(final double[] a, final DoublePredicate filter) {
         return filter(a, 0, a.length, filter);
     }
 
+    public static double[] filter(final double[] a, final DoublePredicate filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static double[] filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20517,38 +20540,38 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max maximum return result.
      * @return
      */
-    public static double[] filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter) {
+    public static double[] filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final DoubleList list = DoubleList.of(new double[min(9, (toIndex - fromIndex))], 0);
+        final DoubleList list = DoubleList.of(new double[min(9, max, (toIndex - fromIndex))], 0);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
         return list.trimToSize().array();
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param filter
-     * @return
-     */
-    public static <T> T[] filter(final T[] a, final Predicate<T> filter) {
-        return filter(a, 0, a.length, filter);
+    public static <T> T[] filter(final T[] a, final Predicate<? super T> filter) {
+        return filter(a, filter, Integer.MAX_VALUE);
+    }
+
+    public static <T> T[] filter(final T[] a, final Predicate<? super T> filter, final int max) {
+        return filter(a, 0, a.length, filter, max);
+    }
+
+    public static <T> T[] filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
@@ -20556,17 +20579,19 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max
      * @return
      */
-    public static <T> T[] filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<T> filter) {
+    public static <T> T[] filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         final List<T> list = ObjectFactory.createList();
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 list.add(a[i]);
+                cnt++;
             }
         }
 
@@ -20577,22 +20602,20 @@ public final class N {
         return result;
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param a
-     * @param filter
-     * @return
-     */
-    public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final Predicate<T> filter) {
-        return filter(outputResult, a, 0, a.length, filter);
+    public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final Predicate<? super T> filter) {
+        return filter(outputResult, a, filter, Integer.MAX_VALUE);
+    }
+
+    public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final Predicate<? super T> filter, final int max) {
+        return filter(outputResult, a, 0, a.length, filter, max);
+    }
+
+    public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final int fromIndex, final int toIndex,
+            final Predicate<? super T> filter) {
+        return filter(outputResult, a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
@@ -20601,58 +20624,37 @@ public final class N {
      * @param fromIndex
      * @param toIndex
      * @param filter
+     * @param max
      * @return
      */
     public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final int fromIndex, final int toIndex,
-            final Predicate<T> filter) {
+            final Predicate<? super T> filter, final int max) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
                 outputResult.add(a[i]);
+                cnt++;
             }
         }
 
         return outputResult;
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param filter
-     * @return
-     */
-    public static <E, T extends Collection<E>> T filter(final T c, final Predicate<E> filter) {
-        return filter(c, 0, c.size(), filter);
+    public static <E, T extends Collection<E>> T filter(final T c, final Predicate<? super E> filter) {
+        return filter(c, filter, Integer.MAX_VALUE);
     }
 
-    /**
-     *
-     * @param outputResult
-     * @param c
-     * @param filter
-     * @return the specified <code>outputResult</code>
-     */
-    public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final Predicate<E> filter) {
-        return filter(outputResult, c, 0, c.size(), filter);
+    public static <E, T extends Collection<E>> T filter(final T c, final Predicate<? super E> filter, final int max) {
+        return filter(c, 0, c.size(), filter, max);
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public static <E, T extends Collection<E>> T filter(final T c, final int fromIndex, final int toIndex, final Predicate<E> filter) {
+    public static <E, T extends Collection<E>> T filter(final T c, final int fromIndex, final int toIndex, final Predicate<? super E> filter) {
+        return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
+    public static <E, T extends Collection<E>> T filter(final T c, final int fromIndex, final int toIndex, final Predicate<? super E> filter, final int max) {
         T outputResult = null;
         Constructor<?> constructor = N.getDeclaredConstructor(c.getClass());
 
@@ -20663,23 +20665,25 @@ public final class N {
             outputResult = (T) N.invokeConstructor(constructor);
         }
 
-        return filter(outputResult, c, fromIndex, toIndex, filter);
+        return filter(outputResult, c, fromIndex, toIndex, filter, max);
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * @param outputResult
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return the specified <code>outputResult</code>
-     */
+    public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final Predicate<? super E> filter) {
+        return filter(outputResult, c, filter, Integer.MAX_VALUE);
+    }
+
+    public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final Predicate<? super E> filter,
+            final int max) {
+        return filter(outputResult, c, 0, c.size(), filter, max);
+    }
+
     public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final int fromIndex,
-            final int toIndex, final Predicate<E> filter) {
+            final int toIndex, final Predicate<? super E> filter) {
+        return filter(outputResult, c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
+    public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final int fromIndex,
+            final int toIndex, final Predicate<? super E> filter, final int max) {
         N.requireNonNull(c);
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
@@ -20687,110 +20691,38 @@ public final class N {
             return outputResult;
         }
 
-        int idx = 0;
-        for (E e : c) {
-            if (idx++ < fromIndex) {
-                continue;
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<E> list = (List<E>) c;
+            E e = null;
+
+            for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+                e = list.get(i);
+
+                if (filter.test(e)) {
+                    outputResult.add(e);
+                    cnt++;
+                }
             }
-
-            if (filter.test(e)) {
-                outputResult.add(e);
-            }
-
-            if (idx >= toIndex) {
-                break;
-            }
-        }
-
-        return outputResult;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param m
-     * @param filter
-     * @return
-     */
-    public static <K, V, T extends Map<K, V>> T filter(final T m, final Predicate<Map.Entry<K, V>> filter) {
-        return filter(m, 0, m.size(), filter);
-    }
-
-    /**
-     *
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param m
-     * @param filter
-     * @return the specified <code>outputResult</code>
-     */
-    public static <K, V, T extends Map<K, V>, R extends Map<? super K, ? super V>> R filter(final R outputResult, final T m,
-            final Predicate<Map.Entry<K, V>> filter) {
-        return filter(outputResult, m, 0, m.size(), filter);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param m
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public static <K, V, T extends Map<K, V>> T filter(final T m, final int fromIndex, final int toIndex, final Predicate<Map.Entry<K, V>> filter) {
-        T result = null;
-        Constructor<?> constructor = N.getDeclaredConstructor(m.getClass());
-
-        if (constructor == null) {
-            constructor = N.getDeclaredConstructor(m.getClass(), int.class);
-            result = (T) N.invokeConstructor(constructor, min(9, m.size()));
         } else {
-            result = (T) N.invokeConstructor(constructor);
-        }
+            int idx = 0;
+            int cnt = 0;
+            for (E e : c) {
+                if (cnt >= max) {
+                    break;
+                }
 
-        return filter(result, m, fromIndex, toIndex, filter);
-    }
+                if (idx++ < fromIndex) {
+                    continue;
+                }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param m
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public static <K, V, T extends Map<K, V>, R extends Map<? super K, ? super V>> R filter(final R outputResult, final T m, final int fromIndex,
-            final int toIndex, final Predicate<Map.Entry<K, V>> filter) {
-        N.requireNonNull(m);
-        checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
+                if (filter.test(e)) {
+                    outputResult.add(e);
+                    cnt++;
+                }
 
-        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
-            return outputResult;
-        }
-
-        int idx = 0;
-        for (Map.Entry<K, V> e : m.entrySet()) {
-            if (idx++ < fromIndex) {
-                continue;
-            }
-
-            if (filter.test(e)) {
-                outputResult.put(e.getKey(), e.getValue());
-            }
-
-            if (idx >= toIndex) {
-                break;
+                if (idx >= toIndex) {
+                    break;
+                }
             }
         }
 
@@ -21174,7 +21106,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <T> int count(final T[] a, final Predicate<T> filter) {
+    public static <T> int count(final T[] a, final Predicate<? super T> filter) {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21193,7 +21125,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <T> int count(final T[] a, final int fromIndex, final int toIndex, final Predicate<T> filter) {
+    public static <T> int count(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
@@ -21220,7 +21152,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <E, T extends Collection<E>> int count(final T c, final Predicate<E> filter) {
+    public static <E, T extends Collection<E>> int count(final T c, final Predicate<? super E> filter) {
         if (N.isNullOrEmpty(c)) {
             return 0;
         }
@@ -21239,7 +21171,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <E, T extends Collection<E>> int count(final T c, final int fromIndex, final int toIndex, final Predicate<E> filter) {
+    public static <E, T extends Collection<E>> int count(final T c, final int fromIndex, final int toIndex, final Predicate<? super E> filter) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -21247,74 +21179,30 @@ public final class N {
         }
 
         int count = 0;
-        int idx = 0;
 
-        for (E e : c) {
-            if (idx++ < fromIndex) {
-                continue;
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<E> list = (List<E>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (filter.test(list.get(i))) {
+                    count++;
+                }
             }
+        } else {
+            int idx = 0;
 
-            if (filter.test(e)) {
-                count++;
-            }
+            for (E e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
 
-            if (idx >= toIndex) {
-                break;
-            }
-        }
+                if (filter.test(e)) {
+                    count++;
+                }
 
-        return count;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param m
-     * @param filter
-     * @return
-     */
-    public static <K, V, T extends Map<K, V>> int count(final T m, final Predicate<Map.Entry<K, V>> filter) {
-        if (N.isNullOrEmpty(m)) {
-            return 0;
-        }
-
-        return count(m, 0, m.size(), filter);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param m
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public static <K, V, T extends Map<K, V>> int count(final T m, final int fromIndex, final int toIndex, final Predicate<Map.Entry<K, V>> filter) {
-        checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
-
-        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
-            return 0;
-        }
-
-        int count = 0;
-        int idx = 0;
-
-        for (Map.Entry<K, V> e : m.entrySet()) {
-            if (idx++ < fromIndex) {
-                continue;
-            }
-
-            if (filter.test(e)) {
-                count++;
-            }
-
-            if (idx >= toIndex) {
-                break;
+                if (idx >= toIndex) {
+                    break;
+                }
             }
         }
 
@@ -21756,71 +21644,25 @@ public final class N {
             return;
         }
 
-        int idx = 0;
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<E> list = (List<E>) c;
 
-        for (E e : c) {
-            if (idx++ < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(list.get(i));
             }
+        } else {
+            int idx = 0;
 
-            action.accept(e);
+            for (E e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
 
-            if (idx >= toIndex) {
-                break;
-            }
-        }
-    }
+                action.accept(e);
 
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param m
-     * @param action
-     */
-    public static <K, V, T extends Map<K, V>> void forEach(final T m, final Consumer<Map.Entry<K, V>> action) {
-        if (N.isNullOrEmpty(m)) {
-            return;
-        }
-
-        for (Map.Entry<K, V> e : m.entrySet()) {
-            action.accept(e);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param m
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static <K, V, T extends Map<K, V>> void forEach(final T m, final int fromIndex, final int toIndex, final Consumer<Map.Entry<K, V>> action) {
-        checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
-
-        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
-            return;
-        }
-
-        int idx = 0;
-
-        for (Map.Entry<K, V> e : m.entrySet()) {
-            if (idx++ < fromIndex) {
-                continue;
-            }
-
-            action.accept(e);
-
-            if (idx >= toIndex) {
-                break;
+                if (idx >= toIndex) {
+                    break;
+                }
             }
         }
     }
@@ -22258,73 +22100,27 @@ public final class N {
             return;
         }
 
-        final Iterator<E> iter = c.iterator();
-        int idx = 0;
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<E> list = (List<E>) c;
 
-        while (idx < fromIndex && iter.hasNext()) {
-            iter.next();
-            idx++;
-        }
-
-        while (iter.hasNext()) {
-            action.accept(iter.next(), idx);
-
-            if (++idx >= toIndex) {
-                break;
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(list.get(i), i);
             }
-        }
-    }
+        } else {
+            final Iterator<E> iter = c.iterator();
+            int idx = 0;
 
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param m
-     * @param action
-     */
-    public static <K, V, T extends Map<K, V>> void forEach(final T m, final IndexedConsumer<Map.Entry<K, V>> action) {
-        if (N.isNullOrEmpty(m)) {
-            return;
-        }
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
 
-        forEach(m, 0, m.size(), action);
-    }
+            while (iter.hasNext()) {
+                action.accept(iter.next(), idx);
 
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param m
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static <K, V, T extends Map<K, V>> void forEach(final T m, final int fromIndex, final int toIndex, final IndexedConsumer<Map.Entry<K, V>> action) {
-        checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
-
-        if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
-            return;
-        }
-
-        final Iterator<Map.Entry<K, V>> iter = m.entrySet().iterator();
-        int idx = 0;
-
-        while (idx < fromIndex && iter.hasNext()) {
-            iter.next();
-            idx++;
-        }
-
-        while (iter.hasNext()) {
-            action.accept(iter.next(), idx);
-
-            if (++idx >= toIndex) {
-                break;
+                if (++idx >= toIndex) {
+                    break;
+                }
             }
         }
     }
@@ -22648,17 +22444,26 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final V res = (V) N.newInstance(collClass);
-        final Iterator<? extends T> it = c.iterator();
-        T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                res.add(func.apply(list.get(i)));
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
 
-            res.add(func.apply(e));
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                res.add(func.apply(e));
+            }
         }
 
         return res;
@@ -22986,17 +22791,26 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final V res = (V) N.newInstance(collClass);
-        final Iterator<? extends T> it = c.iterator();
-        T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                res.addAll(func.apply(list.get(i)));
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
 
-            res.addAll(func.apply(e));
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                res.addAll(func.apply(e));
+            }
         }
 
         return res;
@@ -23141,17 +22955,26 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final V res = (V) N.newInstance(collClass);
-        final Iterator<? extends T> it = c.iterator();
-        T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                res.addAll(Arrays.asList(func.apply(list.get(i))));
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
 
-            res.addAll(Arrays.asList(func.apply(e)));
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                res.addAll(Arrays.asList(func.apply(e)));
+            }
         }
 
         return res;
@@ -23350,27 +23173,46 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final Map<? super K, V> outputResult = N.newInstance(outputClass);
-        final Iterator<? extends T> it = c.iterator();
+
         T e = null;
-        K r = null;
+        K key = null;
         V values = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
+                key = func.apply(e);
+                values = outputResult.get(key);
+
+                if (values == null) {
+                    values = (V) N.newInstance(collClass);
+                    outputResult.put(key, values);
+                }
+
+                values.add(e);
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
 
-            r = func.apply(e);
-            values = outputResult.get(r);
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
 
-            if (values == null) {
-                values = (V) N.newInstance(collClass);
-                outputResult.put(r, values);
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                key = func.apply(e);
+                values = outputResult.get(key);
+
+                if (values == null) {
+                    values = (V) N.newInstance(collClass);
+                    outputResult.put(key, values);
+                }
+
+                values.add(e);
             }
-
-            values.add(e);
         }
 
         return (M) outputResult;
@@ -23938,29 +23780,7 @@ public final class N {
      * @return
      */
     public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final BiFunction<T, T, T> accumulator) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final Iterator<? extends T> it = c.iterator();
-        T result = null;
-        boolean foundAny = false;
-        T e = null;
-
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
-
-            if (i < fromIndex) {
-                continue;
-            }
-
-            if (!foundAny) {
-                foundAny = true;
-                result = e;
-            } else {
-                result = accumulator.apply(result, e);
-            }
-        }
-
-        return result;
+        return reduce(c, fromIndex, toIndex, null, accumulator);
     }
 
     /**
@@ -23996,18 +23816,27 @@ public final class N {
             final BiFunction<T, T, T> accumulator) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final Iterator<? extends T> it = c.iterator();
         T result = identity;
-        T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                result = accumulator.apply(result, list.get(i));
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
 
-            result = accumulator.apply(result, e);
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                result = accumulator.apply(result, e);
+            }
         }
 
         return result;
@@ -24064,17 +23893,29 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final Map<K, U> map = N.newInstance(outputClass);
-        final Iterator<? extends T> it = c.iterator();
-        T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+            T e = null;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
+
+                map.put(keyMapper.apply(e), valueMapper.apply(e));
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
 
-            map.put(keyMapper.apply(e), valueMapper.apply(e));
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                map.put(keyMapper.apply(e), valueMapper.apply(e));
+            }
         }
 
         return (M) map;
@@ -24136,17 +23977,29 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
-        final Iterator<? extends T> it = c.iterator();
-        T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+            T e = null;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
+
+                multimap.put(keyMapper.apply(e), valueMapper.apply(e));
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
 
-            multimap.put(keyMapper.apply(e), valueMapper.apply(e));
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                multimap.put(keyMapper.apply(e), valueMapper.apply(e));
+            }
         }
 
         return multimap;
@@ -24196,17 +24049,26 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final Multiset<T> multiset = new Multiset<>(valueClass);
-        final Iterator<? extends T> it = c.iterator();
-        T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                multiset.add(list.get(i));
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
 
-            multiset.add(e);
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                multiset.add(e);
+            }
         }
 
         return multiset;
@@ -24636,26 +24498,48 @@ public final class N {
         };
 
         final Queue<Pair<T, Integer>> heap = new PriorityQueue<Pair<T, Integer>>(top, pairCmp);
-        final Iterator<T> iter = c.iterator();
-        Pair<T, Integer> pair = null;
-        T e = null;
 
-        for (int i = 0; i < toIndex && iter.hasNext(); i++) {
-            e = iter.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+            Pair<T, Integer> pair = null;
+            T e = null;
 
-            if (i < fromIndex) {
-                continue;
-            }
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
 
-            pair = Pair.of(e, i);
+                pair = Pair.of(e, i);
 
-            if (heap.size() >= top) {
-                if (pairCmp.compare(heap.peek(), pair) < 0) {
-                    heap.poll();
-                    heap.add(pair);
+                if (heap.size() >= top) {
+                    if (pairCmp.compare(heap.peek(), pair) < 0) {
+                        heap.poll();
+                        heap.add(pair);
+                    }
+                } else {
+                    heap.offer(pair);
                 }
-            } else {
-                heap.offer(pair);
+            }
+        } else {
+            final Iterator<T> iter = c.iterator();
+            Pair<T, Integer> pair = null;
+            T e = null;
+
+            for (int i = 0; i < toIndex && iter.hasNext(); i++) {
+                e = iter.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                pair = Pair.of(e, i);
+
+                if (heap.size() >= top) {
+                    if (pairCmp.compare(heap.peek(), pair) < 0) {
+                        heap.poll();
+                        heap.add(pair);
+                    }
+                } else {
+                    heap.offer(pair);
+                }
             }
         }
 
@@ -25171,21 +25055,38 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final Set<K> keySet = new HashSet<>();
-        final Iterator<? extends T> it = c.iterator();
-        K key = null;
-        T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+            K key = null;
+            T e = null;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
+
+                key = func.apply(e);
+
+                if (keySet.add(key)) {
+                    outputResult.add(e);
+                }
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            K key = null;
+            T e = null;
 
-            key = func.apply(e);
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
 
-            if (keySet.add(key)) {
-                outputResult.add(e);
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                key = func.apply(e);
+
+                if (keySet.add(key)) {
+                    outputResult.add(e);
+                }
             }
         }
 
@@ -25350,18 +25251,28 @@ public final class N {
 
         if (collClass.equals(SortedSet.class) || collClass.equals(TreeSet.class)) {
             final R res = (R) new TreeSet<T>(cmp);
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
 
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
+            if (c instanceof List && c instanceof RandomAccess) {
+                final List<T> list = (List<T>) c;
 
-                if (i < fromIndex) {
-                    continue;
+                for (int i = fromIndex; i < toIndex; i++) {
+                    res.add(list.get(i));
                 }
+            } else {
+                final Iterator<? extends T> it = c.iterator();
+                T e = null;
 
-                res.add(e);
+                for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                    e = it.next();
+
+                    if (i < fromIndex) {
+                        continue;
+                    }
+
+                    res.add(e);
+                }
             }
+
             return res;
         } else {
             return (R) distinct(N.newInstance(collClass), c, fromIndex, toIndex, cmp);
@@ -25384,25 +25295,47 @@ public final class N {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final Set<T> sortedSet = new TreeSet<T>(cmp);
-        final Iterator<? extends T> it = c.iterator();
-        T e = null;
-        boolean hasNull = false;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+            T e = null;
+            boolean hasNull = false;
 
-            if (i < fromIndex) {
-                continue;
-            }
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
 
-            if (e == null) {
-                if (hasNull == false) {
-                    hasNull = true;
-                    outputResult.add(e);
+                if (e == null) {
+                    if (hasNull == false) {
+                        hasNull = true;
+                        outputResult.add(e);
+                    }
+                } else {
+                    if (sortedSet.add(e)) {
+                        outputResult.add(e);
+                    }
                 }
-            } else {
-                if (sortedSet.add(e)) {
-                    outputResult.add(e);
+            }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
+            boolean hasNull = false;
+
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                if (e == null) {
+                    if (hasNull == false) {
+                        hasNull = true;
+                        outputResult.add(e);
+                    }
+                } else {
+                    if (sortedSet.add(e)) {
+                        outputResult.add(e);
+                    }
                 }
             }
         }
@@ -26023,88 +25956,6 @@ public final class N {
 
                 res.add(subList);
             }
-        }
-
-        return res;
-    }
-
-    /**
-     * Returns consecutive sub maps of a map, each of the same size (the final list may be smaller).
-     * or an empty Map if the specified collection is null or empty. The order of entries in the original Map is kept
-     * 
-     * @param m
-     * @param size
-     * @return
-     */
-    public static <K, V, T extends Map<K, V>> List<T> split(final T m, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
-        }
-
-        if (N.isNullOrEmpty(m)) {
-            return new ArrayList<T>();
-        }
-
-        final int len = m.size();
-        final List<T> res = new ArrayList<T>(len % size == 0 ? len / size : (len / size) + 1);
-        final Iterator<Map.Entry<K, V>> iter = m.entrySet().iterator();
-
-        for (int from = 0, toIndex = m.size(); from < toIndex; from += size) {
-            final T subMap = (T) N.newInstance(m.getClass());
-            Map.Entry<K, V> entry = null;
-
-            for (int i = from, to = from <= toIndex - size ? from + size : toIndex; i < to; i++) {
-                entry = iter.next();
-                subMap.put(entry.getKey(), entry.getValue());
-            }
-
-            res.add(subMap);
-        }
-
-        return res;
-    }
-
-    /**
-     * Returns consecutive sub maps of a map, each of the same size (the final list may be smaller).
-     * or an empty Map if the specified collection is null or empty. The order of entries in the original Map is kept
-     * 
-     * @param m
-     * @param fromIndex
-     * @param toIndex
-     * @param size
-     * @return
-     */
-    public static <K, V, T extends Map<K, V>> List<T> split(final T m, final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
-        }
-
-        if (N.isNullOrEmpty(m)) {
-            return new ArrayList<T>();
-        }
-
-        final int len = toIndex - fromIndex;
-        final List<T> res = new ArrayList<T>(len % size == 0 ? len / size : (len / size) + 1);
-        final Iterator<Map.Entry<K, V>> iter = m.entrySet().iterator();
-
-        for (int from = 0; from < toIndex; from += size) {
-            if (from < fromIndex) {
-                from++;
-                iter.next();
-                continue;
-            }
-
-            final T subMap = (T) N.newInstance(m.getClass());
-            Map.Entry<K, V> entry = null;
-
-            for (int i = from, to = from <= toIndex - size ? from + size : toIndex; i < to; i++) {
-                entry = iter.next();
-                subMap.put(entry.getKey(), entry.getValue());
-            }
-
-            res.add(subMap);
         }
 
         return res;
@@ -30799,7 +30650,7 @@ public final class N {
 
         double sum = 0d;
 
-        if (c instanceof ArrayList) {
+        if (c instanceof List && c instanceof RandomAccess) {
             final List<Number> list = (List<Number>) c;
 
             for (int i = from; i < to; i++) {
@@ -31649,7 +31500,7 @@ public final class N {
         T candidate = null;
         T e = null;
 
-        if (c instanceof ArrayList) {
+        if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
             candidate = list.get(from);
 
@@ -32298,7 +32149,7 @@ public final class N {
         T candidate = null;
         T e = null;
 
-        if (c instanceof ArrayList) {
+        if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
             candidate = list.get(from);
 

@@ -83,7 +83,9 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      *                  should be included
      * @return the new stream
      */
-    public abstract DoubleStream filter(DoublePredicate predicate);
+    public abstract DoubleStream filter(final DoublePredicate predicate);
+
+    public abstract DoubleStream filter(final DoublePredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

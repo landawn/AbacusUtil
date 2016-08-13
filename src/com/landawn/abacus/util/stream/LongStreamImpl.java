@@ -66,15 +66,12 @@ final class LongStreamImpl extends LongStream {
 
     @Override
     public LongStream filter(LongPredicate predicate) {
-        final LongList list = new LongList();
+        return filter(predicate, Integer.MAX_VALUE);
+    }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
-            }
-        }
-
-        return new LongStreamImpl(list.trimToSize().array(), closeHandlers);
+    @Override
+    public LongStream filter(final LongPredicate predicate, final int max) {
+        return new LongStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override

@@ -66,15 +66,12 @@ final class FloatStreamImpl extends FloatStream {
 
     @Override
     public FloatStream filter(FloatPredicate predicate) {
-        final FloatList list = new FloatList();
+        return filter(predicate, Integer.MAX_VALUE);
+    }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
-            }
-        }
-
-        return new FloatStreamImpl(list.trimToSize().array(), closeHandlers);
+    @Override
+    public FloatStream filter(final FloatPredicate predicate, final int max) {
+        return new FloatStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override

@@ -83,7 +83,9 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      *                  should be included
      * @return the new stream
      */
-    public abstract ByteStream filter(BytePredicate predicate);
+    public abstract ByteStream filter(final BytePredicate predicate);
+
+    public abstract ByteStream filter(final BytePredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

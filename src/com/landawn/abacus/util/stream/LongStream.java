@@ -85,7 +85,9 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      *                  should be included
      * @return the new stream
      */
-    public abstract LongStream filter(LongPredicate predicate);
+    public abstract LongStream filter(final LongPredicate predicate);
+
+    public abstract LongStream filter(final LongPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

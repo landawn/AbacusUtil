@@ -210,7 +210,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      *                  should be included
      * @return the new stream
      */
-    public abstract Stream<T> filter(Predicate<? super T> predicate);
+    public abstract Stream<T> filter(final Predicate<? super T> predicate);
+
+    public abstract Stream<T> filter(final Predicate<? super T> predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -461,8 +463,20 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
 
-    public abstract <K, D, A> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, D>> mapFactory,
-            final Collector<? super T, A, D> downstream);
+    public abstract <K, D, A> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+            final Supplier<Map<K, D>> mapFactory);
+
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper);
+
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            final Supplier<Map<K, U>> mapFactory);
+
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction);
+
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
     /**
      * Returns a stream consisting of the distinct elements (according to
@@ -1220,6 +1234,14 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         //        return new CharStreamImpl(values);
 
         return new CharStreamImpl(a, startIndex, endIndex);
+    }
+
+    public static CharStream from(final String str) {
+        return from(str, 0, str.length());
+    }
+
+    public static CharStream from(final String str, final int startIndex, final int endIndex) {
+        return CharStream.from(str, startIndex, endIndex);
     }
 
     /**

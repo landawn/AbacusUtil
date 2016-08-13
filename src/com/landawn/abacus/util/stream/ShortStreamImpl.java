@@ -64,15 +64,12 @@ final class ShortStreamImpl extends ShortStream {
 
     @Override
     public ShortStream filter(ShortPredicate predicate) {
-        final ShortList list = new ShortList();
+        return filter(predicate, Integer.MAX_VALUE);
+    }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
-            }
-        }
-
-        return new ShortStreamImpl(list.trimToSize().array(), closeHandlers);
+    @Override
+    public ShortStream filter(final ShortPredicate predicate, final int max) {
+        return new ShortStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override

@@ -75,15 +75,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Stream<T> filter(Predicate<? super T> predicate) {
-        final List<T> list = new ArrayList<T>();
+        return filter(predicate, Integer.MAX_VALUE);
+    }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
-            }
-        }
-
-        return new ArrayStream<T>((T[]) list.toArray(), closeHandlers);
+    @Override
+    public Stream<T> filter(final Predicate<? super T> predicate, final int max) {
+        return new ArrayStream<T>((T[]) N.filter(values, fromIndex, toIndex, predicate, max), sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -344,7 +341,9 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(Function<? super T, ? extends K> classifier) {
-        return Stream.of(((Map<K, List<T>>) collect(Collectors.groupingBy(classifier))).entrySet());
+        final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
+
+        return Stream.of(map.entrySet());
     }
 
     @Override
@@ -354,13 +353,42 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public <K, A, D> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        return Stream.of(((Map<K, D>) collect(Collectors.groupingBy(classifier, downstream))).entrySet());
+        final Map<K, D> map = collect(Collectors.groupingBy(classifier, downstream));
+
+        return Stream.of(map.entrySet());
     }
 
     @Override
-    public <K, D, A> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Supplier<Map<K, D>> mapFactory,
-            Collector<? super T, A, D> downstream) {
-        return Stream.of(collect(Collectors.groupingBy(classifier, mapFactory, downstream)).entrySet());
+    public <K, D, A> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream,
+            Supplier<Map<K, D>> mapFactory) {
+        return Stream.of(collect(Collectors.groupingBy(classifier, downstream, mapFactory)).entrySet());
+    }
+
+    @Override
+    public <K, U> Stream<Entry<K, U>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper));
+
+        return Stream.of(map.entrySet());
+    }
+
+    @Override
+    public <K, U> Stream<Entry<K, U>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            Supplier<Map<K, U>> mapFactory) {
+        return Stream.of(collect(Collectors.toMap(keyMapper, valueMapper, mapFactory)).entrySet());
+    }
+
+    @Override
+    public <K, U> Stream<Entry<K, U>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction) {
+        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction));
+
+        return Stream.of(map.entrySet());
+    }
+
+    @Override
+    public <K, U> Stream<Entry<K, U>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<Map<K, U>> mapFactory) {
+        return Stream.of(collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory)).entrySet());
     }
 
     @Override

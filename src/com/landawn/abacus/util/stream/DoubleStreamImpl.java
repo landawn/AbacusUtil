@@ -65,15 +65,12 @@ final class DoubleStreamImpl extends DoubleStream {
 
     @Override
     public DoubleStream filter(DoublePredicate predicate) {
-        final DoubleList list = new DoubleList();
+        return filter(predicate, Integer.MAX_VALUE);
+    }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
-            }
-        }
-
-        return new DoubleStreamImpl(list.trimToSize().array(), closeHandlers);
+    @Override
+    public DoubleStream filter(final DoublePredicate predicate, final int max) {
+        return new DoubleStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override
