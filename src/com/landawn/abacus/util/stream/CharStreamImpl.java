@@ -1,8 +1,11 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CharList;
@@ -27,17 +30,17 @@ final class CharStreamImpl extends CharStream {
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final List<Runnable> closeHandlers;
+    private final Set<Runnable> closeHandlers;
 
     CharStreamImpl(char[] values) {
         this(values, null);
     }
 
-    CharStreamImpl(char[] values, List<Runnable> closeHandlers) {
+    CharStreamImpl(char[] values, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    CharStreamImpl(char[] values, boolean sorted, List<Runnable> closeHandlers) {
+    CharStreamImpl(char[] values, boolean sorted, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, sorted, closeHandlers);
     }
 
@@ -45,11 +48,11 @@ final class CharStreamImpl extends CharStream {
         this(values, fromIndex, toIndex, null);
     }
 
-    CharStreamImpl(char[] values, int fromIndex, int toIndex, List<Runnable> closeHandlers) {
+    CharStreamImpl(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    CharStreamImpl(char[] values, int fromIndex, int toIndex, boolean sorted, List<Runnable> closeHandlers) {
+    CharStreamImpl(char[] values, int fromIndex, int toIndex, boolean sorted, Collection<Runnable> closeHandlers) {
         if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
             throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
         }
@@ -58,7 +61,7 @@ final class CharStreamImpl extends CharStream {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -69,6 +72,51 @@ final class CharStreamImpl extends CharStream {
     @Override
     public CharStream filter(final CharPredicate predicate, final int max) {
         return new CharStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+    }
+
+    @Override
+    public CharStream takeWhile(CharPredicate predicate) {
+        return takeWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public CharStream takeWhile(CharPredicate predicate, int max) {
+        final CharList list = CharList.of(new char[N.min(9, max, (toIndex - fromIndex))], 0);
+
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+            if (predicate.test(values[i])) {
+                list.add(values[i]);
+                cnt++;
+            } else {
+                break;
+            }
+        }
+
+        return new CharStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+    }
+
+    @Override
+    public CharStream dropWhile(CharPredicate predicate) {
+        return dropWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public CharStream dropWhile(CharPredicate predicate, int max) {
+        int index = fromIndex;
+        while (index < toIndex && predicate.test(values[index])) {
+            index++;
+        }
+
+        final CharList list = CharList.of(new char[N.min(9, max, (toIndex - index))], 0);
+        int cnt = 0;
+
+        while (index < toIndex && cnt < max) {
+            list.add(values[index]);
+            index++;
+            cnt++;
+        }
+
+        return new CharStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
     }
 
     @Override
@@ -170,7 +218,7 @@ final class CharStreamImpl extends CharStream {
 
     @Override
     public CharStream distinct() {
-        return new CharStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), closeHandlers);
+        return new CharStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), sorted, closeHandlers);
     }
 
     @Override
@@ -197,18 +245,18 @@ final class CharStreamImpl extends CharStream {
     @Override
     public CharStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new CharStreamImpl(values, fromIndex, toIndex, closeHandlers);
+            return new CharStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new CharStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), closeHandlers);
+            return new CharStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
         }
     }
 
     @Override
     public CharStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new CharStreamImpl(N.EMPTY_CHAR_ARRAY, closeHandlers);
+            return new CharStreamImpl(N.EMPTY_CHAR_ARRAY, sorted, closeHandlers);
         } else {
-            return new CharStreamImpl(values, (int) (fromIndex + n), toIndex, closeHandlers);
+            return new CharStreamImpl(values, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
@@ -340,7 +388,7 @@ final class CharStreamImpl extends CharStream {
             a[j] = values[i];
         }
 
-        return new IntStreamImpl(a, closeHandlers);
+        return new IntStreamImpl(a, sorted, closeHandlers);
     }
 
     @Override

@@ -87,7 +87,48 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      */
     public abstract LongStream filter(final LongPredicate predicate);
 
+    /**
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
     public abstract LongStream filter(final LongPredicate predicate, final int max);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract LongStream takeWhile(final LongPredicate predicate);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract LongStream takeWhile(final LongPredicate predicate, final int max);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract LongStream dropWhile(final LongPredicate predicate);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract LongStream dropWhile(final LongPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

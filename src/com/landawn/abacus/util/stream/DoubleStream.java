@@ -85,7 +85,48 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      */
     public abstract DoubleStream filter(final DoublePredicate predicate);
 
+    /**
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
     public abstract DoubleStream filter(final DoublePredicate predicate, final int max);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract DoubleStream takeWhile(final DoublePredicate predicate);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract DoubleStream takeWhile(final DoublePredicate predicate, final int max);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract DoubleStream dropWhile(final DoublePredicate predicate);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract DoubleStream dropWhile(final DoublePredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

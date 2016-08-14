@@ -139,7 +139,7 @@ import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.ByteConsumer;
@@ -3309,8 +3309,8 @@ public final class N {
 
     static final int MAX_HASH_LENGTH = (int) (Integer.MAX_VALUE / 1.25);
 
-    public static DataSet asDataSet(final String keyColumnName, final String valueColumnName, final Map<?, ?> m) {
-        return asDataSet(null, null, keyColumnName, valueColumnName, m);
+    public static DataSet newDataSet(final String keyColumnName, final String valueColumnName, final Map<?, ?> m) {
+        return newDataSet(null, null, keyColumnName, valueColumnName, m);
     }
 
     /**
@@ -3323,7 +3323,7 @@ public final class N {
      * @param m
      * @return
      */
-    public static DataSet asDataSet(final String entityName, final Class<?> entityClass, final String keyColumnName, final String valueColumnName,
+    public static DataSet newDataSet(final String entityName, final Class<?> entityClass, final String keyColumnName, final String valueColumnName,
             final Map<?, ?> m) {
         final List<Object> keyColumn = new ArrayList<>(m.size());
         final List<Object> valueColumn = new ArrayList<>(m.size());
@@ -3336,7 +3336,7 @@ public final class N {
         final List<String> columnNameList = N.asList(keyColumnName, valueColumnName);
         final List<List<Object>> columnList = N.asList(keyColumn, valueColumn);
 
-        return asDataSet(entityName, entityClass, columnNameList, columnList);
+        return newDataSet(entityName, entityClass, columnNameList, columnList);
     }
 
     /**
@@ -3345,8 +3345,8 @@ public final class N {
      * @param rowList
      * @param rowList list of row which can be: Map/Entity/Array/Collection.
      */
-    public static <T> DataSet asDataSet(final List<T> rowList) {
-        return asDataSet(null, rowList);
+    public static <T> DataSet newDataSet(final List<T> rowList) {
+        return newDataSet(null, rowList);
     }
 
     /**
@@ -3356,8 +3356,8 @@ public final class N {
      * @param rowList list of row which can be: Map/Entity/Array/Collection.
      * @return
      */
-    public static <T> DataSet asDataSet(final List<String> columnNameList, final List<T> rowList) {
-        return asDataSet(null, columnNameList, rowList);
+    public static <T> DataSet newDataSet(final List<String> columnNameList, final List<T> rowList) {
+        return newDataSet(null, columnNameList, rowList);
     }
 
     /**
@@ -3368,8 +3368,8 @@ public final class N {
      * @param rowList list of row which can be: Map/Entity/Array/Collection.
      * @return
      */
-    public static <T> DataSet asDataSet(final Class<?> entityClass, final List<String> columnNameList, final List<T> rowList) {
-        return asDataSet(null, entityClass, columnNameList, rowList);
+    public static <T> DataSet newDataSet(final Class<?> entityClass, final List<String> columnNameList, final List<T> rowList) {
+        return newDataSet(null, entityClass, columnNameList, rowList);
     }
 
     /**
@@ -3382,7 +3382,7 @@ public final class N {
      * @return
      */
     @SuppressWarnings("deprecation")
-    public static <T> DataSet asDataSet(String entityName, Class<?> entityClass, List<String> columnNameList, final List<T> rowList) {
+    public static <T> DataSet newDataSet(String entityName, Class<?> entityClass, List<String> columnNameList, final List<T> rowList) {
         if (N.isNullOrEmpty(columnNameList) && N.isNullOrEmpty(rowList)) {
             throw new IllegalArgumentException("Column name list and row list can't be both null or empty");
         }
@@ -23684,7 +23684,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
      */
-    public static <T> T reduce(final T[] a, final BiFunction<T, T, T> accumulator) {
+    public static <T> T reduce(final T[] a, final BinaryOperator<T> accumulator) {
         return reduce(a, 0, a.length, accumulator);
     }
 
@@ -23700,7 +23700,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
      */
-    public static <T> T reduce(final T[] a, final int fromIndex, final int toIndex, final BiFunction<T, T, T> accumulator) {
+    public static <T> T reduce(final T[] a, final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
         boolean foundAny = false;
         T result = null;
 
@@ -23727,7 +23727,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
      */
-    public static <T> T reduce(final T[] a, final T identity, final BiFunction<T, T, T> accumulator) {
+    public static <T> T reduce(final T[] a, final T identity, final BinaryOperator<T> accumulator) {
         return reduce(a, 0, a.length, identity, accumulator);
     }
 
@@ -23744,7 +23744,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
      */
-    public static <T> T reduce(final T[] a, final int fromIndex, final int toIndex, final T identity, final BiFunction<T, T, T> accumulator) {
+    public static <T> T reduce(final T[] a, final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
         T result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -23764,7 +23764,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
      */
-    public static <T> T reduce(final Collection<? extends T> c, final BiFunction<T, T, T> accumulator) {
+    public static <T> T reduce(final Collection<? extends T> c, final BinaryOperator<T> accumulator) {
         return reduce(c, 0, c.size(), accumulator);
     }
 
@@ -23779,7 +23779,7 @@ public final class N {
      * @param accumulator
      * @return
      */
-    public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final BiFunction<T, T, T> accumulator) {
+    public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
         return reduce(c, fromIndex, toIndex, null, accumulator);
     }
 
@@ -23794,7 +23794,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
      */
-    public static <T> T reduce(final Collection<? extends T> c, final T identity, final BiFunction<T, T, T> accumulator) {
+    public static <T> T reduce(final Collection<? extends T> c, final T identity, final BinaryOperator<T> accumulator) {
         return reduce(c, 0, c.size(), identity, accumulator);
 
     }
@@ -23812,8 +23812,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
      */
-    public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final T identity,
-            final BiFunction<T, T, T> accumulator) {
+    public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         T result = identity;

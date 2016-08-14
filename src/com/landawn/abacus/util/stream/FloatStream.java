@@ -86,7 +86,48 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      */
     public abstract FloatStream filter(final FloatPredicate predicate);
 
+    /**
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
     public abstract FloatStream filter(final FloatPredicate predicate, final int max);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract FloatStream takeWhile(final FloatPredicate predicate);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract FloatStream takeWhile(final FloatPredicate predicate, final int max);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract FloatStream dropWhile(final FloatPredicate predicate);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract FloatStream dropWhile(final FloatPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -498,7 +539,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      *
      * @return the sum of elements in this stream
      */
-    public abstract float sum();
+    public abstract double sum();
 
     /**
      * Returns an {@code OptionalFloat} describing the minimum element of this

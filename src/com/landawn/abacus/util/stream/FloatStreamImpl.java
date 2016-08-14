@@ -1,8 +1,11 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.FloatList;
@@ -30,17 +33,17 @@ final class FloatStreamImpl extends FloatStream {
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final List<Runnable> closeHandlers;
+    private final Set<Runnable> closeHandlers;
 
     FloatStreamImpl(float[] values) {
         this(values, null);
     }
 
-    FloatStreamImpl(float[] values, List<Runnable> closeHandlers) {
+    FloatStreamImpl(float[] values, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    FloatStreamImpl(float[] values, boolean sorted, List<Runnable> closeHandlers) {
+    FloatStreamImpl(float[] values, boolean sorted, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, sorted, closeHandlers);
     }
 
@@ -48,11 +51,11 @@ final class FloatStreamImpl extends FloatStream {
         this(values, fromIndex, toIndex, null);
     }
 
-    FloatStreamImpl(float[] values, int fromIndex, int toIndex, List<Runnable> closeHandlers) {
+    FloatStreamImpl(float[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    FloatStreamImpl(float[] values, int fromIndex, int toIndex, boolean sorted, List<Runnable> closeHandlers) {
+    FloatStreamImpl(float[] values, int fromIndex, int toIndex, boolean sorted, Collection<Runnable> closeHandlers) {
         if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
             throw new IllegalArgumentException("fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ") is invalid");
         }
@@ -61,7 +64,7 @@ final class FloatStreamImpl extends FloatStream {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -72,6 +75,50 @@ final class FloatStreamImpl extends FloatStream {
     @Override
     public FloatStream filter(final FloatPredicate predicate, final int max) {
         return new FloatStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+    }
+
+    @Override
+    public FloatStream takeWhile(FloatPredicate predicate) {
+        return takeWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public FloatStream takeWhile(FloatPredicate predicate, int max) {
+        final FloatList list = FloatList.of(new float[N.min(9, max, (toIndex - fromIndex))], 0);
+
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+            if (predicate.test(values[i])) {
+                list.add(values[i]);
+                cnt++;
+            } else {
+                break;
+            }
+        }
+
+        return new FloatStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+    }
+
+    @Override
+    public FloatStream dropWhile(FloatPredicate predicate) {
+        return dropWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public FloatStream dropWhile(FloatPredicate predicate, int max) {
+        int index = fromIndex;
+        while (index < toIndex && predicate.test(values[index])) {
+            index++;
+        }
+
+        final FloatList list = FloatList.of(new float[N.min(9, max, (toIndex - index))], 0);
+        int cnt = 0;
+        while (index < toIndex && cnt < max) {
+            list.add(values[index]);
+            index++;
+            cnt++;
+        }
+
+        return new FloatStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
     }
 
     @Override
@@ -237,7 +284,7 @@ final class FloatStreamImpl extends FloatStream {
 
     @Override
     public FloatStream distinct() {
-        return new FloatStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), closeHandlers);
+        return new FloatStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), sorted, closeHandlers);
     }
 
     @Override
@@ -264,18 +311,18 @@ final class FloatStreamImpl extends FloatStream {
     @Override
     public FloatStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new FloatStreamImpl(values, fromIndex, toIndex, closeHandlers);
+            return new FloatStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new FloatStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), closeHandlers);
+            return new FloatStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
         }
     }
 
     @Override
     public FloatStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new FloatStreamImpl(N.EMPTY_FLOAT_ARRAY, closeHandlers);
+            return new FloatStreamImpl(N.EMPTY_FLOAT_ARRAY, sorted, closeHandlers);
         } else {
-            return new FloatStreamImpl(values, (int) (fromIndex + n), toIndex, closeHandlers);
+            return new FloatStreamImpl(values, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
@@ -334,8 +381,8 @@ final class FloatStreamImpl extends FloatStream {
     }
 
     @Override
-    public float sum() {
-        return N.sum(values, fromIndex, toIndex).floatValue();
+    public double sum() {
+        return N.sum(values, fromIndex, toIndex).doubleValue();
     }
 
     @Override
@@ -421,7 +468,7 @@ final class FloatStreamImpl extends FloatStream {
             a[j] = values[i];
         }
 
-        return new DoubleStreamImpl(a, closeHandlers);
+        return new DoubleStreamImpl(a, sorted, closeHandlers);
     }
 
     @Override

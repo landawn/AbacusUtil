@@ -1331,6 +1331,19 @@ public final class Collectors {
         return reducing(op);
     }
 
+    public static <T> Collector<T, ?, T> minBy(final T defaultValue, final Comparator<? super T> comparator) {
+        Objects.requireNonNull(comparator);
+
+        final BinaryOperator<T> op = new BinaryOperator<T>() {
+            @Override
+            public T apply(T a, T b) {
+                return comparator.compare(a, b) <= 0 ? a : b;
+            }
+        };
+
+        return reducing(defaultValue, op);
+    }
+
     /**
      * Returns a {@code Collector} that produces the maximal element according
      * to a given {@code Comparator}, described as an {@code Optional<T>}.
@@ -1356,6 +1369,19 @@ public final class Collectors {
         };
 
         return reducing(op);
+    }
+
+    public static <T> Collector<T, ?, T> maxBy(final T defaultValue, final Comparator<? super T> comparator) {
+        Objects.requireNonNull(comparator);
+
+        final BinaryOperator<T> op = new BinaryOperator<T>() {
+            @Override
+            public T apply(T a, T b) {
+                return comparator.compare(a, b) >= 0 ? a : b;
+            }
+        };
+
+        return reducing(defaultValue, op);
     }
 
     /**
@@ -2892,7 +2918,7 @@ public final class Collectors {
         final Function<List<T>, DataSet> finisher = new Function<List<T>, DataSet>() {
             @Override
             public DataSet apply(List<T> t) {
-                return N.asDataSet(entityName, entityClass, columnNames, t);
+                return N.newDataSet(entityName, entityClass, columnNames, t);
             }
         };
 

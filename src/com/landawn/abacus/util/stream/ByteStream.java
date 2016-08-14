@@ -85,7 +85,48 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      */
     public abstract ByteStream filter(final BytePredicate predicate);
 
+    /**
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
     public abstract ByteStream filter(final BytePredicate predicate, final int max);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract ByteStream takeWhile(final BytePredicate predicate);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract ByteStream takeWhile(final BytePredicate predicate, final int max);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract ByteStream dropWhile(final BytePredicate predicate);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract ByteStream dropWhile(final BytePredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -422,7 +463,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
-    public abstract int sum();
+    public abstract long sum();
 
     /**
      * Returns an {@code OptionalByte} describing the minimum element of this

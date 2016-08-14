@@ -7,4 +7,8 @@ public interface IntUnaryOperator extends java.util.function.IntUnaryOperator {
 
     @Override
     int applyAsInt(int operand);
+
+    static IntUnaryOperator identity() {
+        return t -> t;
+    }
 }

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -639,21 +639,21 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
         return outputResult;
     }
 
-    public OptionalNullable<T> reduce(final BiFunction<T, T, T> accumulator) {
+    public OptionalNullable<T> reduce(final BinaryOperator<T> accumulator) {
         return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(reduce(null, accumulator));
     }
 
-    public OptionalNullable<T> reduce(final int fromIndex, final int toIndex, final BiFunction<T, T, T> accumulator) {
+    public OptionalNullable<T> reduce(final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(reduce(fromIndex, toIndex, null, accumulator));
     }
 
-    public T reduce(final T identity, final BiFunction<T, T, T> accumulator) {
+    public T reduce(final T identity, final BinaryOperator<T> accumulator) {
         return reduce(0, size(), identity, accumulator);
     }
 
-    public T reduce(final int fromIndex, final int toIndex, final T identity, final BiFunction<T, T, T> accumulator) {
+    public T reduce(final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
         checkIndex(fromIndex, toIndex);
 
         T result = identity;

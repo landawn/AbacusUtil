@@ -7,4 +7,8 @@ public interface LongUnaryOperator extends java.util.function.LongUnaryOperator 
 
     @Override
     long applyAsLong(long operand);
+
+    static LongUnaryOperator identity() {
+        return t -> t;
+    }
 }

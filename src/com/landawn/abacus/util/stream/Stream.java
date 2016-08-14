@@ -212,7 +212,48 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract Stream<T> filter(final Predicate<? super T> predicate);
 
+    /**
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
     public abstract Stream<T> filter(final Predicate<? super T> predicate, final int max);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract Stream<T> takeWhile(final Predicate<? super T> predicate);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract Stream<T> takeWhile(final Predicate<? super T> predicate, final int max);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract Stream<T> dropWhile(final Predicate<? super T> predicate);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract Stream<T> dropWhile(final Predicate<? super T> predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -687,7 +728,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
 
-    public abstract ObjectList<T> toObjectList(Class<T> cls);
+    public abstract <A> ObjectList<A> toObjectList(Class<A> cls);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -1151,49 +1192,42 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         if (startIndex == 0 && endIndex == c.size()) {
             // return (c.size() > 10 && (c.size() < 1000 || (c.size() < 100000 && c instanceof ArrayList))) ? streamOf((T[]) c.toArray()) : c.stream();
-            return new CollectionStream<T>(c);
+            return of(c.iterator());
         } else {
-            final T[] a = (T[]) new Object[endIndex - startIndex];
-            final Iterator<T> iter = c.iterator();
-
-            while (startIndex-- > 0) {
-                iter.next();
-            }
-
-            final int len = a.length;
-            int i = 0;
-
-            while (i < len) {
-                a[i] = iter.next();
-                i++;
-            }
-
-            return of(a);
+            return of(c.iterator(), startIndex, endIndex);
         }
     }
 
     /**
      * Returns a sequential, stateful and immutable <code>Stream</code>.
      *
-     * @param m
+     * @param iterator
      * @return
      */
-    @Deprecated
-    static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m) {
-        return of(m, 0, m.size());
+    public static <T> Stream<T> of(final Iterator<T> iterator) {
+        return new IteratorStream<T>(iterator);
     }
 
     /**
      * Returns a sequential, stateful and immutable <code>Stream</code>.
      * 
-     * @param m
+     * @param c
      * @param startIndex
      * @param endIndex
      * @return
      */
-    @Deprecated
-    static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> m, final int startIndex, final int endIndex) {
-        return of(m.entrySet(), startIndex, endIndex);
+    public static <T> Stream<T> of(final Iterator<T> iterator, int startIndex, int endIndex) {
+        if (startIndex < 0 || endIndex < startIndex) {
+            throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
+        }
+
+        int index = 0;
+        while (index < startIndex && iterator.hasNext()) {
+            iterator.next();
+            index++;
+        }
+
+        return of(iterator);
     }
 
     /**
@@ -1234,14 +1268,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         //        return new CharStreamImpl(values);
 
         return new CharStreamImpl(a, startIndex, endIndex);
-    }
-
-    public static CharStream from(final String str) {
-        return from(str, 0, str.length());
-    }
-
-    public static CharStream from(final String str, final int startIndex, final int endIndex) {
-        return CharStream.from(str, startIndex, endIndex);
     }
 
     /**

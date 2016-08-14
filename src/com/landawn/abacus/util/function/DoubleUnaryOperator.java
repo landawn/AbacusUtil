@@ -7,4 +7,8 @@ public interface DoubleUnaryOperator extends java.util.function.DoubleUnaryOpera
 
     @Override
     double applyAsDouble(double operand);
+
+    static DoubleUnaryOperator identity() {
+        return t -> t;
+    }
 }

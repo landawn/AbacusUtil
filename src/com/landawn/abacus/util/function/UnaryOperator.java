@@ -7,4 +7,7 @@ import java.util.function.Function;
  */
 public interface UnaryOperator<T> extends Function<T, T>, java.util.function.UnaryOperator<T> {
 
+    static <T> UnaryOperator<T> identity() {
+        return t -> t;
+    }
 }

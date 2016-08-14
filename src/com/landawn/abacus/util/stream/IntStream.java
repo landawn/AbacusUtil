@@ -90,7 +90,48 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract IntStream filter(final IntPredicate predicate);
 
+    /**
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
     public abstract IntStream filter(final IntPredicate predicate, final int max);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract IntStream takeWhile(final IntPredicate predicate);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract IntStream takeWhile(final IntPredicate predicate, final int max);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract IntStream dropWhile(final IntPredicate predicate);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract IntStream dropWhile(final IntPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -484,7 +525,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      *
      * @return the sum of elements in this stream
      */
-    public abstract int sum();
+    public abstract long sum();
 
     /**
      * Returns an {@code OptionalInt} describing the minimum element of this

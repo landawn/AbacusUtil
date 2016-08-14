@@ -493,39 +493,39 @@ public final class Array {
         return a;
     }
 
-    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
-    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
-    static float[] range(float startInclusive, final float endExclusive) {
-        if (endExclusive == startInclusive) {
-            return N.EMPTY_FLOAT_ARRAY;
-        }
-
-        int tmp = (int) (endExclusive - startInclusive);
-        final float[] a = new float[(startInclusive + tmp == endExclusive) ? tmp : tmp + 1];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = startInclusive++;
-        }
-
-        return a;
-    }
-
-    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
-    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
-    static double[] range(double startInclusive, final double endExclusive) {
-        if (endExclusive == startInclusive) {
-            return N.EMPTY_DOUBLE_ARRAY;
-        }
-
-        int tmp = (int) (endExclusive - startInclusive);
-        final double[] a = new double[(startInclusive + tmp == endExclusive) ? tmp : tmp + 1];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = startInclusive++;
-        }
-
-        return a;
-    }
+    //    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+    //    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
+    //    static float[] range(float startInclusive, final float endExclusive) {
+    //        if (endExclusive == startInclusive) {
+    //            return N.EMPTY_FLOAT_ARRAY;
+    //        }
+    //
+    //        int tmp = (int) (endExclusive - startInclusive);
+    //        final float[] a = new float[(startInclusive + tmp == endExclusive) ? tmp : tmp + 1];
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            a[i] = startInclusive++;
+    //        }
+    //
+    //        return a;
+    //    }
+    //
+    //    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+    //    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
+    //    static double[] range(double startInclusive, final double endExclusive) {
+    //        if (endExclusive == startInclusive) {
+    //            return N.EMPTY_DOUBLE_ARRAY;
+    //        }
+    //
+    //        int tmp = (int) (endExclusive - startInclusive);
+    //        final double[] a = new double[(startInclusive + tmp == endExclusive) ? tmp : tmp + 1];
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            a[i] = startInclusive++;
+    //        }
+    //
+    //        return a;
+    //    }
 
     public static char[] range(char startInclusive, final char endExclusive, final int by) {
         if (by == 0) {
@@ -652,59 +652,59 @@ public final class Array {
         return a;
     }
 
-    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
-    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
-    static float[] range(float startInclusive, final float endExclusive, final float by) {
-        if (by == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
-        }
-
-        if (endExclusive == startInclusive) {
-            return N.EMPTY_FLOAT_ARRAY;
-        }
-
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
-
-        final int tmp = (int) ((endExclusive - startInclusive) / by);
-        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
-        final float[] a = new float[len];
-
-        for (int i = 0; i < len; i++, startInclusive += by) {
-            a[i] = startInclusive;
-        }
-
-        return a;
-    }
-
-    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
-    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
-    static double[] range(double startInclusive, final double endExclusive, final double by) {
-        if (by == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
-        }
-
-        if (endExclusive == startInclusive) {
-            return N.EMPTY_DOUBLE_ARRAY;
-        }
-
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
-
-        final int tmp = (int) ((endExclusive - startInclusive) / by);
-        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
-        final double[] a = new double[len];
-
-        for (int i = 0; i < len; i++, startInclusive += by) {
-            a[i] = startInclusive;
-        }
-
-        return a;
-    }
+    //    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+    //    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
+    //    static float[] range(float startInclusive, final float endExclusive, final float by) {
+    //        if (by == 0) {
+    //            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+    //        }
+    //
+    //        if (endExclusive == startInclusive) {
+    //            return N.EMPTY_FLOAT_ARRAY;
+    //        }
+    //
+    //        if (endExclusive > startInclusive != by > 0) {
+    //            throw new IllegalArgumentException(
+    //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+    //        }
+    //
+    //        final int tmp = (int) ((endExclusive - startInclusive) / by);
+    //        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
+    //        final float[] a = new float[len];
+    //
+    //        for (int i = 0; i < len; i++, startInclusive += by) {
+    //            a[i] = startInclusive;
+    //        }
+    //
+    //        return a;
+    //    }
+    //
+    //    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+    //    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
+    //    static double[] range(double startInclusive, final double endExclusive, final double by) {
+    //        if (by == 0) {
+    //            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+    //        }
+    //
+    //        if (endExclusive == startInclusive) {
+    //            return N.EMPTY_DOUBLE_ARRAY;
+    //        }
+    //
+    //        if (endExclusive > startInclusive != by > 0) {
+    //            throw new IllegalArgumentException(
+    //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+    //        }
+    //
+    //        final int tmp = (int) ((endExclusive - startInclusive) / by);
+    //        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
+    //        final double[] a = new double[len];
+    //
+    //        for (int i = 0; i < len; i++, startInclusive += by) {
+    //            a[i] = startInclusive;
+    //        }
+    //
+    //        return a;
+    //    }
 
     public static char[] rangeClosed(char startInclusive, final char endInclusive) {
         final char[] a = new char[endInclusive - startInclusive + 1];
@@ -756,29 +756,29 @@ public final class Array {
         return a;
     }
 
-    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
-    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
-    static float[] rangeClosed(float startInclusive, final float endInclusive) {
-        final float[] a = new float[(int) (endInclusive - startInclusive) + 1];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = startInclusive++;
-        }
-
-        return a;
-    }
-
-    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
-    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
-    static double[] rangeClosed(double startInclusive, final double endInclusive) {
-        final double[] a = new double[(int) (endInclusive - startInclusive) + 1];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = startInclusive++;
-        }
-
-        return a;
-    }
+    //    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+    //    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
+    //    static float[] rangeClosed(float startInclusive, final float endInclusive) {
+    //        final float[] a = new float[(int) (endInclusive - startInclusive) + 1];
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            a[i] = startInclusive++;
+    //        }
+    //
+    //        return a;
+    //    }
+    //
+    //    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+    //    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
+    //    static double[] rangeClosed(double startInclusive, final double endInclusive) {
+    //        final double[] a = new double[(int) (endInclusive - startInclusive) + 1];
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            a[i] = startInclusive++;
+    //        }
+    //
+    //        return a;
+    //    }
 
     public static char[] rangeClosed(char startInclusive, final char endExclusive, final int by) {
         if (by == 0) {
@@ -900,57 +900,57 @@ public final class Array {
         return a;
     }
 
-    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
-    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
-    static float[] rangeClosed(float startInclusive, final float endExclusive, final float by) {
-        if (by == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
-        }
-
-        if (endExclusive == startInclusive) {
-            return new float[] { startInclusive };
-        }
-
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
-
-        final int len = (int) (((double) endExclusive - (double) startInclusive) / by) + 1;
-        final float[] a = new float[len];
-
-        for (int i = 0; i < len; i++, startInclusive += by) {
-            a[i] = startInclusive;
-        }
-
-        return a;
-    }
-
-    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
-    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
-    static double[] rangeClosed(double startInclusive, final double endExclusive, final double by) {
-        if (by == 0) {
-            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
-        }
-
-        if (endExclusive == startInclusive) {
-            return new double[] { startInclusive };
-        }
-
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
-
-        final int len = (int) ((endExclusive - startInclusive) / by) + 1;
-        final double[] a = new double[len];
-
-        for (int i = 0; i < len; i++, startInclusive += by) {
-            a[i] = startInclusive;
-        }
-
-        return a;
-    }
+    //    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+    //    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
+    //    static float[] rangeClosed(float startInclusive, final float endExclusive, final float by) {
+    //        if (by == 0) {
+    //            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+    //        }
+    //
+    //        if (endExclusive == startInclusive) {
+    //            return new float[] { startInclusive };
+    //        }
+    //
+    //        if (endExclusive > startInclusive != by > 0) {
+    //            throw new IllegalArgumentException(
+    //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+    //        }
+    //
+    //        final int len = (int) (((double) endExclusive - (double) startInclusive) / by) + 1;
+    //        final float[] a = new float[len];
+    //
+    //        for (int i = 0; i < len; i++, startInclusive += by) {
+    //            a[i] = startInclusive;
+    //        }
+    //
+    //        return a;
+    //    }
+    //
+    //    // Doesn't work as expected due to precision issue. "3.3d - 1.1d != 2.2d". Refer to: https://en.wikipedia.org/wiki/IEEE_floating_point
+    //    // http://stackoverflow.com/questions/15625556/java-adding-and-subtracting-doubles-are-giving-strange-results
+    //    static double[] rangeClosed(double startInclusive, final double endExclusive, final double by) {
+    //        if (by == 0) {
+    //            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+    //        }
+    //
+    //        if (endExclusive == startInclusive) {
+    //            return new double[] { startInclusive };
+    //        }
+    //
+    //        if (endExclusive > startInclusive != by > 0) {
+    //            throw new IllegalArgumentException(
+    //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+    //        }
+    //
+    //        final int len = (int) ((endExclusive - startInclusive) / by) + 1;
+    //        final double[] a = new double[len];
+    //
+    //        for (int i = 0; i < len; i++, startInclusive += by) {
+    //            a[i] = startInclusive;
+    //        }
+    //
+    //        return a;
+    //    }
 
     public static Class<?> box(final Class<?> cls) {
         Class<?> result = PRIMITIVE_2_WRAPPER.get(cls);

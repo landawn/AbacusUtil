@@ -2,11 +2,14 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
@@ -38,17 +41,17 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     private final int toIndex;
     private final boolean sorted;
     private final Comparator<? super T> cmp;
-    private final List<Runnable> closeHandlers;
+    private final Set<Runnable> closeHandlers;
 
     ArrayStream(T[] values) {
         this(values, null);
     }
 
-    ArrayStream(T[] values, List<Runnable> closeHandlers) {
+    ArrayStream(T[] values, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayStream(T[] values, boolean sorted, Comparator<? super T> cmp, List<Runnable> closeHandlers) {
+    ArrayStream(T[] values, boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, sorted, cmp, closeHandlers);
     }
 
@@ -56,11 +59,11 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         this(values, fromIndex, toIndex, null);
     }
 
-    ArrayStream(T[] values, int fromIndex, int toIndex, List<Runnable> closeHandlers) {
+    ArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, false, null, closeHandlers);
     }
 
-    ArrayStream(T[] values, int fromIndex, int toIndex, boolean sorted, Comparator<? super T> cmp, List<Runnable> closeHandlers) {
+    ArrayStream(T[] values, int fromIndex, int toIndex, boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
         if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
             throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
         }
@@ -70,7 +73,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         this.toIndex = toIndex;
         this.sorted = sorted;
         this.cmp = cmp;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -80,7 +83,61 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate, final int max) {
-        return new ArrayStream<T>((T[]) N.filter(values, fromIndex, toIndex, predicate, max), sorted, cmp, closeHandlers);
+        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(values.getClass().getComponentType(), N.min(9, max, (toIndex - fromIndex))), 0);
+
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+            if (predicate.test(values[i])) {
+                list.add(values[i]);
+                cnt++;
+            }
+        }
+
+        return new ArrayStream<T>(list.trimToSize().array(), sorted, cmp, closeHandlers);
+    }
+
+    @Override
+    public Stream<T> takeWhile(Predicate<? super T> predicate) {
+        return takeWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public Stream<T> takeWhile(Predicate<? super T> predicate, int max) {
+        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(values.getClass().getComponentType(), N.min(9, max, (toIndex - fromIndex))), 0);
+
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+            if (predicate.test(values[i])) {
+                list.add(values[i]);
+                cnt++;
+            } else {
+                break;
+            }
+        }
+
+        return new ArrayStream<T>(list.trimToSize().array(), sorted, cmp, closeHandlers);
+    }
+
+    @Override
+    public Stream<T> dropWhile(Predicate<? super T> predicate) {
+        return dropWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public Stream<T> dropWhile(Predicate<? super T> predicate, int max) {
+        int index = fromIndex;
+        while (index < toIndex && predicate.test(values[index])) {
+            index++;
+        }
+
+        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(values.getClass().getComponentType(), N.min(9, max, (toIndex - index))), 0);
+        int cnt = 0;
+
+        while (index < toIndex && cnt < max) {
+            list.add(values[index]);
+            index++;
+            cnt++;
+        }
+
+        return new ArrayStream<T>(list.trimToSize().array(), sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -343,38 +400,44 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     public <K> Stream<Entry<K, List<T>>> groupBy(Function<? super T, ? extends K> classifier) {
         final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
 
-        return Stream.of(map.entrySet());
+        return new IteratorStream<>(map.entrySet().iterator(), closeHandlers);
     }
 
     @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(Function<? super T, ? extends K> classifier, Supplier<Map<K, List<T>>> mapFactory) {
-        return Stream.of(collect(Collectors.groupingBy(classifier, mapFactory)).entrySet());
+        final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier, mapFactory));
+
+        return new IteratorStream<>(map.entrySet().iterator(), closeHandlers);
     }
 
     @Override
     public <K, A, D> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
         final Map<K, D> map = collect(Collectors.groupingBy(classifier, downstream));
 
-        return Stream.of(map.entrySet());
+        return new IteratorStream<>(map.entrySet().iterator(), closeHandlers);
     }
 
     @Override
     public <K, D, A> Stream<Entry<K, D>> groupBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream,
             Supplier<Map<K, D>> mapFactory) {
-        return Stream.of(collect(Collectors.groupingBy(classifier, downstream, mapFactory)).entrySet());
+        final Map<K, D> map = collect(Collectors.groupingBy(classifier, downstream, mapFactory));
+
+        return new IteratorStream<>(map.entrySet().iterator(), closeHandlers);
     }
 
     @Override
     public <K, U> Stream<Entry<K, U>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
         final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper));
 
-        return Stream.of(map.entrySet());
+        return new IteratorStream<>(map.entrySet().iterator(), closeHandlers);
     }
 
     @Override
     public <K, U> Stream<Entry<K, U>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
             Supplier<Map<K, U>> mapFactory) {
-        return Stream.of(collect(Collectors.toMap(keyMapper, valueMapper, mapFactory)).entrySet());
+        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mapFactory));
+
+        return new IteratorStream<>(map.entrySet().iterator(), closeHandlers);
     }
 
     @Override
@@ -382,18 +445,20 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
             BinaryOperator<U> mergeFunction) {
         final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction));
 
-        return Stream.of(map.entrySet());
+        return new IteratorStream<>(map.entrySet().iterator(), closeHandlers);
     }
 
     @Override
     public <K, U> Stream<Entry<K, U>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<Map<K, U>> mapFactory) {
-        return Stream.of(collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory)).entrySet());
+        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
+
+        return new IteratorStream<>(map.entrySet().iterator(), closeHandlers);
     }
 
     @Override
     public Stream<T> distinct() {
-        return new ArrayStream<T>(N.removeDuplicates(values, fromIndex, toIndex, sorted), closeHandlers);
+        return new ArrayStream<T>(N.removeDuplicates(values, fromIndex, toIndex, sorted), sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -431,18 +496,18 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     @Override
     public Stream<T> limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new ArrayStream<T>(values, fromIndex, toIndex, closeHandlers);
+            return new ArrayStream<T>(values, fromIndex, toIndex, sorted, cmp, closeHandlers);
         } else {
-            return new ArrayStream<T>(values, fromIndex, (int) (fromIndex + maxSize), closeHandlers);
+            return new ArrayStream<T>(values, fromIndex, (int) (fromIndex + maxSize), sorted, cmp, closeHandlers);
         }
     }
 
     @Override
     public Stream<T> skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new ArrayStream<T>((T[]) N.EMPTY_OBJECT_ARRAY, closeHandlers);
+            return new ArrayStream<T>((T[]) N.EMPTY_OBJECT_ARRAY, sorted, cmp, closeHandlers);
         } else {
-            return new ArrayStream<T>(values, (int) (fromIndex + n), toIndex, closeHandlers);
+            return new ArrayStream<T>(values, (int) (fromIndex + n), toIndex, sorted, cmp, closeHandlers);
         }
     }
 
@@ -481,8 +546,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public ObjectList<T> toObjectList(Class<T> cls) {
-        final T[] a = N.newArray(cls, toIndex - fromIndex);
+    public <A> ObjectList<A> toObjectList(Class<A> cls) {
+        final A[] a = N.newArray(cls, toIndex - fromIndex);
 
         if (a.length > 0) {
             N.copy(values, fromIndex, a, 0, a.length);

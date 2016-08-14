@@ -84,7 +84,48 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      */
     public abstract CharStream filter(final CharPredicate predicate);
 
+    /**
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
     public abstract CharStream filter(final CharPredicate predicate, final int max);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract CharStream takeWhile(final CharPredicate predicate);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract CharStream takeWhile(final CharPredicate predicate, final int max);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract CharStream dropWhile(final CharPredicate predicate);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract CharStream dropWhile(final CharPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given

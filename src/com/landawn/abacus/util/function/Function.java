@@ -7,4 +7,8 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
 
     @Override
     R apply(T t);
+
+    static <T> Function<T, T> identity() {
+        return t -> t;
+    }
 }

@@ -1,8 +1,11 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.IntList;
@@ -33,17 +36,17 @@ final class IntStreamImpl extends IntStream {
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final List<Runnable> closeHandlers;
+    private final Set<Runnable> closeHandlers;
 
     IntStreamImpl(int[] values) {
         this(values, null);
     }
 
-    IntStreamImpl(int[] values, List<Runnable> closeHandlers) {
+    IntStreamImpl(int[] values, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    IntStreamImpl(int[] values, boolean sorted, List<Runnable> closeHandlers) {
+    IntStreamImpl(int[] values, boolean sorted, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, sorted, closeHandlers);
     }
 
@@ -51,11 +54,11 @@ final class IntStreamImpl extends IntStream {
         this(values, fromIndex, toIndex, null);
     }
 
-    IntStreamImpl(int[] values, int fromIndex, int toIndex, List<Runnable> closeHandlers) {
+    IntStreamImpl(int[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    IntStreamImpl(int[] values, int fromIndex, int toIndex, boolean sorted, List<Runnable> closeHandlers) {
+    IntStreamImpl(int[] values, int fromIndex, int toIndex, boolean sorted, Collection<Runnable> closeHandlers) {
         if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
             throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
         }
@@ -64,7 +67,7 @@ final class IntStreamImpl extends IntStream {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -75,6 +78,51 @@ final class IntStreamImpl extends IntStream {
     @Override
     public IntStream filter(final IntPredicate predicate, final int max) {
         return new IntStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+    }
+
+    @Override
+    public IntStream takeWhile(IntPredicate predicate) {
+        return takeWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public IntStream takeWhile(IntPredicate predicate, int max) {
+        final IntList list = IntList.of(new int[N.min(9, max, (toIndex - fromIndex))], 0);
+
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+            if (predicate.test(values[i])) {
+                list.add(values[i]);
+                cnt++;
+            } else {
+                break;
+            }
+        }
+
+        return new IntStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+    }
+
+    @Override
+    public IntStream dropWhile(IntPredicate predicate) {
+        return dropWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public IntStream dropWhile(IntPredicate predicate, int max) {
+        int index = fromIndex;
+        while (index < toIndex && predicate.test(values[index])) {
+            index++;
+        }
+
+        final IntList list = IntList.of(new int[N.min(9, max, (toIndex - index))], 0);
+        int cnt = 0;
+
+        while (index < toIndex && cnt < max) {
+            list.add(values[index]);
+            index++;
+            cnt++;
+        }
+
+        return new IntStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
     }
 
     @Override
@@ -336,7 +384,7 @@ final class IntStreamImpl extends IntStream {
 
     @Override
     public IntStream distinct() {
-        return new IntStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), closeHandlers);
+        return new IntStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), sorted, closeHandlers);
     }
 
     @Override
@@ -363,18 +411,18 @@ final class IntStreamImpl extends IntStream {
     @Override
     public IntStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new IntStreamImpl(values, fromIndex, toIndex, closeHandlers);
+            return new IntStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new IntStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), closeHandlers);
+            return new IntStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
         }
     }
 
     @Override
     public IntStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new IntStreamImpl(N.EMPTY_INT_ARRAY, closeHandlers);
+            return new IntStreamImpl(N.EMPTY_INT_ARRAY, sorted, closeHandlers);
         } else {
-            return new IntStreamImpl(values, (int) (fromIndex + n), toIndex, closeHandlers);
+            return new IntStreamImpl(values, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
@@ -433,8 +481,8 @@ final class IntStreamImpl extends IntStream {
     }
 
     @Override
-    public int sum() {
-        return N.sum(values, fromIndex, toIndex).intValue();
+    public long sum() {
+        return N.sum(values, fromIndex, toIndex).longValue();
     }
 
     @Override
@@ -520,7 +568,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = values[i];
         }
 
-        return new LongStreamImpl(a, closeHandlers);
+        return new LongStreamImpl(a, sorted, closeHandlers);
     }
 
     @Override
@@ -531,7 +579,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = values[i];
         }
 
-        return new FloatStreamImpl(a, closeHandlers);
+        return new FloatStreamImpl(a, sorted, closeHandlers);
     }
 
     @Override
@@ -542,7 +590,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = values[i];
         }
 
-        return new DoubleStreamImpl(a, closeHandlers);
+        return new DoubleStreamImpl(a, sorted, closeHandlers);
     }
 
     @Override

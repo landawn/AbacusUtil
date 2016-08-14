@@ -1,8 +1,11 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleList;
@@ -29,17 +32,17 @@ final class DoubleStreamImpl extends DoubleStream {
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final List<Runnable> closeHandlers;
+    private final Set<Runnable> closeHandlers;
 
     DoubleStreamImpl(double[] values) {
         this(values, null);
     }
 
-    DoubleStreamImpl(double[] values, List<Runnable> closeHandlers) {
+    DoubleStreamImpl(double[] values, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    DoubleStreamImpl(double[] values, boolean sorted, List<Runnable> closeHandlers) {
+    DoubleStreamImpl(double[] values, boolean sorted, Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, sorted, closeHandlers);
     }
 
@@ -47,11 +50,11 @@ final class DoubleStreamImpl extends DoubleStream {
         this(values, fromIndex, toIndex, null);
     }
 
-    DoubleStreamImpl(double[] values, int fromIndex, int toIndex, List<Runnable> closeHandlers) {
+    DoubleStreamImpl(double[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    DoubleStreamImpl(double[] values, int fromIndex, int toIndex, boolean sorted, List<Runnable> closeHandlers) {
+    DoubleStreamImpl(double[] values, int fromIndex, int toIndex, boolean sorted, Collection<Runnable> closeHandlers) {
         if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
             throw new IllegalArgumentException("fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ") is invalid");
         }
@@ -60,7 +63,7 @@ final class DoubleStreamImpl extends DoubleStream {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new ArrayList<>(closeHandlers);
+        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -71,6 +74,51 @@ final class DoubleStreamImpl extends DoubleStream {
     @Override
     public DoubleStream filter(final DoublePredicate predicate, final int max) {
         return new DoubleStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+    }
+
+    @Override
+    public DoubleStream takeWhile(DoublePredicate predicate) {
+        return takeWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public DoubleStream takeWhile(DoublePredicate predicate, int max) {
+        final DoubleList list = DoubleList.of(new double[N.min(9, max, (toIndex - fromIndex))], 0);
+
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+            if (predicate.test(values[i])) {
+                list.add(values[i]);
+                cnt++;
+            } else {
+                break;
+            }
+        }
+
+        return new DoubleStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+    }
+
+    @Override
+    public DoubleStream dropWhile(DoublePredicate predicate) {
+        return dropWhile(predicate, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public DoubleStream dropWhile(DoublePredicate predicate, int max) {
+        int index = fromIndex;
+        while (index < toIndex && predicate.test(values[index])) {
+            index++;
+        }
+
+        final DoubleList list = DoubleList.of(new double[N.min(9, max, (toIndex - index))], 0);
+        int cnt = 0;
+
+        while (index < toIndex && cnt < max) {
+            list.add(values[index]);
+            index++;
+            cnt++;
+        }
+
+        return new DoubleStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
     }
 
     @Override
@@ -236,7 +284,7 @@ final class DoubleStreamImpl extends DoubleStream {
 
     @Override
     public DoubleStream distinct() {
-        return new DoubleStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), closeHandlers);
+        return new DoubleStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), sorted, closeHandlers);
     }
 
     @Override
@@ -263,18 +311,18 @@ final class DoubleStreamImpl extends DoubleStream {
     @Override
     public DoubleStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new DoubleStreamImpl(values, fromIndex, toIndex, closeHandlers);
+            return new DoubleStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new DoubleStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), closeHandlers);
+            return new DoubleStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
         }
     }
 
     @Override
     public DoubleStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new DoubleStreamImpl(N.EMPTY_DOUBLE_ARRAY, closeHandlers);
+            return new DoubleStreamImpl(N.EMPTY_DOUBLE_ARRAY, sorted, closeHandlers);
         } else {
-            return new DoubleStreamImpl(values, (int) (fromIndex + n), toIndex, closeHandlers);
+            return new DoubleStreamImpl(values, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 

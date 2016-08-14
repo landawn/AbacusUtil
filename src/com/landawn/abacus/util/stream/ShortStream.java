@@ -85,7 +85,48 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract ShortStream filter(final ShortPredicate predicate);
 
+    /**
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
     public abstract ShortStream filter(final ShortPredicate predicate, final int max);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract ShortStream takeWhile(final ShortPredicate predicate);
+
+    /**
+     * Keep the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract ShortStream takeWhile(final ShortPredicate predicate, final int max);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract ShortStream dropWhile(final ShortPredicate predicate);
+
+    /**
+     * Remove the elements until the given predicate returns false.
+     * 
+     * @param predicate
+     * @param max the maximum elements number to the new Stream.
+     * @return
+     */
+    public abstract ShortStream dropWhile(final ShortPredicate predicate, final int max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -422,7 +463,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
-    public abstract int sum();
+    public abstract long sum();
 
     /**
      * Returns an {@code OptionalShort} describing the minimum element of this
