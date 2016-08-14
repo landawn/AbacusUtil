@@ -250,6 +250,48 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public <R> Stream<R> flatMap2(Function<? super T, ? extends R[]> mapper) {
+        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final Object[] tmp = mapper.apply(values[i]);
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final Object[] arrayOfAll = new Object[lengthOfAll];
+        int from = 0;
+        for (Object[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new ArrayStream<R>((R[]) arrayOfAll, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> flatMap3(Function<? super T, ? extends Collection<? extends R>> mapper) {
+        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+
+        int lengthOfAll = 0;
+        for (int i = fromIndex; i < toIndex; i++) {
+            final Object[] tmp = mapper.apply(values[i]).toArray();
+            lengthOfAll += tmp.length;
+            listOfArray.add(tmp);
+        }
+
+        final Object[] arrayOfAll = new Object[lengthOfAll];
+        int from = 0;
+        for (Object[] tmp : listOfArray) {
+            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+            from += tmp.length;
+        }
+
+        return new ArrayStream<R>((R[]) arrayOfAll, closeHandlers);
+    }
+
+    @Override
     public CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper) {
         final List<char[]> listOfArray = new ArrayList<char[]>();
 

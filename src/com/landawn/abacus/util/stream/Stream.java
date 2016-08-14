@@ -420,6 +420,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper);
 
+    public abstract <R> Stream<R> flatMap2(Function<? super T, ? extends R[]> mapper);
+
+    public abstract <R> Stream<R> flatMap3(Function<? super T, ? extends Collection<? extends R>> mapper);
+
     /**
      * Returns an {@code IntStream} consisting of the results of replacing each
      * element of this stream with the contents of a mapped stream produced by
@@ -1238,6 +1242,16 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         return of(iterator);
     }
 
+    /**
+     * <p> The returned stream encapsulates a {@link Reader}.  If timely
+     * disposal of file system resources is required, the try-with-resources
+     * construct should be used to ensure that the stream's
+     * {@link Stream#close close} method is invoked after the stream operations
+     * are completed.
+     * 
+     * @param file
+     * @return
+     */
     public static Stream<String> of(File file) {
         BufferedReader br = null;
 
