@@ -1252,14 +1252,14 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param file
      * @return
      */
-    public static Stream<String> of(File file) {
+    static Stream<String> of(File file) {
         BufferedReader br = null;
 
         try {
             br = new BufferedReader(new FileReader(file));
             final BufferedReader tmp = br;
 
-            return of(new LineIterator(br)).onClose(new Runnable() {
+            return of(br).onClose(new Runnable() {
                 @Override
                 public void run() {
                     IOUtil.close(tmp);
