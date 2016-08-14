@@ -24,6 +24,11 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -35,7 +40,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.IOUtil;
+import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
@@ -1228,6 +1236,29 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         }
 
         return of(iterator);
+    }
+
+    public static Stream<String> of(File file) {
+        BufferedReader br = null;
+
+        try {
+            br = new BufferedReader(new FileReader(file));
+            final BufferedReader tmp = br;
+
+            return of(new LineIterator(br)).onClose(new Runnable() {
+                @Override
+                public void run() {
+                    IOUtil.close(tmp);
+                }
+            });
+        } catch (IOException e) {
+            IOUtil.close(br);
+            throw new AbacusIOException(e);
+        }
+    }
+
+    public static Stream<String> of(Reader reader) {
+        return of(new LineIterator(reader));
     }
 
     /**

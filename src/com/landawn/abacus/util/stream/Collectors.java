@@ -2062,6 +2062,168 @@ public final class Collectors {
         return new CollectorImpl<>(boxSupplier(identity), accumulator, combiner, finisher, CH_NOID);
     }
 
+    public static <T, U> Collector<T, ?, Optional<U>> reducing(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
+        class OptionalBox implements Consumer<T> {
+            U value = null;
+            boolean present = false;
+
+            @Override
+            public void accept(T t) {
+                if (present) {
+                    value = op.apply(value, mapper.apply(t));
+                } else {
+                    value = mapper.apply(t);
+                    present = true;
+                }
+            }
+        }
+
+        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
+            @Override
+            public OptionalBox get() {
+                return new OptionalBox();
+            }
+        };
+
+        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
+            @Override
+            public void accept(OptionalBox a, T t) {
+                a.accept(t);
+            }
+        };
+
+        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
+            @Override
+            public OptionalBox apply(OptionalBox a, OptionalBox b) {
+                if (b.present) {
+                    a.value = b.value;
+                    a.present = true;
+                }
+
+                return a;
+            }
+        };
+
+        final Function<OptionalBox, Optional<U>> finisher = new Function<OptionalBox, Optional<U>>() {
+            @Override
+            public Optional<U> apply(OptionalBox a) {
+                return Optional.ofNullable(a.value);
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T, U> Collector<T, ?, U> reducingOrGet(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op,
+            final Supplier<? extends U> other) {
+        class OptionalBox implements Consumer<T> {
+            U value = null;
+            boolean present = false;
+
+            @Override
+            public void accept(T t) {
+                if (present) {
+                    value = op.apply(value, mapper.apply(t));
+                } else {
+                    value = mapper.apply(t);
+                    present = true;
+                }
+            }
+        }
+
+        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
+            @Override
+            public OptionalBox get() {
+                return new OptionalBox();
+            }
+        };
+
+        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
+            @Override
+            public void accept(OptionalBox a, T t) {
+                a.accept(t);
+            }
+        };
+
+        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
+            @Override
+            public OptionalBox apply(OptionalBox a, OptionalBox b) {
+                if (b.present) {
+                    a.value = b.value;
+                    a.present = true;
+                }
+
+                return a;
+            }
+        };
+
+        final Function<OptionalBox, U> finisher = new Function<OptionalBox, U>() {
+            @Override
+            public U apply(OptionalBox a) {
+                return a.present ? a.value : other.get();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T, U, X extends RuntimeException> Collector<T, ?, U> reducingOrThrow(final Function<? super T, ? extends U> mapper,
+            final BinaryOperator<U> op, final Supplier<? extends X> exceptionSupplier) {
+        class OptionalBox implements Consumer<T> {
+            U value = null;
+            boolean present = false;
+
+            @Override
+            public void accept(T t) {
+                if (present) {
+                    value = op.apply(value, mapper.apply(t));
+                } else {
+                    value = mapper.apply(t);
+                    present = true;
+                }
+            }
+        }
+
+        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
+            @Override
+            public OptionalBox get() {
+                return new OptionalBox();
+            }
+        };
+
+        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
+            @Override
+            public void accept(OptionalBox a, T t) {
+                a.accept(t);
+            }
+        };
+
+        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
+            @Override
+            public OptionalBox apply(OptionalBox a, OptionalBox b) {
+                if (b.present) {
+                    a.value = b.value;
+                    a.present = true;
+                }
+
+                return a;
+            }
+        };
+
+        final Function<OptionalBox, U> finisher = new Function<OptionalBox, U>() {
+            @Override
+            public U apply(OptionalBox a) {
+                if (a.present) {
+                    return a.value;
+                } else {
+                    throw exceptionSupplier.get();
+                }
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
     /**
      * Returns a {@code Collector} implementing a "group by" operation on
      * input elements of type {@code T}, grouping elements according to a
