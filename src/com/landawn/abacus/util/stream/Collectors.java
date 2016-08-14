@@ -1331,7 +1331,7 @@ public final class Collectors {
         return reducing(op);
     }
 
-    public static <T> Collector<T, ?, T> minBy(final T defaultValue, final Comparator<? super T> comparator) {
+    public static <T> Collector<T, ?, T> minByOrGet(final Comparator<? super T> comparator, final Supplier<? extends T> other) {
         Objects.requireNonNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
@@ -1341,7 +1341,21 @@ public final class Collectors {
             }
         };
 
-        return reducing(defaultValue, op);
+        return reducingOrGet(op, other);
+    }
+
+    public static <T, X extends RuntimeException> Collector<T, ?, T> minByOrThrow(final Comparator<? super T> comparator,
+            final Supplier<? extends X> exceptionSupplier) {
+        Objects.requireNonNull(comparator);
+
+        final BinaryOperator<T> op = new BinaryOperator<T>() {
+            @Override
+            public T apply(T a, T b) {
+                return comparator.compare(a, b) <= 0 ? a : b;
+            }
+        };
+
+        return reducingOrThrow(op, exceptionSupplier);
     }
 
     /**
@@ -1371,7 +1385,7 @@ public final class Collectors {
         return reducing(op);
     }
 
-    public static <T> Collector<T, ?, T> maxBy(final T defaultValue, final Comparator<? super T> comparator) {
+    public static <T> Collector<T, ?, T> maxByOrGet(final Comparator<? super T> comparator, final Supplier<? extends T> other) {
         Objects.requireNonNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
@@ -1381,7 +1395,21 @@ public final class Collectors {
             }
         };
 
-        return reducing(defaultValue, op);
+        return reducingOrGet(op, other);
+    }
+
+    public static <T, X extends RuntimeException> Collector<T, ?, T> maxByOrThrow(final Comparator<? super T> comparator,
+            final Supplier<? extends X> exceptionSupplier) {
+        Objects.requireNonNull(comparator);
+
+        final BinaryOperator<T> op = new BinaryOperator<T>() {
+            @Override
+            public T apply(T a, T b) {
+                return comparator.compare(a, b) >= 0 ? a : b;
+            }
+        };
+
+        return reducingOrThrow(op, exceptionSupplier);
     }
 
     /**
@@ -1860,6 +1888,113 @@ public final class Collectors {
             @Override
             public Optional<T> apply(OptionalBox a) {
                 return Optional.ofNullable(a.value);
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, T> reducingOrGet(final BinaryOperator<T> op, final Supplier<? extends T> other) {
+        class OptionalBox implements Consumer<T> {
+            T value = null;
+            boolean present = false;
+
+            @Override
+            public void accept(T t) {
+                if (present) {
+                    value = op.apply(value, t);
+                } else {
+                    value = t;
+                    present = true;
+                }
+            }
+        }
+
+        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
+            @Override
+            public OptionalBox get() {
+                return new OptionalBox();
+            }
+        };
+
+        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
+            @Override
+            public void accept(OptionalBox a, T t) {
+                a.accept(t);
+            }
+        };
+
+        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
+            @Override
+            public OptionalBox apply(OptionalBox a, OptionalBox b) {
+                if (b.present) {
+                    a.accept(b.value);
+                }
+
+                return a;
+            }
+        };
+
+        final Function<OptionalBox, T> finisher = new Function<OptionalBox, T>() {
+            @Override
+            public T apply(OptionalBox a) {
+                return a.present ? a.value : other.get();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T, X extends RuntimeException> Collector<T, ?, T> reducingOrThrow(final BinaryOperator<T> op,
+            final Supplier<? extends X> exceptionSupplier) {
+        class OptionalBox implements Consumer<T> {
+            T value = null;
+            boolean present = false;
+
+            @Override
+            public void accept(T t) {
+                if (present) {
+                    value = op.apply(value, t);
+                } else {
+                    value = t;
+                    present = true;
+                }
+            }
+        }
+
+        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
+            @Override
+            public OptionalBox get() {
+                return new OptionalBox();
+            }
+        };
+
+        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
+            @Override
+            public void accept(OptionalBox a, T t) {
+                a.accept(t);
+            }
+        };
+
+        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
+            @Override
+            public OptionalBox apply(OptionalBox a, OptionalBox b) {
+                if (b.present) {
+                    a.accept(b.value);
+                }
+
+                return a;
+            }
+        };
+
+        final Function<OptionalBox, T> finisher = new Function<OptionalBox, T>() {
+            @Override
+            public T apply(OptionalBox a) {
+                if (a.present) {
+                    return a.value;
+                } else {
+                    throw exceptionSupplier.get();
+                }
             }
         };
 
