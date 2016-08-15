@@ -44,7 +44,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * @param <T>
  */
 final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<T>> {
-    private final Iterator<T> values;
+    private final Iterator<T> elements;
     private final Set<Runnable> closeHandlers;
 
     public IteratorStream(final Iterator<T> iterator) {
@@ -54,7 +54,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public IteratorStream(final Iterator<T> iterator, Collection<Runnable> closeHandlers) {
         Objects.requireNonNull(iterator);
 
-        this.values = iterator;
+        this.elements = iterator;
         this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
@@ -69,8 +69,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
         int cnt = 0;
         T e = null;
-        while (cnt < max && values.hasNext()) {
-            e = values.next();
+        while (cnt < max && elements.hasNext()) {
+            e = elements.next();
 
             if (predicate.test(e)) {
                 list.add(e);
@@ -92,8 +92,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
         int cnt = 0;
         T e = null;
-        while (cnt < max && values.hasNext()) {
-            e = values.next();
+        while (cnt < max && elements.hasNext()) {
+            e = elements.next();
 
             if (predicate.test(e)) {
                 list.add(e);
@@ -113,14 +113,14 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Stream<T> dropWhile(Predicate<? super T> predicate, int max) {
-        while (values.hasNext() && predicate.test(values.next())) {
+        while (elements.hasNext() && predicate.test(elements.next())) {
         }
 
         final ObjectList<Object> list = ObjectList.of(new Object[N.min(9, max)], 0);
         int cnt = 0;
 
-        while (cnt < max && values.hasNext()) {
-            list.add(values.next());
+        while (cnt < max && elements.hasNext()) {
+            list.add(elements.next());
             cnt++;
         }
 
@@ -128,22 +128,39 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
-    public <R> Stream<R> map(Function<? super T, ? extends R> mapper) {
-        final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
+    public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
+        //        final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
+        //
+        //        while (values.hasNext()) {
+        //            list.add(mapper.apply(values.next()));
+        //        }
+        //
+        //        return new ArrayStream<R>((R[]) list.trimToSize().array(), closeHandlers);
 
-        while (values.hasNext()) {
-            list.add(mapper.apply(values.next()));
-        }
+        return new IteratorStream<R>(new Iterator<R>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
 
-        return new ArrayStream<R>((R[]) list.trimToSize().array(), closeHandlers);
+            @Override
+            public R next() {
+                return mapper.apply(elements.next());
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        }, closeHandlers);
     }
 
     @Override
     public CharStream mapToChar(ToCharFunction<? super T> mapper) {
         final CharList list = CharList.of(new char[9], 0);
 
-        while (values.hasNext()) {
-            list.add(mapper.applyAsChar(values.next()));
+        while (elements.hasNext()) {
+            list.add(mapper.applyAsChar(elements.next()));
         }
 
         return new CharStreamImpl(list.trimToSize().array(), closeHandlers);
@@ -153,8 +170,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public ByteStream mapToByte(ToByteFunction<? super T> mapper) {
         final ByteList list = ByteList.of(new byte[9], 0);
 
-        while (values.hasNext()) {
-            list.add(mapper.applyAsByte(values.next()));
+        while (elements.hasNext()) {
+            list.add(mapper.applyAsByte(elements.next()));
         }
 
         return new ByteStreamImpl(list.trimToSize().array(), closeHandlers);
@@ -164,8 +181,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public ShortStream mapToShort(ToShortFunction<? super T> mapper) {
         final ShortList list = ShortList.of(new short[9], 0);
 
-        while (values.hasNext()) {
-            list.add(mapper.applyAsShort(values.next()));
+        while (elements.hasNext()) {
+            list.add(mapper.applyAsShort(elements.next()));
         }
 
         return new ShortStreamImpl(list.trimToSize().array(), closeHandlers);
@@ -175,8 +192,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public IntStream mapToInt(ToIntFunction<? super T> mapper) {
         final IntList list = IntList.of(new int[9], 0);
 
-        while (values.hasNext()) {
-            list.add(mapper.applyAsInt(values.next()));
+        while (elements.hasNext()) {
+            list.add(mapper.applyAsInt(elements.next()));
         }
 
         return new IntStreamImpl(list.trimToSize().array(), closeHandlers);
@@ -186,8 +203,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public LongStream mapToLong(ToLongFunction<? super T> mapper) {
         final LongList list = LongList.of(new long[9], 0);
 
-        while (values.hasNext()) {
-            list.add(mapper.applyAsLong(values.next()));
+        while (elements.hasNext()) {
+            list.add(mapper.applyAsLong(elements.next()));
         }
 
         return new LongStreamImpl(list.trimToSize().array(), closeHandlers);
@@ -197,8 +214,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public FloatStream mapToFloat(ToFloatFunction<? super T> mapper) {
         final FloatList list = FloatList.of(new float[9], 0);
 
-        while (values.hasNext()) {
-            list.add(mapper.applyAsFloat(values.next()));
+        while (elements.hasNext()) {
+            list.add(mapper.applyAsFloat(elements.next()));
         }
 
         return new FloatStreamImpl(list.trimToSize().array(), closeHandlers);
@@ -208,68 +225,142 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper) {
         final DoubleList list = DoubleList.of(new double[9], 0);
 
-        while (values.hasNext()) {
-            list.add(mapper.applyAsDouble(values.next()));
+        while (elements.hasNext()) {
+            list.add(mapper.applyAsDouble(elements.next()));
         }
 
         return new DoubleStreamImpl(list.trimToSize().array(), closeHandlers);
     }
 
     @Override
-    public <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper) {
-        final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
+    public <R> Stream<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
+        //        final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
+        //
+        //        while (values.hasNext()) {
+        //            final Iterator<? extends R> it = mapper.apply(values.next()).iterator();
+        //
+        //            while (it.hasNext()) {
+        //                list.add(it.next());
+        //            }
+        //        }
+        //
+        //        return new ArrayStream<R>((R[]) list.trimToSize().array(), closeHandlers);
 
-        while (values.hasNext()) {
-            final Iterator<? extends R> it = mapper.apply(values.next()).iterator();
+        return new IteratorStream<R>(new Iterator<R>() {
+            private Iterator<? extends R> cur = null;
 
-            while (it.hasNext()) {
-                list.add(it.next());
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
+                    cur = mapper.apply(elements.next()).iterator();
+                }
+
+                return cur != null && cur.hasNext();
             }
-        }
 
-        return new ArrayStream<R>((R[]) list.trimToSize().array(), closeHandlers);
+            @Override
+            public R next() {
+                return cur.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+        }, closeHandlers);
     }
 
     @Override
-    public <R> Stream<R> flatMap2(Function<? super T, ? extends R[]> mapper) {
-        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+    public <R> Stream<R> flatMap2(final Function<? super T, ? extends R[]> mapper) {
+        //        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        //
+        //        int lengthOfAll = 0;
+        //        while (values.hasNext()) {
+        //            final Object[] tmp = mapper.apply(values.next());
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final Object[] arrayOfAll = new Object[lengthOfAll];
+        //        int from = 0;
+        //        for (Object[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayStream<R>((R[]) arrayOfAll, closeHandlers);
 
-        int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final Object[] tmp = mapper.apply(values.next());
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorStream<R>(new Iterator<R>() {
+            private R[] cur = null;
+            private int curIndex = 0;
 
-        final Object[] arrayOfAll = new Object[lengthOfAll];
-        int from = 0;
-        for (Object[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || curIndex >= cur.length) && elements.hasNext()) {
+                    cur = mapper.apply(elements.next());
+                    curIndex = 0;
+                }
 
-        return new ArrayStream<R>((R[]) arrayOfAll, closeHandlers);
+                return cur != null && curIndex >= cur.length;
+            }
+
+            @Override
+            public R next() {
+                return cur[curIndex++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+        }, closeHandlers);
+
     }
 
     @Override
-    public <R> Stream<R> flatMap3(Function<? super T, ? extends Collection<? extends R>> mapper) {
-        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+    public <R> Stream<R> flatMap3(final Function<? super T, ? extends Collection<? extends R>> mapper) {
+        //        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        //
+        //        int lengthOfAll = 0;
+        //        while (values.hasNext()) {
+        //            final Object[] tmp = mapper.apply(values.next()).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final Object[] arrayOfAll = new Object[lengthOfAll];
+        //        int from = 0;
+        //        for (Object[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayStream<R>((R[]) arrayOfAll, closeHandlers);
 
-        int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final Object[] tmp = mapper.apply(values.next()).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorStream<R>(new Iterator<R>() {
+            Iterator<? extends R> cur = null;
 
-        final Object[] arrayOfAll = new Object[lengthOfAll];
-        int from = 0;
-        for (Object[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
+                    cur = mapper.apply(elements.next()).iterator();
+                }
 
-        return new ArrayStream<R>((R[]) arrayOfAll, closeHandlers);
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public R next() {
+                return cur.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -277,8 +368,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final List<char[]> listOfArray = new ArrayList<char[]>();
 
         int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final char[] tmp = mapper.apply(values.next()).toArray();
+        while (elements.hasNext()) {
+            final char[] tmp = mapper.apply(elements.next()).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -298,8 +389,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final List<byte[]> listOfArray = new ArrayList<byte[]>();
 
         int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final byte[] tmp = mapper.apply(values.next()).toArray();
+        while (elements.hasNext()) {
+            final byte[] tmp = mapper.apply(elements.next()).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -319,8 +410,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final List<short[]> listOfArray = new ArrayList<short[]>();
 
         int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final short[] tmp = mapper.apply(values.next()).toArray();
+        while (elements.hasNext()) {
+            final short[] tmp = mapper.apply(elements.next()).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -340,8 +431,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final List<int[]> listOfArray = new ArrayList<int[]>();
 
         int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final int[] tmp = mapper.apply(values.next()).toArray();
+        while (elements.hasNext()) {
+            final int[] tmp = mapper.apply(elements.next()).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -361,8 +452,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final List<long[]> listOfArray = new ArrayList<long[]>();
 
         int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final long[] tmp = mapper.apply(values.next()).toArray();
+        while (elements.hasNext()) {
+            final long[] tmp = mapper.apply(elements.next()).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -382,8 +473,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final List<float[]> listOfArray = new ArrayList<float[]>();
 
         int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final float[] tmp = mapper.apply(values.next()).toArray();
+        while (elements.hasNext()) {
+            final float[] tmp = mapper.apply(elements.next()).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -403,8 +494,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final List<double[]> listOfArray = new ArrayList<double[]>();
 
         int lengthOfAll = 0;
-        while (values.hasNext()) {
-            final double[] tmp = mapper.apply(values.next()).toArray();
+        while (elements.hasNext()) {
+            final double[] tmp = mapper.apply(elements.next()).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -483,8 +574,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public Stream<T> distinct() {
         final Set<T> set = new LinkedHashSet<T>();
 
-        while (values.hasNext()) {
-            set.add(values.next());
+        while (elements.hasNext()) {
+            set.add(elements.next());
         }
 
         return new ArrayStream<T>((T[]) set.toArray(), closeHandlers);
@@ -513,8 +604,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
 
         T e = null;
-        while (values.hasNext()) {
-            e = values.next();
+        while (elements.hasNext()) {
+            e = elements.next();
             list.add(e);
             action.accept(e);
         }
@@ -527,8 +618,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
         long cnt = 0;
 
-        while (values.hasNext() && cnt < maxSize) {
-            list.add(values.next());
+        while (elements.hasNext() && cnt < maxSize) {
+            list.add(elements.next());
             cnt++;
         }
 
@@ -540,13 +631,13 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
 
         long cnt = 0;
-        while (values.hasNext() && cnt < n) {
-            values.next();
+        while (elements.hasNext() && cnt < n) {
+            elements.next();
             cnt++;
         }
 
-        while (values.hasNext()) {
-            list.add(values.next());
+        while (elements.hasNext()) {
+            list.add(elements.next());
         }
 
         return new ArrayStream<T>((T[]) list.trimToSize().array(), closeHandlers);
@@ -554,8 +645,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public void forEach(Consumer<? super T> action) {
-        while (values.hasNext()) {
-            action.accept(values.next());
+        while (elements.hasNext()) {
+            action.accept(elements.next());
         }
     }
 
@@ -599,8 +690,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public <A> ObjectList<A> toObjectList(Class<A> cls) {
         final ObjectList<A> list = ObjectList.of((A[]) N.newArray(cls, 9), 0);
 
-        while (values.hasNext()) {
-            list.add((A) values.next());
+        while (elements.hasNext()) {
+            list.add((A) elements.next());
         }
 
         return list;
@@ -610,8 +701,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public T reduce(T identity, BinaryOperator<T> accumulator) {
         T result = identity;
 
-        while (values.hasNext()) {
-            result = accumulator.apply(result, values.next());
+        while (elements.hasNext()) {
+            result = accumulator.apply(result, elements.next());
         }
 
         return result;
@@ -619,14 +710,14 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Optional<T> reduce(BinaryOperator<T> accumulator) {
-        if (values.hasNext() == false) {
+        if (elements.hasNext() == false) {
             Optional.empty();
         }
 
-        T result = values.next();
+        T result = elements.next();
 
-        while (values.hasNext()) {
-            result = accumulator.apply(result, values.next());
+        while (elements.hasNext()) {
+            result = accumulator.apply(result, elements.next());
         }
 
         return Optional.of(result);
@@ -636,8 +727,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner) {
         U result = identity;
 
-        while (values.hasNext()) {
-            result = accumulator.apply(result, values.next());
+        while (elements.hasNext()) {
+            result = accumulator.apply(result, elements.next());
         }
 
         return result;
@@ -647,8 +738,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
         final R result = supplier.get();
 
-        while (values.hasNext()) {
-            accumulator.accept(result, values.next());
+        while (elements.hasNext()) {
+            accumulator.accept(result, elements.next());
         }
 
         return result;
@@ -659,8 +750,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         final A container = collector.supplier().get();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
 
-        while (values.hasNext()) {
-            accumulator.accept(container, values.next());
+        while (elements.hasNext()) {
+            accumulator.accept(container, elements.next());
         }
 
         return collector.finisher().apply(container);
@@ -668,15 +759,15 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Optional<T> min(Comparator<? super T> comparator) {
-        if (values.hasNext() == false) {
+        if (elements.hasNext() == false) {
             return Optional.empty();
         }
 
-        T candidate = values.next();
+        T candidate = elements.next();
         T next = null;
 
-        while (values.hasNext()) {
-            next = values.next();
+        while (elements.hasNext()) {
+            next = elements.next();
             if (comparator.compare(candidate, next) > 0) {
                 candidate = next;
             }
@@ -687,15 +778,15 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Optional<T> max(Comparator<? super T> comparator) {
-        if (values.hasNext() == false) {
+        if (elements.hasNext() == false) {
             return Optional.empty();
         }
 
-        T candidate = values.next();
+        T candidate = elements.next();
         T next = null;
 
-        while (values.hasNext()) {
-            next = values.next();
+        while (elements.hasNext()) {
+            next = elements.next();
             if (comparator.compare(candidate, next) < 0) {
                 candidate = next;
             }
@@ -708,8 +799,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     public long count() {
         long result = 0;
 
-        while (values.hasNext()) {
-            values.next();
+        while (elements.hasNext()) {
+            elements.next();
             result++;
         }
 
@@ -718,8 +809,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public boolean anyMatch(Predicate<? super T> predicate) {
-        while (values.hasNext()) {
-            if (predicate.test(values.next())) {
+        while (elements.hasNext()) {
+            if (predicate.test(elements.next())) {
                 return true;
             }
         }
@@ -729,8 +820,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public boolean allMatch(Predicate<? super T> predicate) {
-        while (values.hasNext()) {
-            if (predicate.test(values.next()) == false) {
+        while (elements.hasNext()) {
+            if (predicate.test(elements.next()) == false) {
                 return false;
             }
         }
@@ -740,8 +831,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public boolean noneMatch(Predicate<? super T> predicate) {
-        while (values.hasNext()) {
-            if (predicate.test(values.next())) {
+        while (elements.hasNext()) {
+            if (predicate.test(elements.next())) {
                 return false;
             }
         }
@@ -751,17 +842,17 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Optional<T> findFirst() {
-        return values.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(values.next());
+        return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
     }
 
     @Override
     public Optional<T> findAny() {
-        return values.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(values.next());
+        return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
     }
 
     @Override
     public Iterator<T> iterator() {
-        return values;
+        return elements;
     }
 
     @Override
@@ -774,7 +865,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
         closeHandlerList.add(closeHandler);
 
-        return new IteratorStream<T>(values, closeHandlerList);
+        return new IteratorStream<T>(elements, closeHandlerList);
     }
 
     @Override

@@ -27,7 +27,7 @@ import com.landawn.abacus.util.function.Supplier;
  *
  */
 final class ShortStreamImpl extends ShortStream {
-    private final short[] values;
+    private final short[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
@@ -58,7 +58,7 @@ final class ShortStreamImpl extends ShortStream {
             throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
         }
 
-        this.values = values;
+        this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
@@ -66,27 +66,27 @@ final class ShortStreamImpl extends ShortStream {
     }
 
     @Override
-    public ShortStream filter(ShortPredicate predicate) {
+    public ShortStream filter(final ShortPredicate predicate) {
         return filter(predicate, Integer.MAX_VALUE);
     }
 
     @Override
     public ShortStream filter(final ShortPredicate predicate, final int max) {
-        return new ShortStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+        return new ShortStreamImpl(N.filter(elements, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override
-    public ShortStream takeWhile(ShortPredicate predicate) {
+    public ShortStream takeWhile(final ShortPredicate predicate) {
         return takeWhile(predicate, Integer.MAX_VALUE);
     }
 
     @Override
-    public ShortStream takeWhile(ShortPredicate predicate, int max) {
+    public ShortStream takeWhile(final ShortPredicate predicate, final int max) {
         final ShortList list = ShortList.of(new short[N.min(9, max, (toIndex - fromIndex))], 0);
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
+            if (predicate.test(elements[i])) {
+                list.add(elements[i]);
                 cnt++;
             } else {
                 break;
@@ -97,14 +97,14 @@ final class ShortStreamImpl extends ShortStream {
     }
 
     @Override
-    public ShortStream dropWhile(ShortPredicate predicate) {
+    public ShortStream dropWhile(final ShortPredicate predicate) {
         return dropWhile(predicate, Integer.MAX_VALUE);
     }
 
     @Override
-    public ShortStream dropWhile(ShortPredicate predicate, int max) {
+    public ShortStream dropWhile(final ShortPredicate predicate, final int max) {
         int index = fromIndex;
-        while (index < toIndex && predicate.test(values[index])) {
+        while (index < toIndex && predicate.test(elements[index])) {
             index++;
         }
 
@@ -112,7 +112,7 @@ final class ShortStreamImpl extends ShortStream {
         int cnt = 0;
 
         while (index < toIndex && cnt < max) {
-            list.add(values[index]);
+            list.add(elements[index]);
             index++;
             cnt++;
         }
@@ -125,7 +125,7 @@ final class ShortStreamImpl extends ShortStream {
         final short[] a = new short[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsShort(values[i]);
+            a[j] = mapper.applyAsShort(elements[i]);
         }
 
         return new ShortStreamImpl(a, closeHandlers);
@@ -136,21 +136,40 @@ final class ShortStreamImpl extends ShortStream {
         final int[] a = new int[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsInt(values[i]);
+            a[j] = mapper.applyAsInt(elements[i]);
         }
 
         return new IntStreamImpl(a, closeHandlers);
     }
 
     @Override
-    public <U> Stream<U> mapToObj(ShortFunction<? extends U> mapper) {
-        final Object[] a = new Object[toIndex - fromIndex];
+    public <U> Stream<U> mapToObj(final ShortFunction<? extends U> mapper) {
+        //        final Object[] a = new Object[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.apply(elements[i]);
+        //        }
+        //
+        //        return new ArrayStream<U>((U[]) a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.apply(values[i]);
-        }
+        return new IteratorStream<U>(new Iterator<U>() {
+            int cursor = fromIndex;
 
-        return new ArrayStream<U>((U[]) a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public U next() {
+                return mapper.apply(elements[cursor++]);
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -159,7 +178,7 @@ final class ShortStreamImpl extends ShortStream {
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final short[] tmp = mapper.apply(values[i]).toArray();
+            final short[] tmp = mapper.apply(elements[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -180,7 +199,7 @@ final class ShortStreamImpl extends ShortStream {
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final int[] tmp = mapper.apply(values[i]).toArray();
+            final int[] tmp = mapper.apply(elements[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -196,39 +215,64 @@ final class ShortStreamImpl extends ShortStream {
     }
 
     @Override
-    public <T> Stream<T> flatMapToObj(ShortFunction<? extends Stream<T>> mapper) {
-        final List<Object[]> listOfArray = new ArrayList<Object[]>();
-        int lengthOfAll = 0;
+    public <T> Stream<T> flatMapToObj(final ShortFunction<? extends Stream<T>> mapper) {
+        //        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        //        int lengthOfAll = 0;
+        //
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final Object[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final Object[] arrayOfAll = new Object[lengthOfAll];
+        //        int from = 0;
+        //
+        //        for (Object[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            final Object[] tmp = mapper.apply(values[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorStream<T>(new Iterator<T>() {
+            private int cursor = fromIndex;
+            private Iterator<? extends T> cur = null;
 
-        final Object[] arrayOfAll = new Object[lengthOfAll];
-        int from = 0;
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).iterator();
+                }
 
-        for (Object[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+                return cur != null && cur.hasNext();
+            }
 
-        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
+            @Override
+            public T next() {
+                return cur.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+        }, closeHandlers);
     }
 
     @Override
     public ShortStream distinct() {
-        return new ShortStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), sorted, closeHandlers);
+        return new ShortStreamImpl(N.removeDuplicates(elements, fromIndex, toIndex, sorted), sorted, closeHandlers);
     }
 
     @Override
     public ShortStream sorted() {
         if (sorted) {
-            return new ShortStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+            return new ShortStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
         }
 
-        final short[] a = N.copyOfRange(values, fromIndex, toIndex);
+        final short[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
         return new ShortStreamImpl(a, true, closeHandlers);
     }
@@ -236,7 +280,7 @@ final class ShortStreamImpl extends ShortStream {
     @Override
     public ShortStream peek(ShortConsumer action) {
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(values[i]);
+            action.accept(elements[i]);
         }
 
         // return new ShortStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
@@ -246,9 +290,9 @@ final class ShortStreamImpl extends ShortStream {
     @Override
     public ShortStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new ShortStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+            return new ShortStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new ShortStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+            return new ShortStreamImpl(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
         }
     }
 
@@ -257,25 +301,25 @@ final class ShortStreamImpl extends ShortStream {
         if (n >= toIndex - fromIndex) {
             return new ShortStreamImpl(N.EMPTY_SHORT_ARRAY, sorted, closeHandlers);
         } else {
-            return new ShortStreamImpl(values, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return new ShortStreamImpl(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
     @Override
     public void forEach(ShortConsumer action) {
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(values[i]);
+            action.accept(elements[i]);
         }
     }
 
     @Override
     public short[] toArray() {
-        return N.copyOfRange(values, fromIndex, toIndex);
+        return N.copyOfRange(elements, fromIndex, toIndex);
     }
 
     @Override
     public ShortList toShortList() {
-        return ShortList.of(N.copyOfRange(values, fromIndex, toIndex));
+        return ShortList.of(N.copyOfRange(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -283,7 +327,7 @@ final class ShortStreamImpl extends ShortStream {
         short result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsShort(result, values[i]);
+            result = op.applyAsShort(result, elements[i]);
         }
 
         return result;
@@ -295,10 +339,10 @@ final class ShortStreamImpl extends ShortStream {
             return OptionalShort.empty();
         }
 
-        short result = values[fromIndex];
+        short result = elements[fromIndex];
 
         for (int i = fromIndex + 1; i < toIndex; i++) {
-            result = op.applyAsShort(result, values[i]);
+            result = op.applyAsShort(result, elements[i]);
         }
 
         return OptionalShort.of(result);
@@ -309,7 +353,7 @@ final class ShortStreamImpl extends ShortStream {
         final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            accumulator.accept(result, values[i]);
+            accumulator.accept(result, elements[i]);
         }
 
         return result;
@@ -317,7 +361,7 @@ final class ShortStreamImpl extends ShortStream {
 
     @Override
     public long sum() {
-        return N.sum(values, fromIndex, toIndex).longValue();
+        return N.sum(elements, fromIndex, toIndex).longValue();
     }
 
     @Override
@@ -326,7 +370,7 @@ final class ShortStreamImpl extends ShortStream {
             return OptionalShort.empty();
         }
 
-        return OptionalShort.of(N.min(values, fromIndex, toIndex));
+        return OptionalShort.of(N.min(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -335,7 +379,7 @@ final class ShortStreamImpl extends ShortStream {
             return OptionalShort.empty();
         }
 
-        return OptionalShort.of(N.max(values, fromIndex, toIndex));
+        return OptionalShort.of(N.max(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -349,13 +393,13 @@ final class ShortStreamImpl extends ShortStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.avg(values, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.avg(elements, fromIndex, toIndex).doubleValue());
     }
 
     @Override
-    public boolean anyMatch(ShortPredicate predicate) {
+    public boolean anyMatch(final ShortPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
+            if (predicate.test(elements[i])) {
                 return true;
             }
         }
@@ -364,9 +408,9 @@ final class ShortStreamImpl extends ShortStream {
     }
 
     @Override
-    public boolean allMatch(ShortPredicate predicate) {
+    public boolean allMatch(final ShortPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i]) == false) {
+            if (predicate.test(elements[i]) == false) {
                 return false;
             }
         }
@@ -375,9 +419,9 @@ final class ShortStreamImpl extends ShortStream {
     }
 
     @Override
-    public boolean noneMatch(ShortPredicate predicate) {
+    public boolean noneMatch(final ShortPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
+            if (predicate.test(elements[i])) {
                 return false;
             }
         }
@@ -387,12 +431,12 @@ final class ShortStreamImpl extends ShortStream {
 
     @Override
     public OptionalShort findFirst() {
-        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(values[fromIndex]);
+        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
     }
 
     @Override
     public OptionalShort findAny() {
-        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(values[fromIndex]);
+        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
     }
 
     @Override
@@ -400,7 +444,7 @@ final class ShortStreamImpl extends ShortStream {
         final int[] a = new int[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = values[i];
+            a[j] = elements[i];
         }
 
         return new IntStreamImpl(a, sorted, closeHandlers);
@@ -408,12 +452,12 @@ final class ShortStreamImpl extends ShortStream {
 
     @Override
     public Stream<Short> boxed() {
-        return new ArrayStream<Short>(Array.box(values, fromIndex, toIndex), sorted, null, closeHandlers);
+        return new ArrayStream<Short>(Array.box(elements, fromIndex, toIndex), sorted, null, closeHandlers);
     }
 
     @Override
     public Iterator<Short> iterator() {
-        return new ShortIterator(values, fromIndex, toIndex);
+        return new ShortIterator(elements, fromIndex, toIndex);
     }
 
     @Override
@@ -426,7 +470,7 @@ final class ShortStreamImpl extends ShortStream {
 
         closeHandlerList.add(closeHandler);
 
-        return new ShortStreamImpl(values, fromIndex, toIndex, closeHandlerList);
+        return new ShortStreamImpl(elements, fromIndex, toIndex, closeHandlerList);
     }
 
     @Override

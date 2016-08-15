@@ -26,7 +26,7 @@ import com.landawn.abacus.util.function.Supplier;
  *
  */
 final class CharStreamImpl extends CharStream {
-    private final char[] values;
+    private final char[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
@@ -57,7 +57,7 @@ final class CharStreamImpl extends CharStream {
             throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
         }
 
-        this.values = values;
+        this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
@@ -71,7 +71,7 @@ final class CharStreamImpl extends CharStream {
 
     @Override
     public CharStream filter(final CharPredicate predicate, final int max) {
-        return new CharStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+        return new CharStreamImpl(N.filter(elements, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override
@@ -84,8 +84,8 @@ final class CharStreamImpl extends CharStream {
         final CharList list = CharList.of(new char[N.min(9, max, (toIndex - fromIndex))], 0);
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
+            if (predicate.test(elements[i])) {
+                list.add(elements[i]);
                 cnt++;
             } else {
                 break;
@@ -103,7 +103,7 @@ final class CharStreamImpl extends CharStream {
     @Override
     public CharStream dropWhile(CharPredicate predicate, int max) {
         int index = fromIndex;
-        while (index < toIndex && predicate.test(values[index])) {
+        while (index < toIndex && predicate.test(elements[index])) {
             index++;
         }
 
@@ -111,7 +111,7 @@ final class CharStreamImpl extends CharStream {
         int cnt = 0;
 
         while (index < toIndex && cnt < max) {
-            list.add(values[index]);
+            list.add(elements[index]);
             index++;
             cnt++;
         }
@@ -124,7 +124,7 @@ final class CharStreamImpl extends CharStream {
         final char[] a = new char[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsChar(values[i]);
+            a[j] = mapper.applyAsChar(elements[i]);
         }
 
         return new CharStreamImpl(a, closeHandlers);
@@ -135,21 +135,40 @@ final class CharStreamImpl extends CharStream {
         final int[] a = new int[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsInt(values[i]);
+            a[j] = mapper.applyAsInt(elements[i]);
         }
 
         return new IntStreamImpl(a, closeHandlers);
     }
 
     @Override
-    public <U> Stream<U> mapToObj(CharFunction<? extends U> mapper) {
-        final Object[] a = new Object[toIndex - fromIndex];
+    public <U> Stream<U> mapToObj(final CharFunction<? extends U> mapper) {
+        //        final Object[] a = new Object[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.apply(elements[i]);
+        //        }
+        //
+        //        return new ArrayStream<U>((U[]) a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.apply(values[i]);
-        }
+        return new IteratorStream<U>(new Iterator<U>() {
+            int cursor = fromIndex;
 
-        return new ArrayStream<U>((U[]) a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public U next() {
+                return mapper.apply(elements[cursor++]);
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -158,7 +177,7 @@ final class CharStreamImpl extends CharStream {
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final char[] tmp = mapper.apply(values[i]).toArray();
+            final char[] tmp = mapper.apply(elements[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -179,7 +198,7 @@ final class CharStreamImpl extends CharStream {
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final int[] tmp = mapper.apply(values[i]).toArray();
+            final int[] tmp = mapper.apply(elements[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -195,39 +214,64 @@ final class CharStreamImpl extends CharStream {
     }
 
     @Override
-    public <T> Stream<T> flatMapToObj(CharFunction<? extends Stream<T>> mapper) {
-        final List<Object[]> listOfArray = new ArrayList<Object[]>();
-        int lengthOfAll = 0;
+    public <T> Stream<T> flatMapToObj(final CharFunction<? extends Stream<T>> mapper) {
+        //        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        //        int lengthOfAll = 0;
+        //
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final Object[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final Object[] arrayOfAll = new Object[lengthOfAll];
+        //        int from = 0;
+        //
+        //        for (Object[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            final Object[] tmp = mapper.apply(values[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorStream<T>(new Iterator<T>() {
+            private int cursor = fromIndex;
+            private Iterator<? extends T> cur = null;
 
-        final Object[] arrayOfAll = new Object[lengthOfAll];
-        int from = 0;
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).iterator();
+                }
 
-        for (Object[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+                return cur != null && cur.hasNext();
+            }
 
-        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
+            @Override
+            public T next() {
+                return cur.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+        }, closeHandlers);
     }
 
     @Override
     public CharStream distinct() {
-        return new CharStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), sorted, closeHandlers);
+        return new CharStreamImpl(N.removeDuplicates(elements, fromIndex, toIndex, sorted), sorted, closeHandlers);
     }
 
     @Override
     public CharStream sorted() {
         if (sorted) {
-            return new CharStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+            return new CharStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
         }
 
-        final char[] a = N.copyOfRange(values, fromIndex, toIndex);
+        final char[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
         return new CharStreamImpl(a, true, closeHandlers);
     }
@@ -235,7 +279,7 @@ final class CharStreamImpl extends CharStream {
     @Override
     public CharStream peek(CharConsumer action) {
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(values[i]);
+            action.accept(elements[i]);
         }
 
         // return new CharStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
@@ -245,9 +289,9 @@ final class CharStreamImpl extends CharStream {
     @Override
     public CharStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new CharStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+            return new CharStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new CharStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+            return new CharStreamImpl(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
         }
     }
 
@@ -256,25 +300,25 @@ final class CharStreamImpl extends CharStream {
         if (n >= toIndex - fromIndex) {
             return new CharStreamImpl(N.EMPTY_CHAR_ARRAY, sorted, closeHandlers);
         } else {
-            return new CharStreamImpl(values, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return new CharStreamImpl(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
     @Override
     public void forEach(CharConsumer action) {
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(values[i]);
+            action.accept(elements[i]);
         }
     }
 
     @Override
     public char[] toArray() {
-        return N.copyOfRange(values, fromIndex, toIndex);
+        return N.copyOfRange(elements, fromIndex, toIndex);
     }
 
     @Override
     public CharList toCharList() {
-        return CharList.of(N.copyOfRange(values, fromIndex, toIndex));
+        return CharList.of(N.copyOfRange(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -282,7 +326,7 @@ final class CharStreamImpl extends CharStream {
         char result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsChar(result, values[i]);
+            result = op.applyAsChar(result, elements[i]);
         }
 
         return result;
@@ -294,10 +338,10 @@ final class CharStreamImpl extends CharStream {
             return OptionalChar.empty();
         }
 
-        char result = values[fromIndex];
+        char result = elements[fromIndex];
 
         for (int i = fromIndex + 1; i < toIndex; i++) {
-            result = op.applyAsChar(result, values[i]);
+            result = op.applyAsChar(result, elements[i]);
         }
 
         return OptionalChar.of(result);
@@ -308,7 +352,7 @@ final class CharStreamImpl extends CharStream {
         final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            accumulator.accept(result, values[i]);
+            accumulator.accept(result, elements[i]);
         }
 
         return result;
@@ -320,7 +364,7 @@ final class CharStreamImpl extends CharStream {
             return OptionalChar.empty();
         }
 
-        return OptionalChar.of(N.min(values, fromIndex, toIndex));
+        return OptionalChar.of(N.min(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -329,7 +373,7 @@ final class CharStreamImpl extends CharStream {
             return OptionalChar.empty();
         }
 
-        return OptionalChar.of(N.max(values, fromIndex, toIndex));
+        return OptionalChar.of(N.max(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -340,7 +384,7 @@ final class CharStreamImpl extends CharStream {
     @Override
     public boolean anyMatch(CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
+            if (predicate.test(elements[i])) {
                 return true;
             }
         }
@@ -351,7 +395,7 @@ final class CharStreamImpl extends CharStream {
     @Override
     public boolean allMatch(CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i]) == false) {
+            if (predicate.test(elements[i]) == false) {
                 return false;
             }
         }
@@ -362,7 +406,7 @@ final class CharStreamImpl extends CharStream {
     @Override
     public boolean noneMatch(CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
+            if (predicate.test(elements[i])) {
                 return false;
             }
         }
@@ -372,12 +416,12 @@ final class CharStreamImpl extends CharStream {
 
     @Override
     public OptionalChar findFirst() {
-        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(values[fromIndex]);
+        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
     }
 
     @Override
     public OptionalChar findAny() {
-        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(values[fromIndex]);
+        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
     }
 
     @Override
@@ -385,7 +429,7 @@ final class CharStreamImpl extends CharStream {
         final int[] a = new int[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = values[i];
+            a[j] = elements[i];
         }
 
         return new IntStreamImpl(a, sorted, closeHandlers);
@@ -393,12 +437,12 @@ final class CharStreamImpl extends CharStream {
 
     @Override
     public Stream<Character> boxed() {
-        return new ArrayStream<Character>(Array.box(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Character>(Array.box(elements, fromIndex, toIndex), closeHandlers);
     }
 
     @Override
     public Iterator<Character> iterator() {
-        return new CharacterIterator(values, fromIndex, toIndex);
+        return new CharacterIterator(elements, fromIndex, toIndex);
     }
 
     @Override
@@ -411,7 +455,7 @@ final class CharStreamImpl extends CharStream {
 
         closeHandlerList.add(closeHandler);
 
-        return new CharStreamImpl(values, fromIndex, toIndex, closeHandlerList);
+        return new CharStreamImpl(elements, fromIndex, toIndex, closeHandlerList);
     }
 
     @Override

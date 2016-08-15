@@ -28,7 +28,7 @@ import com.landawn.abacus.util.function.Supplier;
  *
  */
 final class DoubleStreamImpl extends DoubleStream {
-    private final double[] values;
+    private final double[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
@@ -59,7 +59,7 @@ final class DoubleStreamImpl extends DoubleStream {
             throw new IllegalArgumentException("fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ") is invalid");
         }
 
-        this.values = values;
+        this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
@@ -73,7 +73,7 @@ final class DoubleStreamImpl extends DoubleStream {
 
     @Override
     public DoubleStream filter(final DoublePredicate predicate, final int max) {
-        return new DoubleStreamImpl(N.filter(values, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+        return new DoubleStreamImpl(N.filter(elements, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
     }
 
     @Override
@@ -86,8 +86,8 @@ final class DoubleStreamImpl extends DoubleStream {
         final DoubleList list = DoubleList.of(new double[N.min(9, max, (toIndex - fromIndex))], 0);
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
-            if (predicate.test(values[i])) {
-                list.add(values[i]);
+            if (predicate.test(elements[i])) {
+                list.add(elements[i]);
                 cnt++;
             } else {
                 break;
@@ -105,7 +105,7 @@ final class DoubleStreamImpl extends DoubleStream {
     @Override
     public DoubleStream dropWhile(DoublePredicate predicate, int max) {
         int index = fromIndex;
-        while (index < toIndex && predicate.test(values[index])) {
+        while (index < toIndex && predicate.test(elements[index])) {
             index++;
         }
 
@@ -113,7 +113,7 @@ final class DoubleStreamImpl extends DoubleStream {
         int cnt = 0;
 
         while (index < toIndex && cnt < max) {
-            list.add(values[index]);
+            list.add(elements[index]);
             index++;
             cnt++;
         }
@@ -126,7 +126,7 @@ final class DoubleStreamImpl extends DoubleStream {
         final double[] a = new double[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsDouble(values[i]);
+            a[j] = mapper.applyAsDouble(elements[i]);
         }
 
         return new DoubleStreamImpl(a, closeHandlers);
@@ -137,7 +137,7 @@ final class DoubleStreamImpl extends DoubleStream {
         final int[] a = new int[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsInt(values[i]);
+            a[j] = mapper.applyAsInt(elements[i]);
         }
 
         return new IntStreamImpl(a, closeHandlers);
@@ -148,7 +148,7 @@ final class DoubleStreamImpl extends DoubleStream {
         final long[] a = new long[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsLong(values[i]);
+            a[j] = mapper.applyAsLong(elements[i]);
         }
 
         return new LongStreamImpl(a, closeHandlers);
@@ -159,21 +159,40 @@ final class DoubleStreamImpl extends DoubleStream {
         final float[] a = new float[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsFloat(values[i]);
+            a[j] = mapper.applyAsFloat(elements[i]);
         }
 
         return new FloatStreamImpl(a, closeHandlers);
     }
 
     @Override
-    public <U> Stream<U> mapToObj(DoubleFunction<? extends U> mapper) {
-        final Object[] a = new Object[toIndex - fromIndex];
+    public <U> Stream<U> mapToObj(final DoubleFunction<? extends U> mapper) {
+        //        final Object[] a = new Object[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.apply(elements[i]);
+        //        }
+        //
+        //        return new ArrayStream<U>((U[]) a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.apply(values[i]);
-        }
+        return new IteratorStream<U>(new Iterator<U>() {
+            int cursor = fromIndex;
 
-        return new ArrayStream<U>((U[]) a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public U next() {
+                return mapper.apply(elements[cursor++]);
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -182,7 +201,7 @@ final class DoubleStreamImpl extends DoubleStream {
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final double[] tmp = mapper.apply(values[i]).toArray();
+            final double[] tmp = mapper.apply(elements[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -203,7 +222,7 @@ final class DoubleStreamImpl extends DoubleStream {
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final int[] tmp = mapper.apply(values[i]).toArray();
+            final int[] tmp = mapper.apply(elements[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -224,7 +243,7 @@ final class DoubleStreamImpl extends DoubleStream {
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final long[] tmp = mapper.apply(values[i]).toArray();
+            final long[] tmp = mapper.apply(elements[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -245,7 +264,7 @@ final class DoubleStreamImpl extends DoubleStream {
 
         int lengthOfAll = 0;
         for (int i = fromIndex; i < toIndex; i++) {
-            final float[] tmp = mapper.apply(values[i]).toArray();
+            final float[] tmp = mapper.apply(elements[i]).toArray();
             lengthOfAll += tmp.length;
             listOfArray.add(tmp);
         }
@@ -261,39 +280,64 @@ final class DoubleStreamImpl extends DoubleStream {
     }
 
     @Override
-    public <T> Stream<T> flatMapToObj(DoubleFunction<? extends Stream<T>> mapper) {
-        final List<Object[]> listOfArray = new ArrayList<Object[]>();
-        int lengthOfAll = 0;
+    public <T> Stream<T> flatMapToObj(final DoubleFunction<? extends Stream<T>> mapper) {
+        //        final List<Object[]> listOfArray = new ArrayList<Object[]>();
+        //        int lengthOfAll = 0;
+        //
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final Object[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final Object[] arrayOfAll = new Object[lengthOfAll];
+        //        int from = 0;
+        //
+        //        for (Object[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            final Object[] tmp = mapper.apply(values[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorStream<T>(new Iterator<T>() {
+            private int cursor = fromIndex;
+            private Iterator<? extends T> cur = null;
 
-        final Object[] arrayOfAll = new Object[lengthOfAll];
-        int from = 0;
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).iterator();
+                }
 
-        for (Object[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+                return cur != null && cur.hasNext();
+            }
 
-        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
+            @Override
+            public T next() {
+                return cur.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+        }, closeHandlers);
     }
 
     @Override
     public DoubleStream distinct() {
-        return new DoubleStreamImpl(N.removeDuplicates(values, fromIndex, toIndex, sorted), sorted, closeHandlers);
+        return new DoubleStreamImpl(N.removeDuplicates(elements, fromIndex, toIndex, sorted), sorted, closeHandlers);
     }
 
     @Override
     public DoubleStream sorted() {
         if (sorted) {
-            return new DoubleStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+            return new DoubleStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
         }
 
-        final double[] a = N.copyOfRange(values, fromIndex, toIndex);
+        final double[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
         return new DoubleStreamImpl(a, true, closeHandlers);
     }
@@ -301,7 +345,7 @@ final class DoubleStreamImpl extends DoubleStream {
     @Override
     public DoubleStream peek(DoubleConsumer action) {
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(values[i]);
+            action.accept(elements[i]);
         }
 
         // return new DoubleStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
@@ -311,9 +355,9 @@ final class DoubleStreamImpl extends DoubleStream {
     @Override
     public DoubleStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new DoubleStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
+            return new DoubleStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new DoubleStreamImpl(values, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+            return new DoubleStreamImpl(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
         }
     }
 
@@ -322,25 +366,25 @@ final class DoubleStreamImpl extends DoubleStream {
         if (n >= toIndex - fromIndex) {
             return new DoubleStreamImpl(N.EMPTY_DOUBLE_ARRAY, sorted, closeHandlers);
         } else {
-            return new DoubleStreamImpl(values, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return new DoubleStreamImpl(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
     @Override
     public void forEach(DoubleConsumer action) {
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(values[i]);
+            action.accept(elements[i]);
         }
     }
 
     @Override
     public double[] toArray() {
-        return N.copyOfRange(values, fromIndex, toIndex);
+        return N.copyOfRange(elements, fromIndex, toIndex);
     }
 
     @Override
     public DoubleList toDoubleList() {
-        return DoubleList.of(N.copyOfRange(values, fromIndex, toIndex));
+        return DoubleList.of(N.copyOfRange(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -348,7 +392,7 @@ final class DoubleStreamImpl extends DoubleStream {
         double result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsDouble(result, values[i]);
+            result = op.applyAsDouble(result, elements[i]);
         }
 
         return result;
@@ -360,10 +404,10 @@ final class DoubleStreamImpl extends DoubleStream {
             return OptionalDouble.empty();
         }
 
-        double result = values[fromIndex];
+        double result = elements[fromIndex];
 
         for (int i = fromIndex + 1; i < toIndex; i++) {
-            result = op.applyAsDouble(result, values[i]);
+            result = op.applyAsDouble(result, elements[i]);
         }
 
         return OptionalDouble.of(result);
@@ -374,7 +418,7 @@ final class DoubleStreamImpl extends DoubleStream {
         final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            accumulator.accept(result, values[i]);
+            accumulator.accept(result, elements[i]);
         }
 
         return result;
@@ -382,7 +426,7 @@ final class DoubleStreamImpl extends DoubleStream {
 
     @Override
     public double sum() {
-        return N.sum(values, fromIndex, toIndex).doubleValue();
+        return N.sum(elements, fromIndex, toIndex).doubleValue();
     }
 
     @Override
@@ -391,7 +435,7 @@ final class DoubleStreamImpl extends DoubleStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.min(values, fromIndex, toIndex));
+        return OptionalDouble.of(N.min(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -400,7 +444,7 @@ final class DoubleStreamImpl extends DoubleStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.max(values, fromIndex, toIndex));
+        return OptionalDouble.of(N.max(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -414,13 +458,13 @@ final class DoubleStreamImpl extends DoubleStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.avg(values, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.avg(elements, fromIndex, toIndex).doubleValue());
     }
 
     @Override
     public boolean anyMatch(DoublePredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
+            if (predicate.test(elements[i])) {
                 return true;
             }
         }
@@ -431,7 +475,7 @@ final class DoubleStreamImpl extends DoubleStream {
     @Override
     public boolean allMatch(DoublePredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i]) == false) {
+            if (predicate.test(elements[i]) == false) {
                 return false;
             }
         }
@@ -442,7 +486,7 @@ final class DoubleStreamImpl extends DoubleStream {
     @Override
     public boolean noneMatch(DoublePredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
-            if (predicate.test(values[i])) {
+            if (predicate.test(elements[i])) {
                 return false;
             }
         }
@@ -452,22 +496,22 @@ final class DoubleStreamImpl extends DoubleStream {
 
     @Override
     public OptionalDouble findFirst() {
-        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(values[fromIndex]);
+        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
     }
 
     @Override
     public OptionalDouble findAny() {
-        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(values[fromIndex]);
+        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
     }
 
     @Override
     public Stream<Double> boxed() {
-        return new ArrayStream<Double>(Array.box(values, fromIndex, toIndex), closeHandlers);
+        return new ArrayStream<Double>(Array.box(elements, fromIndex, toIndex), closeHandlers);
     }
 
     @Override
     public Iterator<Double> iterator() {
-        return new DoubleIterator(values, fromIndex, toIndex);
+        return new DoubleIterator(elements, fromIndex, toIndex);
     }
 
     @Override
@@ -480,7 +524,7 @@ final class DoubleStreamImpl extends DoubleStream {
 
         closeHandlerList.add(closeHandler);
 
-        return new DoubleStreamImpl(values, fromIndex, toIndex, closeHandlerList);
+        return new DoubleStreamImpl(elements, fromIndex, toIndex, closeHandlerList);
     }
 
     @Override
