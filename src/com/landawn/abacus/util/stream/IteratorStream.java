@@ -302,7 +302,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
                     curIndex = 0;
                 }
 
-                return cur != null && curIndex >= cur.length;
+                return cur != null && curIndex < cur.length;
             }
 
             @Override

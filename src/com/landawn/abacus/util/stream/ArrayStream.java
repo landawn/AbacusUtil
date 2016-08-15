@@ -325,7 +325,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
                     curIndex = 0;
                 }
 
-                return cur != null && curIndex >= cur.length;
+                return cur != null && curIndex < cur.length;
             }
 
             @Override
