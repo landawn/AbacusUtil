@@ -24,6 +24,8 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Comparator;
+
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
@@ -71,6 +73,12 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class LongStream implements BaseStream<Long, LongStream> {
+    static final Comparator<Long> LONG_COMPARATOR = new Comparator<Long>() {
+        @Override
+        public int compare(Long o1, Long o2) {
+            return Double.compare(o1, o2);
+        }
+    };
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -93,7 +101,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract LongStream filter(final LongPredicate predicate, final int max);
+    public abstract LongStream filter(final LongPredicate predicate, final long max);
 
     /**
      * Keep the elements until the given predicate returns false.
@@ -110,7 +118,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract LongStream takeWhile(final LongPredicate predicate, final int max);
+    public abstract LongStream takeWhile(final LongPredicate predicate, final long max);
 
     /**
      * Remove the elements until the given predicate returns false.
@@ -128,7 +136,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract LongStream dropWhile(final LongPredicate predicate, final int max);
+    public abstract LongStream dropWhile(final LongPredicate predicate, final long max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -510,7 +518,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      *
      * @return the sum of elements in this stream
      */
-    public abstract long sum();
+    public abstract Long sum();
 
     /**
      * Returns an {@code OptionalLong} describing the minimum element of this
@@ -708,6 +716,8 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      */
     public abstract Stream<Long> boxed();
 
+    abstract ImmutableLongIterator longIterator();
+
     // Static factories
 
     public static LongStream empty() {
@@ -719,7 +729,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     }
 
     public static LongStream of(final long[] a, final int startIndex, final int endIndex) {
-        return new LongStreamImpl(a, startIndex, endIndex);
+        return new ArrayLongStream(a, startIndex, endIndex);
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {

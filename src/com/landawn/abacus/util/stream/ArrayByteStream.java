@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.Array;
@@ -26,37 +27,35 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class ByteStreamImpl extends ByteStream {
+final class ArrayByteStream extends ByteStream {
     private final byte[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
     private final Set<Runnable> closeHandlers;
 
-    ByteStreamImpl(byte[] values) {
+    ArrayByteStream(byte[] values) {
         this(values, null);
     }
 
-    ByteStreamImpl(byte[] values, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, closeHandlers);
+    ArrayByteStream(byte[] values, Collection<Runnable> closeHandlers) {
+        this(values, closeHandlers, false);
     }
 
-    ByteStreamImpl(byte[] values, boolean sorted, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, sorted, closeHandlers);
+    ArrayByteStream(byte[] values, Collection<Runnable> closeHandlers, boolean sorted) {
+        this(values, 0, values.length, closeHandlers, sorted);
     }
 
-    ByteStreamImpl(byte[] values, int fromIndex, int toIndex) {
+    ArrayByteStream(byte[] values, int fromIndex, int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    ByteStreamImpl(byte[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, false, closeHandlers);
+    ArrayByteStream(byte[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+        this(values, fromIndex, toIndex, closeHandlers, false);
     }
 
-    ByteStreamImpl(byte[] values, int fromIndex, int toIndex, boolean sorted, Collection<Runnable> closeHandlers) {
-        if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
-            throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
-        }
+    ArrayByteStream(byte[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -67,22 +66,22 @@ final class ByteStreamImpl extends ByteStream {
 
     @Override
     public ByteStream filter(BytePredicate predicate) {
-        return filter(predicate, Integer.MAX_VALUE);
+        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public ByteStream filter(final BytePredicate predicate, final int max) {
-        return new ByteStreamImpl(N.filter(elements, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+    public ByteStream filter(final BytePredicate predicate, final long max) {
+        return new ArrayByteStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
     }
 
     @Override
     public ByteStream takeWhile(BytePredicate predicate) {
-        return takeWhile(predicate, Integer.MAX_VALUE);
+        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public ByteStream takeWhile(BytePredicate predicate, int max) {
-        final ByteList list = ByteList.of(new byte[N.min(9, max, (toIndex - fromIndex))], 0);
+    public ByteStream takeWhile(BytePredicate predicate, long max) {
+        final ByteList list = ByteList.of(new byte[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (predicate.test(elements[i])) {
@@ -93,22 +92,22 @@ final class ByteStreamImpl extends ByteStream {
             }
         }
 
-        return new ByteStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+        return new ArrayByteStream(list.trimToSize().array(), closeHandlers, sorted);
     }
 
     @Override
     public ByteStream dropWhile(BytePredicate predicate) {
-        return dropWhile(predicate, Integer.MAX_VALUE);
+        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public ByteStream dropWhile(BytePredicate predicate, int max) {
+    public ByteStream dropWhile(BytePredicate predicate, long max) {
         int index = fromIndex;
         while (index < toIndex && predicate.test(elements[index])) {
             index++;
         }
 
-        final ByteList list = ByteList.of(new byte[N.min(9, max, (toIndex - index))], 0);
+        final ByteList list = ByteList.of(new byte[N.min(9, Stream.toInt(max), (toIndex - index))], 0);
         int cnt = 0;
 
         while (index < toIndex && cnt < max) {
@@ -117,7 +116,7 @@ final class ByteStreamImpl extends ByteStream {
             cnt++;
         }
 
-        return new ByteStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+        return new ArrayByteStream(list.trimToSize().array(), closeHandlers, sorted);
     }
 
     @Override
@@ -128,7 +127,7 @@ final class ByteStreamImpl extends ByteStream {
             a[j] = mapper.applyAsByte(elements[i]);
         }
 
-        return new ByteStreamImpl(a, closeHandlers);
+        return new ArrayByteStream(a, closeHandlers);
     }
 
     @Override
@@ -139,7 +138,7 @@ final class ByteStreamImpl extends ByteStream {
             a[j] = mapper.applyAsInt(elements[i]);
         }
 
-        return new IntStreamImpl(a, closeHandlers);
+        return new ArrayIntStream(a, closeHandlers);
     }
 
     @Override
@@ -152,7 +151,7 @@ final class ByteStreamImpl extends ByteStream {
         //
         //        return new ArrayStream<U>((U[]) a, closeHandlers);
 
-        return new IteratorStream<U>(new Iterator<U>() {
+        return new IteratorStream<U>(new ImmutableIterator<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -166,8 +165,24 @@ final class ByteStreamImpl extends ByteStream {
             }
 
             @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = (A) mapper.apply(elements[cursor++]);
+                }
+
+                return a;
             }
         }, closeHandlers);
     }
@@ -190,7 +205,7 @@ final class ByteStreamImpl extends ByteStream {
             from += tmp.length;
         }
 
-        return new ByteStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayByteStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -211,7 +226,7 @@ final class ByteStreamImpl extends ByteStream {
             from += tmp.length;
         }
 
-        return new IntStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayIntStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -235,7 +250,7 @@ final class ByteStreamImpl extends ByteStream {
         //
         //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
 
-        return new IteratorStream<T>(new Iterator<T>() {
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
 
@@ -250,31 +265,29 @@ final class ByteStreamImpl extends ByteStream {
 
             @Override
             public T next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
                 return cur.next();
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
         }, closeHandlers);
     }
 
     @Override
     public ByteStream distinct() {
-        return new ByteStreamImpl(N.removeDuplicates(elements, fromIndex, toIndex, sorted), sorted, closeHandlers);
+        return new ArrayByteStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
 
     @Override
     public ByteStream sorted() {
         if (sorted) {
-            return new ByteStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
+            return new ArrayByteStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         }
 
         final byte[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
-        return new ByteStreamImpl(a, true, closeHandlers);
+        return new ArrayByteStream(a, closeHandlers, true);
     }
 
     @Override
@@ -290,18 +303,18 @@ final class ByteStreamImpl extends ByteStream {
     @Override
     public ByteStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new ByteStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
+            return new ArrayByteStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
-            return new ByteStreamImpl(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+            return new ArrayByteStream(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted);
         }
     }
 
     @Override
     public ByteStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new ByteStreamImpl(N.EMPTY_BYTE_ARRAY, sorted, closeHandlers);
+            return new ArrayByteStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
-            return new ByteStreamImpl(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return new ArrayByteStream(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted);
         }
     }
 
@@ -360,8 +373,8 @@ final class ByteStreamImpl extends ByteStream {
     }
 
     @Override
-    public long sum() {
-        return N.sum(elements, fromIndex, toIndex).longValue();
+    public Long sum() {
+        return N.sum(elements, fromIndex, toIndex);
     }
 
     @Override
@@ -447,7 +460,7 @@ final class ByteStreamImpl extends ByteStream {
             a[j] = elements[i];
         }
 
-        return new IntStreamImpl(a, sorted, closeHandlers);
+        return new ArrayIntStream(a, closeHandlers, sorted);
     }
 
     @Override
@@ -457,7 +470,49 @@ final class ByteStreamImpl extends ByteStream {
 
     @Override
     public Iterator<Byte> iterator() {
-        return new ByteIterator(elements, fromIndex, toIndex);
+        return new ImmutableIterator<Byte>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Byte next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+        };
+    }
+
+    @Override
+    ImmutableByteIterator byteIterator() {
+        return new ImmutableByteIterator() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public byte next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+
+            @Override
+            public byte[] toArray() {
+                return N.copyOfRange(elements, cursor, toIndex);
+            }
+        };
     }
 
     @Override
@@ -470,7 +525,7 @@ final class ByteStreamImpl extends ByteStream {
 
         closeHandlerList.add(closeHandler);
 
-        return new ByteStreamImpl(elements, fromIndex, toIndex, closeHandlerList);
+        return new ArrayByteStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
     }
 
     @Override
@@ -493,28 +548,6 @@ final class ByteStreamImpl extends ByteStream {
             if (ex != null) {
                 throw ex;
             }
-        }
-    }
-
-    static class ByteIterator extends ImmutableIterator<Byte> {
-        private final byte[] values;
-        private final int toIndex;
-        private int cursor;
-
-        ByteIterator(byte[] array, int fromIndex, int toIndex) {
-            this.values = array;
-            this.toIndex = toIndex;
-            this.cursor = fromIndex;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return cursor < toIndex;
-        }
-
-        @Override
-        public Byte next() {
-            return values[cursor++];
         }
     }
 }

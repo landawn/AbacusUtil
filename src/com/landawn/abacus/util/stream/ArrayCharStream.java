@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.Array;
@@ -25,37 +26,35 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class CharStreamImpl extends CharStream {
+final class ArrayCharStream extends CharStream {
     private final char[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
     private final Set<Runnable> closeHandlers;
 
-    CharStreamImpl(char[] values) {
+    ArrayCharStream(char[] values) {
         this(values, null);
     }
 
-    CharStreamImpl(char[] values, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, closeHandlers);
+    ArrayCharStream(char[] values, Collection<Runnable> closeHandlers) {
+        this(values, closeHandlers, false);
     }
 
-    CharStreamImpl(char[] values, boolean sorted, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, sorted, closeHandlers);
+    ArrayCharStream(char[] values, Collection<Runnable> closeHandlers, boolean sorted) {
+        this(values, 0, values.length, closeHandlers, sorted);
     }
 
-    CharStreamImpl(char[] values, int fromIndex, int toIndex) {
+    ArrayCharStream(char[] values, int fromIndex, int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    CharStreamImpl(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, false, closeHandlers);
+    ArrayCharStream(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+        this(values, fromIndex, toIndex, closeHandlers, false);
     }
 
-    CharStreamImpl(char[] values, int fromIndex, int toIndex, boolean sorted, Collection<Runnable> closeHandlers) {
-        if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
-            throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
-        }
+    ArrayCharStream(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -66,22 +65,22 @@ final class CharStreamImpl extends CharStream {
 
     @Override
     public CharStream filter(CharPredicate predicate) {
-        return filter(predicate, Integer.MAX_VALUE);
+        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public CharStream filter(final CharPredicate predicate, final int max) {
-        return new CharStreamImpl(N.filter(elements, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+    public CharStream filter(final CharPredicate predicate, final long max) {
+        return new ArrayCharStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
     }
 
     @Override
     public CharStream takeWhile(CharPredicate predicate) {
-        return takeWhile(predicate, Integer.MAX_VALUE);
+        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public CharStream takeWhile(CharPredicate predicate, int max) {
-        final CharList list = CharList.of(new char[N.min(9, max, (toIndex - fromIndex))], 0);
+    public CharStream takeWhile(CharPredicate predicate, long max) {
+        final CharList list = CharList.of(new char[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (predicate.test(elements[i])) {
@@ -92,22 +91,22 @@ final class CharStreamImpl extends CharStream {
             }
         }
 
-        return new CharStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+        return new ArrayCharStream(list.trimToSize().array(), closeHandlers, sorted);
     }
 
     @Override
     public CharStream dropWhile(CharPredicate predicate) {
-        return dropWhile(predicate, Integer.MAX_VALUE);
+        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public CharStream dropWhile(CharPredicate predicate, int max) {
+    public CharStream dropWhile(CharPredicate predicate, long max) {
         int index = fromIndex;
         while (index < toIndex && predicate.test(elements[index])) {
             index++;
         }
 
-        final CharList list = CharList.of(new char[N.min(9, max, (toIndex - index))], 0);
+        final CharList list = CharList.of(new char[N.min(9, Stream.toInt(max), (toIndex - index))], 0);
         int cnt = 0;
 
         while (index < toIndex && cnt < max) {
@@ -116,7 +115,7 @@ final class CharStreamImpl extends CharStream {
             cnt++;
         }
 
-        return new CharStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+        return new ArrayCharStream(list.trimToSize().array(), closeHandlers, sorted);
     }
 
     @Override
@@ -127,7 +126,7 @@ final class CharStreamImpl extends CharStream {
             a[j] = mapper.applyAsChar(elements[i]);
         }
 
-        return new CharStreamImpl(a, closeHandlers);
+        return new ArrayCharStream(a, closeHandlers);
     }
 
     @Override
@@ -138,7 +137,7 @@ final class CharStreamImpl extends CharStream {
             a[j] = mapper.applyAsInt(elements[i]);
         }
 
-        return new IntStreamImpl(a, closeHandlers);
+        return new ArrayIntStream(a, closeHandlers);
     }
 
     @Override
@@ -151,7 +150,7 @@ final class CharStreamImpl extends CharStream {
         //
         //        return new ArrayStream<U>((U[]) a, closeHandlers);
 
-        return new IteratorStream<U>(new Iterator<U>() {
+        return new IteratorStream<U>(new ImmutableIterator<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -165,8 +164,24 @@ final class CharStreamImpl extends CharStream {
             }
 
             @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = (A) mapper.apply(elements[cursor++]);
+                }
+
+                return a;
             }
         }, closeHandlers);
     }
@@ -189,7 +204,7 @@ final class CharStreamImpl extends CharStream {
             from += tmp.length;
         }
 
-        return new CharStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayCharStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -210,7 +225,7 @@ final class CharStreamImpl extends CharStream {
             from += tmp.length;
         }
 
-        return new IntStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayIntStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -234,7 +249,7 @@ final class CharStreamImpl extends CharStream {
         //
         //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
 
-        return new IteratorStream<T>(new Iterator<T>() {
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
 
@@ -249,31 +264,29 @@ final class CharStreamImpl extends CharStream {
 
             @Override
             public T next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
                 return cur.next();
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
         }, closeHandlers);
     }
 
     @Override
     public CharStream distinct() {
-        return new CharStreamImpl(N.removeDuplicates(elements, fromIndex, toIndex, sorted), sorted, closeHandlers);
+        return new ArrayCharStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
 
     @Override
     public CharStream sorted() {
         if (sorted) {
-            return new CharStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
+            return new ArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         }
 
         final char[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
-        return new CharStreamImpl(a, true, closeHandlers);
+        return new ArrayCharStream(a, closeHandlers, true);
     }
 
     @Override
@@ -289,18 +302,18 @@ final class CharStreamImpl extends CharStream {
     @Override
     public CharStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new CharStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
+            return new ArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
-            return new CharStreamImpl(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+            return new ArrayCharStream(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted);
         }
     }
 
     @Override
     public CharStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new CharStreamImpl(N.EMPTY_CHAR_ARRAY, sorted, closeHandlers);
+            return new ArrayCharStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
-            return new CharStreamImpl(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return new ArrayCharStream(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted);
         }
     }
 
@@ -432,7 +445,7 @@ final class CharStreamImpl extends CharStream {
             a[j] = elements[i];
         }
 
-        return new IntStreamImpl(a, sorted, closeHandlers);
+        return new ArrayIntStream(a, closeHandlers, sorted);
     }
 
     @Override
@@ -442,7 +455,49 @@ final class CharStreamImpl extends CharStream {
 
     @Override
     public Iterator<Character> iterator() {
-        return new CharacterIterator(elements, fromIndex, toIndex);
+        return new ImmutableIterator<Character>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Character next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+        };
+    }
+
+    @Override
+    ImmutableCharIterator charIterator() {
+        return new ImmutableCharIterator() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public char next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+
+            @Override
+            public char[] toArray() {
+                return N.copyOfRange(elements, cursor, toIndex);
+            }
+        };
     }
 
     @Override
@@ -455,7 +510,7 @@ final class CharStreamImpl extends CharStream {
 
         closeHandlerList.add(closeHandler);
 
-        return new CharStreamImpl(elements, fromIndex, toIndex, closeHandlerList);
+        return new ArrayCharStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
     }
 
     @Override
@@ -478,28 +533,6 @@ final class CharStreamImpl extends CharStream {
             if (ex != null) {
                 throw ex;
             }
-        }
-    }
-
-    static class CharacterIterator extends ImmutableIterator<Character> {
-        private final char[] values;
-        private final int toIndex;
-        private int cursor;
-
-        CharacterIterator(char[] array, int fromIndex, int toIndex) {
-            this.values = array;
-            this.toIndex = toIndex;
-            this.cursor = fromIndex;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return cursor < toIndex;
-        }
-
-        @Override
-        public Character next() {
-            return values[cursor++];
         }
     }
 }

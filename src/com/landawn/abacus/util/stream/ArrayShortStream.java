@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.Array;
@@ -26,37 +27,35 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class ShortStreamImpl extends ShortStream {
+final class ArrayShortStream extends ShortStream {
     private final short[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
     private final Set<Runnable> closeHandlers;
 
-    ShortStreamImpl(short[] values) {
+    ArrayShortStream(short[] values) {
         this(values, null);
     }
 
-    ShortStreamImpl(short[] values, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, closeHandlers);
+    ArrayShortStream(short[] values, Collection<Runnable> closeHandlers) {
+        this(values, closeHandlers, false);
     }
 
-    ShortStreamImpl(short[] values, boolean sorted, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, sorted, closeHandlers);
+    ArrayShortStream(short[] values, Collection<Runnable> closeHandlers, boolean sorted) {
+        this(values, 0, values.length, closeHandlers, sorted);
     }
 
-    ShortStreamImpl(short[] values, int fromIndex, int toIndex) {
+    ArrayShortStream(short[] values, int fromIndex, int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    ShortStreamImpl(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, false, closeHandlers);
+    ArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+        this(values, fromIndex, toIndex, closeHandlers, false);
     }
 
-    ShortStreamImpl(short[] values, int fromIndex, int toIndex, boolean sorted, Collection<Runnable> closeHandlers) {
-        if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
-            throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
-        }
+    ArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -67,22 +66,22 @@ final class ShortStreamImpl extends ShortStream {
 
     @Override
     public ShortStream filter(final ShortPredicate predicate) {
-        return filter(predicate, Integer.MAX_VALUE);
+        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public ShortStream filter(final ShortPredicate predicate, final int max) {
-        return new ShortStreamImpl(N.filter(elements, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+    public ShortStream filter(final ShortPredicate predicate, final long max) {
+        return new ArrayShortStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
     }
 
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate) {
-        return takeWhile(predicate, Integer.MAX_VALUE);
+        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public ShortStream takeWhile(final ShortPredicate predicate, final int max) {
-        final ShortList list = ShortList.of(new short[N.min(9, max, (toIndex - fromIndex))], 0);
+    public ShortStream takeWhile(final ShortPredicate predicate, final long max) {
+        final ShortList list = ShortList.of(new short[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (predicate.test(elements[i])) {
@@ -93,22 +92,22 @@ final class ShortStreamImpl extends ShortStream {
             }
         }
 
-        return new ShortStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+        return new ArrayShortStream(list.trimToSize().array(), closeHandlers, sorted);
     }
 
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate) {
-        return dropWhile(predicate, Integer.MAX_VALUE);
+        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public ShortStream dropWhile(final ShortPredicate predicate, final int max) {
+    public ShortStream dropWhile(final ShortPredicate predicate, final long max) {
         int index = fromIndex;
         while (index < toIndex && predicate.test(elements[index])) {
             index++;
         }
 
-        final ShortList list = ShortList.of(new short[N.min(9, max, (toIndex - index))], 0);
+        final ShortList list = ShortList.of(new short[N.min(9, Stream.toInt(max), (toIndex - index))], 0);
         int cnt = 0;
 
         while (index < toIndex && cnt < max) {
@@ -117,7 +116,7 @@ final class ShortStreamImpl extends ShortStream {
             cnt++;
         }
 
-        return new ShortStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+        return new ArrayShortStream(list.trimToSize().array(), closeHandlers, sorted);
     }
 
     @Override
@@ -128,7 +127,7 @@ final class ShortStreamImpl extends ShortStream {
             a[j] = mapper.applyAsShort(elements[i]);
         }
 
-        return new ShortStreamImpl(a, closeHandlers);
+        return new ArrayShortStream(a, closeHandlers);
     }
 
     @Override
@@ -139,7 +138,7 @@ final class ShortStreamImpl extends ShortStream {
             a[j] = mapper.applyAsInt(elements[i]);
         }
 
-        return new IntStreamImpl(a, closeHandlers);
+        return new ArrayIntStream(a, closeHandlers);
     }
 
     @Override
@@ -152,7 +151,7 @@ final class ShortStreamImpl extends ShortStream {
         //
         //        return new ArrayStream<U>((U[]) a, closeHandlers);
 
-        return new IteratorStream<U>(new Iterator<U>() {
+        return new IteratorStream<U>(new ImmutableIterator<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -166,8 +165,24 @@ final class ShortStreamImpl extends ShortStream {
             }
 
             @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = (A) mapper.apply(elements[cursor++]);
+                }
+
+                return a;
             }
         }, closeHandlers);
     }
@@ -190,7 +205,7 @@ final class ShortStreamImpl extends ShortStream {
             from += tmp.length;
         }
 
-        return new ShortStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayShortStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -211,7 +226,7 @@ final class ShortStreamImpl extends ShortStream {
             from += tmp.length;
         }
 
-        return new IntStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayIntStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -235,7 +250,7 @@ final class ShortStreamImpl extends ShortStream {
         //
         //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
 
-        return new IteratorStream<T>(new Iterator<T>() {
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
 
@@ -250,31 +265,29 @@ final class ShortStreamImpl extends ShortStream {
 
             @Override
             public T next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
                 return cur.next();
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
         }, closeHandlers);
     }
 
     @Override
     public ShortStream distinct() {
-        return new ShortStreamImpl(N.removeDuplicates(elements, fromIndex, toIndex, sorted), sorted, closeHandlers);
+        return new ArrayShortStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
 
     @Override
     public ShortStream sorted() {
         if (sorted) {
-            return new ShortStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
+            return new ArrayShortStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         }
 
         final short[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
-        return new ShortStreamImpl(a, true, closeHandlers);
+        return new ArrayShortStream(a, closeHandlers, true);
     }
 
     @Override
@@ -290,18 +303,18 @@ final class ShortStreamImpl extends ShortStream {
     @Override
     public ShortStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new ShortStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
+            return new ArrayShortStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
-            return new ShortStreamImpl(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+            return new ArrayShortStream(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted);
         }
     }
 
     @Override
     public ShortStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new ShortStreamImpl(N.EMPTY_SHORT_ARRAY, sorted, closeHandlers);
+            return new ArrayShortStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
-            return new ShortStreamImpl(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return new ArrayShortStream(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted);
         }
     }
 
@@ -360,8 +373,8 @@ final class ShortStreamImpl extends ShortStream {
     }
 
     @Override
-    public long sum() {
-        return N.sum(elements, fromIndex, toIndex).longValue();
+    public Long sum() {
+        return N.sum(elements, fromIndex, toIndex);
     }
 
     @Override
@@ -447,7 +460,7 @@ final class ShortStreamImpl extends ShortStream {
             a[j] = elements[i];
         }
 
-        return new IntStreamImpl(a, sorted, closeHandlers);
+        return new ArrayIntStream(a, closeHandlers, sorted);
     }
 
     @Override
@@ -457,7 +470,49 @@ final class ShortStreamImpl extends ShortStream {
 
     @Override
     public Iterator<Short> iterator() {
-        return new ShortIterator(elements, fromIndex, toIndex);
+        return new ImmutableIterator<Short>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Short next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+        };
+    }
+
+    @Override
+    ImmutableShortIterator shortIterator() {
+        return new ImmutableShortIterator() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public short next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+
+            @Override
+            public short[] toArray() {
+                return N.copyOfRange(elements, cursor, toIndex);
+            }
+        };
     }
 
     @Override
@@ -470,7 +525,7 @@ final class ShortStreamImpl extends ShortStream {
 
         closeHandlerList.add(closeHandler);
 
-        return new ShortStreamImpl(elements, fromIndex, toIndex, closeHandlerList);
+        return new ArrayShortStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
     }
 
     @Override
@@ -493,28 +548,6 @@ final class ShortStreamImpl extends ShortStream {
             if (ex != null) {
                 throw ex;
             }
-        }
-    }
-
-    static class ShortIterator extends ImmutableIterator<Short> {
-        private final short[] values;
-        private final int toIndex;
-        private int cursor;
-
-        ShortIterator(short[] array, int fromIndex, int toIndex) {
-            this.values = array;
-            this.toIndex = toIndex;
-            this.cursor = fromIndex;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return cursor < toIndex;
-        }
-
-        @Override
-        public Short next() {
-            return values[cursor++];
         }
     }
 }

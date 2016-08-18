@@ -155,10 +155,10 @@ public final class Multimap<K, E, V extends Collection<E>> {
     //        return multimap;
     //    }
 
-    public static <K, E> Multimap<K, E, List<E>> from2(final Map<? extends K, ? extends Collection<E>> map) {
+    public static <K, E> Multimap<K, E, List<E>> from2(final Map<? extends K, ? extends Collection<? extends E>> map) {
         final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(map.size()));
 
-        for (Map.Entry<? extends K, ? extends Collection<E>> entry : map.entrySet()) {
+        for (Map.Entry<? extends K, ? extends Collection<? extends E>> entry : map.entrySet()) {
             multimap.putAll(entry.getKey(), entry.getValue());
         }
 

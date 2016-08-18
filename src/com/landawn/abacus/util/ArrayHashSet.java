@@ -31,7 +31,7 @@ import java.util.Set;
  *
  * @author Haiyang Li
  */
-public final class ArrayHashSet<E> implements Set<E> {
+public class ArrayHashSet<E> implements Set<E> {
     private final Set<ArrayWrapper<E>> set;
 
     public ArrayHashSet() {

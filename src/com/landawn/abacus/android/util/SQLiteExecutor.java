@@ -145,7 +145,7 @@ public final class SQLiteExecutor {
             }
         }
 
-        return new RowDataSet(targetClass, columnNameList, columnList);
+        return new RowDataSet(columnNameList, columnList);
     }
 
     @SuppressWarnings("rawtypes")
@@ -195,7 +195,7 @@ public final class SQLiteExecutor {
             }
         }
 
-        return new RowDataSet(Map.class, columnNameList, columnList);
+        return new RowDataSet(columnNameList, columnList);
     }
 
     /**

@@ -289,7 +289,7 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     @SuppressWarnings("rawtypes")
-    public Map<E, Integer> toMapSortedByCount() {
+    public Map<E, Integer> toMapSortedByOccurrences() {
         return toMapSortedBy((Comparator) cmpByCount);
     }
 

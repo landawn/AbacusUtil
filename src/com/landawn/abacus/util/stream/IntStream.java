@@ -24,6 +24,8 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Comparator;
+
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.N;
@@ -74,6 +76,12 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class IntStream implements BaseStream<Integer, IntStream> {
+    static final Comparator<Integer> INT_COMPARATOR = new Comparator<Integer>() {
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            return Double.compare(o1, o2);
+        }
+    };
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -96,7 +104,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract IntStream filter(final IntPredicate predicate, final int max);
+    public abstract IntStream filter(final IntPredicate predicate, final long max);
 
     /**
      * Keep the elements until the given predicate returns false.
@@ -113,7 +121,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract IntStream takeWhile(final IntPredicate predicate, final int max);
+    public abstract IntStream takeWhile(final IntPredicate predicate, final long max);
 
     /**
      * Remove the elements until the given predicate returns false.
@@ -131,7 +139,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract IntStream dropWhile(final IntPredicate predicate, final int max);
+    public abstract IntStream dropWhile(final IntPredicate predicate, final long max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -525,7 +533,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      *
      * @return the sum of elements in this stream
      */
-    public abstract long sum();
+    public abstract Long sum();
 
     /**
      * Returns an {@code OptionalInt} describing the minimum element of this
@@ -735,6 +743,8 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract Stream<Integer> boxed();
 
+    abstract ImmutableIntIterator intIterator();
+
     // Static factories
 
     public static IntStream empty() {
@@ -746,7 +756,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     }
 
     public static IntStream of(final int[] a, final int startIndex, final int endIndex) {
-        return new IntStreamImpl(a, startIndex, endIndex);
+        return new ArrayIntStream(a, startIndex, endIndex);
     }
 
     public static IntStream from(final char... a) {

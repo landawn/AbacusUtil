@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.Array;
@@ -31,37 +32,35 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class IntStreamImpl extends IntStream {
+final class ArrayIntStream extends IntStream {
     private final int[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
     private final Set<Runnable> closeHandlers;
 
-    IntStreamImpl(int[] values) {
+    ArrayIntStream(int[] values) {
         this(values, null);
     }
 
-    IntStreamImpl(int[] values, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, closeHandlers);
+    ArrayIntStream(int[] values, Collection<Runnable> closeHandlers) {
+        this(values, closeHandlers, false);
     }
 
-    IntStreamImpl(int[] values, boolean sorted, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, sorted, closeHandlers);
+    ArrayIntStream(int[] values, Collection<Runnable> closeHandlers, boolean sorted) {
+        this(values, 0, values.length, closeHandlers, sorted);
     }
 
-    IntStreamImpl(int[] values, int fromIndex, int toIndex) {
+    ArrayIntStream(int[] values, int fromIndex, int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    IntStreamImpl(int[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, false, closeHandlers);
+    ArrayIntStream(int[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+        this(values, fromIndex, toIndex, closeHandlers, false);
     }
 
-    IntStreamImpl(int[] values, int fromIndex, int toIndex, boolean sorted, Collection<Runnable> closeHandlers) {
-        if (fromIndex < 0 || toIndex < fromIndex || toIndex > values.length) {
-            throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
-        }
+    ArrayIntStream(int[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -72,22 +71,22 @@ final class IntStreamImpl extends IntStream {
 
     @Override
     public IntStream filter(IntPredicate predicate) {
-        return filter(predicate, Integer.MAX_VALUE);
+        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public IntStream filter(final IntPredicate predicate, final int max) {
-        return new IntStreamImpl(N.filter(elements, fromIndex, toIndex, predicate, max), sorted, closeHandlers);
+    public IntStream filter(final IntPredicate predicate, final long max) {
+        return new ArrayIntStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
     }
 
     @Override
     public IntStream takeWhile(IntPredicate predicate) {
-        return takeWhile(predicate, Integer.MAX_VALUE);
+        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public IntStream takeWhile(IntPredicate predicate, int max) {
-        final IntList list = IntList.of(new int[N.min(9, max, (toIndex - fromIndex))], 0);
+    public IntStream takeWhile(IntPredicate predicate, long max) {
+        final IntList list = IntList.of(new int[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (predicate.test(elements[i])) {
@@ -98,22 +97,22 @@ final class IntStreamImpl extends IntStream {
             }
         }
 
-        return new IntStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+        return new ArrayIntStream(list.trimToSize().array(), closeHandlers, sorted);
     }
 
     @Override
     public IntStream dropWhile(IntPredicate predicate) {
-        return dropWhile(predicate, Integer.MAX_VALUE);
+        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public IntStream dropWhile(IntPredicate predicate, int max) {
+    public IntStream dropWhile(IntPredicate predicate, long max) {
         int index = fromIndex;
         while (index < toIndex && predicate.test(elements[index])) {
             index++;
         }
 
-        final IntList list = IntList.of(new int[N.min(9, max, (toIndex - index))], 0);
+        final IntList list = IntList.of(new int[N.min(9, Stream.toInt(max), (toIndex - index))], 0);
         int cnt = 0;
 
         while (index < toIndex && cnt < max) {
@@ -122,7 +121,7 @@ final class IntStreamImpl extends IntStream {
             cnt++;
         }
 
-        return new IntStreamImpl(list.trimToSize().array(), sorted, closeHandlers);
+        return new ArrayIntStream(list.trimToSize().array(), closeHandlers, sorted);
     }
 
     @Override
@@ -133,7 +132,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = mapper.applyAsInt(elements[i]);
         }
 
-        return new IntStreamImpl(a, closeHandlers);
+        return new ArrayIntStream(a, closeHandlers);
     }
 
     @Override
@@ -144,7 +143,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = mapper.applyAsChar(elements[i]);
         }
 
-        return new CharStreamImpl(a, closeHandlers);
+        return new ArrayCharStream(a, closeHandlers);
     }
 
     @Override
@@ -155,7 +154,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = mapper.applyAsByte(elements[i]);
         }
 
-        return new ByteStreamImpl(a, closeHandlers);
+        return new ArrayByteStream(a, closeHandlers);
     }
 
     @Override
@@ -166,7 +165,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = mapper.applyAsShort(elements[i]);
         }
 
-        return new ShortStreamImpl(a, closeHandlers);
+        return new ArrayShortStream(a, closeHandlers);
     }
 
     @Override
@@ -177,7 +176,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = mapper.applyAsLong(elements[i]);
         }
 
-        return new LongStreamImpl(a, closeHandlers);
+        return new ArrayLongStream(a, closeHandlers);
     }
 
     @Override
@@ -188,7 +187,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = mapper.applyAsFloat(elements[i]);
         }
 
-        return new FloatStreamImpl(a, closeHandlers);
+        return new ArrayFloatStream(a, closeHandlers);
     }
 
     @Override
@@ -199,7 +198,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = mapper.applyAsDouble(elements[i]);
         }
 
-        return new DoubleStreamImpl(a, closeHandlers);
+        return new ArrayDoubleStream(a, closeHandlers);
     }
 
     @Override
@@ -212,7 +211,7 @@ final class IntStreamImpl extends IntStream {
         //
         //        return new ArrayStream<U>((U[]) a, closeHandlers);
 
-        return new IteratorStream<U>(new Iterator<U>() {
+        return new IteratorStream<U>(new ImmutableIterator<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -226,8 +225,24 @@ final class IntStreamImpl extends IntStream {
             }
 
             @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = (A) mapper.apply(elements[cursor++]);
+                }
+
+                return a;
             }
         }, closeHandlers);
     }
@@ -250,7 +265,7 @@ final class IntStreamImpl extends IntStream {
             from += tmp.length;
         }
 
-        return new IntStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayIntStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -271,7 +286,7 @@ final class IntStreamImpl extends IntStream {
             from += tmp.length;
         }
 
-        return new CharStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayCharStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -292,7 +307,7 @@ final class IntStreamImpl extends IntStream {
             from += tmp.length;
         }
 
-        return new ByteStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayByteStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -313,7 +328,7 @@ final class IntStreamImpl extends IntStream {
             from += tmp.length;
         }
 
-        return new ShortStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayShortStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -334,7 +349,7 @@ final class IntStreamImpl extends IntStream {
             from += tmp.length;
         }
 
-        return new LongStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayLongStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -355,7 +370,7 @@ final class IntStreamImpl extends IntStream {
             from += tmp.length;
         }
 
-        return new FloatStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayFloatStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -376,7 +391,7 @@ final class IntStreamImpl extends IntStream {
             from += tmp.length;
         }
 
-        return new DoubleStreamImpl(arrayOfAll, closeHandlers);
+        return new ArrayDoubleStream(arrayOfAll, closeHandlers);
     }
 
     @Override
@@ -400,7 +415,7 @@ final class IntStreamImpl extends IntStream {
         //
         //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
 
-        return new IteratorStream<T>(new Iterator<T>() {
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
 
@@ -415,31 +430,29 @@ final class IntStreamImpl extends IntStream {
 
             @Override
             public T next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
                 return cur.next();
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
         }, closeHandlers);
     }
 
     @Override
     public IntStream distinct() {
-        return new IntStreamImpl(N.removeDuplicates(elements, fromIndex, toIndex, sorted), sorted, closeHandlers);
+        return new ArrayIntStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
 
     @Override
     public IntStream sorted() {
         if (sorted) {
-            return new IntStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
+            return new ArrayIntStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         }
 
         final int[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
-        return new IntStreamImpl(a, true, closeHandlers);
+        return new ArrayIntStream(a, closeHandlers, true);
     }
 
     @Override
@@ -455,18 +468,18 @@ final class IntStreamImpl extends IntStream {
     @Override
     public IntStream limit(long maxSize) {
         if (maxSize >= toIndex - fromIndex) {
-            return new IntStreamImpl(elements, fromIndex, toIndex, sorted, closeHandlers);
+            return new ArrayIntStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
-            return new IntStreamImpl(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
+            return new ArrayIntStream(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted);
         }
     }
 
     @Override
     public IntStream skip(long n) {
         if (n >= toIndex - fromIndex) {
-            return new IntStreamImpl(N.EMPTY_INT_ARRAY, sorted, closeHandlers);
+            return new ArrayIntStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
-            return new IntStreamImpl(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
+            return new ArrayIntStream(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted);
         }
     }
 
@@ -525,8 +538,8 @@ final class IntStreamImpl extends IntStream {
     }
 
     @Override
-    public long sum() {
-        return N.sum(elements, fromIndex, toIndex).longValue();
+    public Long sum() {
+        return N.sum(elements, fromIndex, toIndex);
     }
 
     @Override
@@ -612,7 +625,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = elements[i];
         }
 
-        return new LongStreamImpl(a, sorted, closeHandlers);
+        return new ArrayLongStream(a, closeHandlers, sorted);
     }
 
     @Override
@@ -623,7 +636,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = elements[i];
         }
 
-        return new FloatStreamImpl(a, sorted, closeHandlers);
+        return new ArrayFloatStream(a, closeHandlers, sorted);
     }
 
     @Override
@@ -634,7 +647,7 @@ final class IntStreamImpl extends IntStream {
             a[j] = elements[i];
         }
 
-        return new DoubleStreamImpl(a, sorted, closeHandlers);
+        return new ArrayDoubleStream(a, closeHandlers, sorted);
     }
 
     @Override
@@ -644,7 +657,49 @@ final class IntStreamImpl extends IntStream {
 
     @Override
     public Iterator<Integer> iterator() {
-        return new IntegerIterator(elements, fromIndex, toIndex);
+        return new ImmutableIterator<Integer>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Integer next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+        };
+    }
+
+    @Override
+    ImmutableIntIterator intIterator() {
+        return new ImmutableIntIterator() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+
+            @Override
+            public int[] toArray() {
+                return N.copyOfRange(elements, cursor, toIndex);
+            }
+        };
     }
 
     @Override
@@ -657,7 +712,7 @@ final class IntStreamImpl extends IntStream {
 
         closeHandlerList.add(closeHandler);
 
-        return new IntStreamImpl(elements, fromIndex, toIndex, closeHandlerList);
+        return new ArrayIntStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
     }
 
     @Override
@@ -680,28 +735,6 @@ final class IntStreamImpl extends IntStream {
             if (ex != null) {
                 throw ex;
             }
-        }
-    }
-
-    static class IntegerIterator extends ImmutableIterator<Integer> {
-        private final int[] values;
-        private final int toIndex;
-        private int cursor;
-
-        IntegerIterator(int[] array, int fromIndex, int toIndex) {
-            this.values = array;
-            this.toIndex = toIndex;
-            this.cursor = fromIndex;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return cursor < toIndex;
-        }
-
-        @Override
-        public Integer next() {
-            return values[cursor++];
         }
     }
 }

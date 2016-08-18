@@ -1818,6 +1818,30 @@ public final class IOUtil {
         }
     }
 
+    public static BufferedReader createBufferedReader(String filePath) {
+        return createBufferedReader(new File(filePath));
+    }
+
+    public static BufferedReader createBufferedReader(File file) {
+        try {
+            return new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    public static BufferedWriter createBufferedWriter(String filePath) {
+        return createBufferedWriter(new File(filePath));
+    }
+
+    public static BufferedWriter createBufferedWriter(File file) {
+        try {
+            return new BufferedWriter(new FileWriter(file));
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
     public static LZ4BlockInputStream createLZ4BlockInputStream(final InputStream is) {
         try {
             return new LZ4BlockInputStream(is);

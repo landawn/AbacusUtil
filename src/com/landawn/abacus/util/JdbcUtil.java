@@ -852,23 +852,23 @@ public final class JdbcUtil {
         return extractData(null, rs, offset, count, closeResultSet, filter);
     }
 
-    public static DataSet extractData(final Class<?> entityClass, final ResultSet rs) {
+    static DataSet extractData(final Class<?> entityClass, final ResultSet rs) {
         return extractData(entityClass, rs, false);
     }
 
-    public static DataSet extractData(final Class<?> entityClass, final ResultSet rs, final boolean closeResultSet) {
+    static DataSet extractData(final Class<?> entityClass, final ResultSet rs, final boolean closeResultSet) {
         return extractData(entityClass, rs, 0, Integer.MAX_VALUE, closeResultSet);
     }
 
-    public static DataSet extractData(final Class<?> entityClass, final ResultSet rs, final int offset, final int count) {
+    static DataSet extractData(final Class<?> entityClass, final ResultSet rs, final int offset, final int count) {
         return extractData(entityClass, rs, offset, count, false);
     }
 
-    public static DataSet extractData(final Class<?> entityClass, final ResultSet rs, int offset, int count, final boolean closeResultSet) {
+    static DataSet extractData(final Class<?> entityClass, final ResultSet rs, int offset, int count, final boolean closeResultSet) {
         return extractData(entityClass, rs, offset, count, closeResultSet, null);
     }
 
-    public static DataSet extractData(final Class<?> entityClass, final ResultSet rs, int offset, int count, final boolean closeResultSet,
+    static DataSet extractData(final Class<?> entityClass, final ResultSet rs, int offset, int count, final boolean closeResultSet,
             final Predicate<ResultSet> filter) {
         try {
             // TODO [performance improvement]. it will improve performance a lot if MetaData is cached.
@@ -896,7 +896,8 @@ public final class JdbcUtil {
                 }
             }
 
-            return new RowDataSet(null, entityClass, columnNameList, columnList);
+            // return new RowDataSet(null, entityClass, columnNameList, columnList);
+            return new RowDataSet(columnNameList, columnList);
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {

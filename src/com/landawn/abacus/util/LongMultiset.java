@@ -295,7 +295,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     @SuppressWarnings("rawtypes")
-    public Map<E, Long> toMapSortedByCount() {
+    public Map<E, Long> toMapSortedByOccurrences() {
         return toMapSortedBy((Comparator) cmpByCount);
     }
 

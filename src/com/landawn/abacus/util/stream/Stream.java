@@ -33,6 +33,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -47,6 +48,7 @@ import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -226,7 +228,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract Stream<T> filter(final Predicate<? super T> predicate, final int max);
+    public abstract Stream<T> filter(final Predicate<? super T> predicate, final long max);
 
     /**
      * Keep the elements until the given predicate returns false.
@@ -243,7 +245,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract Stream<T> takeWhile(final Predicate<? super T> predicate, final int max);
+    public abstract Stream<T> takeWhile(final Predicate<? super T> predicate, final long max);
 
     /**
      * Remove the elements until the given predicate returns false.
@@ -261,7 +263,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract Stream<T> dropWhile(final Predicate<? super T> predicate, final int max);
+    public abstract Stream<T> dropWhile(final Predicate<? super T> predicate, final long max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -278,46 +280,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract <R> Stream<R> map(Function<? super T, ? extends R> mapper);
 
-    /**
-     * Returns an {@code IntStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract CharStream mapToChar(ToCharFunction<? super T> mapper);
 
-    /**
-     * Returns an {@code ByteStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract ByteStream mapToByte(ToByteFunction<? super T> mapper);
 
-    /**
-     * Returns an {@code FloatStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">
-     *     intermediate operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract ShortStream mapToShort(ToShortFunction<? super T> mapper);
 
     /**
@@ -348,18 +314,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract LongStream mapToLong(ToLongFunction<? super T> mapper);
 
-    /**
-     * Returns a {@code FloatStream} consisting of the results of applying the
-     * given function to the elements of this stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element
-     * @return the new stream
-     */
     public abstract FloatStream mapToFloat(ToFloatFunction<? super T> mapper);
 
     /**
@@ -424,29 +378,17 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract <R> Stream<R> flatMap3(Function<? super T, ? extends Collection<? extends R>> mapper);
 
-    /**
-     * Returns an {@code IntStream} consisting of the results of replacing each
-     * element of this stream with the contents of a mapped stream produced by
-     * applying the provided mapping function to each element.  Each mapped
-     * stream is {@link java.util.stream.BaseStream#close() closed} after its
-     * contents have been placed into this stream.  (If a mapped stream is
-     * {@code null} an empty stream is used, instead.)
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param mapper a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *               <a href="package-summary.html#Statelessness">stateless</a>
-     *               function to apply to each element which produces a stream
-     *               of new values
-     * @return the new stream
-     * @see #flatMap(Function)
-     */
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
+
+    public abstract CharStream flatMapToChar2(Function<? super T, char[]> mapper);
 
     public abstract ByteStream flatMapToByte(Function<? super T, ? extends ByteStream> mapper);
 
+    public abstract ByteStream flatMapToByte2(Function<? super T, byte[]> mapper);
+
     public abstract ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper);
+
+    public abstract ShortStream flatMapToShort2(Function<? super T, short[]> mapper);
 
     /**
      * Returns an {@code IntStream} consisting of the results of replacing each
@@ -468,6 +410,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper);
 
+    public abstract IntStream flatMapToInt2(Function<? super T, int[]> mapper);
+
     /**
      * Returns an {@code LongStream} consisting of the results of replacing each
      * element of this stream with the contents of a mapped stream produced by
@@ -488,7 +432,11 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper);
 
+    public abstract LongStream flatMapToLong2(Function<? super T, long[]> mapper);
+
     public abstract FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper);
+
+    public abstract FloatStream flatMapToFloat2(Function<? super T, float[]> mapper);
 
     /**
      * Returns an {@code DoubleStream} consisting of the results of replacing
@@ -509,6 +457,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @see #flatMap(Function)
      */
     public abstract DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper);
+
+    public abstract DoubleStream flatMapToDouble2(Function<? super T, double[]> mapper);
 
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
@@ -1271,8 +1221,24 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         }
     }
 
-    public static Stream<String> of(Reader reader) {
+    /**
+     * It's user's responsibility to close the input <code>reader</code> after the stream is finished.
+     * 
+     * @param reader
+     * @return
+     */
+    public static Stream<String> of(final Reader reader) {
         return of(new LineIterator(reader));
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @return
+     */
+    public static Stream<Object[]> of(final ResultSet resultSet) {
+        return of(new RowIterator(resultSet));
     }
 
     /**
@@ -1312,7 +1278,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         //
         //        return new CharStreamImpl(values);
 
-        return new CharStreamImpl(a, startIndex, endIndex);
+        return new ArrayCharStream(a, startIndex, endIndex);
     }
 
     /**
@@ -1352,7 +1318,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         //
         //        return new IntStreamImpl(values);
 
-        return new ByteStreamImpl(a, startIndex, endIndex);
+        return new ArrayByteStream(a, startIndex, endIndex);
     }
 
     /**
@@ -1392,7 +1358,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         //
         //        return new IntStreamImpl(values);
 
-        return new ShortStreamImpl(a, startIndex, endIndex);
+        return new ArrayShortStream(a, startIndex, endIndex);
     }
 
     /**
@@ -1424,7 +1390,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static IntStream from(final int[] a, final int startIndex, final int endIndex) {
-        return new IntStreamImpl(a, startIndex, endIndex);
+        return new ArrayIntStream(a, startIndex, endIndex);
     }
 
     /**
@@ -1456,7 +1422,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static LongStream from(final long[] a, final int startIndex, final int endIndex) {
-        return new LongStreamImpl(a, startIndex, endIndex);
+        return new ArrayLongStream(a, startIndex, endIndex);
     }
 
     /**
@@ -1496,7 +1462,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         //
         //        return new DoubleStreamImpl(values);
 
-        return new FloatStreamImpl(a, 0, a.length);
+        return new ArrayFloatStream(a, 0, a.length);
     }
 
     /**
@@ -1528,7 +1494,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static DoubleStream from(final double[] a, final int startIndex, final int endIndex) {
-        return new DoubleStreamImpl(a, startIndex, endIndex);
+        return new ArrayDoubleStream(a, startIndex, endIndex);
     }
 
     public static CharStream range(final char startInclusive, final char endExclusive) {
@@ -1553,5 +1519,15 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
         return from(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    static void checkIndex(int fromIndex, int toIndex, int length) {
+        if (fromIndex < 0 || toIndex < fromIndex || toIndex > length) {
+            throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
+        }
+    }
+
+    static int toInt(long max) {
+        return max > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) max;
     }
 }

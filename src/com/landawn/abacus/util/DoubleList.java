@@ -485,8 +485,11 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.max(elementData, fromIndex, toIndex));
     }
 
-    @Override
-    public Number sum(final int fromIndex, final int toIndex) {
+    public Double sum() {
+        return sum(0, size());
+    }
+
+    public Double sum(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

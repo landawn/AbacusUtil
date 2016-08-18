@@ -24,6 +24,8 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Comparator;
+
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
@@ -69,6 +71,12 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
+    static final Comparator<Double> DOUBLE_COMPARATOR = new Comparator<Double>() {
+        @Override
+        public int compare(Double o1, Double o2) {
+            return Double.compare(o1, o2);
+        }
+    };
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -91,7 +99,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract DoubleStream filter(final DoublePredicate predicate, final int max);
+    public abstract DoubleStream filter(final DoublePredicate predicate, final long max);
 
     /**
      * Keep the elements until the given predicate returns false.
@@ -108,7 +116,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract DoubleStream takeWhile(final DoublePredicate predicate, final int max);
+    public abstract DoubleStream takeWhile(final DoublePredicate predicate, final long max);
 
     /**
      * Remove the elements until the given predicate returns false.
@@ -126,7 +134,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract DoubleStream dropWhile(final DoublePredicate predicate, final int max);
+    public abstract DoubleStream dropWhile(final DoublePredicate predicate, final long max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -538,7 +546,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      *
      * @return the sum of elements in this stream
      */
-    public abstract double sum();
+    public abstract Double sum();
 
     /**
      * Returns an {@code OptionalDouble} describing the minimum element of this
@@ -735,6 +743,8 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      */
     public abstract Stream<Double> boxed();
 
+    abstract ImmutableDoubleIterator doubleIterator();
+
     // Static factories
 
     public static DoubleStream empty() {
@@ -746,6 +756,6 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     }
 
     public static DoubleStream of(final double[] a, final int startIndex, final int endIndex) {
-        return new DoubleStreamImpl(a, startIndex, endIndex);
+        return new ArrayDoubleStream(a, startIndex, endIndex);
     }
 }

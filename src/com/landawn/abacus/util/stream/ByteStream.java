@@ -24,6 +24,8 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Comparator;
+
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.N;
@@ -69,6 +71,12 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
+    static final Comparator<Byte> BYTE_COMPARATOR = new Comparator<Byte>() {
+        @Override
+        public int compare(Byte o1, Byte o2) {
+            return Double.compare(o1, o2);
+        }
+    };
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -91,7 +99,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract ByteStream filter(final BytePredicate predicate, final int max);
+    public abstract ByteStream filter(final BytePredicate predicate, final long max);
 
     /**
      * Keep the elements until the given predicate returns false.
@@ -108,7 +116,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract ByteStream takeWhile(final BytePredicate predicate, final int max);
+    public abstract ByteStream takeWhile(final BytePredicate predicate, final long max);
 
     /**
      * Remove the elements until the given predicate returns false.
@@ -126,7 +134,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract ByteStream dropWhile(final BytePredicate predicate, final int max);
+    public abstract ByteStream dropWhile(final BytePredicate predicate, final long max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -143,7 +151,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     public abstract ByteStream map(ByteUnaryOperator mapper);
 
     /**
-     * Returns a {@code LongStream} consisting of the results of applying the
+     * Returns a {@code IntStream} consisting of the results of applying the
      * given function to the elements of this stream.
      *
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
@@ -463,7 +471,11 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
-    public abstract long sum();
+    /**
+     * 
+     * @return Long
+     */
+    public abstract Long sum();
 
     /**
      * Returns an {@code OptionalByte} describing the minimum element of this
@@ -637,6 +649,8 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      */
     public abstract Stream<Byte> boxed();
 
+    abstract ImmutableByteIterator byteIterator();
+
     // Static factories
 
     public static ByteStream empty() {
@@ -648,7 +662,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     }
 
     public static ByteStream of(final byte[] a, final int startIndex, final int endIndex) {
-        return new ByteStreamImpl(a, startIndex, endIndex);
+        return new ArrayByteStream(a, startIndex, endIndex);
     }
 
     public static ByteStream from(final int... a) {

@@ -24,6 +24,8 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Comparator;
+
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
@@ -70,6 +72,12 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class FloatStream implements BaseStream<Float, FloatStream> {
+    static final Comparator<Float> FLOAT_COMPARATOR = new Comparator<Float>() {
+        @Override
+        public int compare(Float o1, Float o2) {
+            return Double.compare(o1, o2);
+        }
+    };
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -92,7 +100,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract FloatStream filter(final FloatPredicate predicate, final int max);
+    public abstract FloatStream filter(final FloatPredicate predicate, final long max);
 
     /**
      * Keep the elements until the given predicate returns false.
@@ -109,7 +117,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract FloatStream takeWhile(final FloatPredicate predicate, final int max);
+    public abstract FloatStream takeWhile(final FloatPredicate predicate, final long max);
 
     /**
      * Remove the elements until the given predicate returns false.
@@ -127,7 +135,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract FloatStream dropWhile(final FloatPredicate predicate, final int max);
+    public abstract FloatStream dropWhile(final FloatPredicate predicate, final long max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -539,7 +547,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      *
      * @return the sum of elements in this stream
      */
-    public abstract double sum();
+    public abstract Double sum();
 
     /**
      * Returns an {@code OptionalFloat} describing the minimum element of this
@@ -748,6 +756,8 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      */
     public abstract Stream<Float> boxed();
 
+    abstract ImmutableFloatIterator floatIterator();
+
     // Static factories
 
     public static FloatStream empty() {
@@ -759,6 +769,6 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     }
 
     public static FloatStream of(final float[] a, final int startIndex, final int endIndex) {
-        return new FloatStreamImpl(a, startIndex, endIndex);
+        return new ArrayFloatStream(a, startIndex, endIndex);
     }
 }

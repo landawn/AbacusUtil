@@ -3336,7 +3336,7 @@ public final class N {
         final List<String> columnNameList = N.asList(keyColumnName, valueColumnName);
         final List<List<Object>> columnList = N.asList(keyColumn, valueColumn);
 
-        return newDataSet(entityName, entityClass, columnNameList, columnList);
+        return newDataSet(columnNameList, columnList);
     }
 
     /**
@@ -3356,33 +3356,8 @@ public final class N {
      * @param rowList list of row which can be: Map/Entity/Array/Collection.
      * @return
      */
-    public static <T> DataSet newDataSet(final List<String> columnNameList, final List<T> rowList) {
-        return newDataSet(null, columnNameList, rowList);
-    }
-
-    /**
-     * Converts a list of row(which can be: Map/Entity/Array/Collection) into a <code>DataSet</code>.
-     * 
-     * @param entityClass
-     * @param columnNameList
-     * @param rowList list of row which can be: Map/Entity/Array/Collection.
-     * @return
-     */
-    public static <T> DataSet newDataSet(final Class<?> entityClass, final List<String> columnNameList, final List<T> rowList) {
-        return newDataSet(null, entityClass, columnNameList, rowList);
-    }
-
-    /**
-     * Converts a list of row(which can be: Map/Entity/Array/Collection) into a <code>DataSet</code>.
-     * 
-     * @param entityName
-     * @param entityClass
-     * @param columnNameList
-     * @param rowList list of row which can be: Map/Entity/Array/Collection.
-     * @return
-     */
     @SuppressWarnings("deprecation")
-    public static <T> DataSet newDataSet(String entityName, Class<?> entityClass, List<String> columnNameList, final List<T> rowList) {
+    public static <T> DataSet newDataSet(List<String> columnNameList, List<T> rowList) {
         if (N.isNullOrEmpty(columnNameList) && N.isNullOrEmpty(rowList)) {
             throw new IllegalArgumentException("Column name list and row list can't be both null or empty");
         }
@@ -3458,6 +3433,10 @@ public final class N {
             }
 
             columnNameList = new ArrayList<>(columnNameSet);
+
+            if (N.isNullOrEmpty(columnNameList)) {
+                throw new IllegalArgumentException("Column name list can't be obtained from row list because it's empty or null");
+            }
         }
 
         final int columnCount = columnNameList.size();
@@ -3520,23 +3499,7 @@ public final class N {
             }
         }
 
-        if (entityClass == null) {
-            if (N.isNullOrEmpty(rowList)) {
-                entityClass = Map.class;
-            } else {
-                entityClass = rowList.get(0).getClass();
-            }
-        }
-
-        if (N.isNullOrEmpty(entityName)) {
-            if (N.isEntity(entityClass)) {
-                entityName = N.getSimpleClassName(entityClass);
-            } else {
-                entityName = N.EMPTY_STRING;
-            }
-        }
-
-        return new RowDataSet(entityName, entityClass, columnNameList, columnList);
+        return new RowDataSet(columnNameList, columnList);
     }
 
     @SuppressWarnings("deprecation")
@@ -12872,10 +12835,6 @@ public final class N {
         return (m == null) || (m.isEmpty());
     }
 
-    public static boolean isNullOrEmpty(final Sheet<?, ?, ?> sheet) {
-        return (sheet == null) || (sheet.isEmpty());
-    }
-
     public static boolean isNullOrEmpty(final DataSet rs) {
         return (rs == null) || (rs.isEmpty());
     }
@@ -12965,10 +12924,6 @@ public final class N {
 
     public static boolean notNullOrEmpty(final Multimap<?, ?, ?> m) {
         return (m != null) && (m.size() > 0);
-    }
-
-    public static boolean notNullOrEmpty(final Sheet<?, ?, ?> sheet) {
-        return (sheet != null) && (!sheet.isEmpty());
     }
 
     public static boolean notNullOrEmpty(final DataSet rs) {
@@ -13273,26 +13228,6 @@ public final class N {
      * @throws IllegalArgumentException if the specified parameter is null or empty.
      */
     public static <K, E, V extends Collection<E>> Multimap<K, E, V> checkNullOrEmpty(final Multimap<K, E, V> parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <R, C, E, T extends Sheet<R, C, E>> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
@@ -30391,7 +30326,7 @@ public final class N {
      * @param a
      * @return a long number
      */
-    public static Number sum(final byte... a) {
+    public static Long sum(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
@@ -30399,7 +30334,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static Number sum(final byte[] a, final int from, final int to) {
+    public static Long sum(final byte[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30424,7 +30359,7 @@ public final class N {
      * @param a
      * @return a long number
      */
-    public static Number sum(final short... a) {
+    public static Long sum(final short... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
@@ -30432,7 +30367,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static Number sum(final short[] a, final int from, final int to) {
+    public static Long sum(final short[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30457,7 +30392,7 @@ public final class N {
      * @param a
      * @return a long number
      */
-    public static Number sum(final int... a) {
+    public static Long sum(final int... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
@@ -30465,7 +30400,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static Number sum(final int[] a, final int from, final int to) {
+    public static Long sum(final int[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30490,7 +30425,7 @@ public final class N {
      * @param a
      * @return a long number
      */
-    public static Number sum(final long... a) {
+    public static Long sum(final long... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
@@ -30498,7 +30433,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static Number sum(final long[] a, final int from, final int to) {
+    public static Long sum(final long[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30523,7 +30458,7 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Number sum(final float... a) {
+    public static Double sum(final float... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30531,7 +30466,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static Number sum(final float[] a, final int from, final int to) {
+    public static Double sum(final float[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30556,7 +30491,7 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Number sum(final double... a) {
+    public static Double sum(final double... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30564,7 +30499,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static Number sum(final double[] a, final int from, final int to) {
+    public static Double sum(final double[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30591,7 +30526,7 @@ public final class N {
      * @return a double number. <code>0d</code> is returned if list is empty or
      *         null.
      */
-    public static <T extends Number> Number sum(final T[] a) {
+    public static <T extends Number> Double sum(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30599,7 +30534,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static <T extends Number> Number sum(final T[] a, final int from, final int to) {
+    public static <T extends Number> Double sum(final T[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30619,7 +30554,7 @@ public final class N {
         return sum;
     }
 
-    public static Number sum(final Collection<? extends Number> c) {
+    public static Double sum(final Collection<? extends Number> c) {
         if (N.isNullOrEmpty(c)) {
             return 0d;
         }
@@ -30636,7 +30571,7 @@ public final class N {
      * @return a double number. <code>0d</code> is returned if list is empty or
      *         null.
      */
-    public static Number sum(final Collection<? extends Number> c, final int from, final int to) {
+    public static Double sum(final Collection<? extends Number> c, final int from, final int to) {
         checkIndex(from, to, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c)) {
@@ -30676,7 +30611,7 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Number avg(final byte... a) {
+    public static Double avg(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30684,7 +30619,7 @@ public final class N {
         return avg(a, 0, a.length);
     }
 
-    public static Number avg(final byte[] a, final int from, final int to) {
+    public static Double avg(final byte[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30703,7 +30638,7 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Number avg(final short... a) {
+    public static Double avg(final short... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30711,7 +30646,7 @@ public final class N {
         return avg(a, 0, a.length);
     }
 
-    public static Number avg(final short[] a, final int from, final int to) {
+    public static Double avg(final short[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30730,7 +30665,7 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Number avg(final int... a) {
+    public static Double avg(final int... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30738,7 +30673,7 @@ public final class N {
         return avg(a, 0, a.length);
     }
 
-    public static Number avg(final int[] a, final int from, final int to) {
+    public static Double avg(final int[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30757,7 +30692,7 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Number avg(final long... a) {
+    public static Double avg(final long... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30765,7 +30700,7 @@ public final class N {
         return avg(a, 0, a.length);
     }
 
-    public static Number avg(final long[] a, final int from, final int to) {
+    public static Double avg(final long[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30784,7 +30719,7 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Number avg(final float... a) {
+    public static Double avg(final float... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30792,7 +30727,7 @@ public final class N {
         return avg(a, 0, a.length);
     }
 
-    public static Number avg(final float[] a, final int from, final int to) {
+    public static Double avg(final float[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30811,7 +30746,7 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Number avg(final double... a) {
+    public static Double avg(final double... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30819,7 +30754,7 @@ public final class N {
         return avg(a, 0, a.length);
     }
 
-    public static Number avg(final double[] a, final int from, final int to) {
+    public static Double avg(final double[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30840,7 +30775,7 @@ public final class N {
      * @return a double number. <code>0d</code> is returned if list is empty or
      *         null.
      */
-    public static <T extends Number> Number avg(final T[] a) {
+    public static <T extends Number> Double avg(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -30848,7 +30783,7 @@ public final class N {
         return avg(a, 0, a.length);
     }
 
-    public static <T extends Number> Number avg(final T[] a, final int from, final int to) {
+    public static <T extends Number> Double avg(final T[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30862,7 +30797,7 @@ public final class N {
         return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
     }
 
-    public static Number avg(final Collection<? extends Number> c) {
+    public static Double avg(final Collection<? extends Number> c) {
         if (N.isNullOrEmpty(c)) {
             return 0d;
         }
@@ -30879,7 +30814,7 @@ public final class N {
      * @return a double number. <code>0d</code> is returned if list is empty or
      *         null.
      */
-    public static Number avg(final Collection<? extends Number> c, final int from, final int to) {
+    public static Double avg(final Collection<? extends Number> c, final int from, final int to) {
         checkIndex(from, to, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c)) {

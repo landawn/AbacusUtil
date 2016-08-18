@@ -519,8 +519,11 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(N.max(elementData, fromIndex, toIndex));
     }
 
-    @Override
-    public Number sum(final int fromIndex, final int toIndex) {
+    public Long sum() {
+        return sum(0, size());
+    }
+
+    public Long sum(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

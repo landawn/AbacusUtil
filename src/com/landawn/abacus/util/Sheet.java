@@ -41,8 +41,6 @@ public interface Sheet<R, C, E> {
 
     E remove(R rowKey, C columnKey);
 
-    boolean contains(R rowKey, C columnKey);
-
     boolean containsValue(Object value);
 
     List<E> getRow(R rowKey);
@@ -51,13 +49,11 @@ public interface Sheet<R, C, E> {
 
     void addRow(R rowKey, Collection<? extends E> row);
 
-    void clearRow(R rowKey);
-
     void removeRow(R rowKey);
 
     boolean containsRow(R rowKey);
 
-    Map<C, E> row(R rowKey);
+    Map<C, E> rowMap(R rowKey);
 
     Map<R, Map<C, E>> rowMap();
 
@@ -67,13 +63,11 @@ public interface Sheet<R, C, E> {
 
     void addColumn(C columnKey, Collection<? extends E> column);
 
-    void clearColumn(C columnKey);
-
     void removeColumn(C columnKey);
 
     boolean containsColumn(C columnKey);
 
-    Map<R, E> column(C columnKey);
+    Map<R, E> columnMap(C columnKey);
 
     Map<C, Map<R, E>> columnMap();
 
@@ -91,30 +85,9 @@ public interface Sheet<R, C, E> {
      */
     int columnLength();
 
-    /**
-     * Returns the values which have been set with the order of row first, which may contain duplicates.
-     *
-     * @return
-     */
-    List<E> values();
-
-    /**
-     * Returns the values which have been set.
-     *
-     * @return
-     */
-    Set<E> valueSet();
-
-    /**
-     * Returns the total count of the values which have been set.
-     *
-     * @return
-     */
-    int count();
-
-    boolean isEmpty();
-
     void clear();
+
+    void trimToSize();
 
     <T extends Sheet<R, C, E>> T copy();
 

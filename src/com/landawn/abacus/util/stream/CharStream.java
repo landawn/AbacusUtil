@@ -24,6 +24,8 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Comparator;
+
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.N;
@@ -68,6 +70,12 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class CharStream implements BaseStream<Character, CharStream> {
+    static final Comparator<Character> CHAR_COMPARATOR = new Comparator<Character>() {
+        @Override
+        public int compare(Character o1, Character o2) {
+            return Double.compare(o1, o2);
+        }
+    };
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -90,7 +98,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract CharStream filter(final CharPredicate predicate, final int max);
+    public abstract CharStream filter(final CharPredicate predicate, final long max);
 
     /**
      * Keep the elements until the given predicate returns false.
@@ -107,7 +115,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract CharStream takeWhile(final CharPredicate predicate, final int max);
+    public abstract CharStream takeWhile(final CharPredicate predicate, final long max);
 
     /**
      * Remove the elements until the given predicate returns false.
@@ -125,7 +133,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @param max the maximum elements number to the new Stream.
      * @return
      */
-    public abstract CharStream dropWhile(final CharPredicate predicate, final int max);
+    public abstract CharStream dropWhile(final CharPredicate predicate, final long max);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -142,7 +150,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     public abstract CharStream map(CharUnaryOperator mapper);
 
     /**
-     * Returns a {@code LongStream} consisting of the results of applying the
+     * Returns a {@code IntStream} consisting of the results of applying the
      * given function to the elements of this stream.
      *
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
@@ -170,6 +178,10 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      */
     public abstract <U> Stream<U> mapToObj(CharFunction<? extends U> mapper);
 
+    public abstract CharStream flatMap(CharFunction<? extends CharStream> mapper);
+
+    public abstract IntStream flatMapToInt(CharFunction<? extends IntStream> mapper);
+
     /**
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
@@ -188,10 +200,6 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return the new stream
      * @see Stream#flatMap(Function)
      */
-    public abstract CharStream flatMap(CharFunction<? extends CharStream> mapper);
-
-    public abstract IntStream flatMapToInt(CharFunction<? extends IntStream> mapper);
-
     public abstract <T> Stream<T> flatMapToObj(CharFunction<? extends Stream<T>> mapper);
 
     /**
@@ -632,6 +640,8 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      */
     public abstract Stream<Character> boxed();
 
+    abstract ImmutableCharIterator charIterator();
+
     // Static factories
 
     public static CharStream empty() {
@@ -643,7 +653,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     }
 
     public static CharStream of(final char[] a, final int startIndex, final int endIndex) {
-        return new CharStreamImpl(a, startIndex, endIndex);
+        return new ArrayCharStream(a, startIndex, endIndex);
     }
 
     public static CharStream from(final int... a) {

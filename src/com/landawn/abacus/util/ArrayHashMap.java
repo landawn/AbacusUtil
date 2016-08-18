@@ -33,7 +33,7 @@ import com.landawn.abacus.exception.AbacusException;
  *
  * @author Haiyang Li
  */
-public final class ArrayHashMap<K, V> implements Map<K, V> {
+public class ArrayHashMap<K, V> implements Map<K, V> {
     private final Map<ArrayWrapper<K>, V> map;
 
     public ArrayHashMap() {

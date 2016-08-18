@@ -3205,22 +3205,32 @@ public final class Collectors {
     }
 
     public static <T> Collector<T, ?, DataSet> toDataSet(final List<String> columnNames) {
-        return toDataSet(null, Map.class, columnNames);
-    }
-
-    public static <T> Collector<T, ?, DataSet> toDataSet(final String entityName, final Class<?> entityClass, final List<String> columnNames) {
         @SuppressWarnings("rawtypes")
         final Collector<T, List<T>, List<T>> collector = (Collector) toList();
 
         final Function<List<T>, DataSet> finisher = new Function<List<T>, DataSet>() {
             @Override
             public DataSet apply(List<T> t) {
-                return N.newDataSet(entityName, entityClass, columnNames, t);
+                return N.newDataSet(columnNames, t);
             }
         };
 
         return new CollectorImpl<T, List<T>, DataSet>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
+
+    //    public static <T> Collector<T, ?, DataSet> toDataSet(final String entityName, final Class<?> entityClass, final List<String> columnNames) {
+    //        @SuppressWarnings("rawtypes")
+    //        final Collector<T, List<T>, List<T>> collector = (Collector) toList();
+    //
+    //        final Function<List<T>, DataSet> finisher = new Function<List<T>, DataSet>() {
+    //            @Override
+    //            public DataSet apply(List<T> t) {
+    //                return N.newDataSet(entityName, entityClass, columnNames, t);
+    //            }
+    //        };
+    //
+    //        return new CollectorImpl<T, List<T>, DataSet>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher);
+    //    }
 
     /**
      * Returns a {@code Collector} which applies an {@code int}-producing
