@@ -3,6 +3,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -587,6 +589,10 @@ final class IteratorFloatStream extends FloatStream {
 
     @Override
     public FloatStream limit(final long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private long cnt = 0;
 
@@ -614,6 +620,12 @@ final class IteratorFloatStream extends FloatStream {
 
     @Override
     public FloatStream skip(final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private boolean skipped = false;
 
@@ -772,6 +784,22 @@ final class IteratorFloatStream extends FloatStream {
         }
 
         return OptionalFloat.of(candidate);
+    }
+
+    @Override
+    public OptionalFloat kthLargest(int k) {
+        if (elements.hasNext() == false) {
+            return OptionalFloat.empty();
+        }
+
+        final Optional<Float> optional = boxed().kthLargest(k, new Comparator<Float>() {
+            @Override
+            public int compare(Float o1, Float o2) {
+                return N.compare(o1.floatValue(), o2.floatValue());
+            }
+        });
+
+        return optional.isPresent() ? OptionalFloat.of(optional.get()) : OptionalFloat.empty();
     }
 
     @Override

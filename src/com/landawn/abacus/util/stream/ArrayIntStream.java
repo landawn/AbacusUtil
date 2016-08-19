@@ -467,6 +467,10 @@ final class ArrayIntStream extends IntStream {
 
     @Override
     public IntStream limit(long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         if (maxSize >= toIndex - fromIndex) {
             return new ArrayIntStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -476,6 +480,12 @@ final class ArrayIntStream extends IntStream {
 
     @Override
     public IntStream skip(long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         if (n >= toIndex - fromIndex) {
             return new ArrayIntStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -558,6 +568,15 @@ final class ArrayIntStream extends IntStream {
         }
 
         return OptionalInt.of(N.max(elements, fromIndex, toIndex));
+    }
+
+    @Override
+    public OptionalInt kthLargest(int k) {
+        if (count() == 0) {
+            return OptionalInt.empty();
+        }
+
+        return OptionalInt.of(N.kthLargest(elements, fromIndex, toIndex, k));
     }
 
     @Override

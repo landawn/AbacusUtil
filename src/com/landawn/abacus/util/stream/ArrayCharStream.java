@@ -301,6 +301,10 @@ final class ArrayCharStream extends CharStream {
 
     @Override
     public CharStream limit(long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         if (maxSize >= toIndex - fromIndex) {
             return new ArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -310,6 +314,12 @@ final class ArrayCharStream extends CharStream {
 
     @Override
     public CharStream skip(long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         if (n >= toIndex - fromIndex) {
             return new ArrayCharStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -387,6 +397,15 @@ final class ArrayCharStream extends CharStream {
         }
 
         return OptionalChar.of(N.max(elements, fromIndex, toIndex));
+    }
+
+    @Override
+    public OptionalChar kthLargest(int k) {
+        if (count() == 0) {
+            return OptionalChar.empty();
+        }
+
+        return OptionalChar.of(N.kthLargest(elements, fromIndex, toIndex, k));
     }
 
     @Override

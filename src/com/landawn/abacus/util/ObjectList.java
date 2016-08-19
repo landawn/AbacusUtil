@@ -408,6 +408,27 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(elementData, fromIndex, toIndex, cmp));
     }
 
+    public OptionalNullable<T> median() {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.median((Comparable[]) elementData, 0, size));
+    }
+
+    public OptionalNullable<T> median(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
+                : OptionalNullable.of((T) N.median((Comparable[]) elementData, fromIndex, toIndex));
+    }
+
+    public OptionalNullable<T> median(Comparator<T> cmp) {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.median(elementData, 0, size, cmp));
+    }
+
+    public OptionalNullable<T> median(final int fromIndex, final int toIndex, final Comparator<T> cmp) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.median(elementData, fromIndex, toIndex, cmp));
+    }
+
     public OptionalNullable<T> max() {
         return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.max((Comparable[]) elementData, 0, size));
     }
@@ -427,6 +448,28 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(elementData, fromIndex, toIndex, cmp));
+    }
+
+    public OptionalNullable<T> kthLargest(final int k) {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.kthLargest((Comparable[]) elementData, 0, size, k));
+    }
+
+    public OptionalNullable<T> kthLargest(final int k, Comparator<T> cmp) {
+        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.kthLargest(elementData, 0, size, k, cmp));
+    }
+
+    public OptionalNullable<T> kthLargest(final int fromIndex, final int toIndex, final int k) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
+                : OptionalNullable.of((T) N.kthLargest((Comparable[]) elementData, fromIndex, toIndex, k));
+    }
+
+    public OptionalNullable<T> kthLargest(final int fromIndex, final int toIndex, final int k, final Comparator<T> cmp) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
+                : OptionalNullable.of(N.kthLargest(elementData, fromIndex, toIndex, k, cmp));
     }
 
     @Override

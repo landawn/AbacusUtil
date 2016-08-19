@@ -475,6 +475,16 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.min(elementData, fromIndex, toIndex));
     }
 
+    public OptionalDouble median() {
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(N.median(elementData, 0, size));
+    }
+
+    public OptionalDouble median(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.median(elementData, fromIndex, toIndex));
+    }
+
     public OptionalDouble max() {
         return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(N.max(elementData, 0, size));
     }
@@ -483,6 +493,16 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.max(elementData, fromIndex, toIndex));
+    }
+
+    public OptionalDouble kthLargest(final int k) {
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(N.kthLargest(elementData, 0, size, k));
+    }
+
+    public OptionalDouble kthLargest(final int fromIndex, final int toIndex, final int k) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     public Double sum() {

@@ -473,6 +473,16 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(N.min(elementData, fromIndex, toIndex));
     }
 
+    public OptionalShort median() {
+        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(N.median(elementData, 0, size));
+    }
+
+    public OptionalShort median(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(N.median(elementData, fromIndex, toIndex));
+    }
+
     public OptionalShort max() {
         return size() == 0 ? OptionalShort.empty() : OptionalShort.of(N.max(elementData, 0, size));
     }
@@ -481,6 +491,16 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(N.max(elementData, fromIndex, toIndex));
+    }
+
+    public OptionalShort kthLargest(final int k) {
+        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(N.kthLargest(elementData, 0, size, k));
+    }
+
+    public OptionalShort kthLargest(final int fromIndex, final int toIndex, final int k) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     public Long sum() {

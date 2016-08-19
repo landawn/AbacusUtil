@@ -40,6 +40,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.util.Array;
@@ -973,6 +975,14 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Optional<T> max(Comparator<? super T> comparator);
 
     /**
+     * 
+     * @param k
+     * @param cmp
+     * @return Optional.empty() if there is no element or min(k, length of this stream) largest element.
+     */
+    public abstract Optional<T> kthLargest(int k, Comparator<? super T> cmp);
+
+    /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is
      * equivalent to:
@@ -1117,7 +1127,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param c
      * @return
      */
-    public static <T> Stream<T> of(final Collection<T> c) {
+    public static <T> Stream<T> of(final Collection<? extends T> c) {
         return of(c, 0, c.size());
     }
 
@@ -1129,7 +1139,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static <T> Stream<T> of(final Collection<T> c, int startIndex, int endIndex) {
+    public static <T> Stream<T> of(final Collection<? extends T> c, int startIndex, int endIndex) {
         if (startIndex < 0 || endIndex < startIndex || endIndex > c.size()) {
             throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
         }
@@ -1166,7 +1176,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param iterator
      * @return
      */
-    public static <T> Stream<T> of(final Iterator<T> iterator) {
+    public static <T> Stream<T> of(final Iterator<? extends T> iterator) {
         return new IteratorStream<T>(iterator);
     }
 
@@ -1178,18 +1188,12 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static <T> Stream<T> of(final Iterator<T> iterator, int startIndex, int endIndex) {
+    static <T> Stream<T> of(final Iterator<? extends T> iterator, int startIndex, int endIndex) {
         if (startIndex < 0 || endIndex < startIndex) {
             throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
         }
 
-        int index = 0;
-        while (index < startIndex && iterator.hasNext()) {
-            iterator.next();
-            index++;
-        }
-
-        return of(iterator);
+        return (Stream<T>) of(iterator).skip(startIndex).limit(endIndex - startIndex);
     }
 
     /**
@@ -1231,6 +1235,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         return of(new LineIterator(reader));
     }
 
+    static Stream<String> of(final Reader reader, int startIndex, int endIndex) {
+        return of(new LineIterator(reader), startIndex, endIndex);
+    }
+
     /**
      * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
@@ -1239,6 +1247,35 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static Stream<Object[]> of(final ResultSet resultSet) {
         return of(new RowIterator(resultSet));
+    }
+
+    static Stream<Object[]> of(final ResultSet resultSet, int startIndex, int endIndex) {
+        return of(new RowIterator(resultSet), startIndex, endIndex);
+    }
+
+    public static <T> Stream<T> of(final Supplier<Boolean> hasNext, final Supplier<? extends T> next) {
+        return of(new ImmutableIterator<T>() {
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public T next() {
+                if (hasNextVal == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return next.get();
+            }
+        });
     }
 
     /**
@@ -1519,6 +1556,41 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
         return from(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static <T> Stream<T> concat(final Iterator<? extends T>... a) {
+        return of(new ImmutableIterator<T>() {
+            private final Iterator<Iterator<? extends T>> b = N.asList(a).iterator();
+            private Iterator<? extends T> cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && b.hasNext()) {
+                    cur = b.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static <T> Stream<T> concat(Stream<? extends T>... a) {
+        final Iterator<? extends T>[] b = new Iterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            b[i] = a[i].iterator();
+        }
+
+        return concat(b);
     }
 
     static void checkIndex(int fromIndex, int toIndex, int length) {

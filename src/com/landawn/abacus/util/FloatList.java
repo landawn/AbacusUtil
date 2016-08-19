@@ -505,6 +505,16 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(N.min(elementData, fromIndex, toIndex));
     }
 
+    public OptionalFloat median() {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(N.median(elementData, 0, size));
+    }
+
+    public OptionalFloat median(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(N.median(elementData, fromIndex, toIndex));
+    }
+
     public OptionalFloat max() {
         return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(N.max(elementData, 0, size));
     }
@@ -513,6 +523,16 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(N.max(elementData, fromIndex, toIndex));
+    }
+
+    public OptionalFloat kthLargest(final int k) {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(N.kthLargest(elementData, 0, size, k));
+    }
+
+    public OptionalFloat kthLargest(final int fromIndex, final int toIndex, final int k) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     public Double sum() {

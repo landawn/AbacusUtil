@@ -302,6 +302,10 @@ final class ArrayShortStream extends ShortStream {
 
     @Override
     public ShortStream limit(long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         if (maxSize >= toIndex - fromIndex) {
             return new ArrayShortStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -311,6 +315,12 @@ final class ArrayShortStream extends ShortStream {
 
     @Override
     public ShortStream skip(long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         if (n >= toIndex - fromIndex) {
             return new ArrayShortStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -393,6 +403,15 @@ final class ArrayShortStream extends ShortStream {
         }
 
         return OptionalShort.of(N.max(elements, fromIndex, toIndex));
+    }
+
+    @Override
+    public OptionalShort kthLargest(int k) {
+        if (count() == 0) {
+            return OptionalShort.empty();
+        }
+
+        return OptionalShort.of(N.kthLargest(elements, fromIndex, toIndex, k));
     }
 
     @Override

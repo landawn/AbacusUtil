@@ -39,6 +39,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -1975,8 +1976,30 @@ public final class IOUtil {
             return;
         }
 
-        for (Closeable closeable : a) {
-            close(closeable);
+        close(Arrays.asList(a));
+    }
+
+    public static void close(final Collection<? extends Closeable> c) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        RuntimeException ex = null;
+
+        for (Closeable closeable : c) {
+            try {
+                close(closeable);
+            } catch (RuntimeException e) {
+                if (ex == null) {
+                    ex = e;
+                } else {
+                    ex.addSuppressed(e);
+                }
+            }
+        }
+
+        if (ex != null) {
+            throw ex;
         }
     }
 
@@ -2023,8 +2046,30 @@ public final class IOUtil {
             return;
         }
 
-        for (Closeable closeable : a) {
-            closeQuietly(closeable);
+        closeQuietly(Arrays.asList(a));
+    }
+
+    public static void closeQuietly(final Collection<? extends Closeable> c) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        RuntimeException ex = null;
+
+        for (Closeable closeable : c) {
+            try {
+                closeQuietly(closeable);
+            } catch (RuntimeException e) {
+                if (ex == null) {
+                    ex = e;
+                } else {
+                    ex.addSuppressed(e);
+                }
+            }
+        }
+
+        if (ex != null) {
+            throw ex;
         }
     }
 
@@ -3375,6 +3420,7 @@ public final class IOUtil {
                             activeThreadNum.decrementAndGet();
                         }
                     }
+
                 };
 
                 activeThreadNum.incrementAndGet();

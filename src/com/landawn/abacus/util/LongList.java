@@ -509,6 +509,16 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(N.min(elementData, fromIndex, toIndex));
     }
 
+    public OptionalLong median() {
+        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(N.median(elementData, 0, size));
+    }
+
+    public OptionalLong median(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(N.median(elementData, fromIndex, toIndex));
+    }
+
     public OptionalLong max() {
         return size() == 0 ? OptionalLong.empty() : OptionalLong.of(N.max(elementData, 0, size));
     }
@@ -517,6 +527,16 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(N.max(elementData, fromIndex, toIndex));
+    }
+
+    public OptionalLong kthLargest(final int k) {
+        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(N.kthLargest(elementData, 0, size, k));
+    }
+
+    public OptionalLong kthLargest(final int fromIndex, final int toIndex, final int k) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     public Long sum() {

@@ -302,6 +302,10 @@ final class ArrayByteStream extends ByteStream {
 
     @Override
     public ByteStream limit(long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         if (maxSize >= toIndex - fromIndex) {
             return new ArrayByteStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -311,6 +315,12 @@ final class ArrayByteStream extends ByteStream {
 
     @Override
     public ByteStream skip(long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         if (n >= toIndex - fromIndex) {
             return new ArrayByteStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -393,6 +403,15 @@ final class ArrayByteStream extends ByteStream {
         }
 
         return OptionalByte.of(N.max(elements, fromIndex, toIndex));
+    }
+
+    @Override
+    public OptionalByte kthLargest(int k) {
+        if (count() == 0) {
+            return OptionalByte.empty();
+        }
+
+        return OptionalByte.of(N.kthLargest(elements, fromIndex, toIndex, k));
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
@@ -587,6 +589,10 @@ final class IteratorDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream limit(final long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private long cnt = 0;
 
@@ -614,6 +620,12 @@ final class IteratorDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream skip(final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private boolean skipped = false;
 
@@ -772,6 +784,22 @@ final class IteratorDoubleStream extends DoubleStream {
         }
 
         return OptionalDouble.of(candidate);
+    }
+
+    @Override
+    public OptionalDouble kthLargest(int k) {
+        if (elements.hasNext() == false) {
+            return OptionalDouble.empty();
+        }
+
+        final Optional<Double> optional = boxed().kthLargest(k, new Comparator<Double>() {
+            @Override
+            public int compare(Double o1, Double o2) {
+                return N.compare(o1.doubleValue(), o2.doubleValue());
+            }
+        });
+
+        return optional.isPresent() ? OptionalDouble.of(optional.get()) : OptionalDouble.empty();
     }
 
     @Override

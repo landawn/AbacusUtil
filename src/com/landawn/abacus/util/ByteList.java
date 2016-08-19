@@ -473,6 +473,16 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.min(elementData, fromIndex, toIndex));
     }
 
+    public OptionalByte median() {
+        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(N.median(elementData, 0, size));
+    }
+
+    public OptionalByte median(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.median(elementData, fromIndex, toIndex));
+    }
+
     public OptionalByte max() {
         return size() == 0 ? OptionalByte.empty() : OptionalByte.of(N.max(elementData, 0, size));
     }
@@ -481,6 +491,16 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.max(elementData, fromIndex, toIndex));
+    }
+
+    public OptionalByte kthLargest(final int k) {
+        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(N.kthLargest(elementData, 0, size, k));
+    }
+
+    public OptionalByte kthLargest(final int fromIndex, final int toIndex, final int k) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     public Long sum() {

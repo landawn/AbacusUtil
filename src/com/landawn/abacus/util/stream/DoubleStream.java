@@ -590,6 +590,13 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract OptionalDouble max();
 
     /**
+     * 
+     * @param k
+     * @return OptionalByte.empty() if there is no element or min(k, length of this stream) largest element.
+     */
+    public abstract OptionalDouble kthLargest(int k);
+
+    /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is
      * equivalent to:

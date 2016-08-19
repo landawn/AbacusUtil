@@ -3,6 +3,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortList;
@@ -455,6 +457,10 @@ final class IteratorShortStream extends ShortStream {
 
     @Override
     public ShortStream limit(final long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         return new IteratorShortStream(new ImmutableShortIterator() {
             private long cnt = 0;
 
@@ -482,6 +488,12 @@ final class IteratorShortStream extends ShortStream {
 
     @Override
     public ShortStream skip(final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         return new IteratorShortStream(new ImmutableShortIterator() {
             private boolean skipped = false;
 
@@ -640,6 +652,22 @@ final class IteratorShortStream extends ShortStream {
         }
 
         return OptionalShort.of(candidate);
+    }
+
+    @Override
+    public OptionalShort kthLargest(int k) {
+        if (elements.hasNext() == false) {
+            return OptionalShort.empty();
+        }
+
+        final Optional<Short> optional = boxed().kthLargest(k, new Comparator<Short>() {
+            @Override
+            public int compare(Short o1, Short o2) {
+                return N.compare(o1.shortValue(), o2.shortValue());
+            }
+        });
+
+        return optional.isPresent() ? OptionalShort.of(optional.get()) : OptionalShort.empty();
     }
 
     @Override

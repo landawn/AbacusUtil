@@ -32299,16 +32299,26 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        final int len = a.length;
+        return median(a, 0, a.length);
+    }
+
+    public static char median(final char[] a, final int from, final int to) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        checkIndex(from, to, a.length);
+
+        final int len = to - from;
 
         if (len == 1) {
-            return a[0];
+            return a[from];
         } else if (len == 2) {
-            return min(a[0], a[1]);
+            return min(a[from], a[from + 1]);
         } else if (len == 3) {
-            return median(a[0], a[1], a[2]);
+            return median(a[from], a[from + 1], a[from + 2]);
         } else {
-            return kthLargest(a, len / 2 + 1);
+            return kthLargest(a, from, to, len / 2 + 1);
         }
     }
 
@@ -32324,16 +32334,26 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        final int len = a.length;
+        return median(a, 0, a.length);
+    }
+
+    public static byte median(final byte[] a, final int from, final int to) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        checkIndex(from, to, a.length);
+
+        final int len = to - from;
 
         if (len == 1) {
-            return a[0];
+            return a[from];
         } else if (len == 2) {
-            return min(a[0], a[1]);
+            return min(a[from], a[from + 1]);
         } else if (len == 3) {
-            return median(a[0], a[1], a[2]);
+            return median(a[from], a[from + 1], a[from + 2]);
         } else {
-            return kthLargest(a, len / 2 + 1);
+            return kthLargest(a, from, to, len / 2 + 1);
         }
     }
 
@@ -32349,16 +32369,26 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        final int len = a.length;
+        return median(a, 0, a.length);
+    }
+
+    public static short median(final short[] a, final int from, final int to) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        checkIndex(from, to, a.length);
+
+        final int len = to - from;
 
         if (len == 1) {
-            return a[0];
+            return a[from];
         } else if (len == 2) {
-            return min(a[0], a[1]);
+            return min(a[from], a[from + 1]);
         } else if (len == 3) {
-            return median(a[0], a[1], a[2]);
+            return median(a[from], a[from + 1], a[from + 2]);
         } else {
-            return kthLargest(a, len / 2 + 1);
+            return kthLargest(a, from, to, len / 2 + 1);
         }
     }
 
@@ -32374,16 +32404,26 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        final int len = a.length;
+        return median(a, 0, a.length);
+    }
+
+    public static int median(final int[] a, final int from, final int to) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        checkIndex(from, to, a.length);
+
+        final int len = to - from;
 
         if (len == 1) {
-            return a[0];
+            return a[from];
         } else if (len == 2) {
-            return min(a[0], a[1]);
+            return min(a[from], a[from + 1]);
         } else if (len == 3) {
-            return median(a[0], a[1], a[2]);
+            return median(a[from], a[from + 1], a[from + 2]);
         } else {
-            return kthLargest(a, len / 2 + 1);
+            return kthLargest(a, from, to, len / 2 + 1);
         }
     }
 
@@ -32399,16 +32439,26 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        final int len = a.length;
+        return median(a, 0, a.length);
+    }
+
+    public static long median(final long[] a, final int from, final int to) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        checkIndex(from, to, a.length);
+
+        final int len = to - from;
 
         if (len == 1) {
-            return a[0];
+            return a[from];
         } else if (len == 2) {
-            return min(a[0], a[1]);
+            return min(a[from], a[from + 1]);
         } else if (len == 3) {
-            return median(a[0], a[1], a[2]);
+            return median(a[from], a[from + 1], a[from + 2]);
         } else {
-            return kthLargest(a, len / 2 + 1);
+            return kthLargest(a, from, to, len / 2 + 1);
         }
     }
 
@@ -32424,16 +32474,26 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        final int len = a.length;
+        return median(a, 0, a.length);
+    }
+
+    public static float median(final float[] a, final int from, final int to) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        checkIndex(from, to, a.length);
+
+        final int len = to - from;
 
         if (len == 1) {
-            return a[0];
+            return a[from];
         } else if (len == 2) {
-            return min(a[0], a[1]);
+            return min(a[from], a[from + 1]);
         } else if (len == 3) {
-            return median(a[0], a[1], a[2]);
+            return median(a[from], a[from + 1], a[from + 2]);
         } else {
-            return kthLargest(a, len / 2 + 1);
+            return kthLargest(a, from, to, len / 2 + 1);
         }
     }
 
@@ -32449,16 +32509,26 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        final int len = a.length;
+        return median(a, 0, a.length);
+    }
+
+    public static double median(final double[] a, final int from, final int to) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        checkIndex(from, to, a.length);
+
+        final int len = to - from;
 
         if (len == 1) {
-            return a[0];
+            return a[from];
         } else if (len == 2) {
-            return min(a[0], a[1]);
+            return min(a[from], a[from + 1]);
         } else if (len == 3) {
-            return median(a[0], a[1], a[2]);
+            return median(a[from], a[from + 1], a[from + 2]);
         } else {
-            return kthLargest(a, len / 2 + 1);
+            return kthLargest(a, from, to, len / 2 + 1);
         }
     }
 
@@ -32468,9 +32538,28 @@ public final class N {
      * @param a
      * @return the median value in the array
      */
-
     public static <T extends Comparable<? super T>> T median(final T[] a) {
-        return (T) median(a, comparableCmp);
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return median(a, 0, a.length);
+    }
+
+    public static <T extends Comparable<? super T>> T median(final T[] a, final int from, final int to) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return (T) median(a, from, to, comparableCmp);
+    }
+
+    public static <T> T median(final T[] a, Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return median(a, 0, a.length, cmp);
     }
 
     /**
@@ -32480,30 +32569,18 @@ public final class N {
      * @param c
      * @return the median value in the array
      */
-    public static <T> T median(final T[] a, Comparator<? super T> cmp) {
+    public static <T> T median(final T[] a, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
+        checkIndex(from, to, a.length);
+
         cmp = cmp == null ? comparableCmp : cmp;
 
-        final int len = a.length;
+        final int len = to - from;
 
-        if (len == 1) {
-            return a[0];
-        } else if (len == 2) {
-            return N.compare(a[0], a[1], cmp) <= 0 ? a[0] : a[1];
-        } else if (len == 3) {
-            if ((cmp.compare(a[0], a[1]) >= 0 && cmp.compare(a[0], a[2]) <= 0) || (cmp.compare(a[0], a[2]) >= 0 && cmp.compare(a[0], a[1]) <= 0)) {
-                return a[0];
-            } else if ((cmp.compare(a[1], a[0]) >= 0 && cmp.compare(a[1], a[2]) <= 0) || (cmp.compare(a[1], a[2]) >= 0 && cmp.compare(a[1], a[0]) <= 0)) {
-                return a[1];
-            } else {
-                return a[2];
-            }
-        } else {
-            return kthLargest(a, len / 2 + 1, cmp);
-        }
+        return kthLargest(a, from, to, len / 2 + 1, cmp);
     }
 
     /**
@@ -32513,7 +32590,23 @@ public final class N {
      * @return the median value in the collection
      */
     public static <T extends Comparable<? super T>> T median(final Collection<? extends T> c) {
-        return (T) median(c, comparableCmp);
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return median(c, 0, c.size());
+    }
+
+    public static <T extends Comparable<? super T>> T median(final Collection<? extends T> c, final int from, final int to) {
+        return (T) median(c, from, to, comparableCmp);
+    }
+
+    public static <T> T median(final Collection<T> c, Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return (T) median(c, 0, c.size(), comparableCmp);
     }
 
     /**
@@ -32523,83 +32616,328 @@ public final class N {
      * @param cmp
      * @return the median value in the Collection
      */
-    public static <T> T median(final Collection<T> c, Comparator<? super T> cmp) {
+    public static <T> T median(final Collection<T> c, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
+        checkIndex(from, to, c.size());
+
         cmp = cmp == null ? comparableCmp : cmp;
 
-        final int len = c.size();
+        final int len = to - from;
 
-        if (len == 1) {
-            return c.iterator().next();
-        } else if (len == 2) {
-            final Iterator<T> it = c.iterator();
-            final T e1 = it.next();
-            final T e2 = it.next();
-
-            return N.compare(e1, e2, cmp) <= 0 ? e1 : e2;
-        } else if (len == 3) {
-            final Iterator<T> it = c.iterator();
-            final T e1 = it.next();
-            final T e2 = it.next();
-            final T e3 = it.next();
-
-            if ((cmp.compare(e1, e2) >= 0 && cmp.compare(e1, e3) <= 0) || (cmp.compare(e1, e3) >= 0 && cmp.compare(e1, e2) <= 0)) {
-                return e1;
-            } else if ((cmp.compare(e2, e1) >= 0 && cmp.compare(e2, e3) <= 0) || (cmp.compare(e2, e3) >= 0 && cmp.compare(e2, e1) <= 0)) {
-                return e2;
-            } else {
-                return e3;
-            }
-        } else {
-            return kthLargest(c, len / 2 + 1, cmp);
-        }
+        return kthLargest(c, from, to, len / 2 + 1, cmp);
     }
 
+    /**
+     * 
+     * @param a
+     * @param k
+     * @return the min(k, length of this array) largest element.
+     */
     public static char kthLargest(final char[] a, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k);
     }
 
+    public static char kthLargest(final char[] a, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param k
+     * @return the min(k, length of this array) largest element.
+     */
     public static byte kthLargest(final byte[] a, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k);
     }
 
+    public static byte kthLargest(final byte[] a, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param k
+     * @return the min(k, length of this array) largest element.
+     */
     public static short kthLargest(final short[] a, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k);
     }
 
+    public static short kthLargest(final short[] a, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param k
+     * @return the min(k, length of this array) largest element.
+     */
     public static int kthLargest(final int[] a, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @return the min(k, to - from) largest element.
+     */
+    public static int kthLargest(final int[] a, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param k
+     * @return the min(k, length of this array) largest element.
+     */
     public static long kthLargest(final long[] a, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @return the min(k, to - from) largest element.
+     */
+    public static long kthLargest(final long[] a, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param k
+     * @return the min(k, length of this array) largest element.
+     */
     public static float kthLargest(final float[] a, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @return the min(k, to - from) largest element.
+     */
+    public static float kthLargest(final float[] a, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param k
+     * @return the min(k, length of this array) largest element.
+     */
     public static double kthLargest(final double[] a, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @return the min(k, to - from) largest element.
+     */
+    public static double kthLargest(final double[] a, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param k
+     * @return the min(k, length of this array) largest element.
+     */
     public static <T extends Comparable<T>> T kthLargest(final T[] a, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @return the min(k, to - from) largest element.
+     */
+    public static <T extends Comparable<T>> T kthLargest(final T[] a, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param k
+     * @param cmp
+     * @return the min(k, length of this array) largest element.
+     */
     public static <T> T kthLargest(final T[] a, final int k, final Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(a, k, cmp);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @param cmp
+     * @return the min(k, to - from) largest element.
+     */
+    public static <T> T kthLargest(final T[] a, final int from, final int to, final int k, final Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(a)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(a, from, to, k, cmp);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param k
+     * @return the min(k, length of this collection) largest element.
+     */
     public static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int k) {
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(c, k);
     }
 
+    /**
+     * 
+     * @param c
+     * @param from
+     * @param to
+     * @param k
+     * @return the min(k, to - from) largest element.
+     */
+    public static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int from, final int to, final int k) {
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(c, from, to, k);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param k
+     * @param cmp
+     * @return the min(k, length of this collection) largest element.
+     */
     public static <T> T kthLargest(final Collection<T> c, final int k, final Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
         return Array.kthLargest(c, k, cmp);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param from
+     * @param to
+     * @param k
+     * @param cmp
+     * @return the min(k, to - from) largest element.
+     */
+    public static <T> T kthLargest(final Collection<T> c, final int from, final int to, final int k, final Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(c)) {
+            throw new IllegalArgumentException("The length of array can't be null or empty");
+        }
+
+        return Array.kthLargest(c, from, to, k, cmp);
     }
 
     /**

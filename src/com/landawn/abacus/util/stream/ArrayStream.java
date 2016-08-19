@@ -1223,6 +1223,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Stream<T> limit(long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         if (maxSize >= toIndex - fromIndex) {
             return new ArrayStream<T>(elements, fromIndex, toIndex, sorted, cmp, closeHandlers);
         } else {
@@ -1232,6 +1236,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Stream<T> skip(long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         if (n >= toIndex - fromIndex) {
             return new ArrayStream<T>(elements, toIndex, toIndex, sorted, cmp, closeHandlers);
         } else {
@@ -1348,6 +1358,15 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         return Optional.of(N.max(elements, fromIndex, toIndex, comparator));
+    }
+
+    @Override
+    public Optional<T> kthLargest(int k, Comparator<? super T> cmp) {
+        if (fromIndex == toIndex) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.kthLargest(elements, fromIndex, toIndex, k, cmp));
     }
 
     @Override

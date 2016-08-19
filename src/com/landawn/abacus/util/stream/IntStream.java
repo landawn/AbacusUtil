@@ -569,6 +569,13 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract OptionalInt max();
 
     /**
+     * 
+     * @param k
+     * @return OptionalByte.empty() if there is no element or min(k, length of this stream) largest element.
+     */
+    public abstract OptionalInt kthLargest(int k);
+
+    /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is
      * equivalent to:

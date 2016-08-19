@@ -367,6 +367,10 @@ final class ArrayFloatStream extends FloatStream {
 
     @Override
     public FloatStream limit(long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         if (maxSize >= toIndex - fromIndex) {
             return new ArrayFloatStream(elements, fromIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -376,6 +380,12 @@ final class ArrayFloatStream extends FloatStream {
 
     @Override
     public FloatStream skip(long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         if (n >= toIndex - fromIndex) {
             return new ArrayFloatStream(elements, toIndex, toIndex, closeHandlers, sorted);
         } else {
@@ -458,6 +468,15 @@ final class ArrayFloatStream extends FloatStream {
         }
 
         return OptionalFloat.of(N.max(elements, fromIndex, toIndex));
+    }
+
+    @Override
+    public OptionalFloat kthLargest(int k) {
+        if (count() == 0) {
+            return OptionalFloat.empty();
+        }
+
+        return OptionalFloat.of(N.kthLargest(elements, fromIndex, toIndex, k));
     }
 
     @Override

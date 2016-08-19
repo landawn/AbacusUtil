@@ -447,6 +447,16 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.min(elementData, fromIndex, toIndex));
     }
 
+    public OptionalChar median() {
+        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.median(elementData, 0, size));
+    }
+
+    public OptionalChar median(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.median(elementData, fromIndex, toIndex));
+    }
+
     public OptionalChar max() {
         return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.max(elementData, 0, size));
     }
@@ -455,6 +465,16 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         checkIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.max(elementData, fromIndex, toIndex));
+    }
+
+    public OptionalChar kthLargest(final int k) {
+        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, 0, size, k));
+    }
+
+    public OptionalChar kthLargest(final int fromIndex, final int toIndex, final int k) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     @Override

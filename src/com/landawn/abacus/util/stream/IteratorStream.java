@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.util.N;
@@ -43,15 +45,15 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     private final Comparator<? super T> cmp;
     private final Set<Runnable> closeHandlers;
 
-    IteratorStream(final Iterator<T> iterator) {
+    IteratorStream(final Iterator<? extends T> iterator) {
         this(iterator, null);
     }
 
-    IteratorStream(final Iterator<T> iterator, Collection<Runnable> closeHandlers) {
+    IteratorStream(final Iterator<? extends T> iterator, Collection<Runnable> closeHandlers) {
         this(iterator, false, null, closeHandlers);
     }
 
-    IteratorStream(final Iterator<T> iterator, boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
+    IteratorStream(final Iterator<? extends T> iterator, boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
         Objects.requireNonNull(iterator);
 
         this.elements = iterator instanceof ImmutableIterator ? (ImmutableIterator<T>) iterator : new ImmutableIterator<T>() {
@@ -1092,6 +1094,10 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Stream<T> limit(final long maxSize) {
+        if (maxSize < 0) {
+            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        }
+
         //        final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
         //        long cnt = 0;
         //
@@ -1129,6 +1135,12 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Stream<T> skip(final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
+        } else if (n == 0) {
+            return this;
+        }
+
         //        final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
         //
         //        long cnt = 0;
@@ -1321,6 +1333,31 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         }
 
         return Optional.of(candidate);
+    }
+
+    @Override
+    public Optional<T> kthLargest(int k, Comparator<? super T> cmp) {
+        if (elements.hasNext() == false) {
+            return Optional.empty();
+        }
+
+        final Queue<T> queue = new PriorityQueue<T>(k);
+        T e = null;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (queue.size() < k) {
+                queue.add(e);
+            } else {
+                if (N.compare(e, queue.peek(), cmp) > 0) {
+                    queue.remove();
+                    queue.add(e);
+                }
+            }
+        }
+
+        return Optional.of(queue.peek());
     }
 
     @Override

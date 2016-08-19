@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -5391,16 +5392,22 @@ public final class Array {
     }
 
     static char kthLargest(final char[] a, int k) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
+        return kthLargest(a, 0, a.length, k);
+    }
+
+    static char kthLargest(final char[] a, final int fromIndex, final int toIndex, int k) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
+        if (N.isNullOrEmpty(a) || k <= 0) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
-        final int len = a.length;
+        final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(a);
-        } else if (k == a.length) {
-            return N.min(a);
+            return N.max(a, fromIndex, toIndex);
+        } else if (k == len) {
+            return N.min(a, fromIndex, toIndex);
         }
 
         Queue<Character> queue = null;
@@ -5408,7 +5415,7 @@ public final class Array {
         if (k <= len / 2) {
             queue = new PriorityQueue<Character>(k);
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5428,7 +5435,7 @@ public final class Array {
                 }
             });
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5440,20 +5447,26 @@ public final class Array {
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     static byte kthLargest(final byte[] a, int k) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
+        return kthLargest(a, 0, a.length, k);
+    }
+
+    static byte kthLargest(final byte[] a, final int fromIndex, final int toIndex, int k) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
+        if (N.isNullOrEmpty(a) || k <= 0) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
-        final int len = a.length;
+        final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(a);
-        } else if (k == a.length) {
-            return N.min(a);
+            return N.max(a, fromIndex, toIndex);
+        } else if (k == len) {
+            return N.min(a, fromIndex, toIndex);
         }
 
         Queue<Byte> queue = null;
@@ -5461,7 +5474,7 @@ public final class Array {
         if (k <= len / 2) {
             queue = new PriorityQueue<Byte>(k);
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5481,7 +5494,7 @@ public final class Array {
                 }
             });
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5493,20 +5506,26 @@ public final class Array {
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     static short kthLargest(final short[] a, int k) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
+        return kthLargest(a, 0, a.length, k);
+    }
+
+    static short kthLargest(final short[] a, final int fromIndex, final int toIndex, int k) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
+        if (N.isNullOrEmpty(a) || k <= 0) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
-        final int len = a.length;
+        final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(a);
-        } else if (k == a.length) {
-            return N.min(a);
+            return N.max(a, fromIndex, toIndex);
+        } else if (k == len) {
+            return N.min(a, fromIndex, toIndex);
         }
 
         Queue<Short> queue = null;
@@ -5514,7 +5533,7 @@ public final class Array {
         if (k <= len / 2) {
             queue = new PriorityQueue<Short>(k);
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5534,7 +5553,7 @@ public final class Array {
                 }
             });
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5546,20 +5565,26 @@ public final class Array {
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     static int kthLargest(final int[] a, int k) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
+        return kthLargest(a, 0, a.length, k);
+    }
+
+    static int kthLargest(final int[] a, final int fromIndex, final int toIndex, int k) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
+        if (N.isNullOrEmpty(a) || k <= 0) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
-        final int len = a.length;
+        final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(a);
-        } else if (k == a.length) {
-            return N.min(a);
+            return N.max(a, fromIndex, toIndex);
+        } else if (k == len) {
+            return N.min(a, fromIndex, toIndex);
         }
 
         Queue<Integer> queue = null;
@@ -5567,7 +5592,7 @@ public final class Array {
         if (k <= len / 2) {
             queue = new PriorityQueue<Integer>(k);
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5587,7 +5612,7 @@ public final class Array {
                 }
             });
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5599,20 +5624,26 @@ public final class Array {
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     static long kthLargest(final long[] a, int k) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
+        return kthLargest(a, 0, a.length, k);
+    }
+
+    static long kthLargest(final long[] a, final int fromIndex, final int toIndex, int k) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
+        if (N.isNullOrEmpty(a) || k <= 0) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
-        final int len = a.length;
+        final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(a);
-        } else if (k == a.length) {
-            return N.min(a);
+            return N.max(a, fromIndex, toIndex);
+        } else if (k == len) {
+            return N.min(a, fromIndex, toIndex);
         }
 
         Queue<Long> queue = null;
@@ -5620,7 +5651,7 @@ public final class Array {
         if (k <= len / 2) {
             queue = new PriorityQueue<Long>(k);
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5640,7 +5671,7 @@ public final class Array {
                 }
             });
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5652,20 +5683,26 @@ public final class Array {
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     static float kthLargest(final float[] a, int k) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
+        return kthLargest(a, 0, a.length, k);
+    }
+
+    static float kthLargest(final float[] a, final int fromIndex, final int toIndex, int k) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
+        if (N.isNullOrEmpty(a) || k <= 0) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
-        final int len = a.length;
+        final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(a);
-        } else if (k == a.length) {
-            return N.min(a);
+            return N.max(a, fromIndex, toIndex);
+        } else if (k == len) {
+            return N.min(a, fromIndex, toIndex);
         }
 
         Queue<Float> queue = null;
@@ -5673,7 +5710,7 @@ public final class Array {
         if (k <= len / 2) {
             queue = new PriorityQueue<Float>(k);
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5693,7 +5730,7 @@ public final class Array {
                 }
             });
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5705,20 +5742,26 @@ public final class Array {
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     static double kthLargest(final double[] a, int k) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
+        return kthLargest(a, 0, a.length, k);
+    }
+
+    static double kthLargest(final double[] a, final int fromIndex, final int toIndex, int k) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
+        if (N.isNullOrEmpty(a) || k <= 0) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
-        final int len = a.length;
+        final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(a);
-        } else if (k == a.length) {
-            return N.min(a);
+            return N.max(a, fromIndex, toIndex);
+        } else if (k == len) {
+            return N.min(a, fromIndex, toIndex);
         }
 
         Queue<Double> queue = null;
@@ -5726,7 +5769,7 @@ public final class Array {
         if (k <= len / 2) {
             queue = new PriorityQueue<Double>(k);
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5746,7 +5789,7 @@ public final class Array {
                 }
             });
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5758,74 +5801,39 @@ public final class Array {
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     static <T extends Comparable<T>> T kthLargest(final T[] a, int k) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
-        }
+        return kthLargest(a, 0, a.length, k);
+    }
 
-        final int len = a.length;
-
-        if (k == 1) {
-            return N.max(a);
-        } else if (k == a.length) {
-            return N.min(a);
-        }
-
-        Queue<T> queue = null;
-
-        if (k <= len / 2) {
-            queue = new PriorityQueue<T>(k);
-
-            for (int i = 0; i < len; i++) {
-                if (queue.size() < k) {
-                    queue.add(a[i]);
-                } else {
-                    if (N.compare(a[i], queue.peek()) > 0) {
-                        queue.remove();
-                        queue.add(a[i]);
-                    }
-                }
+    static <T extends Comparable<T>> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k) {
+        return kthLargest(a, fromIndex, toIndex, k, new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return N.compare(o1, o2);
             }
-        } else {
-            k = len - k + 1;
-
-            queue = new PriorityQueue<T>(k, new Comparator<T>() {
-                @Override
-                public int compare(final T o1, final T o2) {
-                    return N.compare(o2, o1);
-                }
-            });
-
-            for (int i = 0; i < len; i++) {
-                if (queue.size() < k) {
-                    queue.add(a[i]);
-                } else {
-                    if (N.compare(a[i], queue.peek()) < 0) {
-                        queue.remove();
-                        queue.add(a[i]);
-                    }
-                }
-            }
-        }
-
-        return queue.remove();
-
+        });
     }
 
     static <T> T kthLargest(final T[] a, int k, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a) || k <= 0 || a.length < k) {
+        return kthLargest(a, 0, a.length, k, cmp);
+    }
+
+    static <T> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
+        if (N.isNullOrEmpty(a) || k <= 0) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
-        final int len = a.length;
+        final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(a, cmp);
-        } else if (k == a.length) {
-            return N.min(a, cmp);
+            return N.max(a, fromIndex, toIndex, cmp);
+        } else if (k == len) {
+            return N.min(a, fromIndex, toIndex, cmp);
         }
 
         Queue<T> queue = null;
@@ -5833,7 +5841,7 @@ public final class Array {
         if (k <= len / 2) {
             queue = new PriorityQueue<T>(k);
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5849,11 +5857,11 @@ public final class Array {
             queue = new PriorityQueue<T>(k, new Comparator<T>() {
                 @Override
                 public int compare(final T o1, final T o2) {
-                    return N.compare(o2, o1, cmp);
+                    return cmp.compare(o2, o1);
                 }
             });
 
-            for (int i = 0; i < len; i++) {
+            for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
@@ -5865,73 +5873,57 @@ public final class Array {
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     static <T extends Comparable<T>> T kthLargest(final Collection<T> c, int k) {
-        final int len = c.size();
+        return kthLargest(c, 0, c.size(), k);
+    }
 
-        if (k == 1) {
-            return N.max(c);
-        } else if (k == len) {
-            return N.min(c);
-        }
-
-        Queue<T> queue = null;
-
-        if (k <= len / 2) {
-            queue = new PriorityQueue<T>(k);
-
-            for (T e : c) {
-                if (queue.size() < k) {
-                    queue.add(e);
-                } else {
-                    if (N.compare(e, queue.peek()) > 0) {
-                        queue.remove();
-                        queue.add(e);
-                    }
-                }
+    static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int fromIndex, final int toIndex, int k) {
+        return kthLargest(c, fromIndex, toIndex, k, new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return N.compare(o1, o2);
             }
-        } else {
-            k = len - k + 1;
-
-            queue = new PriorityQueue<T>(k, new Comparator<T>() {
-                @Override
-                public int compare(final T o1, final T o2) {
-                    return N.compare(o2, o1);
-                }
-            });
-
-            for (T e : c) {
-                if (queue.size() < k) {
-                    queue.add(e);
-                } else {
-                    if (N.compare(e, queue.peek()) < 0) {
-                        queue.remove();
-                        queue.add(e);
-                    }
-                }
-            }
-        }
-
-        return queue.remove();
+        });
     }
 
     static <T> T kthLargest(final Collection<T> c, int k, final Comparator<? super T> cmp) {
-        final int len = c.size();
+        return kthLargest(c, 0, c.size(), k, cmp);
+    }
 
-        if (k == 1) {
-            return N.max(c, cmp);
-        } else if (k == len) {
-            return N.min(c, cmp);
+    static <T> T kthLargest(final Collection<T> c, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
+        N.checkIndex(fromIndex, toIndex, c.size());
+
+        if (N.isNullOrEmpty(c) || k <= 0) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
         }
 
+        final int len = toIndex - fromIndex;
+
+        if (k == 1) {
+            return N.max(c, fromIndex, toIndex, cmp);
+        } else if (k == len) {
+            return N.min(c, fromIndex, toIndex, cmp);
+        }
+
+        final Iterator<T> iter = c.iterator();
         Queue<T> queue = null;
 
         if (k <= len / 2) {
             queue = new PriorityQueue<T>(k);
+            int cursor = 0;
 
-            for (T e : c) {
+            while (cursor < fromIndex && iter.hasNext()) {
+                cursor++;
+                iter.next();
+            }
+
+            T e = null;
+            while (cursor < toIndex && iter.hasNext()) {
+                e = iter.next();
+
                 if (queue.size() < k) {
                     queue.add(e);
                 } else {
@@ -5940,6 +5932,8 @@ public final class Array {
                         queue.add(e);
                     }
                 }
+
+                cursor++;
             }
         } else {
             k = len - k + 1;
@@ -5947,11 +5941,21 @@ public final class Array {
             queue = new PriorityQueue<T>(k, new Comparator<T>() {
                 @Override
                 public int compare(final T o1, final T o2) {
-                    return N.compare(o2, o1, cmp);
+                    return cmp.compare(o2, o1);
                 }
             });
 
-            for (T e : c) {
+            int cursor = 0;
+
+            while (cursor < fromIndex && iter.hasNext()) {
+                cursor++;
+                iter.next();
+            }
+
+            T e = null;
+            while (cursor < toIndex && iter.hasNext()) {
+                e = iter.next();
+
                 if (queue.size() < k) {
                     queue.add(e);
                 } else {
@@ -5960,10 +5964,12 @@ public final class Array {
                         queue.add(e);
                     }
                 }
+
+                cursor++;
             }
         }
 
-        return queue.remove();
+        return queue.peek();
     }
 
     //    static double medianOfTwoSortedArrays(final int[] a, final int[] b) {

@@ -2,7 +2,7 @@ package com.landawn.abacus.util.stream;
 
 import com.landawn.abacus.util.ObjectList;
 
-abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
+public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
