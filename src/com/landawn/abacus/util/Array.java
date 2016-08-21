@@ -953,6 +953,60 @@ public final class Array {
     //        return a;
     //    }
 
+    public static boolean[] repeat(final boolean element, final int n) {
+        final boolean[] a = new boolean[n];
+        N.fill(a, element);
+        return a;
+    }
+
+    public static char[] repeat(final char element, final int n) {
+        final char[] a = new char[n];
+        N.fill(a, element);
+        return a;
+    }
+
+    public static byte[] repeat(final byte element, final int n) {
+        final byte[] a = new byte[n];
+        N.fill(a, element);
+        return a;
+    }
+
+    public static short[] repeat(final short element, final int n) {
+        final short[] a = new short[n];
+        N.fill(a, element);
+        return a;
+    }
+
+    public static int[] repeat(final int element, final int n) {
+        final int[] a = new int[n];
+        N.fill(a, element);
+        return a;
+    }
+
+    public static long[] repeat(final long element, final int n) {
+        final long[] a = new long[n];
+        N.fill(a, element);
+        return a;
+    }
+
+    public static float[] repeat(final float element, final int n) {
+        final float[] a = new float[n];
+        N.fill(a, element);
+        return a;
+    }
+
+    public static double[] repeat(final double element, final int n) {
+        final double[] a = new double[n];
+        N.fill(a, element);
+        return a;
+    }
+
+    public static <T> T[] repeat(final T element, final int n) {
+        final T[] a = N.newArray(element.getClass(), n);
+        N.fill(a, element);
+        return a;
+    }
+
     public static Class<?> box(final Class<?> cls) {
         Class<?> result = PRIMITIVE_2_WRAPPER.get(cls);
 
@@ -5398,8 +5452,8 @@ public final class Array {
     static char kthLargest(final char[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -5457,8 +5511,8 @@ public final class Array {
     static byte kthLargest(final byte[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -5516,8 +5570,8 @@ public final class Array {
     static short kthLargest(final short[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -5575,8 +5629,8 @@ public final class Array {
     static int kthLargest(final int[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -5634,8 +5688,8 @@ public final class Array {
     static long kthLargest(final long[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -5693,8 +5747,8 @@ public final class Array {
     static float kthLargest(final float[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -5752,8 +5806,8 @@ public final class Array {
     static double kthLargest(final double[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -5824,8 +5878,8 @@ public final class Array {
     static <T> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -5896,8 +5950,8 @@ public final class Array {
     static <T> T kthLargest(final Collection<T> c, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
         N.checkIndex(fromIndex, toIndex, c.size());
 
-        if (N.isNullOrEmpty(c) || k <= 0) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than the length of input array. k=" + k);
+        if (N.isNullOrEmpty(c) || k < 1 || toIndex - fromIndex < 1) {
+            throw new IllegalArgumentException("Collection is empty or null, or the input k is less than 1. k=" + k);
         }
 
         final int len = toIndex - fromIndex;

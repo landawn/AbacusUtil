@@ -863,8 +863,34 @@ final class IteratorDoubleStream extends DoubleStream {
     }
 
     @Override
+    public OptionalDouble findFirst(DoublePredicate predicate) {
+        while (elements.hasNext()) {
+            double e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalDouble.of(e);
+            }
+        }
+
+        return OptionalDouble.empty();
+    }
+
+    @Override
     public OptionalDouble findAny() {
         return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements.next());
+    }
+
+    @Override
+    public OptionalDouble findAny(DoublePredicate predicate) {
+        while (elements.hasNext()) {
+            double e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalDouble.of(e);
+            }
+        }
+
+        return OptionalDouble.empty();
     }
 
     @Override

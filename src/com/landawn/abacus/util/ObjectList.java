@@ -242,29 +242,24 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
      * @param removeAllOccurrences
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(T e, boolean removeAllOccurrences) {
-        if (removeAllOccurrences) {
-            int w = 0;
+    public boolean removeAllOccurrences(T e) {
+        int w = 0;
 
-            for (int i = 0; i < size; i++) {
-                if (!N.equals(elementData[i], e)) {
-                    elementData[w++] = elementData[i];
-                }
+        for (int i = 0; i < size; i++) {
+            if (!N.equals(elementData[i], e)) {
+                elementData[w++] = elementData[i];
             }
-
-            int numRemoved = size - w;
-
-            if (numRemoved > 0) {
-                N.fill(elementData, w, size, null);
-
-                size = w;
-            }
-
-            return numRemoved > 0;
-
-        } else {
-            return remove(e);
         }
+
+        int numRemoved = size - w;
+
+        if (numRemoved > 0) {
+            N.fill(elementData, w, size, null);
+
+            size = w;
+        }
+
+        return numRemoved > 0;
     }
 
     private void fastRemove(int index) {
@@ -761,6 +756,26 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
     public void sort() {
         if (size > 1) {
             N.sort(elementData, 0, size);
+        }
+    }
+
+    public void sort(final Comparator<? super T> cmp) {
+        if (size > 1) {
+            N.sort(elementData, 0, size, cmp);
+        }
+    }
+
+    @Override
+    public void reverse() {
+        if (size > 1) {
+            N.reverse(elementData, 0, size);
+        }
+    }
+
+    @Override
+    public void rotate(int distance) {
+        if (size > 1) {
+            N.rotate(elementData, distance);
         }
     }
 

@@ -25,6 +25,8 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.IntList;
@@ -683,6 +685,8 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract OptionalInt findFirst();
 
+    public abstract OptionalInt findFirst(IntPredicate predicate);
+
     /**
      * Returns an {@link OptionalInt} describing some element of the stream, or
      * an empty {@code OptionalInt} if the stream is empty.
@@ -701,6 +705,8 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @see #findFirst()
      */
     public abstract OptionalInt findAny();
+
+    public abstract OptionalInt findAny(IntPredicate predicate);
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -784,5 +790,75 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
 
     public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
         return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static IntStream repeat(int element, int n) {
+        return of(Array.repeat(element, n));
+    }
+
+    public static IntStream concat(final int[]... a) {
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private final Iterator<int[]> iter = N.asList(a).iterator();
+            private ImmutableIntIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = new ImmutableIntIterator() {
+                        private final int[] cur = iter.next();
+                        private int cursor = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            return cursor < cur.length;
+                        }
+
+                        @Override
+                        public int next() {
+                            if (cursor >= cur.length) {
+                                throw new NoSuchElementException();
+                            }
+
+                            return cur[cursor++];
+                        }
+                    };
+                }
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static IntStream concat(final IntStream... a) {
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private final Iterator<IntStream> iter = N.asList(a).iterator();
+            private ImmutableIntIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next().intIterator();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
     }
 }

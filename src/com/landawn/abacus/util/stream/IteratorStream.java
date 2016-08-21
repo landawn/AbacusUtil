@@ -1404,8 +1404,34 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public Optional<T> findFirst(Predicate<? super T> predicate) {
+        while (elements.hasNext()) {
+            T e = elements.next();
+
+            if (predicate.test(e)) {
+                return Optional.of(e);
+            }
+        }
+
+        return (Optional<T>) Optional.empty();
+    }
+
+    @Override
     public Optional<T> findAny() {
         return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
+    }
+
+    @Override
+    public Optional<T> findAny(Predicate<? super T> predicate) {
+        while (elements.hasNext()) {
+            T e = elements.next();
+
+            if (predicate.test(e)) {
+                return Optional.of(e);
+            }
+        }
+
+        return (Optional<T>) Optional.empty();
     }
 
     @Override

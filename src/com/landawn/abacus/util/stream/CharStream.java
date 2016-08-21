@@ -25,6 +25,8 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CharList;
@@ -604,6 +606,8 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      */
     public abstract OptionalChar findFirst();
 
+    public abstract OptionalChar findFirst(CharPredicate predicate);
+
     /**
      * Returns an {@link OptionalChar} describing some element of the stream, or
      * an empty {@code OptionalChar} if the stream is empty.
@@ -622,6 +626,8 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @see #findFirst()
      */
     public abstract OptionalChar findAny();
+
+    public abstract OptionalChar findAny(CharPredicate predicate);
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -681,5 +687,75 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
 
     public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
         return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static CharStream repeat(char element, int n) {
+        return of(Array.repeat(element, n));
+    }
+
+    public static CharStream concat(final char[]... a) {
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private final Iterator<char[]> iter = N.asList(a).iterator();
+            private ImmutableCharIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = new ImmutableCharIterator() {
+                        private final char[] cur = iter.next();
+                        private int cursor = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            return cursor < cur.length;
+                        }
+
+                        @Override
+                        public char next() {
+                            if (cursor >= cur.length) {
+                                throw new NoSuchElementException();
+                            }
+
+                            return cur[cursor++];
+                        }
+                    };
+                }
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public char next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static CharStream concat(final CharStream... a) {
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private final Iterator<CharStream> iter = N.asList(a).iterator();
+            private ImmutableCharIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next().charIterator();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public char next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
     }
 }

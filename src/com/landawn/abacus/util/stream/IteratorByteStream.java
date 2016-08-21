@@ -761,8 +761,34 @@ final class IteratorByteStream extends ByteStream {
     }
 
     @Override
+    public OptionalByte findFirst(BytePredicate predicate) {
+        while (elements.hasNext()) {
+            byte e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalByte.of(e);
+            }
+        }
+
+        return OptionalByte.empty();
+    }
+
+    @Override
     public OptionalByte findAny() {
         return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements.next());
+    }
+
+    @Override
+    public OptionalByte findAny(BytePredicate predicate) {
+        while (elements.hasNext()) {
+            byte e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalByte.of(e);
+            }
+        }
+
+        return OptionalByte.empty();
     }
 
     @Override

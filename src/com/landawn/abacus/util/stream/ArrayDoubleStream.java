@@ -490,7 +490,7 @@ final class ArrayDoubleStream extends DoubleStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.avg(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
     }
 
     @Override
@@ -532,8 +532,30 @@ final class ArrayDoubleStream extends DoubleStream {
     }
 
     @Override
+    public OptionalDouble findFirst(DoublePredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalDouble.of(elements[i]);
+            }
+        }
+
+        return OptionalDouble.empty();
+    }
+
+    @Override
     public OptionalDouble findAny() {
         return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalDouble findAny(DoublePredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalDouble.of(elements[i]);
+            }
+        }
+
+        return OptionalDouble.empty();
     }
 
     @Override

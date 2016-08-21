@@ -1016,8 +1016,34 @@ final class IteratorIntStream extends IntStream {
     }
 
     @Override
+    public OptionalInt findFirst(IntPredicate predicate) {
+        while (elements.hasNext()) {
+            int e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalInt.of(e);
+            }
+        }
+
+        return OptionalInt.empty();
+    }
+
+    @Override
     public OptionalInt findAny() {
         return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements.next());
+    }
+
+    @Override
+    public OptionalInt findAny(IntPredicate predicate) {
+        while (elements.hasNext()) {
+            int e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalInt.of(e);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
     @Override

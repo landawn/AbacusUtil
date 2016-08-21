@@ -25,6 +25,8 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.N;
@@ -609,6 +611,8 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract OptionalShort findFirst();
 
+    public abstract OptionalShort findFirst(ShortPredicate predicate);
+
     /**
      * Returns an {@link OptionalShort} describing some element of the stream, or
      * an empty {@code OptionalShort} if the stream is empty.
@@ -627,6 +631,8 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @see #findFirst()
      */
     public abstract OptionalShort findAny();
+
+    public abstract OptionalShort findAny(ShortPredicate predicate);
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -678,5 +684,75 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
 
     public static ShortStream rangeClosed(final short startInclusive, final short endInclusive) {
         return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static ShortStream repeat(short element, int n) {
+        return of(Array.repeat(element, n));
+    }
+
+    public static ShortStream concat(final short[]... a) {
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private final Iterator<short[]> iter = N.asList(a).iterator();
+            private ImmutableShortIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = new ImmutableShortIterator() {
+                        private final short[] cur = iter.next();
+                        private int cursor = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            return cursor < cur.length;
+                        }
+
+                        @Override
+                        public short next() {
+                            if (cursor >= cur.length) {
+                                throw new NoSuchElementException();
+                            }
+
+                            return cur[cursor++];
+                        }
+                    };
+                }
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public short next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static ShortStream concat(final ShortStream... a) {
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private final Iterator<ShortStream> iter = N.asList(a).iterator();
+            private ImmutableShortIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next().shortIterator();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public short next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
     }
 }

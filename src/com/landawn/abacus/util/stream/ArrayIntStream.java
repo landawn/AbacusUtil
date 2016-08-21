@@ -590,7 +590,7 @@ final class ArrayIntStream extends IntStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.avg(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
     }
 
     @Override
@@ -632,8 +632,30 @@ final class ArrayIntStream extends IntStream {
     }
 
     @Override
+    public OptionalInt findFirst(IntPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalInt.of(elements[i]);
+            }
+        }
+
+        return OptionalInt.empty();
+    }
+
+    @Override
     public OptionalInt findAny() {
         return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalInt findAny(IntPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalInt.of(elements[i]);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
     @Override

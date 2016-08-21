@@ -491,7 +491,7 @@ final class ArrayLongStream extends LongStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.avg(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
     }
 
     @Override
@@ -533,8 +533,30 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
+    public OptionalLong findFirst(LongPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalLong.of(elements[i]);
+            }
+        }
+
+        return OptionalLong.empty();
+    }
+
+    @Override
     public OptionalLong findAny() {
         return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalLong findAny(LongPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalLong.of(elements[i]);
+            }
+        }
+
+        return OptionalLong.empty();
     }
 
     @Override

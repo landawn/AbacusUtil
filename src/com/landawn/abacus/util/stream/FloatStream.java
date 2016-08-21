@@ -25,7 +25,10 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
@@ -720,6 +723,8 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      */
     public abstract OptionalFloat findFirst();
 
+    public abstract OptionalFloat findFirst(FloatPredicate predicate);
+
     /**
      * Returns an {@link OptionalFloat} describing some element of the stream,
      * or an empty {@code OptionalFloat} if the stream is empty.
@@ -738,6 +743,8 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * @see #findFirst()
      */
     public abstract OptionalFloat findAny();
+
+    public abstract OptionalFloat findAny(FloatPredicate predicate);
 
     /**
      * Returns a {@code DoubleStream} consisting of the elements of this stream,
@@ -777,5 +784,75 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
 
     public static FloatStream of(final float[] a, final int startIndex, final int endIndex) {
         return new ArrayFloatStream(a, startIndex, endIndex);
+    }
+
+    public static FloatStream repeat(float element, int n) {
+        return of(Array.repeat(element, n));
+    }
+
+    public static FloatStream concat(final float[]... a) {
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private final Iterator<float[]> iter = N.asList(a).iterator();
+            private ImmutableFloatIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = new ImmutableFloatIterator() {
+                        private final float[] cur = iter.next();
+                        private int cursor = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            return cursor < cur.length;
+                        }
+
+                        @Override
+                        public float next() {
+                            if (cursor >= cur.length) {
+                                throw new NoSuchElementException();
+                            }
+
+                            return cur[cursor++];
+                        }
+                    };
+                }
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public float next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static FloatStream concat(final FloatStream... a) {
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private final Iterator<FloatStream> iter = N.asList(a).iterator();
+            private ImmutableFloatIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next().floatIterator();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public float next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
     }
 }

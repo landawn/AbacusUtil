@@ -1413,8 +1413,30 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public Optional<T> findFirst(Predicate<? super T> predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return Optional.of(elements[i]);
+            }
+        }
+
+        return (Optional<T>) Optional.empty();
+    }
+
+    @Override
     public Optional<T> findAny() {
         return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[fromIndex]);
+    }
+
+    @Override
+    public Optional<T> findAny(Predicate<? super T> predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return Optional.of(elements[i]);
+            }
+        }
+
+        return (Optional<T>) Optional.empty();
     }
 
     @Override

@@ -490,7 +490,7 @@ final class ArrayFloatStream extends FloatStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.avg(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
     }
 
     @Override
@@ -532,8 +532,30 @@ final class ArrayFloatStream extends FloatStream {
     }
 
     @Override
+    public OptionalFloat findFirst(FloatPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalFloat.of(elements[i]);
+            }
+        }
+
+        return OptionalFloat.empty();
+    }
+
+    @Override
     public OptionalFloat findAny() {
         return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalFloat findAny(FloatPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalFloat.of(elements[i]);
+            }
+        }
+
+        return OptionalFloat.empty();
     }
 
     @Override

@@ -425,7 +425,7 @@ final class ArrayShortStream extends ShortStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.avg(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
     }
 
     @Override
@@ -467,8 +467,30 @@ final class ArrayShortStream extends ShortStream {
     }
 
     @Override
+    public OptionalShort findFirst(ShortPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalShort.of(elements[i]);
+            }
+        }
+
+        return OptionalShort.empty();
+    }
+
+    @Override
     public OptionalShort findAny() {
         return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalShort findAny(ShortPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalShort.of(elements[i]);
+            }
+        }
+
+        return OptionalShort.empty();
     }
 
     @Override

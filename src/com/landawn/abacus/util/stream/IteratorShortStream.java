@@ -731,8 +731,34 @@ final class IteratorShortStream extends ShortStream {
     }
 
     @Override
+    public OptionalShort findFirst(ShortPredicate predicate) {
+        while (elements.hasNext()) {
+            short e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalShort.of(e);
+            }
+        }
+
+        return OptionalShort.empty();
+    }
+
+    @Override
     public OptionalShort findAny() {
         return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements.next());
+    }
+
+    @Override
+    public OptionalShort findAny(ShortPredicate predicate) {
+        while (elements.hasNext()) {
+            short e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalShort.of(e);
+            }
+        }
+
+        return OptionalShort.empty();
     }
 
     @Override

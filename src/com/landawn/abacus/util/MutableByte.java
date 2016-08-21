@@ -198,18 +198,6 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
     }
 
     /**
-     * Adds the given value to the current value.
-     *
-     * @param delta the value to add
-     * @return the previous value
-     */
-    public final byte getAndAdd(final byte delta) {
-        final byte prev = value;
-        value += delta;
-        return prev;
-    }
-
-    /**
      * Increments by one the current value.
      *
      * @return the updated value
@@ -225,6 +213,18 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
      */
     public final byte decrementAndGet() {
         return --value;
+    }
+
+    /**
+     * Adds the given value to the current value.
+     *
+     * @param delta the value to add
+     * @return the previous value
+     */
+    public final byte getAndAdd(final byte delta) {
+        final byte prev = value;
+        value += delta;
+        return prev;
     }
 
     /**

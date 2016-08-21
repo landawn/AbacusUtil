@@ -133,7 +133,13 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         int idx = 0;
 
         for (String e : c) {
-            a[idx++] = e == null ? defaultValueForNull : N.asChar(e);
+            if (e == null) {
+                a[idx++] = defaultValueForNull;
+            } else if (e.length() == 1) {
+                a[idx++] = e.charAt(0);
+            } else {
+                throw new IllegalArgumentException("Invalid char: " + e);
+            }
         }
 
         return of(a);
@@ -289,32 +295,26 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     /**
      * 
      * @param e
-     * @param removeAllOccurrences
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(char e, boolean removeAllOccurrences) {
-        if (removeAllOccurrences) {
-            int w = 0;
+    public boolean removeAllOccurrences(char e) {
+        int w = 0;
 
-            for (int i = 0; i < size; i++) {
-                if (elementData[i] != e) {
-                    elementData[w++] = elementData[i];
-                }
+        for (int i = 0; i < size; i++) {
+            if (elementData[i] != e) {
+                elementData[w++] = elementData[i];
             }
-
-            int numRemoved = size - w;
-
-            if (numRemoved > 0) {
-                N.fill(elementData, w, size, (char) 0);
-
-                size = w;
-            }
-
-            return numRemoved > 0;
-
-        } else {
-            return remove(e);
         }
+
+        int numRemoved = size - w;
+
+        if (numRemoved > 0) {
+            N.fill(elementData, w, size, (char) 0);
+
+            size = w;
+        }
+
+        return numRemoved > 0;
     }
 
     private void fastRemove(int index) {
@@ -761,6 +761,20 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     public void sort() {
         if (size > 1) {
             N.sort(elementData, 0, size);
+        }
+    }
+
+    @Override
+    public void reverse() {
+        if (size > 1) {
+            N.reverse(elementData, 0, size);
+        }
+    }
+
+    @Override
+    public void rotate(int distance) {
+        if (size > 1) {
+            N.rotate(elementData, distance);
         }
     }
 

@@ -66,6 +66,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.UnaryOperator;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -174,6 +175,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  */
 public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
+    static final Object NONE = new Object();
     static final Field listElementDataField;
     static final Field listSizeField;
     static volatile boolean isListElementDataFieldGettable = true;
@@ -1077,6 +1079,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract Optional<T> findFirst();
 
+    public abstract Optional<T> findFirst(Predicate<? super T> predicate);
+
     /**
      * Returns an {@link Optional} describing some element of the stream, or an
      * empty {@code Optional} if the stream is empty.
@@ -1096,6 +1100,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @see #findFirst()
      */
     public abstract Optional<T> findAny();
+
+    public abstract Optional<T> findAny(Predicate<? super T> predicate);
 
     // Static factories
 
@@ -1274,6 +1280,48 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
                 hasNextVal = false;
                 return next.get();
+            }
+        });
+    }
+
+    /**
+     * Returns a sequential ordered {@code Stream} produced by iterative
+     * application of a function {@code f} to an initial element {@code seed},
+     * producing a {@code Stream} consisting of {@code seed}, {@code f(seed)},
+     * {@code f(f(seed))}, etc.
+     *
+     * <p>The first element (position {@code 0}) in the {@code Stream} will be
+     * the provided {@code seed}.  For {@code n > 0}, the element at position
+     * {@code n}, will be the result of applying the function {@code f} to the
+     * element at position {@code n - 1}.
+     * 
+     * @param seed
+     * @param hasNext
+     * @param f
+     * @return
+     */
+    public static <T> Stream<T> of(final T seed, final Supplier<Boolean> hasNext, final UnaryOperator<T> f) {
+        return of(new ImmutableIterator<T>() {
+            private T t = (T) Stream.NONE;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public T next() {
+                if (hasNextVal == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return t = (t == Stream.NONE) ? seed : f.apply(t);
             }
         });
     }
@@ -1558,15 +1606,70 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
+    public static <T> Stream<T> repeat(T element, int n) {
+        return of(Array.repeat(element, n));
+    }
+
+    public static <T> Stream<T> concat(final T[]... a) {
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
+            private final Iterator<T[]> iter = N.asList(a).iterator();
+            private ImmutableIterator<T> cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = new ImmutableIterator<T>() {
+                        private final T[] cur = iter.next();
+                        private int cursor = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            return cursor < cur.length;
+                        }
+
+                        @Override
+                        public T next() {
+                            if (cursor >= cur.length) {
+                                throw new NoSuchElementException();
+                            }
+
+                            return cur[cursor++];
+                        }
+                    };
+                }
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static <T> Stream<T> concat(Collection<? extends T>... a) {
+        final Iterator<? extends T>[] iter = new Iterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iter[i] = a[i].iterator();
+        }
+
+        return concat(iter);
+    }
+
     public static <T> Stream<T> concat(final Iterator<? extends T>... a) {
         return of(new ImmutableIterator<T>() {
-            private final Iterator<Iterator<? extends T>> b = N.asList(a).iterator();
+            private final Iterator<Iterator<? extends T>> iter = N.asList(a).iterator();
             private Iterator<? extends T> cur;
 
             @Override
             public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && b.hasNext()) {
-                    cur = b.next();
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1584,13 +1687,13 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     }
 
     public static <T> Stream<T> concat(Stream<? extends T>... a) {
-        final Iterator<? extends T>[] b = new Iterator[a.length];
+        final Iterator<? extends T>[] iter = new Iterator[a.length];
 
         for (int i = 0, len = a.length; i < len; i++) {
-            b[i] = a[i].iterator();
+            iter[i] = a[i].iterator();
         }
 
-        return concat(b);
+        return concat(iter);
     }
 
     static void checkIndex(int fromIndex, int toIndex, int length) {

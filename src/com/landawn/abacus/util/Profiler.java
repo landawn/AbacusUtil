@@ -379,7 +379,7 @@ public final class Profiler {
 
         public long getMethodMinElapsedTime(String methodName);
 
-        public double getMethodAvgElapsedTime(String methodName);
+        public double getMethodAverageElapsedTime(String methodName);
 
         public int getMethodSize(String methodName);
 
@@ -647,7 +647,7 @@ public final class Profiler {
         }
 
         @Override
-        public double getMethodAvgElapsedTime(final String methodName) {
+        public double getMethodAverageElapsedTime(final String methodName) {
             double totalTime = 0;
             int methodNum = 0;
 
@@ -884,7 +884,7 @@ public final class Profiler {
         }
 
         @Override
-        public double getMethodAvgElapsedTime(final String methodName) {
+        public double getMethodAverageElapsedTime(final String methodName) {
             double totalTime = 0;
             int methodNum = 0;
 
@@ -1013,7 +1013,7 @@ public final class Profiler {
                     }
                 });
 
-                double avgTime = getMethodAvgElapsedTime(methodName);
+                double avgTime = getMethodAverageElapsedTime(methodName);
 
                 long maxTime = methodStatisticsList.get(0).getElapsedTime();
                 long minTime = methodStatisticsList.get(size - 1).getElapsedTime();
@@ -1136,7 +1136,7 @@ public final class Profiler {
                     }
                 });
 
-                double avgTime = getMethodAvgElapsedTime(methodName);
+                double avgTime = getMethodAverageElapsedTime(methodName);
 
                 long minTime = methodStatisticsList.get(size - 1).getElapsedTime();
                 long maxTime = methodStatisticsList.get(0).getElapsedTime();
@@ -1230,7 +1230,7 @@ public final class Profiler {
                     }
                 });
 
-                double avgTime = getMethodAvgElapsedTime(methodName);
+                double avgTime = getMethodAverageElapsedTime(methodName);
 
                 long minTime = methodStatisticsList.get(size - 1).getElapsedTime();
                 long maxTime = methodStatisticsList.get(0).getElapsedTime();

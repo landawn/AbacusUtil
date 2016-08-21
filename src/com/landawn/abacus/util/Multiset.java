@@ -263,7 +263,7 @@ public final class Multiset<E> implements Iterable<E> {
         return sum;
     }
 
-    public OptionalDouble avgOfOccurrences() {
+    public OptionalDouble averageOfOccurrences() {
         if (size() == 0) {
             return OptionalDouble.empty();
         }
@@ -455,6 +455,10 @@ public final class Multiset<E> implements Iterable<E> {
         }
 
         return count.intValue();
+    }
+
+    public void removeAllOccurrences(final E e) {
+        valueMap.remove(e);
     }
 
     /**

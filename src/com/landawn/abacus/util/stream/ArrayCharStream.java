@@ -452,8 +452,30 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
+    public OptionalChar findFirst(CharPredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalChar.of(elements[i]);
+            }
+        }
+
+        return OptionalChar.empty();
+    }
+
+    @Override
     public OptionalChar findAny() {
         return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalChar findAny(CharPredicate filter) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (filter.test(elements[i])) {
+                return OptionalChar.of(elements[i]);
+            }
+        }
+
+        return OptionalChar.empty();
     }
 
     @Override

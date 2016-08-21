@@ -732,8 +732,34 @@ final class IteratorCharStream extends CharStream {
     }
 
     @Override
+    public OptionalChar findFirst(CharPredicate predicate) {
+        while (elements.hasNext()) {
+            char e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalChar.of(e);
+            }
+        }
+
+        return OptionalChar.empty();
+    }
+
+    @Override
     public OptionalChar findAny() {
         return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements.next());
+    }
+
+    @Override
+    public OptionalChar findAny(CharPredicate predicate) {
+        while (elements.hasNext()) {
+            char e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalChar.of(e);
+            }
+        }
+
+        return OptionalChar.empty();
     }
 
     @Override

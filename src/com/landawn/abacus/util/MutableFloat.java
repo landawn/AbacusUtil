@@ -217,18 +217,6 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
     }
 
     /**
-     * Adds the given value to the current value.
-     *
-     * @param delta the value to add
-     * @return the previous value
-     */
-    public final float getAndAdd(final float delta) {
-        final float prev = value;
-        value += delta;
-        return prev;
-    }
-
-    /**
      * Increments by one the current value.
      *
      * @return the updated value
@@ -244,6 +232,18 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
      */
     public final float decrementAndGet() {
         return --value;
+    }
+
+    /**
+     * Adds the given value to the current value.
+     *
+     * @param delta the value to add
+     * @return the previous value
+     */
+    public final float getAndAdd(final float delta) {
+        final float prev = value;
+        value += delta;
+        return prev;
     }
 
     /**

@@ -198,18 +198,6 @@ public final class MutableShort extends Number implements Comparable<MutableShor
     }
 
     /**
-     * Adds the given value to the current value.
-     *
-     * @param delta the value to add
-     * @return the previous value
-     */
-    public final short getAndAdd(final short delta) {
-        final short prev = value;
-        value += delta;
-        return prev;
-    }
-
-    /**
      * Increments by one the current value.
      *
      * @return the updated value
@@ -225,6 +213,18 @@ public final class MutableShort extends Number implements Comparable<MutableShor
      */
     public final short decrementAndGet() {
         return --value;
+    }
+
+    /**
+     * Adds the given value to the current value.
+     *
+     * @param delta the value to add
+     * @return the previous value
+     */
+    public final short getAndAdd(final short delta) {
+        final short prev = value;
+        value += delta;
+        return prev;
     }
 
     /**

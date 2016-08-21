@@ -16000,60 +16000,6 @@ public final class N {
         }
     }
 
-    public static boolean[] nCopies(final boolean element, final int n) {
-        final boolean[] a = new boolean[n];
-        fill(a, element);
-        return a;
-    }
-
-    public static char[] nCopies(final char element, final int n) {
-        final char[] a = new char[n];
-        fill(a, element);
-        return a;
-    }
-
-    public static byte[] nCopies(final byte element, final int n) {
-        final byte[] a = new byte[n];
-        fill(a, element);
-        return a;
-    }
-
-    public static short[] nCopies(final short element, final int n) {
-        final short[] a = new short[n];
-        fill(a, element);
-        return a;
-    }
-
-    public static int[] nCopies(final int element, final int n) {
-        final int[] a = new int[n];
-        fill(a, element);
-        return a;
-    }
-
-    public static long[] nCopies(final long element, final int n) {
-        final long[] a = new long[n];
-        fill(a, element);
-        return a;
-    }
-
-    public static float[] nCopies(final float element, final int n) {
-        final float[] a = new float[n];
-        fill(a, element);
-        return a;
-    }
-
-    public static double[] nCopies(final double element, final int n) {
-        final double[] a = new double[n];
-        fill(a, element);
-        return a;
-    }
-
-    public static <T> T[] nCopies(final T element, final int n) {
-        final T[] a = N.newArray(element.getClass(), n);
-        fill(a, element);
-        return a;
-    }
-
     /**
      * Copies all of the elements from one list into another.  After the
      * operation, the index of each copied element in the destination list
@@ -30611,15 +30557,15 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Double avg(final byte... a) {
+    public static Double average(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
 
-        return avg(a, 0, a.length);
+        return average(a, 0, a.length);
     }
 
-    public static Double avg(final byte[] a, final int from, final int to) {
+    public static Double average(final byte[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30638,15 +30584,15 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Double avg(final short... a) {
+    public static Double average(final short... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
 
-        return avg(a, 0, a.length);
+        return average(a, 0, a.length);
     }
 
-    public static Double avg(final short[] a, final int from, final int to) {
+    public static Double average(final short[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30665,15 +30611,15 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Double avg(final int... a) {
+    public static Double average(final int... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
 
-        return avg(a, 0, a.length);
+        return average(a, 0, a.length);
     }
 
-    public static Double avg(final int[] a, final int from, final int to) {
+    public static Double average(final int[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30692,15 +30638,15 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Double avg(final long... a) {
+    public static Double average(final long... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
 
-        return avg(a, 0, a.length);
+        return average(a, 0, a.length);
     }
 
-    public static Double avg(final long[] a, final int from, final int to) {
+    public static Double average(final long[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30719,15 +30665,15 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Double avg(final float... a) {
+    public static Double average(final float... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
 
-        return avg(a, 0, a.length);
+        return average(a, 0, a.length);
     }
 
-    public static Double avg(final float[] a, final int from, final int to) {
+    public static Double average(final float[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30746,15 +30692,15 @@ public final class N {
      * @param a
      * @return a double number
      */
-    public static Double avg(final double... a) {
+    public static Double average(final double... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
 
-        return avg(a, 0, a.length);
+        return average(a, 0, a.length);
     }
 
-    public static Double avg(final double[] a, final int from, final int to) {
+    public static Double average(final double[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30775,15 +30721,15 @@ public final class N {
      * @return a double number. <code>0d</code> is returned if list is empty or
      *         null.
      */
-    public static <T extends Number> Double avg(final T[] a) {
+    public static <T extends Number> Double average(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
 
-        return avg(a, 0, a.length);
+        return average(a, 0, a.length);
     }
 
-    public static <T extends Number> Double avg(final T[] a, final int from, final int to) {
+    public static <T extends Number> Double average(final T[] a, final int from, final int to) {
         checkIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -30797,12 +30743,12 @@ public final class N {
         return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
     }
 
-    public static Double avg(final Collection<? extends Number> c) {
+    public static Double average(final Collection<? extends Number> c) {
         if (N.isNullOrEmpty(c)) {
             return 0d;
         }
 
-        return avg(c, 0, c.size());
+        return average(c, 0, c.size());
     }
 
     /**
@@ -30814,7 +30760,7 @@ public final class N {
      * @return a double number. <code>0d</code> is returned if list is empty or
      *         null.
      */
-    public static Double avg(final Collection<? extends Number> c, final int from, final int to) {
+    public static Double average(final Collection<? extends Number> c, final int from, final int to) {
         checkIndex(from, to, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c)) {
@@ -32303,7 +32249,7 @@ public final class N {
     }
 
     public static char median(final char[] a, final int from, final int to) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32338,7 +32284,7 @@ public final class N {
     }
 
     public static byte median(final byte[] a, final int from, final int to) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32373,7 +32319,7 @@ public final class N {
     }
 
     public static short median(final short[] a, final int from, final int to) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32408,7 +32354,7 @@ public final class N {
     }
 
     public static int median(final int[] a, final int from, final int to) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32443,7 +32389,7 @@ public final class N {
     }
 
     public static long median(final long[] a, final int from, final int to) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32478,7 +32424,7 @@ public final class N {
     }
 
     public static float median(final float[] a, final int from, final int to) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32513,7 +32459,7 @@ public final class N {
     }
 
     public static double median(final double[] a, final int from, final int to) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32547,7 +32493,7 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T median(final T[] a, final int from, final int to) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32570,7 +32516,7 @@ public final class N {
      * @return the median value in the array
      */
     public static <T> T median(final T[] a, final int from, final int to, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32617,7 +32563,7 @@ public final class N {
      * @return the median value in the Collection
      */
     public static <T> T median(final Collection<T> c, final int from, final int to, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(c)) {
+        if (N.isNullOrEmpty(c) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32645,7 +32591,7 @@ public final class N {
     }
 
     public static char kthLargest(final char[] a, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32667,7 +32613,7 @@ public final class N {
     }
 
     public static byte kthLargest(final byte[] a, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32689,7 +32635,7 @@ public final class N {
     }
 
     public static short kthLargest(final short[] a, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32719,7 +32665,7 @@ public final class N {
      * @return the min(k, to - from) largest element.
      */
     public static int kthLargest(final int[] a, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32749,7 +32695,7 @@ public final class N {
      * @return the min(k, to - from) largest element.
      */
     public static long kthLargest(final long[] a, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32779,7 +32725,7 @@ public final class N {
      * @return the min(k, to - from) largest element.
      */
     public static float kthLargest(final float[] a, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32809,7 +32755,7 @@ public final class N {
      * @return the min(k, to - from) largest element.
      */
     public static double kthLargest(final double[] a, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32839,7 +32785,7 @@ public final class N {
      * @return the min(k, to - from) largest element.
      */
     public static <T extends Comparable<T>> T kthLargest(final T[] a, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32871,7 +32817,7 @@ public final class N {
      * @return the min(k, to - from) largest element.
      */
     public static <T> T kthLargest(final T[] a, final int from, final int to, final int k, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
@@ -32886,7 +32832,7 @@ public final class N {
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int k) {
         if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of collection can't be null or empty");
         }
 
         return Array.kthLargest(c, k);
@@ -32901,8 +32847,8 @@ public final class N {
      * @return the min(k, to - from) largest element.
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int from, final int to, final int k) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+        if (N.isNullOrEmpty(c) || to - from < 1) {
+            throw new IllegalArgumentException("The length of collection can't be null or empty");
         }
 
         return Array.kthLargest(c, from, to, k);
@@ -32917,7 +32863,7 @@ public final class N {
      */
     public static <T> T kthLargest(final Collection<T> c, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+            throw new IllegalArgumentException("The length of collection can't be null or empty");
         }
 
         return Array.kthLargest(c, k, cmp);
@@ -32933,8 +32879,8 @@ public final class N {
      * @return the min(k, to - from) largest element.
      */
     public static <T> T kthLargest(final Collection<T> c, final int from, final int to, final int k, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
+        if (N.isNullOrEmpty(c) || to - from < 1) {
+            throw new IllegalArgumentException("The length of collection can't be null or empty");
         }
 
         return Array.kthLargest(c, from, to, k, cmp);

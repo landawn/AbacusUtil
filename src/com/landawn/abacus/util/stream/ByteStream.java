@@ -25,6 +25,8 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.ByteList;
@@ -613,6 +615,8 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      */
     public abstract OptionalByte findFirst();
 
+    public abstract OptionalByte findFirst(BytePredicate predicate);
+
     /**
      * Returns an {@link OptionalByte} describing some element of the stream, or
      * an empty {@code OptionalByte} if the stream is empty.
@@ -631,6 +635,8 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @see #findFirst()
      */
     public abstract OptionalByte findAny();
+
+    public abstract OptionalByte findAny(BytePredicate predicate);
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -682,5 +688,75 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
 
     public static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive) {
         return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static ByteStream repeat(byte element, int n) {
+        return of(Array.repeat(element, n));
+    }
+
+    public static ByteStream concat(final byte[]... a) {
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private final Iterator<byte[]> iter = N.asList(a).iterator();
+            private ImmutableByteIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = new ImmutableByteIterator() {
+                        private final byte[] cur = iter.next();
+                        private int cursor = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            return cursor < cur.length;
+                        }
+
+                        @Override
+                        public byte next() {
+                            if (cursor >= cur.length) {
+                                throw new NoSuchElementException();
+                            }
+
+                            return cur[cursor++];
+                        }
+                    };
+                }
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public byte next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static ByteStream concat(final ByteStream... a) {
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private final Iterator<ByteStream> iter = N.asList(a).iterator();
+            private ImmutableByteIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next().byteIterator();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public byte next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
     }
 }

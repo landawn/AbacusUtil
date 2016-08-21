@@ -425,7 +425,7 @@ final class ArrayByteStream extends ByteStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.avg(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
     }
 
     @Override
@@ -467,8 +467,30 @@ final class ArrayByteStream extends ByteStream {
     }
 
     @Override
+    public OptionalByte findFirst(BytePredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalByte.of(elements[i]);
+            }
+        }
+
+        return OptionalByte.empty();
+    }
+
+    @Override
     public OptionalByte findAny() {
         return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalByte findAny(BytePredicate predicate) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (predicate.test(elements[i])) {
+                return OptionalByte.of(elements[i]);
+            }
+        }
+
+        return OptionalByte.empty();
     }
 
     @Override

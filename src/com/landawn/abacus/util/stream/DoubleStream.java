@@ -25,7 +25,10 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
@@ -719,6 +722,8 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      */
     public abstract OptionalDouble findFirst();
 
+    public abstract OptionalDouble findFirst(DoublePredicate predicate);
+
     /**
      * Returns an {@link OptionalDouble} describing some element of the stream,
      * or an empty {@code OptionalDouble} if the stream is empty.
@@ -737,6 +742,8 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @see #findFirst()
      */
     public abstract OptionalDouble findAny();
+
+    public abstract OptionalDouble findAny(DoublePredicate predicate);
 
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
@@ -764,5 +771,75 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
 
     public static DoubleStream of(final double[] a, final int startIndex, final int endIndex) {
         return new ArrayDoubleStream(a, startIndex, endIndex);
+    }
+
+    public static DoubleStream repeat(double element, int n) {
+        return of(Array.repeat(element, n));
+    }
+
+    public static DoubleStream concat(final double[]... a) {
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private final Iterator<double[]> iter = N.asList(a).iterator();
+            private ImmutableDoubleIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = new ImmutableDoubleIterator() {
+                        private final double[] cur = iter.next();
+                        private int cursor = 0;
+
+                        @Override
+                        public boolean hasNext() {
+                            return cursor < cur.length;
+                        }
+
+                        @Override
+                        public double next() {
+                            if (cursor >= cur.length) {
+                                throw new NoSuchElementException();
+                            }
+
+                            return cur[cursor++];
+                        }
+                    };
+                }
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public double next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static DoubleStream concat(final DoubleStream... a) {
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private final Iterator<DoubleStream> iter = N.asList(a).iterator();
+            private ImmutableDoubleIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next().doubleIterator();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public double next() {
+                if (cur == null) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
     }
 }

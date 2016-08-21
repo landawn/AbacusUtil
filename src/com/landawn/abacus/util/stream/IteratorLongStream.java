@@ -863,8 +863,34 @@ final class IteratorLongStream extends LongStream {
     }
 
     @Override
+    public OptionalLong findFirst(LongPredicate predicate) {
+        while (elements.hasNext()) {
+            long e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalLong.of(e);
+            }
+        }
+
+        return OptionalLong.empty();
+    }
+
+    @Override
     public OptionalLong findAny() {
         return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements.next());
+    }
+
+    @Override
+    public OptionalLong findAny(LongPredicate predicate) {
+        while (elements.hasNext()) {
+            long e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalLong.of(e);
+            }
+        }
+
+        return OptionalLong.empty();
     }
 
     @Override

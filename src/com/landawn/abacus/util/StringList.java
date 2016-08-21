@@ -189,11 +189,11 @@ public abstract class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static ObjectList<String> from(List<Number> c) {
+    public static ObjectList<String> from(List<? extends Number> c) {
         return from(c, null);
     }
 
-    public static ObjectList<String> from(List<Number> c, String defaultValueForNull) {
+    public static ObjectList<String> from(List<? extends Number> c, String defaultValueForNull) {
         final String[] a = new String[c.size()];
         int idx = 0;
 

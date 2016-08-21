@@ -863,8 +863,34 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     @Override
+    public OptionalFloat findFirst(FloatPredicate predicate) {
+        while (elements.hasNext()) {
+            float e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalFloat.of(e);
+            }
+        }
+
+        return OptionalFloat.empty();
+    }
+
+    @Override
     public OptionalFloat findAny() {
         return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements.next());
+    }
+
+    @Override
+    public OptionalFloat findAny(FloatPredicate predicate) {
+        while (elements.hasNext()) {
+            float e = elements.next();
+
+            if (predicate.test(e)) {
+                return OptionalFloat.of(e);
+            }
+        }
+
+        return OptionalFloat.empty();
     }
 
     @Override
