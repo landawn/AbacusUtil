@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
@@ -190,22 +189,42 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return elementData;
     }
 
-    /**
-     * Return the first element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalByte findFirst() {
-        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[0]);
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalByte findFirst() {
+    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[0]);
+    //    }
+
+    public OptionalByte findFirst(BytePredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalByte.of(elementData[i]);
+            }
+        }
+
+        return OptionalByte.empty();
     }
 
-    /**
-     * Return the last element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalByte findLast() {
-        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[size - 1]);
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalByte findLast() {
+    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[size - 1]);
+    //    }
+
+    public OptionalByte findLast(BytePredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalByte.of(elementData[i]);
+            }
+        }
+
+        return OptionalByte.empty();
     }
 
     public byte get(int index) {
@@ -512,7 +531,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex).doubleValue());
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override

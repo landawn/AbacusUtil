@@ -240,6 +240,14 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract <T> Stream<T> flatMapToObj(LongFunction<? extends Stream<T>> mapper);
 
     /**
+     * Returns Stream of LongStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<LongStream> split(int size);
+
+    /**
      * Returns a stream consisting of the distinct elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">stateful
@@ -668,9 +676,13 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @return an {@code OptionalLong} describing the first element of this
      * stream, or an empty {@code OptionalLong} if the stream is empty
      */
-    public abstract OptionalLong findFirst();
+    // public abstract OptionalLong findFirst();
 
     public abstract OptionalLong findFirst(LongPredicate predicate);
+
+    // public abstract OptionalLong findLast();
+
+    public abstract OptionalLong findLast(LongPredicate predicate);
 
     /**
      * Returns an {@link OptionalLong} describing some element of the stream, or
@@ -689,7 +701,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * or an empty {@code OptionalLong} if the stream is empty
      * @see #findFirst()
      */
-    public abstract OptionalLong findAny();
+    // public abstract OptionalLong findAny();
 
     public abstract OptionalLong findAny(LongPredicate predicate);
 
@@ -789,7 +801,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
 
             @Override
             public long next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -814,7 +826,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
 
             @Override
             public long next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 

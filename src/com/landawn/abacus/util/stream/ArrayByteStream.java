@@ -265,13 +265,25 @@ final class ArrayByteStream extends ByteStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
         }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ByteStream> split(int size) {
+        final List<byte[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final ByteStream[] a = new ByteStream[tmp.size()];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = new ArrayByteStream(tmp.get(i), null, sorted);
+        }
+
+        return new ArrayStream<ByteStream>(a, closeHandlers);
     }
 
     @Override
@@ -304,6 +316,8 @@ final class ArrayByteStream extends ByteStream {
     public ByteStream limit(long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         if (maxSize >= toIndex - fromIndex) {
@@ -425,7 +439,7 @@ final class ArrayByteStream extends ByteStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -461,10 +475,10 @@ final class ArrayByteStream extends ByteStream {
         return true;
     }
 
-    @Override
-    public OptionalByte findFirst() {
-        return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements[fromIndex]);
-    }
+    //    @Override
+    //    public OptionalByte findFirst() {
+    //        return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalByte findFirst(BytePredicate predicate) {
@@ -477,10 +491,26 @@ final class ArrayByteStream extends ByteStream {
         return OptionalByte.empty();
     }
 
+    //    @Override
+    //    public OptionalByte findLast() {
+    //        return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements[toIndex - 1]);
+    //    }
+
     @Override
-    public OptionalByte findAny() {
-        return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements[fromIndex]);
+    public OptionalByte findLast(BytePredicate predicate) {
+        for (int i = toIndex - 1; i >= fromIndex; i--) {
+            if (predicate.test(elements[i])) {
+                return OptionalByte.of(elements[i]);
+            }
+        }
+
+        return OptionalByte.empty();
     }
+
+    //    @Override
+    //    public OptionalByte findAny() {
+    //        return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalByte findAny(BytePredicate predicate) {

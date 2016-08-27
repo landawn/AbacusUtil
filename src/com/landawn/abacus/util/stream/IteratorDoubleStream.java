@@ -79,7 +79,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
             @Override
             public double next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -124,7 +124,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
             @Override
             public double next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -177,7 +177,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
             @Override
             public double next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -331,7 +331,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
             @Override
             public double next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -356,7 +356,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -381,7 +381,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
             @Override
             public long next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -406,7 +406,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
             @Override
             public float next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -431,12 +431,40 @@ final class IteratorDoubleStream extends DoubleStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<DoubleStream> split(final int size) {
+        return new IteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public DoubleStream next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final double[] a = new double[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return new ArrayDoubleStream(a, 0, cnt, null, sorted);
+            }
+
         }, closeHandlers);
     }
 
@@ -591,6 +619,8 @@ final class IteratorDoubleStream extends DoubleStream {
     public DoubleStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
@@ -736,17 +766,6 @@ final class IteratorDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Double sum() {
-        double result = 0d;
-
-        while (elements.hasNext()) {
-            result += elements.next();
-        }
-
-        return result;
-    }
-
-    @Override
     public OptionalDouble min() {
         if (count() == 0) {
             return OptionalDouble.empty();
@@ -803,25 +822,94 @@ final class IteratorDoubleStream extends DoubleStream {
     }
 
     @Override
-    public long count() {
-        return elements.count();
+    public Double sum() {
+        //        double result = 0d;
+        //
+        //        while (elements.hasNext()) {
+        //            result += elements.next();
+        //        }
+        //
+        //        return result;
+
+        final Supplier<double[]> supplier = new Supplier<double[]>() {
+            @Override
+            public double[] get() {
+                return new double[3];
+            }
+        };
+
+        final ObjDoubleConsumer<double[]> accumulator = new ObjDoubleConsumer<double[]>() {
+            @Override
+            public void accept(double[] ll, double d) {
+                Collectors.sumWithCompensation(ll, d);
+                ll[2] += d;
+            }
+        };
+
+        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
+            @Override
+            public void accept(double[] ll, double[] rr) {
+                Collectors.sumWithCompensation(ll, rr[0]);
+                Collectors.sumWithCompensation(ll, rr[1]);
+                ll[2] += rr[2];
+            }
+        };
+
+        final double[] summation = collect(supplier, accumulator, combiner);
+
+        return Collectors.computeFinalSum(summation);
     }
 
     @Override
     public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            OptionalDouble.empty();
-        }
+        //        if (elements.hasNext() == false) {
+        //            return OptionalDouble.empty();
+        //        }
+        //    
+        //        double result = 0d;
+        //        long count = 0;
+        //    
+        //        while (elements.hasNext()) {
+        //            result += elements.next();
+        //            count++;
+        //        }
+        //    
+        //        return OptionalDouble.of(result / count);
 
-        double result = 0d;
-        long count = 0;
+        final Supplier<double[]> supplier = new Supplier<double[]>() {
+            @Override
+            public double[] get() {
+                return new double[4];
+            }
+        };
 
-        while (elements.hasNext()) {
-            result += elements.next();
-            count++;
-        }
+        final ObjDoubleConsumer<double[]> accumulator = new ObjDoubleConsumer<double[]>() {
+            @Override
+            public void accept(double[] ll, double d) {
+                ll[2]++;
+                Collectors.sumWithCompensation(ll, d);
+                ll[3] += d;
+            }
+        };
 
-        return OptionalDouble.of(result / count);
+        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
+            @Override
+            public void accept(double[] ll, double[] rr) {
+                Collectors.sumWithCompensation(ll, rr[0]);
+                Collectors.sumWithCompensation(ll, rr[1]);
+                ll[2] += rr[2];
+                ll[3] += rr[3];
+            }
+        };
+
+        final double[] avg = collect(supplier, accumulator, combiner);
+
+        return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
+    }
+
+    @Override
+    public long count() {
+        return elements.count();
     }
 
     @Override
@@ -857,10 +945,10 @@ final class IteratorDoubleStream extends DoubleStream {
         return true;
     }
 
-    @Override
-    public OptionalDouble findFirst() {
-        return elements.hasNext() ? OptionalDouble.empty() : OptionalDouble.of(elements.next());
-    }
+    //    @Override
+    //    public OptionalDouble findFirst() {
+    //        return elements.hasNext() ? OptionalDouble.empty() : OptionalDouble.of(elements.next());
+    //    }
 
     @Override
     public OptionalDouble findFirst(DoublePredicate predicate) {
@@ -875,10 +963,47 @@ final class IteratorDoubleStream extends DoubleStream {
         return OptionalDouble.empty();
     }
 
+    //    @Override
+    //    public OptionalDouble findLast() {
+    //        if (elements.hasNext() == false) {
+    //            return OptionalDouble.empty();
+    //        }
+    //
+    //        double e = 0;
+    //
+    //        while (elements.hasNext()) {
+    //            e = elements.next();
+    //        }
+    //
+    //        return OptionalDouble.of(e);
+    //    }
+
     @Override
-    public OptionalDouble findAny() {
-        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements.next());
+    public OptionalDouble findLast(DoublePredicate predicate) {
+        if (elements.hasNext() == false) {
+            return OptionalDouble.empty();
+        }
+
+        boolean hasResult = false;
+        double e = 0;
+        double result = 0;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (predicate.test(e)) {
+                result = e;
+                hasResult = true;
+            }
+        }
+
+        return hasResult ? OptionalDouble.of(result) : OptionalDouble.empty();
     }
+
+    //    @Override
+    //    public OptionalDouble findAny() {
+    //        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements.next());
+    //    }
 
     @Override
     public OptionalDouble findAny(DoublePredicate predicate) {
@@ -895,7 +1020,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
     @Override
     public Stream<Double> boxed() {
-        return new IteratorStream<Double>(iterator(), sorted, sorted ? DOUBLE_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? DOUBLE_COMPARATOR : null);
     }
 
     @Override

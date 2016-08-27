@@ -77,7 +77,7 @@ final class IteratorCharStream extends CharStream {
 
             @Override
             public char next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -122,7 +122,7 @@ final class IteratorCharStream extends CharStream {
 
             @Override
             public char next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -175,7 +175,7 @@ final class IteratorCharStream extends CharStream {
 
             @Override
             public char next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -279,7 +279,7 @@ final class IteratorCharStream extends CharStream {
 
             @Override
             public char next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -304,7 +304,7 @@ final class IteratorCharStream extends CharStream {
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -329,12 +329,40 @@ final class IteratorCharStream extends CharStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<CharStream> split(final int size) {
+        return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public CharStream next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final char[] a = new char[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return new ArrayCharStream(a, 0, cnt, null, sorted);
+            }
+
         }, closeHandlers);
     }
 
@@ -488,6 +516,8 @@ final class IteratorCharStream extends CharStream {
     public CharStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         return new IteratorCharStream(new ImmutableCharIterator() {
@@ -726,10 +756,10 @@ final class IteratorCharStream extends CharStream {
         return true;
     }
 
-    @Override
-    public OptionalChar findFirst() {
-        return elements.hasNext() ? OptionalChar.empty() : OptionalChar.of(elements.next());
-    }
+    //    @Override
+    //    public OptionalChar findFirst() {
+    //        return elements.hasNext() ? OptionalChar.empty() : OptionalChar.of(elements.next());
+    //    }
 
     @Override
     public OptionalChar findFirst(CharPredicate predicate) {
@@ -744,10 +774,47 @@ final class IteratorCharStream extends CharStream {
         return OptionalChar.empty();
     }
 
+    //    @Override
+    //    public OptionalChar findLast() {
+    //        if (elements.hasNext() == false) {
+    //            return OptionalChar.empty();
+    //        }
+    //
+    //        char e = 0;
+    //
+    //        while (elements.hasNext()) {
+    //            e = elements.next();
+    //        }
+    //
+    //        return OptionalChar.of(e);
+    //    }
+
     @Override
-    public OptionalChar findAny() {
-        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements.next());
+    public OptionalChar findLast(CharPredicate predicate) {
+        if (elements.hasNext() == false) {
+            return OptionalChar.empty();
+        }
+
+        boolean hasResult = false;
+        char e = 0;
+        char result = 0;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (predicate.test(e)) {
+                result = e;
+                hasResult = true;
+            }
+        }
+
+        return hasResult ? OptionalChar.of(result) : OptionalChar.empty();
     }
+
+    //    @Override
+    //    public OptionalChar findAny() {
+    //        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements.next());
+    //    }
 
     @Override
     public OptionalChar findAny(CharPredicate predicate) {
@@ -779,7 +846,7 @@ final class IteratorCharStream extends CharStream {
 
     @Override
     public Stream<Character> boxed() {
-        return new IteratorStream<Character>(iterator(), sorted, sorted ? CHAR_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? CHAR_COMPARATOR : null);
     }
 
     @Override

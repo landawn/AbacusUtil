@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -118,7 +117,13 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         final char[] elementData = new char[endIndex - startIndex];
 
         for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = N.asChar(a[i]);
+            if (a[i] == null) {
+                elementData[i - startIndex] = 0;
+            } else if (a[i].length() == 1) {
+                elementData[i - startIndex] = a[i].charAt(0);
+            } else {
+                throw new IllegalArgumentException("Invalid char: " + a[i]);
+            }
         }
 
         return of(elementData);
@@ -170,22 +175,42 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return elementData;
     }
 
-    /**
-     * Return the first element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalChar findFirst() {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[0]);
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalChar findFirst() {
+    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[0]);
+    //    }
+
+    public OptionalChar findFirst(CharPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalChar.of(elementData[i]);
+            }
+        }
+
+        return OptionalChar.empty();
     }
 
-    /**
-     * Return the last element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalChar findLast() {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[size - 1]);
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalChar findLast() {
+    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[size - 1]);
+    //    }
+
+    public OptionalChar findLast(CharPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalChar.of(elementData[i]);
+            }
+        }
+
+        return OptionalChar.empty();
     }
 
     public char get(int index) {

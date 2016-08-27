@@ -205,6 +205,14 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     public abstract <T> Stream<T> flatMapToObj(CharFunction<? extends Stream<T>> mapper);
 
     /**
+     * Returns Stream of CharStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<CharStream> split(int size);
+
+    /**
      * Returns a stream consisting of the distinct elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">stateful
@@ -604,9 +612,13 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return an {@code OptionalChar} describing the first element of this stream,
      * or an empty {@code OptionalChar} if the stream is empty
      */
-    public abstract OptionalChar findFirst();
+    // public abstract OptionalChar findFirst();
 
     public abstract OptionalChar findFirst(CharPredicate predicate);
+
+    // public abstract OptionalChar findLast();
+
+    public abstract OptionalChar findLast(CharPredicate predicate);
 
     /**
      * Returns an {@link OptionalChar} describing some element of the stream, or
@@ -625,7 +637,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * an empty {@code OptionalChar} if the stream is empty
      * @see #findFirst()
      */
-    public abstract OptionalChar findAny();
+    // public abstract OptionalChar findAny();
 
     public abstract OptionalChar findAny(CharPredicate predicate);
 
@@ -669,15 +681,15 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
         return new ArrayCharStream(a, startIndex, endIndex);
     }
 
-    public static CharStream from(final int... a) {
+    static CharStream from(final int... a) {
         return Stream.from(CharList.from(a).trimToSize().array());
     }
 
-    public static CharStream from(final String str) {
-        return from(str, 0, str.length());
+    public static CharStream of(final String str) {
+        return of(str, 0, str.length());
     }
 
-    public static CharStream from(final String str, final int startIndex, final int endIndex) {
+    public static CharStream of(final String str, final int startIndex, final int endIndex) {
         return of(N.getCharsForReadOnly(str), startIndex, endIndex);
     }
 
@@ -725,7 +737,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
 
             @Override
             public char next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -750,7 +762,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
 
             @Override
             public char next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 

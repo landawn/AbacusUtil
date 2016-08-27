@@ -331,13 +331,25 @@ final class ArrayLongStream extends LongStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
         }, closeHandlers);
+    }
+
+    @Override
+    public Stream<LongStream> split(int size) {
+        final List<long[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final LongStream[] a = new LongStream[tmp.size()];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = new ArrayLongStream(tmp.get(i), null, sorted);
+        }
+
+        return new ArrayStream<LongStream>(a, closeHandlers);
     }
 
     @Override
@@ -370,6 +382,8 @@ final class ArrayLongStream extends LongStream {
     public LongStream limit(long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         if (maxSize >= toIndex - fromIndex) {
@@ -491,7 +505,7 @@ final class ArrayLongStream extends LongStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -527,10 +541,10 @@ final class ArrayLongStream extends LongStream {
         return true;
     }
 
-    @Override
-    public OptionalLong findFirst() {
-        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
-    }
+    //    @Override
+    //    public OptionalLong findFirst() {
+    //        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalLong findFirst(LongPredicate predicate) {
@@ -543,10 +557,26 @@ final class ArrayLongStream extends LongStream {
         return OptionalLong.empty();
     }
 
+    //    @Override
+    //    public OptionalLong findLast() {
+    //        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[toIndex - 1]);
+    //    }
+
     @Override
-    public OptionalLong findAny() {
-        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
+    public OptionalLong findLast(LongPredicate predicate) {
+        for (int i = toIndex - 1; i >= fromIndex; i--) {
+            if (predicate.test(elements[i])) {
+                return OptionalLong.of(elements[i]);
+            }
+        }
+
+        return OptionalLong.empty();
     }
+
+    //    @Override
+    //    public OptionalLong findAny() {
+    //        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalLong findAny(LongPredicate predicate) {

@@ -80,7 +80,7 @@ final class IteratorFloatStream extends FloatStream {
 
             @Override
             public float next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -125,7 +125,7 @@ final class IteratorFloatStream extends FloatStream {
 
             @Override
             public float next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -178,7 +178,7 @@ final class IteratorFloatStream extends FloatStream {
 
             @Override
             public float next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -332,7 +332,7 @@ final class IteratorFloatStream extends FloatStream {
 
             @Override
             public float next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -357,7 +357,7 @@ final class IteratorFloatStream extends FloatStream {
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -382,7 +382,7 @@ final class IteratorFloatStream extends FloatStream {
 
             @Override
             public long next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -407,7 +407,7 @@ final class IteratorFloatStream extends FloatStream {
 
             @Override
             public double next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -432,12 +432,40 @@ final class IteratorFloatStream extends FloatStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<FloatStream> split(final int size) {
+        return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public FloatStream next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final float[] a = new float[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return new ArrayFloatStream(a, 0, cnt, null, sorted);
+            }
+
         }, closeHandlers);
     }
 
@@ -591,6 +619,8 @@ final class IteratorFloatStream extends FloatStream {
     public FloatStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         return new IteratorFloatStream(new ImmutableFloatIterator() {
@@ -736,17 +766,6 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     @Override
-    public Double sum() {
-        double result = 0d;
-
-        while (elements.hasNext()) {
-            result += elements.next();
-        }
-
-        return result;
-    }
-
-    @Override
     public OptionalFloat min() {
         if (count() == 0) {
             return OptionalFloat.empty();
@@ -803,25 +822,94 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     @Override
-    public long count() {
-        return elements.count();
+    public Double sum() {
+        //        double result = 0d;
+        //    
+        //        while (elements.hasNext()) {
+        //            result += elements.next();
+        //        }
+        //    
+        //        return result;
+
+        final Supplier<double[]> supplier = new Supplier<double[]>() {
+            @Override
+            public double[] get() {
+                return new double[3];
+            }
+        };
+
+        final ObjFloatConsumer<double[]> accumulator = new ObjFloatConsumer<double[]>() {
+            @Override
+            public void accept(double[] ll, float f) {
+                Collectors.sumWithCompensation(ll, f);
+                ll[2] += f;
+            }
+        };
+
+        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
+            @Override
+            public void accept(double[] ll, double[] rr) {
+                Collectors.sumWithCompensation(ll, rr[0]);
+                Collectors.sumWithCompensation(ll, rr[1]);
+                ll[2] += rr[2];
+            }
+        };
+
+        final double[] summation = collect(supplier, accumulator, combiner);
+
+        return Collectors.computeFinalSum(summation);
     }
 
     @Override
     public OptionalDouble average() {
-        if (elements.hasNext() == false) {
-            OptionalDouble.empty();
-        }
+        //        if (elements.hasNext() == false) {
+        //            return OptionalDouble.empty();
+        //        }
+        //
+        //        double result = 0d;
+        //        long count = 0;
+        //
+        //        while (elements.hasNext()) {
+        //            result += elements.next();
+        //            count++;
+        //        }
+        //
+        //        return OptionalDouble.of(result / count);
 
-        double result = 0d;
-        long count = 0;
+        final Supplier<double[]> supplier = new Supplier<double[]>() {
+            @Override
+            public double[] get() {
+                return new double[4];
+            }
+        };
 
-        while (elements.hasNext()) {
-            result += elements.next();
-            count++;
-        }
+        final ObjFloatConsumer<double[]> accumulator = new ObjFloatConsumer<double[]>() {
+            @Override
+            public void accept(double[] ll, float f) {
+                ll[2]++;
+                Collectors.sumWithCompensation(ll, f);
+                ll[3] += f;
+            }
+        };
 
-        return OptionalDouble.of(result / count);
+        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
+            @Override
+            public void accept(double[] ll, double[] rr) {
+                Collectors.sumWithCompensation(ll, rr[0]);
+                Collectors.sumWithCompensation(ll, rr[1]);
+                ll[2] += rr[2];
+                ll[3] += rr[3];
+            }
+        };
+
+        final double[] avg = collect(supplier, accumulator, combiner);
+
+        return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
+    }
+
+    @Override
+    public long count() {
+        return elements.count();
     }
 
     @Override
@@ -857,10 +945,10 @@ final class IteratorFloatStream extends FloatStream {
         return true;
     }
 
-    @Override
-    public OptionalFloat findFirst() {
-        return elements.hasNext() ? OptionalFloat.empty() : OptionalFloat.of(elements.next());
-    }
+    //    @Override
+    //    public OptionalFloat findFirst() {
+    //        return elements.hasNext() ? OptionalFloat.empty() : OptionalFloat.of(elements.next());
+    //    }
 
     @Override
     public OptionalFloat findFirst(FloatPredicate predicate) {
@@ -875,10 +963,47 @@ final class IteratorFloatStream extends FloatStream {
         return OptionalFloat.empty();
     }
 
+    //    @Override
+    //    public OptionalFloat findLast() {
+    //        if (elements.hasNext() == false) {
+    //            return OptionalFloat.empty();
+    //        }
+    //
+    //        float e = 0;
+    //
+    //        while (elements.hasNext()) {
+    //            e = elements.next();
+    //        }
+    //
+    //        return OptionalFloat.of(e);
+    //    }
+
     @Override
-    public OptionalFloat findAny() {
-        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements.next());
+    public OptionalFloat findLast(FloatPredicate predicate) {
+        if (elements.hasNext() == false) {
+            return OptionalFloat.empty();
+        }
+
+        boolean hasResult = false;
+        float e = 0;
+        float result = 0;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (predicate.test(e)) {
+                result = e;
+                hasResult = true;
+            }
+        }
+
+        return hasResult ? OptionalFloat.of(result) : OptionalFloat.empty();
     }
+
+    //    @Override
+    //    public OptionalFloat findAny() {
+    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements.next());
+    //    }
 
     @Override
     public OptionalFloat findAny(FloatPredicate predicate) {
@@ -910,7 +1035,7 @@ final class IteratorFloatStream extends FloatStream {
 
     @Override
     public Stream<Float> boxed() {
-        return new IteratorStream<Float>(iterator(), sorted, sorted ? FLOAT_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? FLOAT_COMPARATOR : null);
     }
 
     @Override

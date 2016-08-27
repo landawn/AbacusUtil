@@ -206,6 +206,14 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract <T> Stream<T> flatMapToObj(ShortFunction<? extends Stream<T>> mapper);
 
     /**
+     * Returns Stream of ShortStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<ShortStream> split(int size);
+
+    /**
      * Returns a stream consisting of the distinct elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">stateful
@@ -609,9 +617,13 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return an {@code OptionalShort} describing the first element of this stream,
      * or an empty {@code OptionalShort} if the stream is empty
      */
-    public abstract OptionalShort findFirst();
+    // public abstract OptionalShort findFirst();
 
     public abstract OptionalShort findFirst(ShortPredicate predicate);
+
+    // public abstract OptionalShort findLast();
+
+    public abstract OptionalShort findLast(ShortPredicate predicate);
 
     /**
      * Returns an {@link OptionalShort} describing some element of the stream, or
@@ -630,7 +642,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * an empty {@code OptionalShort} if the stream is empty
      * @see #findFirst()
      */
-    public abstract OptionalShort findAny();
+    // public abstract OptionalShort findAny();
 
     public abstract OptionalShort findAny(ShortPredicate predicate);
 
@@ -674,7 +686,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
         return new ArrayShortStream(a, startIndex, endIndex);
     }
 
-    public static ShortStream from(final int... a) {
+    static ShortStream from(final int... a) {
         return Stream.from(ShortList.from(a).trimToSize().array());
     }
 
@@ -722,7 +734,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
 
             @Override
             public short next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -747,7 +759,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
 
             @Override
             public short next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 

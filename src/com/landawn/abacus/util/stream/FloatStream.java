@@ -240,6 +240,14 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     public abstract <T> Stream<T> flatMapToObj(FloatFunction<? extends Stream<T>> mapper);
 
     /**
+     * Returns Stream of FloatStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<FloatStream> split(int size);
+
+    /**
      * Returns a stream consisting of the distinct elements of this stream. The
      * elements are compared for equality according to
      * {@link java.lang.Float#compare(float, float)}.
@@ -721,9 +729,13 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * @return an {@code OptionalFloat} describing the first element of this
      * stream, or an empty {@code OptionalFloat} if the stream is empty
      */
-    public abstract OptionalFloat findFirst();
+    // public abstract OptionalFloat findFirst();
 
     public abstract OptionalFloat findFirst(FloatPredicate predicate);
+
+    // public abstract OptionalFloat findLast();
+
+    public abstract OptionalFloat findLast(FloatPredicate predicate);
 
     /**
      * Returns an {@link OptionalFloat} describing some element of the stream,
@@ -742,7 +754,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * or an empty {@code OptionalFloat} if the stream is empty
      * @see #findFirst()
      */
-    public abstract OptionalFloat findAny();
+    // public abstract OptionalFloat findAny();
 
     public abstract OptionalFloat findAny(FloatPredicate predicate);
 
@@ -822,7 +834,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
 
             @Override
             public float next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -847,7 +859,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
 
             @Override
             public float next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 

@@ -184,6 +184,10 @@ import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortPredicate;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.stream.DoubleStream;
+import com.landawn.abacus.util.stream.FloatStream;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * <p>
@@ -30423,13 +30427,15 @@ public final class N {
             return 0d;
         }
 
-        double sum = 0;
+        //        double sum = 0;
+        //
+        //        for (int i = from; i < to; i++) {
+        //            sum += a[i];
+        //        }
+        //
+        //        return sum;
 
-        for (int i = from; i < to; i++) {
-            sum += a[i];
-        }
-
-        return sum;
+        return FloatStream.of(a, from, to).sum();
     }
 
     /**
@@ -30456,13 +30462,15 @@ public final class N {
             return 0d;
         }
 
-        double sum = 0;
+        //        double sum = 0;
+        //
+        //        for (int i = from; i < to; i++) {
+        //            sum += a[i];
+        //        }
+        //
+        //        return sum;
 
-        for (int i = from; i < to; i++) {
-            sum += a[i];
-        }
-
-        return sum;
+        return DoubleStream.of(a, from, to).sum();
     }
 
     /**
@@ -30491,13 +30499,50 @@ public final class N {
             return 0d;
         }
 
-        double sum = 0d;
+        //        double sum = 0d;
+        //
+        //        for (int i = from; i < to; i++) {
+        //            sum += a[i].doubleValue();
+        //        }
+        //
+        //        return sum;
 
-        for (int i = from; i < to; i++) {
-            sum += a[i].doubleValue();
+        return sum(a, from, to, new ToDoubleFunction<Number>() {
+            @Override
+            public double applyAsDouble(Number value) {
+                return value == null ? 0d : value.doubleValue();
+            }
+        });
+    }
+
+    public static <T> Double sum(final T[] a, final ToDoubleFunction<? super T> mapper) {
+        if (N.isNullOrEmpty(a)) {
+            return 0d;
         }
 
-        return sum;
+        return sum(a, 0, a.length, mapper);
+    }
+
+    public static <T> Double sum(final T[] a, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
+            return 0d;
+        }
+
+        //        double sum = 0d;
+        //
+        //        for (int i = from; i < to; i++) {
+        //            sum += a[i].doubleValue();
+        //        }
+        //
+        //        return sum;
+
+        return Stream.of(a, from, to).mapToDouble(mapper).sum();
     }
 
     public static Double sum(final Collection<? extends Number> c) {
@@ -30528,28 +30573,89 @@ public final class N {
             return 0d;
         }
 
-        double sum = 0d;
+        //        double sum = 0d;
+        //
+        //        if (c instanceof List && c instanceof RandomAccess) {
+        //            final List<Number> list = (List<Number>) c;
+        //
+        //            for (int i = from; i < to; i++) {
+        //                sum += list.get(i).doubleValue();
+        //            }
+        //        } else {
+        //            final Iterator<? extends Number> it = c.iterator();
+        //
+        //            for (int i = 0; i < to; i++) {
+        //                if (i < from) {
+        //                    it.next();
+        //                    continue;
+        //                } else {
+        //                    sum += it.next().doubleValue();
+        //                }
+        //            }
+        //        }
+        //
+        //        return sum;
 
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<Number> list = (List<Number>) c;
-
-            for (int i = from; i < to; i++) {
-                sum += list.get(i).doubleValue();
+        return sum((Collection<Number>) c, from, to, new ToDoubleFunction<Number>() {
+            @Override
+            public double applyAsDouble(Number value) {
+                return value == null ? 0d : value.doubleValue();
             }
-        } else {
-            final Iterator<? extends Number> it = c.iterator();
+        });
+    }
 
-            for (int i = 0; i < to; i++) {
-                if (i < from) {
-                    it.next();
-                    continue;
-                } else {
-                    sum += it.next().doubleValue();
-                }
-            }
+    public static <T> Double sum(final Collection<T> c, final ToDoubleFunction<? super T> mapper) {
+        if (N.isNullOrEmpty(c)) {
+            return 0d;
         }
 
-        return sum;
+        return sum(c, 0, c.size(), mapper);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param from
+     * @param to
+     * @param mapper
+     * @return a double number. <code>0d</code> is returned if list is empty or
+     *         null.
+     */
+    public static <T> Double sum(final Collection<T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+        checkIndex(from, to, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
+            return 0d;
+        }
+
+        //        double sum = 0d;
+        //
+        //        if (c instanceof List && c instanceof RandomAccess) {
+        //            final List<Number> list = (List<Number>) c;
+        //
+        //            for (int i = from; i < to; i++) {
+        //                sum += list.get(i).doubleValue();
+        //            }
+        //        } else {
+        //            final Iterator<? extends Number> it = c.iterator();
+        //
+        //            for (int i = 0; i < to; i++) {
+        //                if (i < from) {
+        //                    it.next();
+        //                    continue;
+        //                } else {
+        //                    sum += it.next().doubleValue();
+        //                }
+        //            }
+        //        }
+        //
+        //        return sum;
+
+        return Stream.of(c, from, to).mapToDouble(mapper).sum();
     }
 
     /**
@@ -30684,7 +30790,9 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+
+        return FloatStream.of(a, from, to).average().or(0);
     }
 
     /**
@@ -30711,7 +30819,9 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+
+        return DoubleStream.of(a, from, to).average().or(0);
     }
 
     /**
@@ -30740,7 +30850,47 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+
+        return average(a, from, to, new ToDoubleFunction<Number>() {
+            @Override
+            public double applyAsDouble(Number value) {
+                return value == null ? 0d : value.doubleValue();
+            }
+        });
+    }
+
+    public static <T> Double average(final T[] a, final ToDoubleFunction<? super T> mapper) {
+        if (N.isNullOrEmpty(a)) {
+            return 0d;
+        }
+
+        return average(a, 0, a.length, mapper);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param mapper
+     * @return a double number. <code>0d</code> is returned if list is empty or
+     *         null.
+     */
+    public static <T> Double average(final T[] a, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
+            return 0d;
+        }
+
+        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+
+        return Stream.of(a, from, to).mapToDouble(mapper).average().or(0d);
     }
 
     public static Double average(final Collection<? extends Number> c) {
@@ -30771,7 +30921,47 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(c, from, to).doubleValue() / (to - from);
+        // return from == to ? 0d : sum(c, from, to).doubleValue() / (to - from);
+
+        return average(c, from, to, new ToDoubleFunction<Number>() {
+            @Override
+            public double applyAsDouble(Number value) {
+                return value == null ? 0d : value.doubleValue();
+            }
+        });
+    }
+
+    public static <T> Double average(final Collection<T> c, final ToDoubleFunction<? super T> mapper) {
+        if (N.isNullOrEmpty(c)) {
+            return 0d;
+        }
+
+        return average(c, 0, c.size(), mapper);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param from
+     * @param to
+     * @param mapper
+     * @return a double number. <code>0d</code> is returned if list is empty or
+     *         null.
+     */
+    public static <T> Double average(final Collection<T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+        checkIndex(from, to, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
+            return 0d;
+        }
+
+        // return from == to ? 0d : sum(c, from, to).doubleValue() / (to - from);
+
+        return Stream.of(c, from, to).mapToDouble(mapper).average().or(0d);
     }
 
     /**
@@ -33351,6 +33541,49 @@ public final class N {
         }
 
         return false;
+    }
+
+    public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
+        IOUtil.parse(iter, elementParser);
+    }
+
+    public static <T> void parse(final Iterator<? extends T> iter, final long offset, final long count, final Consumer<? super T> elementParser) {
+        IOUtil.parse(iter, offset, count, elementParser);
+    }
+
+    /**
+     * Parse the elements in the specified iterators one by one.
+     * 
+     * @param iter
+     * @param offset
+     * @param count
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+     * @param elementParser always remember to handle line <code>null</code>
+     */
+    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
+            final Consumer<? super T> elementParser) {
+        IOUtil.parse(iter, offset, count, processThreadNumber, queueSize, elementParser);
+    }
+
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNumber, final int processThreadNumber,
+            final int queueSize, final Consumer<? super T> elementParser) {
+        IOUtil.parse(iterators, readThreadNumber, processThreadNumber, queueSize, elementParser);
+    }
+
+    /**
+     * Parse the elements in the specified iterators one by one.
+     * 
+     * @param iterators
+     * @param offset
+     * @param count
+     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+     * @param elementParser always remember to handle line <code>null</code>
+     */
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
+            final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
+        IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
     }
 
     @Beta

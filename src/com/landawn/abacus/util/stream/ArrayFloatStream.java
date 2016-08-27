@@ -330,13 +330,25 @@ final class ArrayFloatStream extends FloatStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
         }, closeHandlers);
+    }
+
+    @Override
+    public Stream<FloatStream> split(int size) {
+        final List<float[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final FloatStream[] a = new FloatStream[tmp.size()];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = new ArrayFloatStream(tmp.get(i), null, sorted);
+        }
+
+        return new ArrayStream<FloatStream>(a, closeHandlers);
     }
 
     @Override
@@ -369,6 +381,8 @@ final class ArrayFloatStream extends FloatStream {
     public FloatStream limit(long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         if (maxSize >= toIndex - fromIndex) {
@@ -448,11 +462,6 @@ final class ArrayFloatStream extends FloatStream {
     }
 
     @Override
-    public Double sum() {
-        return N.sum(elements, fromIndex, toIndex);
-    }
-
-    @Override
     public OptionalFloat min() {
         if (count() == 0) {
             return OptionalFloat.empty();
@@ -480,17 +489,80 @@ final class ArrayFloatStream extends FloatStream {
     }
 
     @Override
-    public long count() {
-        return toIndex - fromIndex;
+    public Double sum() {
+        // return N.sum(elements, fromIndex, toIndex);
+
+        final Supplier<double[]> supplier = new Supplier<double[]>() {
+            @Override
+            public double[] get() {
+                return new double[3];
+            }
+        };
+
+        final ObjFloatConsumer<double[]> accumulator = new ObjFloatConsumer<double[]>() {
+            @Override
+            public void accept(double[] ll, float f) {
+                Collectors.sumWithCompensation(ll, f);
+                ll[2] += f;
+            }
+        };
+
+        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
+            @Override
+            public void accept(double[] ll, double[] rr) {
+                Collectors.sumWithCompensation(ll, rr[0]);
+                Collectors.sumWithCompensation(ll, rr[1]);
+                ll[2] += rr[2];
+            }
+        };
+
+        final double[] summation = collect(supplier, accumulator, combiner);
+
+        return Collectors.computeFinalSum(summation);
     }
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
-            return OptionalDouble.empty();
-        }
+        //        if (count() == 0) {
+        //            return OptionalDouble.empty();
+        //        }
+        //
+        //        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
 
-        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
+        final Supplier<double[]> supplier = new Supplier<double[]>() {
+            @Override
+            public double[] get() {
+                return new double[4];
+            }
+        };
+
+        final ObjFloatConsumer<double[]> accumulator = new ObjFloatConsumer<double[]>() {
+            @Override
+            public void accept(double[] ll, float f) {
+                ll[2]++;
+                Collectors.sumWithCompensation(ll, f);
+                ll[3] += f;
+            }
+        };
+
+        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
+            @Override
+            public void accept(double[] ll, double[] rr) {
+                Collectors.sumWithCompensation(ll, rr[0]);
+                Collectors.sumWithCompensation(ll, rr[1]);
+                ll[2] += rr[2];
+                ll[3] += rr[3];
+            }
+        };
+
+        final double[] avg = collect(supplier, accumulator, combiner);
+
+        return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
+    }
+
+    @Override
+    public long count() {
+        return toIndex - fromIndex;
     }
 
     @Override
@@ -526,10 +598,10 @@ final class ArrayFloatStream extends FloatStream {
         return true;
     }
 
-    @Override
-    public OptionalFloat findFirst() {
-        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
-    }
+    //    @Override
+    //    public OptionalFloat findFirst() {
+    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalFloat findFirst(FloatPredicate predicate) {
@@ -542,10 +614,26 @@ final class ArrayFloatStream extends FloatStream {
         return OptionalFloat.empty();
     }
 
+    //    @Override
+    //    public OptionalFloat findLast() {
+    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[toIndex - 1]);
+    //    }
+
     @Override
-    public OptionalFloat findAny() {
-        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
+    public OptionalFloat findLast(FloatPredicate predicate) {
+        for (int i = toIndex - 1; i >= fromIndex; i--) {
+            if (predicate.test(elements[i])) {
+                return OptionalFloat.of(elements[i]);
+            }
+        }
+
+        return OptionalFloat.empty();
     }
+
+    //    @Override
+    //    public OptionalFloat findAny() {
+    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalFloat findAny(FloatPredicate predicate) {

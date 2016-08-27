@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -278,22 +277,42 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return elementData;
     }
 
-    /**
-     * Return the first element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalInt findFirst() {
-        return size() == 0 ? OptionalInt.empty() : OptionalInt.of(elementData[0]);
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalInt findFirst() {
+    //        return size() == 0 ? OptionalInt.empty() : OptionalInt.of(elementData[0]);
+    //    }
+
+    public OptionalInt findFirst(IntPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalInt.of(elementData[i]);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
-    /**
-     * Return the last element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalInt findLast() {
-        return size() == 0 ? OptionalInt.empty() : OptionalInt.of(elementData[size - 1]);
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalInt findLast() {
+    //        return size() == 0 ? OptionalInt.empty() : OptionalInt.of(elementData[size - 1]);
+    //    }
+
+    public OptionalInt findLast(IntPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalInt.of(elementData[i]);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
     public int get(int index) {
@@ -599,7 +618,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex).doubleValue());
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override

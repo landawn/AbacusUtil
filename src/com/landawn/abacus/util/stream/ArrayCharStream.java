@@ -264,13 +264,25 @@ final class ArrayCharStream extends CharStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
         }, closeHandlers);
+    }
+
+    @Override
+    public Stream<CharStream> split(int size) {
+        final List<char[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final CharStream[] a = new CharStream[tmp.size()];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = new ArrayCharStream(tmp.get(i), null, sorted);
+        }
+
+        return new ArrayStream<CharStream>(a, closeHandlers);
     }
 
     @Override
@@ -303,6 +315,8 @@ final class ArrayCharStream extends CharStream {
     public CharStream limit(long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         if (maxSize >= toIndex - fromIndex) {
@@ -446,10 +460,10 @@ final class ArrayCharStream extends CharStream {
         return true;
     }
 
-    @Override
-    public OptionalChar findFirst() {
-        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
-    }
+    //    @Override
+    //    public OptionalChar findFirst() {
+    //        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalChar findFirst(CharPredicate predicate) {
@@ -462,10 +476,26 @@ final class ArrayCharStream extends CharStream {
         return OptionalChar.empty();
     }
 
+    //    @Override
+    //    public OptionalChar findLast() {
+    //        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[toIndex - 1]);
+    //    }
+
     @Override
-    public OptionalChar findAny() {
-        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
+    public OptionalChar findLast(CharPredicate predicate) {
+        for (int i = toIndex - 1; i >= fromIndex; i--) {
+            if (predicate.test(elements[i])) {
+                return OptionalChar.of(elements[i]);
+            }
+        }
+
+        return OptionalChar.empty();
     }
+
+    //    @Override
+    //    public OptionalChar findAny() {
+    //        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalChar findAny(CharPredicate filter) {

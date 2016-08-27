@@ -239,6 +239,14 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract <T> Stream<T> flatMapToObj(DoubleFunction<? extends Stream<T>> mapper);
 
     /**
+     * Returns Stream of DoubleStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<DoubleStream> split(int size);
+
+    /**
      * Returns a stream consisting of the distinct elements of this stream. The
      * elements are compared for equality according to
      * {@link java.lang.Double#compare(double, double)}.
@@ -720,9 +728,13 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @return an {@code OptionalDouble} describing the first element of this
      * stream, or an empty {@code OptionalDouble} if the stream is empty
      */
-    public abstract OptionalDouble findFirst();
+    // public abstract OptionalDouble findFirst();
 
     public abstract OptionalDouble findFirst(DoublePredicate predicate);
+
+    // public abstract OptionalDouble findLast();
+
+    public abstract OptionalDouble findLast(DoublePredicate predicate);
 
     /**
      * Returns an {@link OptionalDouble} describing some element of the stream,
@@ -741,7 +753,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * or an empty {@code OptionalDouble} if the stream is empty
      * @see #findFirst()
      */
-    public abstract OptionalDouble findAny();
+    // public abstract OptionalDouble findAny();
 
     public abstract OptionalDouble findAny(DoublePredicate predicate);
 
@@ -809,7 +821,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
 
             @Override
             public double next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -834,7 +846,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
 
             @Override
             public double next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 

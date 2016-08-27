@@ -125,6 +125,13 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         return value;
     }
 
+    public int getAsInt() {
+        if (!isPresent) {
+            throw new NoSuchElementException("No value present");
+        }
+        return (int) value;
+    }
+
     /**
      * Return {@code true} if there is a value present, otherwise {@code false}.
      *
@@ -155,6 +162,10 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      */
     public long or(long other) {
         return isPresent ? value : other;
+    }
+
+    public int orInt(int other) {
+        return isPresent ? (int) value : other;
     }
 
     /**

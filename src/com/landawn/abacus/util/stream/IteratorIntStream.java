@@ -83,7 +83,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public int next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -128,7 +128,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public int next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -181,7 +181,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public int next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -410,7 +410,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -435,7 +435,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public char next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -460,7 +460,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public byte next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -485,7 +485,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public short next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -510,7 +510,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public long next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -535,7 +535,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public float next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -560,7 +560,7 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public double next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -585,12 +585,40 @@ final class IteratorIntStream extends IntStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<IntStream> split(final int size) {
+        return new IteratorStream<IntStream>(new ImmutableIterator<IntStream>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public IntStream next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final int[] a = new int[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return new ArrayIntStream(a, 0, cnt, null, sorted);
+            }
+
         }, closeHandlers);
     }
 
@@ -744,6 +772,8 @@ final class IteratorIntStream extends IntStream {
     public IntStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         return new IteratorIntStream(new ImmutableIntIterator() {
@@ -963,7 +993,7 @@ final class IteratorIntStream extends IntStream {
     @Override
     public OptionalDouble average() {
         if (elements.hasNext() == false) {
-            OptionalDouble.empty();
+            return OptionalDouble.empty();
         }
 
         double result = 0d;
@@ -1010,10 +1040,10 @@ final class IteratorIntStream extends IntStream {
         return true;
     }
 
-    @Override
-    public OptionalInt findFirst() {
-        return elements.hasNext() ? OptionalInt.empty() : OptionalInt.of(elements.next());
-    }
+    //    @Override
+    //    public OptionalInt findFirst() {
+    //        return elements.hasNext() ? OptionalInt.empty() : OptionalInt.of(elements.next());
+    //    }
 
     @Override
     public OptionalInt findFirst(IntPredicate predicate) {
@@ -1028,10 +1058,47 @@ final class IteratorIntStream extends IntStream {
         return OptionalInt.empty();
     }
 
+    //    @Override
+    //    public OptionalInt findLast() {
+    //        if (elements.hasNext() == false) {
+    //            return OptionalInt.empty();
+    //        }
+    //
+    //        int e = 0;
+    //
+    //        while (elements.hasNext()) {
+    //            e = elements.next();
+    //        }
+    //
+    //        return OptionalInt.of(e);
+    //    }
+
     @Override
-    public OptionalInt findAny() {
-        return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements.next());
+    public OptionalInt findLast(IntPredicate predicate) {
+        if (elements.hasNext() == false) {
+            return OptionalInt.empty();
+        }
+
+        boolean hasResult = false;
+        int e = 0;
+        int result = 0;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (predicate.test(e)) {
+                result = e;
+                hasResult = true;
+            }
+        }
+
+        return hasResult ? OptionalInt.of(result) : OptionalInt.empty();
     }
+
+    //    @Override
+    //    public OptionalInt findAny() {
+    //        return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements.next());
+    //    }
 
     @Override
     public OptionalInt findAny(IntPredicate predicate) {
@@ -1093,7 +1160,7 @@ final class IteratorIntStream extends IntStream {
 
     @Override
     public Stream<Integer> boxed() {
-        return new IteratorStream<Integer>(iterator(), sorted, sorted ? INT_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<Integer>(iterator(), closeHandlers, sorted, sorted ? INT_COMPARATOR : null);
     }
 
     @Override

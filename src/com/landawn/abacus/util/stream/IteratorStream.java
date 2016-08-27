@@ -50,10 +50,10 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     IteratorStream(final Iterator<? extends T> iterator, Collection<Runnable> closeHandlers) {
-        this(iterator, false, null, closeHandlers);
+        this(iterator, closeHandlers, false, null);
     }
 
-    IteratorStream(final Iterator<? extends T> iterator, boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
+    IteratorStream(final Iterator<? extends T> iterator, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
         Objects.requireNonNull(iterator);
 
         this.elements = iterator instanceof ImmutableIterator ? (ImmutableIterator<T>) iterator : new ImmutableIterator<T>() {
@@ -118,7 +118,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public T next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -127,7 +127,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
                 return next;
             }
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -180,7 +180,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public T next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -190,7 +190,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
                 return next;
             }
 
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -246,7 +246,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public T next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -256,7 +256,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
                 return next;
             }
 
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -495,7 +495,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public R next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -584,7 +584,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public R next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -609,7 +609,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public char next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -644,7 +644,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public byte next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -679,7 +679,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public short next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -714,7 +714,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -749,7 +749,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public long next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -784,7 +784,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public float next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -819,7 +819,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             @Override
             public double next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -899,6 +899,90 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public Stream<Stream<T>> split(final int size) {
+        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final Object[] a = new Object[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return new ArrayStream<T>((T[]) a, 0, cnt, null, sorted, cmp);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<List<T>> splitIntoList(final int size) {
+        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public List<T> next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> list = new ArrayList<>(size);
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    list.add(elements.next());
+                }
+
+                return list;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<Set<T>> splitIntoSet(final int size) {
+        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public Set<T> next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final Set<T> list = new LinkedHashSet<>(N.initHashCapacity(size));
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    list.add(elements.next());
+                }
+
+                return list;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public Stream<T> distinct() {
         //        final Set<T> set = new LinkedHashSet<T>();
         //
@@ -939,7 +1023,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
                 distinctIter = set.iterator();
             }
 
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -950,7 +1034,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     @Override
     public Stream<T> sorted(final Comparator<? super T> comparator) {
         if (sorted && this.cmp == comparator) {
-            return new IteratorStream<T>(elements, sorted, cmp, closeHandlers);
+            return new IteratorStream<T>(elements, closeHandlers, sorted, cmp);
         }
 
         //        final Object[] a = toArray();
@@ -1039,7 +1123,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
                     Arrays.sort(a, comparator);
                 }
             }
-        }, true, comparator, closeHandlers);
+        }, closeHandlers, true, comparator);
     }
 
     @Override
@@ -1089,13 +1173,15 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             //    public <A> A[] toArray(A[] a) {
             //        return elements.toArray(a);
             //    }
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
     public Stream<T> limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         //        final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
@@ -1130,7 +1216,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1207,7 +1293,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
                 return elements.toArray(a);
             }
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1398,10 +1484,10 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return true;
     }
 
-    @Override
-    public Optional<T> findFirst() {
-        return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
-    }
+    //    @Override
+    //    public Optional<T> findFirst() {
+    //        return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
+    //    }
 
     @Override
     public Optional<T> findFirst(Predicate<? super T> predicate) {
@@ -1416,10 +1502,47 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return (Optional<T>) Optional.empty();
     }
 
+    //    @Override
+    //    public Optional<T> findLast() {
+    //        if (elements.hasNext() == false) {
+    //            return (Optional<T>) Optional.empty();
+    //        }
+    //
+    //        T e = null;
+    //
+    //        while (elements.hasNext()) {
+    //            e = elements.next();
+    //        }
+    //
+    //        return Optional.of(e);
+    //    }
+
     @Override
-    public Optional<T> findAny() {
-        return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
+    public Optional<T> findLast(Predicate<? super T> predicate) {
+        if (elements.hasNext() == false) {
+            return (Optional<T>) Optional.empty();
+        }
+
+        boolean hasResult = false;
+        T e = null;
+        T result = null;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (predicate.test(e)) {
+                result = e;
+                hasResult = true;
+            }
+        }
+
+        return hasResult ? Optional.of(result) : (Optional<T>) Optional.empty();
     }
+
+    //    @Override
+    //    public Optional<T> findAny() {
+    //        return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
+    //    }
 
     @Override
     public Optional<T> findAny(Predicate<? super T> predicate) {
@@ -1449,7 +1572,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
         closeHandlerList.add(closeHandler);
 
-        return new IteratorStream<T>(elements, sorted, cmp, closeHandlerList);
+        return new IteratorStream<T>(elements, closeHandlerList, sorted, cmp);
     }
 
     @Override

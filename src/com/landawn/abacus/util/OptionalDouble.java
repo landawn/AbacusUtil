@@ -125,6 +125,27 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         return value;
     }
 
+    public int getAsInt() {
+        if (!isPresent) {
+            throw new NoSuchElementException("No value present");
+        }
+        return (int) value;
+    }
+
+    public long getAsLong() {
+        if (!isPresent) {
+            throw new NoSuchElementException("No value present");
+        }
+        return (long) value;
+    }
+
+    public float getAsFloat() {
+        if (!isPresent) {
+            throw new NoSuchElementException("No value present");
+        }
+        return (float) value;
+    }
+
     /**
      * Return {@code true} if there is a value present, otherwise {@code false}.
      *
@@ -155,6 +176,18 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      */
     public double or(double other) {
         return isPresent ? value : other;
+    }
+
+    public int orInt(int other) {
+        return isPresent ? (int) value : other;
+    }
+
+    public long orLong(long other) {
+        return isPresent ? (long) value : other;
+    }
+
+    public float orFloat(float other) {
+        return isPresent ? (float) value : other;
     }
 
     /**

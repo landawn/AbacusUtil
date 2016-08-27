@@ -268,7 +268,7 @@ public final class Multiset<E> implements Iterable<E> {
             return OptionalDouble.empty();
         }
 
-        double sum = sumOfOccurrences();
+        final double sum = sumOfOccurrences();
 
         return OptionalDouble.of(sum / size());
     }

@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -190,22 +189,42 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return elementData;
     }
 
-    /**
-     * Return the first element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalShort findFirst() {
-        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(elementData[0]);
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalShort findFirst() {
+    //        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(elementData[0]);
+    //    }
+
+    public OptionalShort findFirst(ShortPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalShort.of(elementData[i]);
+            }
+        }
+
+        return OptionalShort.empty();
     }
 
-    /**
-     * Return the last element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalShort findLast() {
-        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(elementData[size - 1]);
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalShort findLast() {
+    //        return size() == 0 ? OptionalShort.empty() : OptionalShort.of(elementData[size - 1]);
+    //    }
+
+    public OptionalShort findLast(ShortPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalShort.of(elementData[i]);
+            }
+        }
+
+        return OptionalShort.empty();
     }
 
     public short get(int index) {
@@ -511,7 +530,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex).doubleValue());
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override

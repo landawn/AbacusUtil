@@ -25,11 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -83,53 +85,42 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
         return elementData;
     }
 
-    /**
-     * Return the first element of the array list, or {@code OptionalNullable.empty()} if there is no element.
-     * @return
-     */
-    @Beta
-    public OptionalNullable<T> findFirst() {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[0]);
-    }
+    //    /**
+    //     * Return the first element of the array list, or {@code OptionalNullable.empty()} if there is no element.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalNullable<T> findFirst() {
+    //        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[0]);
+    //    }
 
-    /**
-     * Return the last element of the array list, or {@code OptionalNullable.empty()} if there is no element.
-     * 
-     * @return
-     */
-    @Beta
-    public Optional<T> findFirstNonNull() {
+    public OptionalNullable<T> findFirst(Predicate<? super T> predicate) {
         for (int i = 0; i < size; i++) {
-            if (elementData[i] != null) {
-                return Optional.of(elementData[i]);
+            if (predicate.test(elementData[i])) {
+                return OptionalNullable.of(elementData[i]);
             }
         }
 
-        return Optional.empty();
+        return OptionalNullable.empty();
     }
 
-    /**
-     * Return the last non-null element of the array list, or {@code OptionalNullable.empty()} if there is no non-null element.
-     * @return
-     */
-    @Beta
-    public OptionalNullable<T> findLast() {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[size - 1]);
-    }
+    //    /**
+    //     * Return the last non-null element of the array list, or {@code OptionalNullable.empty()} if there is no non-null element.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalNullable<T> findLast() {
+    //        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[size - 1]);
+    //    }
 
-    /**
-     * Return the last non-null element of the array list.
-     * @return
-     */
-    @Beta
-    public Optional<T> findLastNonNull() {
+    public OptionalNullable<T> findLast(Predicate<? super T> predicate) {
         for (int i = size - 1; i >= 0; i--) {
-            if (elementData[i] != null) {
-                return Optional.of(elementData[i]);
+            if (predicate.test(elementData[i])) {
+                return OptionalNullable.of(elementData[i]);
             }
         }
 
-        return Optional.empty();
+        return OptionalNullable.empty();
     }
 
     public T get(int index) {
@@ -465,6 +456,172 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
                 : OptionalNullable.of(N.kthLargest(elementData, fromIndex, toIndex, k, cmp));
+    }
+
+    public Long sumInt() {
+        return sumInt(0, size());
+    }
+
+    public Long sumInt(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (fromIndex == toIndex) {
+            return 0L;
+        }
+
+        long result = 0L;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (elementData[i] != null) {
+                result += ((Number) elementData[i]).longValue();
+            }
+        }
+
+        return result;
+    }
+
+    public Long sumInt(ToIntFunction<? super T> mapper) {
+        return sumInt(0, size(), mapper);
+    }
+
+    public Long sumInt(int fromIndex, int toIndex, ToIntFunction<? super T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        if (fromIndex == toIndex) {
+            return 0L;
+        }
+
+        final ToIntFunction<Object> tmp = (ToIntFunction<Object>) mapper;
+        long result = 0L;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result += tmp.applyAsInt(elementData[i]);
+        }
+
+        return result;
+    }
+
+    public Long sumLong() {
+        return sumLong(0, size());
+    }
+
+    public Long sumLong(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (fromIndex == toIndex) {
+            return 0L;
+        }
+
+        long result = 0L;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (elementData[i] != null) {
+                result += ((Number) elementData[i]).longValue();
+            }
+        }
+
+        return result;
+    }
+
+    public Long sumLong(ToLongFunction<? super T> mapper) {
+        return sumLong(0, size(), mapper);
+    }
+
+    public Long sumLong(int fromIndex, int toIndex, ToLongFunction<? super T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        if (fromIndex == toIndex) {
+            return 0L;
+        }
+
+        final ToLongFunction<Object> tmp = (ToLongFunction<Object>) mapper;
+        long result = 0L;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result += tmp.applyAsLong(elementData[i]);
+        }
+
+        return result;
+    }
+
+    public Double sumDouble() {
+        return sumDouble(0, size());
+    }
+
+    public Double sumDouble(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? 0d : N.sum((Number[]) elementData, fromIndex, toIndex);
+    }
+
+    public Double sumDouble(ToDoubleFunction<? super T> mapper) {
+        return sumDouble(0, size(), mapper);
+    }
+
+    public Double sumDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? 0d : N.sum(elementData, fromIndex, toIndex, mapper);
+    }
+
+    public OptionalDouble averageInt() {
+        return averageInt(0, size());
+    }
+
+    public OptionalDouble averageInt(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(sumInt(fromIndex, toIndex).doubleValue() / (toIndex - fromIndex));
+    }
+
+    public OptionalDouble averageInt(ToIntFunction<? super T> mapper) {
+        return averageInt(0, size(), mapper);
+    }
+
+    public OptionalDouble averageInt(int fromIndex, int toIndex, ToIntFunction<? super T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(sumInt(fromIndex, toIndex, mapper).doubleValue() / (toIndex - fromIndex));
+    }
+
+    public OptionalDouble averageLong() {
+        return averageLong(0, size());
+    }
+
+    public OptionalDouble averageLong(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(sumLong(fromIndex, toIndex).doubleValue() / (toIndex - fromIndex));
+    }
+
+    public OptionalDouble averageLong(ToLongFunction<? super T> mapper) {
+        return averageLong(0, size(), mapper);
+    }
+
+    public OptionalDouble averageLong(int fromIndex, int toIndex, ToLongFunction<? super T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(sumLong(fromIndex, toIndex, mapper).doubleValue() / (toIndex - fromIndex));
+    }
+
+    public OptionalDouble averageDouble() {
+        return averageDouble(0, size());
+    }
+
+    public OptionalDouble averageDouble(int fromIndex, int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average((Number[]) elementData, fromIndex, toIndex));
+    }
+
+    public OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper) {
+        return averageDouble(0, size(), mapper);
+    }
+
+    public OptionalDouble averageDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex, mapper));
     }
 
     @Override

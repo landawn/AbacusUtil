@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
@@ -192,22 +191,42 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return elementData;
     }
 
-    /**
-     * Return the first element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalDouble findFirst() {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elementData[0]);
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalDouble findFirst() {
+    //        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elementData[0]);
+    //    }
+
+    public OptionalDouble findFirst(DoublePredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalDouble.of(elementData[i]);
+            }
+        }
+
+        return OptionalDouble.empty();
     }
 
-    /**
-     * Return the last element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalDouble findLast() {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elementData[size - 1]);
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalDouble findLast() {
+    //        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elementData[size - 1]);
+    //    }
+
+    public OptionalDouble findLast(DoublePredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalDouble.of(elementData[i]);
+            }
+        }
+
+        return OptionalDouble.empty();
     }
 
     public double get(int index) {
@@ -513,7 +532,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex).doubleValue());
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override

@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -226,22 +225,42 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return elementData;
     }
 
-    /**
-     * Return the first element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalLong findFirst() {
-        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[0]);
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalLong findFirst() {
+    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[0]);
+    //    }
+
+    public OptionalLong findFirst(LongPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalLong.of(elementData[i]);
+            }
+        }
+
+        return OptionalLong.empty();
     }
 
-    /**
-     * Return the last element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalLong findLast() {
-        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[size - 1]);
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalLong findLast() {
+    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[size - 1]);
+    //    }
+
+    public OptionalLong findLast(LongPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalLong.of(elementData[i]);
+            }
+        }
+
+        return OptionalLong.empty();
     }
 
     public long get(int index) {
@@ -547,7 +566,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex).doubleValue());
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override

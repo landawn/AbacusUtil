@@ -66,6 +66,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.StringJoiner;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1421,32 +1422,32 @@ public final class Collectors {
      * @param mapper a function extracting the property to be summed
      * @return a {@code Collector} that produces the sum of a derived property
      */
-    public static <T> Collector<T, ?, Integer> summingInt(final ToIntFunction<? super T> mapper) {
-        final Supplier<int[]> supplier = new Supplier<int[]>() {
+    public static <T> Collector<T, ?, Long> summingInt(final ToIntFunction<? super T> mapper) {
+        final Supplier<long[]> supplier = new Supplier<long[]>() {
             @Override
-            public int[] get() {
-                return new int[1];
+            public long[] get() {
+                return new long[1];
             }
         };
 
-        final BiConsumer<int[], T> accumulator = new BiConsumer<int[], T>() {
+        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
-            public void accept(int[] a, T t) {
+            public void accept(long[] a, T t) {
                 a[0] += mapper.applyAsInt(t);
             }
         };
 
-        final BinaryOperator<int[]> combiner = new BinaryOperator<int[]>() {
+        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
             @Override
-            public int[] apply(int[] a, int[] b) {
+            public long[] apply(long[] a, long[] b) {
                 a[0] += b[0];
                 return a;
             }
         };
 
-        final Function<int[], Integer> finisher = new Function<int[], Integer>() {
+        final Function<long[], Long> finisher = new Function<long[], Long>() {
             @Override
-            public Integer apply(int[] a) {
+            public Long apply(long[] a) {
                 return a[0];
             }
         };
@@ -1541,8 +1542,9 @@ public final class Collectors {
         final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {
             @Override
             public void accept(double[] a, T t) {
-                sumWithCompensation(a, mapper.applyAsDouble(t));
-                a[2] += mapper.applyAsDouble(t);
+                final double d = mapper.applyAsDouble(t);
+                sumWithCompensation(a, d);
+                a[2] += d;
             }
         };
 
@@ -1609,7 +1611,7 @@ public final class Collectors {
      * @param mapper a function extracting the property to be summed
      * @return a {@code Collector} that produces the sum of a derived property
      */
-    public static <T> Collector<T, ?, Double> averagingInt(final ToIntFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> averagingInt(final ToIntFunction<? super T> mapper) {
         final Supplier<long[]> supplier = new Supplier<long[]>() {
             @Override
             public long[] get() {
@@ -1634,10 +1636,14 @@ public final class Collectors {
             }
         };
 
-        final Function<long[], Double> finisher = new Function<long[], Double>() {
+        final Function<long[], OptionalDouble> finisher = new Function<long[], OptionalDouble>() {
             @Override
-            public Double apply(long[] a) {
-                return (double) a[0] / a[1];
+            public OptionalDouble apply(long[] a) {
+                if (a[1] == 0) {
+                    return OptionalDouble.empty();
+                } else {
+                    return OptionalDouble.of((double) a[0] / a[1]);
+                }
             }
         };
 
@@ -1653,7 +1659,7 @@ public final class Collectors {
      * @param mapper a function extracting the property to be summed
      * @return a {@code Collector} that produces the sum of a derived property
      */
-    public static <T> Collector<T, ?, Double> averagingLong(final ToLongFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> averagingLong(final ToLongFunction<? super T> mapper) {
         final Supplier<long[]> supplier = new Supplier<long[]>() {
             @Override
             public long[] get() {
@@ -1678,10 +1684,14 @@ public final class Collectors {
             }
         };
 
-        final Function<long[], Double> finisher = new Function<long[], Double>() {
+        final Function<long[], OptionalDouble> finisher = new Function<long[], OptionalDouble>() {
             @Override
-            public Double apply(long[] a) {
-                return (double) a[0] / a[1];
+            public OptionalDouble apply(long[] a) {
+                if (a[1] == 0) {
+                    return OptionalDouble.empty();
+                } else {
+                    return OptionalDouble.of((double) a[0] / a[1]);
+                }
             }
         };
 
@@ -1710,7 +1720,7 @@ public final class Collectors {
      * @param mapper a function extracting the property to be summed
      * @return a {@code Collector} that produces the sum of a derived property
      */
-    public static <T> Collector<T, ?, Double> averagingDouble(final ToDoubleFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> averagingDouble(final ToDoubleFunction<? super T> mapper) {
         /*
          * In the arrays allocated for the collect operation, index 0
          * holds the high-order bits of the running sum, index 1 holds
@@ -1734,9 +1744,10 @@ public final class Collectors {
         final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {
             @Override
             public void accept(double[] a, T t) {
-                sumWithCompensation(a, mapper.applyAsDouble(t));
+                final double d = mapper.applyAsDouble(t);
+                sumWithCompensation(a, d);
                 a[2]++;
-                a[3] += mapper.applyAsDouble(t);
+                a[3] += d;
             }
         };
 
@@ -1751,10 +1762,14 @@ public final class Collectors {
             }
         };
 
-        final Function<double[], Double> finisher = new Function<double[], Double>() {
+        final Function<double[], OptionalDouble> finisher = new Function<double[], OptionalDouble>() {
             @Override
-            public Double apply(double[] a) {
-                return (a[2] == 0) ? 0.0d : (computeFinalSum(a) / a[2]);
+            public OptionalDouble apply(double[] a) {
+                if (a[2] == 0) {
+                    return OptionalDouble.empty();
+                } else {
+                    return OptionalDouble.of(computeFinalSum(a) / a[2]);
+                }
             }
         };
 

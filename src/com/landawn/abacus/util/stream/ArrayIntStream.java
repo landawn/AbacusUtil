@@ -430,13 +430,25 @@ final class ArrayIntStream extends IntStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
         }, closeHandlers);
+    }
+
+    @Override
+    public Stream<IntStream> split(int size) {
+        final List<int[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final IntStream[] a = new IntStream[tmp.size()];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = new ArrayIntStream(tmp.get(i), null, sorted);
+        }
+
+        return new ArrayStream<IntStream>(a, closeHandlers);
     }
 
     @Override
@@ -469,6 +481,8 @@ final class ArrayIntStream extends IntStream {
     public IntStream limit(long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         if (maxSize >= toIndex - fromIndex) {
@@ -590,7 +604,7 @@ final class ArrayIntStream extends IntStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -626,10 +640,10 @@ final class ArrayIntStream extends IntStream {
         return true;
     }
 
-    @Override
-    public OptionalInt findFirst() {
-        return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements[fromIndex]);
-    }
+    //    @Override
+    //    public OptionalInt findFirst() {
+    //        return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalInt findFirst(IntPredicate predicate) {
@@ -642,10 +656,26 @@ final class ArrayIntStream extends IntStream {
         return OptionalInt.empty();
     }
 
+    //    @Override
+    //    public OptionalInt findLast() {
+    //        return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements[toIndex - 1]);
+    //    }
+
     @Override
-    public OptionalInt findAny() {
-        return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements[fromIndex]);
+    public OptionalInt findLast(IntPredicate predicate) {
+        for (int i = toIndex - 1; i >= fromIndex; i--) {
+            if (predicate.test(elements[i])) {
+                return OptionalInt.of(elements[i]);
+            }
+        }
+
+        return OptionalInt.empty();
     }
+
+    //    @Override
+    //    public OptionalInt findAny() {
+    //        return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalInt findAny(IntPredicate predicate) {

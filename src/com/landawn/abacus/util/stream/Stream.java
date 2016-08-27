@@ -41,10 +41,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.AsyncExecutor;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.N;
@@ -66,6 +73,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
 
 /**
@@ -484,6 +492,30 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
+
+    /**
+     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<Stream<T>> split(int size);
+
+    /**
+     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<List<T>> splitIntoList(int size);
+
+    /**
+     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<Set<T>> splitIntoSet(int size);
 
     /**
      * Returns a stream consisting of the distinct elements (according to
@@ -1077,9 +1109,13 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * or an empty {@code Optional} if the stream is empty
      * @throws NullPointerException if the element selected is null
      */
-    public abstract Optional<T> findFirst();
+    // public abstract Optional<T> findFirst();
 
     public abstract Optional<T> findFirst(Predicate<? super T> predicate);
+
+    // public abstract Optional<T> findLast();
+
+    public abstract Optional<T> findLast(Predicate<? super T> predicate);
 
     /**
      * Returns an {@link Optional} describing some element of the stream, or an
@@ -1099,7 +1135,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @throws NullPointerException if the element selected is null
      * @see #findFirst()
      */
-    public abstract Optional<T> findAny();
+    // public abstract Optional<T> findAny();
 
     public abstract Optional<T> findAny(Predicate<? super T> predicate);
 
@@ -1199,7 +1235,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
         }
 
-        return (Stream<T>) of(iterator).skip(startIndex).limit(endIndex - startIndex);
+        final Stream<T> stream = of(iterator);
+        return stream.skip(startIndex).limit(endIndex - startIndex);
     }
 
     /**
@@ -1259,7 +1296,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         return of(new RowIterator(resultSet), startIndex, endIndex);
     }
 
-    public static <T> Stream<T> of(final Supplier<Boolean> hasNext, final Supplier<? extends T> next) {
+    public static <T> Stream<T> iterate(final Supplier<Boolean> hasNext, final Supplier<? extends T> next) {
         return of(new ImmutableIterator<T>() {
             private boolean hasNextVal = false;
 
@@ -1274,7 +1311,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
             @Override
             public T next() {
-                if (hasNextVal == false) {
+                if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1300,7 +1337,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param f
      * @return
      */
-    public static <T> Stream<T> of(final T seed, final Supplier<Boolean> hasNext, final UnaryOperator<T> f) {
+    public static <T> Stream<T> iterate(final T seed, final Supplier<Boolean> hasNext, final UnaryOperator<T> f) {
         return of(new ImmutableIterator<T>() {
             private T t = (T) Stream.NONE;
             private boolean hasNextVal = false;
@@ -1316,7 +1353,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
             @Override
             public T next() {
-                if (hasNextVal == false) {
+                if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1642,7 +1679,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1651,7 +1688,16 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         });
     }
 
-    public static <T> Stream<T> concat(Collection<? extends T>... a) {
+    //    static <T> Stream<T> concat(Collection<? extends T>... a) {
+    //        final List<Iterator<? extends T>> iterators = new ArrayList<>(a.length);
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            iterators.add(a[i].iterator());
+    //        }
+    //
+    //        return concat(iterators);
+    //    }
+    public static <T> Stream<T> concat(Stream<? extends T>... a) {
         final Iterator<? extends T>[] iter = new Iterator[a.length];
 
         for (int i = 0, len = a.length; i < len; i++) {
@@ -1662,14 +1708,18 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     }
 
     public static <T> Stream<T> concat(final Iterator<? extends T>... a) {
+        return concat(N.asList(a));
+    }
+
+    public static <T> Stream<T> concat(final Collection<? extends Iterator<? extends T>> c) {
         return of(new ImmutableIterator<T>() {
-            private final Iterator<Iterator<? extends T>> iter = N.asList(a).iterator();
+            private final Iterator<? extends Iterator<? extends T>> iterators = c.iterator();
             private Iterator<? extends T> cur;
 
             @Override
             public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next();
+                while ((cur == null || cur.hasNext() == false) && iterators.hasNext()) {
+                    cur = iterators.next();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1677,7 +1727,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1686,14 +1736,517 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         });
     }
 
-    public static <T> Stream<T> concat(Stream<? extends T>... a) {
-        final Iterator<? extends T>[] iter = new Iterator[a.length];
+    public static <T> Stream<T> concatInParallel(final Iterator<? extends T>... a) {
+        return concatInParallel(a, 64, 1024);
+    }
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            iter[i] = a[i].iterator();
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
+     * 
+     * @param a
+     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, a.length)
+     * @param queueSize Default value is 1024
+     * @return
+     */
+    public static <T> Stream<T> concatInParallel(final Iterator<? extends T>[] a, final int iteratorReadThreadNum, final int queueSize) {
+        return concatInParallel(N.asList(a), iteratorReadThreadNum, queueSize);
+    }
+
+    public static <T> Stream<T> concatInParallel(final Collection<? extends Iterator<? extends T>> c) {
+        return concatInParallel(c, 64, 1024);
+    }
+
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
+     * 
+     * @param a
+     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, a.length)
+     * @param queueSize Default value is 1024
+     * @return
+     */
+    public static <T> Stream<T> concatInParallel(final Collection<? extends Iterator<? extends T>> c, final int iteratorReadThreadNum, final int queueSize) {
+        final AsyncExecutor asyncExecutor = new AsyncExecutor(N.min(iteratorReadThreadNum, c.size()), 300L, TimeUnit.SECONDS);
+        final AtomicInteger counter = new AtomicInteger(c.size());
+        final BlockingQueue<T> queue = new ArrayBlockingQueue<T>(queueSize);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        for (Iterator<? extends T> e : c) {
+            final Iterator<? extends T> iter = e;
+
+            asyncExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        T next = null;
+
+                        while (eHolder.getValue() == null && iter.hasNext()) {
+                            next = iter.next();
+
+                            if (next == null) {
+                                next = (T) NONE;
+                            }
+
+                            while (eHolder.getValue() == null && queue.offer(next, 100, TimeUnit.MILLISECONDS) == false) {
+                                // continue.
+                            }
+                        }
+                    } catch (Throwable e) {
+                        synchronized (eHolder) {
+                            if (eHolder.getValue() == null) {
+                                eHolder.setValue(e);
+                            } else {
+                                eHolder.getValue().addSuppressed(e);
+                            }
+                        }
+                    } finally {
+                        counter.decrementAndGet();
+                    }
+                }
+            });
         }
 
-        return concat(iter);
+        return of(new ImmutableIterator<T>() {
+            T next = null;
+
+            @Override
+            public boolean hasNext() {
+                try {
+                    while (next == null && (queue.size() > 0 || counter.get() > 0) && eHolder.getValue() == null) {
+                        next = queue.poll(100, TimeUnit.MILLISECONDS);
+                    }
+                } catch (Throwable e) {
+                    synchronized (eHolder) {
+                        if (eHolder.getValue() == null) {
+                            eHolder.setValue(e);
+                        } else {
+                            eHolder.getValue().addSuppressed(e);
+                        }
+                    }
+                }
+
+                if (eHolder.getValue() != null) {
+                    throw N.toRuntimeException(eHolder.getValue());
+                }
+
+                return next != null;
+            }
+
+            @Override
+            public T next() {
+                if (next == null && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                T result = next == NONE ? null : next;
+                next = null;
+                return result;
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a" and "b" arrays until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, R> Stream<R> zip(final A[] a, final B[] b, final BiFunction<A, B, R> combiner) {
+        final int len = N.min(a.length, b.length);
+        final Object[] r = new Object[len];
+
+        for (int i = 0; i < len; i++) {
+            r[i] = combiner.apply(a[i], b[i]);
+        }
+
+        return of((R[]) r);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zip(final A[] a, final B[] b, final C[] c, final TriFunction<A, B, C, R> combiner) {
+        final int len = N.min(a.length, b.length, c.length);
+        final Object[] r = new Object[len];
+
+        for (int i = 0; i < len; i++) {
+            r[i] = combiner.apply(a[i], b[i], c[i]);
+        }
+
+        return of((R[]) r);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner) {
+        return new IteratorStream<R>(new ImmutableIterator<R>() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext();
+            }
+
+            @Override
+            public R next() {
+                return combiner.apply(a.next(), b.next());
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+            final TriFunction<A, B, C, R> combiner) {
+        return new IteratorStream<R>(new ImmutableIterator<R>() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext() && c.hasNext();
+            }
+
+            @Override
+            public R next() {
+                return combiner.apply(a.next(), b.next(), c.next());
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner) {
+        return zip(a.iterator(), b.iterator(), combiner);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
+            final TriFunction<A, B, C, R> combiner) {
+        return zip(a.iterator(), b.iterator(), c.iterator(), combiner);
+    }
+
+    public static <A, B, R> Stream<R> zipInParallel(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner) {
+        return zipInParallel(a, b, combiner, 1024);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @param queueSize Default value is 1024
+     * @return
+     */
+    public static <A, B, R> Stream<R> zipInParallel(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
+            final int queueSize) {
+        final AsyncExecutor asyncExecutor = new AsyncExecutor(2, 300L, TimeUnit.SECONDS);
+        final AtomicInteger counterA = new AtomicInteger(1);
+        final AtomicInteger counterB = new AtomicInteger(1);
+        final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
+        final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        asyncExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    A nextA = null;
+
+                    while (eHolder.getValue() == null && a.hasNext()) {
+                        nextA = a.next();
+
+                        if (nextA == null) {
+                            nextA = (A) NONE;
+                        }
+
+                        while (eHolder.getValue() == null && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
+                            // continue
+                        }
+                    }
+                } catch (Throwable e) {
+                    synchronized (eHolder) {
+                        if (eHolder.getValue() == null) {
+                            eHolder.setValue(e);
+                        } else {
+                            eHolder.getValue().addSuppressed(e);
+                        }
+                    }
+                } finally {
+                    counterA.decrementAndGet();
+                }
+            }
+        });
+
+        asyncExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    B nextB = null;
+
+                    while (eHolder.getValue() == null && b.hasNext()) {
+                        nextB = b.next();
+
+                        if (nextB == null) {
+                            nextB = (B) NONE;
+                        }
+
+                        while (eHolder.getValue() == null && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
+                            // continue
+                        }
+                    }
+                } catch (Throwable e) {
+                    synchronized (eHolder) {
+                        if (eHolder.getValue() == null) {
+                            eHolder.setValue(e);
+                        } else {
+                            eHolder.getValue().addSuppressed(e);
+                        }
+                    }
+                } finally {
+                    counterB.decrementAndGet();
+                }
+            }
+        });
+
+        return of(new ImmutableIterator<R>() {
+            A nextA = null;
+            B nextB = null;
+
+            @Override
+            public boolean hasNext() {
+                try {
+                    while (nextA == null && counterA.get() > 0 && eHolder.getValue() == null) {
+                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    while (nextB == null && counterB.get() > 0 && eHolder.getValue() == null) {
+                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                    }
+                } catch (Throwable e) {
+                    synchronized (eHolder) {
+                        if (eHolder.getValue() == null) {
+                            eHolder.setValue(e);
+                        } else {
+                            eHolder.getValue().addSuppressed(e);
+                        }
+                    }
+                }
+
+                if (eHolder.getValue() != null) {
+                    throw N.toRuntimeException(eHolder.getValue());
+                }
+
+                return nextA != null && nextB != null;
+            }
+
+            @Override
+            public R next() {
+                if ((nextA == null || nextB == null) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final R result = combiner.apply(nextA == NONE ? null : nextA, nextB == NONE ? null : nextB);
+                nextA = null;
+                nextB = null;
+                return result;
+            }
+        });
+    }
+
+    public static <A, B, C, R> Stream<R> zipInParallel(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+            final TriFunction<A, B, C, R> combiner) {
+        return zipInParallel(a, b, c, combiner, 1024);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param combiner
+     * @param queueSize Default value is 1024
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zipInParallel(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+            final TriFunction<A, B, C, R> combiner, final int queueSize) {
+        final AsyncExecutor asyncExecutor = new AsyncExecutor(3, 300L, TimeUnit.SECONDS);
+        final AtomicInteger counterA = new AtomicInteger(1);
+        final AtomicInteger counterB = new AtomicInteger(1);
+        final AtomicInteger counterC = new AtomicInteger(1);
+        final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
+        final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
+        final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        asyncExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    A nextA = null;
+
+                    while (eHolder.getValue() == null && a.hasNext()) {
+                        nextA = a.next();
+
+                        if (nextA == null) {
+                            nextA = (A) NONE;
+                        }
+
+                        while (eHolder.getValue() == null && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
+                            // continue
+                        }
+                    }
+                } catch (Throwable e) {
+                    synchronized (eHolder) {
+                        if (eHolder.getValue() == null) {
+                            eHolder.setValue(e);
+                        } else {
+                            eHolder.getValue().addSuppressed(e);
+                        }
+                    }
+                } finally {
+                    counterA.decrementAndGet();
+                }
+            }
+        });
+
+        asyncExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    B nextB = null;
+
+                    while (eHolder.getValue() == null && b.hasNext()) {
+                        nextB = b.next();
+
+                        if (nextB == null) {
+                            nextB = (B) NONE;
+                        }
+
+                        while (eHolder.getValue() == null && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
+                            // continue
+                        }
+                    }
+                } catch (Throwable e) {
+                    synchronized (eHolder) {
+                        if (eHolder.getValue() == null) {
+                            eHolder.setValue(e);
+                        } else {
+                            eHolder.getValue().addSuppressed(e);
+                        }
+                    }
+                } finally {
+                    counterB.decrementAndGet();
+                }
+            }
+        });
+
+        asyncExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    C nextC = null;
+
+                    while (eHolder.getValue() == null && c.hasNext()) {
+                        nextC = c.next();
+
+                        if (nextC == null) {
+                            nextC = (C) NONE;
+                        }
+
+                        while (eHolder.getValue() == null && queueC.offer(nextC, 100, TimeUnit.MILLISECONDS) == false) {
+                            // continue
+                        }
+                    }
+                } catch (Throwable e) {
+                    synchronized (eHolder) {
+                        if (eHolder.getValue() == null) {
+                            eHolder.setValue(e);
+                        } else {
+                            eHolder.getValue().addSuppressed(e);
+                        }
+                    }
+                } finally {
+                    counterC.decrementAndGet();
+                }
+            }
+        });
+
+        return of(new ImmutableIterator<R>() {
+            A nextA = null;
+            B nextB = null;
+            C nextC = null;
+
+            @Override
+            public boolean hasNext() {
+                try {
+                    while (nextA == null && (queueA.size() > 0 || counterA.get() > 0) && eHolder.getValue() == null) {
+                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    while (nextB == null && (queueB.size() > 0 || counterB.get() > 0) && eHolder.getValue() == null) {
+                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    while (nextC == null && (queueC.size() > 0 || counterC.get() > 0) && eHolder.getValue() == null) {
+                        nextC = queueC.poll(100, TimeUnit.MILLISECONDS);
+                    }
+                } catch (Throwable e) {
+                    synchronized (eHolder) {
+                        if (eHolder.getValue() == null) {
+                            eHolder.setValue(e);
+                        } else {
+                            eHolder.getValue().addSuppressed(e);
+                        }
+                    }
+                }
+
+                if (eHolder.getValue() != null) {
+                    throw N.toRuntimeException(eHolder.getValue());
+                }
+
+                return nextA != null && nextB != null && nextC != null;
+            }
+
+            @Override
+            public R next() {
+                if ((nextA == null || nextB == null || nextC == null) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final R result = combiner.apply(nextA == NONE ? null : nextA, nextB == NONE ? null : nextB, nextC == NONE ? null : nextC);
+                nextA = null;
+                nextB = null;
+                nextC = null;
+                return result;
+            }
+        });
     }
 
     static void checkIndex(int fromIndex, int toIndex, int length) {

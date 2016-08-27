@@ -1,3 +1,113 @@
+========Changes in 0.9.2=========================================================================
+
+1, Add split/splitIntoList/splitIntoSet to Stream/IntStream/LongStream/DoubleStream/...
+
+2, Add zip(...)/zipInParallel to Stream.
+
+3, Add findFirst(Predicate)/findLast(Predicate)/findAny(Predicate) to Stream/IntStream/LongStream/DoubleStream/... and ObjectList/IntList/LongList/DoubleList...
+
+4, Remove findFirst()/findLast()/findAny()/findFirstNonNull()/findLastNonNull() from Stream/IntStream/LongStream/DoubleStream/... and ObjectList/IntList/LongList/DoubleList...
+
+5, Add concatInParalle(...) to Stream.
+
+6, Add iterate(...) to Stream.
+
+7, rename DataSet.sum(...)/average(...) to sumDouble(...)/averageDouble(...). Add sumInt(...)/sumLong(...)/averageInt(...)/averageLong(...)
+
+8, Add sumInt(...)/sumLong(...)/sumDouble(...)/averageInt(...)/averageLong(...)/averageDouble(...) to ObjectList.
+
+9, bug fix and improvements.
+
+========Changes in 0.9.1=========================================================================
+
+1, Rename N.nCopies(...) to repeat and move it to Array.
+2, Add findyFirst(Predicate)/findAny(Predicate) in Stream and IntStream/LongStream...
+3, Add concat/repeat in Stream and IntStream/LongStream...
+4, rename *.avg(...) to *.average(...)
+5, Add method reverse(...) and rotate(...) in IntList/LongList/...
+6, Add method removeAllOccurrences(...) in Multiset/LongMultiset
+7, change remove(element, removeAllOccurrences = true) to removeAllOccurrences(element) in IntList/LongList/...
+
+========Changes in 0.8.23=========================================================================
+
+1, Bug fix and improvements
+
+========Changes in 0.8.22=========================================================================
+
+1, Refactoring and improvements.
+
+
+========Changes in 0.8.21=========================================================================
+
+1, Refactoring and improvements.
+
+
+========Changes in 0.8.20=========================================================================
+
+1, Refactoring and improvements.
+   a) rename Array.wrap(...) and Array.unwrap(...) to Array.box(...) and Array.unbox(...);
+
+   
+========Changes in 0.8.19=========================================================================
+
+1, Refactoring and improvements.
+   a) rename Stream.of(...) to Stream.from(...) and add a new Stream.of(...) method
+   b) rename XXXList.of(...) to XXXList.from(...) and add a new XXXList.of(...) method
+   c) refactoring N.java
+
+========Changes in 0.8.18=========================================================================
+
+1, Refactoring and improvements.
+   a) move wrap/unwarp from N.java to Array.java
+   b) replace N.arrayOf(...) with Array.of(...)
+   c) replace N.listOf(...) with Lists.of(...)
+   d) Improve PrimitiveList
+   e) change return type of queryForXXX methods to OptionalXXX in SQLExecutor, SQLiteExecutor, CassandraExecutor, CouchbaseExecutor, MongoDBExecutor
+      queryForXXX(...) can be replaced by queryForXXX(...).orNull()/queryForXXX(...).orZero()/queryForXXX(...).orFalse()
+
+
+========Changes in 0.8.17=========================================================================
+
+1, Add ImmutableList/ImmutableSet/ImmutableMap
+2, Add Hex.java/DigestUtil.java (copied from Apache Commons Codec)
+2, Add CQLBuilder.java for Cassandra.
+
+
+========Changes in 0.8.16=========================================================================
+
+1, Minor improvements
+
+========Changes in 0.8.15=========================================================================
+
+1, Support EventBus
+
+2, rename DisplayProgressBarTask to ProgressBarTask.
+
+3, Bug fix and improvements.
+
+========Changes in 0.8.13=========================================================================
+
+1, Move extractData,toList, toEntity, toContentValues from SQLiteExecutor.java to Util.java
+
+2, Remove Util.callXXX(). It's replaced with AsyncExecutor.executeXXX().get() and AsyncExecutor.executeXXX().get(Callback)
+
+3, Rename FutureExecutor to CompletableFuture.
+
+4, DisplayProgressBarTask is designed to show progress bar easily for network or other heavy operation.
+
+5, Support lambda in Logger.java
+	1) https://garygregory.wordpress.com/2015/09/16/a-gentle-introduction-to-the-log4j-api-and-lambda-basics/
+	2) http://logging.apache.org/log4j/2.x/manual/api.html#LambdaSupport
+
+6, rename getBitmapBytes to getByteCount in Util.java
+
+7, rename com.landawn.abacus.util.Handle to com.landawn.abacus.util.Holder.
+
+8, Exclude classes under package com.landawn.abacus.android from abacus-util-.*.jar files
+
+9, Bug fix and improvements.
+
+
 ========Changes in 0.8.12=========================================================================
 1, Add fluent API for HTTP client.
 

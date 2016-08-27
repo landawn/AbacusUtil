@@ -44,14 +44,13 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -90,6 +89,7 @@ import com.landawn.abacus.util.SQLExecutor.StatementSetter;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -1847,7 +1847,7 @@ public final class JdbcUtil {
      */
     public static void parse(final ResultSet rs, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
-        parse(new RowIterator(rs), offset, count, processThreadNumber, queueSize, rowParser);
+        parseII(new RowIterator(rs), offset, count, processThreadNumber, queueSize, rowParser);
     }
 
     /**
@@ -1857,7 +1857,7 @@ public final class JdbcUtil {
      * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    static void parse(final RowIterator iter, final Consumer<Object[]> rowParser) {
+    public static void parse(final RowIterator iter, final Consumer<Object[]> rowParser) {
         parse(iter, 0, 0, rowParser);
     }
 
@@ -1870,7 +1870,7 @@ public final class JdbcUtil {
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    static void parse(final RowIterator iter, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+    public static void parse(final RowIterator iter, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
         parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
     }
 
@@ -1883,7 +1883,7 @@ public final class JdbcUtil {
      * @param count
      * @param rowParser always remember to handle row <code>null</code>
      */
-    static void parse(final RowIterator iter, long offset, long count, final Consumer<Object[]> rowParser) {
+    public static void parse(final RowIterator iter, long offset, long count, final Consumer<Object[]> rowParser) {
         parse(iter, offset, count, 0, 0, rowParser);
     }
 
@@ -1898,7 +1898,30 @@ public final class JdbcUtil {
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param rowParser always remember to handle row <code>null</code>
      */
-    static void parse(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+    public static void parse(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
+            final Consumer<Object[]> rowParser) {
+        parseII(iter, offset, count, processThreadNumber, queueSize, rowParser);
+    }
+
+    public static <T> void parse(final Collection<? extends RowIterator> iterators, final int readThreadNumber, final int processThreadNumber,
+            final int queueSize, final Consumer<Object[]> elementParser) {
+        parse(iterators, 0, Long.MAX_VALUE, readThreadNumber, processThreadNumber, queueSize, elementParser);
+    }
+
+    public static <T> void parse(final Collection<? extends RowIterator> iterators, final long offset, final long count, final int readThreadNumber,
+            final int processThreadNumber, final int queueSize, final Consumer<Object[]> elementParser) {
+        if (N.isNullOrEmpty(iterators)) {
+            return;
+        }
+
+        @SuppressWarnings("rawtypes")
+        final List<Iterator<Object[]>> iters = (List) iterators;
+
+        IOUtil.parse(iters, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
+    }
+
+    static void parseII(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
+            final Consumer<Object[]> rowParser) {
         while (offset-- > 0 && iter.moveToNext()) {
         }
 
@@ -1909,12 +1932,10 @@ public final class JdbcUtil {
 
             rowParser.accept(null);
         } else {
-            final AtomicInteger activeThreadNum = new AtomicInteger();
+            final Iterator<Object[]> iteratorII = Stream.concatInParallel(N.asList(iter), 1, queueSize).limit(count).iterator();
             final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
-            final Queue<Object[]> rowQueue = new ConcurrentLinkedQueue<Object[]>();
-            final MutableBoolean isReadDone = new MutableBoolean(false);
+            final AtomicInteger activeThreadNum = new AtomicInteger();
             final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
-            final Holder<String> errorMessageHandle = new Holder<String>();
 
             for (int i = 0; i < processThreadNumber; i++) {
                 activeThreadNum.incrementAndGet();
@@ -1923,28 +1944,27 @@ public final class JdbcUtil {
                     @Override
                     public void run() {
                         Object[] row = null;
+
                         try {
                             while (exceptionHandle.getValue() == null) {
-                                row = rowQueue.poll();
-
-                                if (row == null) {
-                                    if (isReadDone.booleanValue()) {
-                                        row = rowQueue.poll();
-                                        if (row == null) {
-                                            break;
-                                        } else {
-                                            rowParser.accept(row);
-                                        }
+                                synchronized (iteratorII) {
+                                    if (iteratorII.hasNext()) {
+                                        row = iteratorII.next();
                                     } else {
-                                        N.sleep(1);
+                                        break;
                                     }
-                                } else {
-                                    rowParser.accept(row);
                                 }
+
+                                rowParser.accept(row);
                             }
                         } catch (Throwable e) {
-                            errorMessageHandle.setValue("### Failed to parse at row: " + N.toString(row) + ". " + AbacusException.getErrorMsg(e));
-                            exceptionHandle.setValue(e);
+                            synchronized (exceptionHandle) {
+                                if (exceptionHandle.value() == null) {
+                                    exceptionHandle.setValue(e);
+                                } else {
+                                    exceptionHandle.value().addSuppressed(e);
+                                }
+                            }
                         } finally {
                             activeThreadNum.decrementAndGet();
                         }
@@ -1952,34 +1972,20 @@ public final class JdbcUtil {
                 });
             }
 
-            try {
-                while (exceptionHandle.getValue() == null && count-- > 0 && iter.hasNext()) {
-                    while (rowQueue.size() > queueSize) {
-                        N.sleep(1);
-                    }
-
-                    rowQueue.add(iter.next());
-                }
-            } finally {
-                isReadDone.setTrue();
-
-                while (activeThreadNum.get() > 0) {
-                    N.sleep(10);
-                }
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
             }
 
-            if (exceptionHandle.getValue() == null) {
+            if (exceptionHandle.value() == null) {
                 try {
                     rowParser.accept(null);
                 } catch (Throwable e) {
-                    errorMessageHandle.setValue("### Failed to parse null, the end of row. " + AbacusException.getErrorMsg(e));
                     exceptionHandle.setValue(e);
                 }
             }
 
-            if (exceptionHandle.getValue() != null) {
-                logger.error(errorMessageHandle.getValue());
-                throw new AbacusException(errorMessageHandle.getValue(), exceptionHandle.getValue());
+            if (exceptionHandle.value() != null) {
+                throw N.toRuntimeException(exceptionHandle.value());
             }
         }
     }

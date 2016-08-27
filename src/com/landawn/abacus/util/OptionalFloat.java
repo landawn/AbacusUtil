@@ -125,6 +125,20 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
         return value;
     }
 
+    public int getAsInt() {
+        if (!isPresent) {
+            throw new NoSuchElementException("No value present");
+        }
+        return (int) value;
+    }
+
+    public long getAsLong() {
+        if (!isPresent) {
+            throw new NoSuchElementException("No value present");
+        }
+        return (long) value;
+    }
+
     /**
      * Return {@code true} if there is a value present, otherwise {@code false}.
      *
@@ -155,6 +169,14 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      */
     public float or(float other) {
         return isPresent ? value : other;
+    }
+
+    public int orInt(int other) {
+        return isPresent ? (int) value : other;
+    }
+
+    public long orLong(long other) {
+        return isPresent ? (long) value : other;
     }
 
     /**

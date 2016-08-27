@@ -78,7 +78,7 @@ final class IteratorShortStream extends ShortStream {
 
             @Override
             public short next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -123,7 +123,7 @@ final class IteratorShortStream extends ShortStream {
 
             @Override
             public short next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -176,7 +176,7 @@ final class IteratorShortStream extends ShortStream {
 
             @Override
             public short next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -250,7 +250,7 @@ final class IteratorShortStream extends ShortStream {
 
             @Override
             public short next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -275,7 +275,7 @@ final class IteratorShortStream extends ShortStream {
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -300,12 +300,40 @@ final class IteratorShortStream extends ShortStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ShortStream> split(final int size) {
+        return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public ShortStream next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final short[] a = new short[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return new ArrayShortStream(a, 0, cnt, null, sorted);
+            }
+
         }, closeHandlers);
     }
 
@@ -459,6 +487,8 @@ final class IteratorShortStream extends ShortStream {
     public ShortStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         return new IteratorShortStream(new ImmutableShortIterator() {
@@ -678,7 +708,7 @@ final class IteratorShortStream extends ShortStream {
     @Override
     public OptionalDouble average() {
         if (elements.hasNext() == false) {
-            OptionalDouble.empty();
+            return OptionalDouble.empty();
         }
 
         double result = 0d;
@@ -725,10 +755,10 @@ final class IteratorShortStream extends ShortStream {
         return true;
     }
 
-    @Override
-    public OptionalShort findFirst() {
-        return elements.hasNext() ? OptionalShort.empty() : OptionalShort.of(elements.next());
-    }
+    //    @Override
+    //    public OptionalShort findFirst() {
+    //        return elements.hasNext() ? OptionalShort.empty() : OptionalShort.of(elements.next());
+    //    }
 
     @Override
     public OptionalShort findFirst(ShortPredicate predicate) {
@@ -743,10 +773,47 @@ final class IteratorShortStream extends ShortStream {
         return OptionalShort.empty();
     }
 
+    //    @Override
+    //    public OptionalShort findLast() {
+    //        if (elements.hasNext() == false) {
+    //            return OptionalShort.empty();
+    //        }
+    //
+    //        short e = 0;
+    //
+    //        while (elements.hasNext()) {
+    //            e = elements.next();
+    //        }
+    //
+    //        return OptionalShort.of(e);
+    //    }
+
     @Override
-    public OptionalShort findAny() {
-        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements.next());
+    public OptionalShort findLast(ShortPredicate predicate) {
+        if (elements.hasNext() == false) {
+            return OptionalShort.empty();
+        }
+
+        boolean hasResult = false;
+        short e = 0;
+        short result = 0;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (predicate.test(e)) {
+                result = e;
+                hasResult = true;
+            }
+        }
+
+        return hasResult ? OptionalShort.of(result) : OptionalShort.empty();
     }
+
+    //    @Override
+    //    public OptionalShort findAny() {
+    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements.next());
+    //    }
 
     @Override
     public OptionalShort findAny(ShortPredicate predicate) {
@@ -778,7 +845,7 @@ final class IteratorShortStream extends ShortStream {
 
     @Override
     public Stream<Short> boxed() {
-        return new IteratorStream<Short>(iterator(), sorted, sorted ? SHORT_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null);
     }
 
     @Override

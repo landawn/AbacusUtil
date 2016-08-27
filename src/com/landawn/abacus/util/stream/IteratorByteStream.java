@@ -78,7 +78,7 @@ final class IteratorByteStream extends ByteStream {
 
             @Override
             public byte next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -123,7 +123,7 @@ final class IteratorByteStream extends ByteStream {
 
             @Override
             public byte next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -176,7 +176,7 @@ final class IteratorByteStream extends ByteStream {
 
             @Override
             public byte next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -280,7 +280,7 @@ final class IteratorByteStream extends ByteStream {
 
             @Override
             public byte next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -305,7 +305,7 @@ final class IteratorByteStream extends ByteStream {
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -330,12 +330,40 @@ final class IteratorByteStream extends ByteStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ByteStream> split(final int size) {
+        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public ByteStream next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final byte[] a = new byte[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return new ArrayByteStream(a, 0, cnt, null, sorted);
+            }
+
         }, closeHandlers);
     }
 
@@ -489,6 +517,8 @@ final class IteratorByteStream extends ByteStream {
     public ByteStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         return new IteratorByteStream(new ImmutableByteIterator() {
@@ -708,7 +738,7 @@ final class IteratorByteStream extends ByteStream {
     @Override
     public OptionalDouble average() {
         if (elements.hasNext() == false) {
-            OptionalDouble.empty();
+            return OptionalDouble.empty();
         }
 
         double result = 0d;
@@ -755,10 +785,10 @@ final class IteratorByteStream extends ByteStream {
         return true;
     }
 
-    @Override
-    public OptionalByte findFirst() {
-        return elements.hasNext() ? OptionalByte.empty() : OptionalByte.of(elements.next());
-    }
+    //    @Override
+    //    public OptionalByte findFirst() {
+    //        return elements.hasNext() ? OptionalByte.empty() : OptionalByte.of(elements.next());
+    //    }
 
     @Override
     public OptionalByte findFirst(BytePredicate predicate) {
@@ -773,10 +803,47 @@ final class IteratorByteStream extends ByteStream {
         return OptionalByte.empty();
     }
 
+    //    @Override
+    //    public OptionalByte findLast() {
+    //        if (elements.hasNext() == false) {
+    //            return OptionalByte.empty();
+    //        }
+    //
+    //        byte e = 0;
+    //
+    //        while (elements.hasNext()) {
+    //            e = elements.next();
+    //        }
+    //
+    //        return OptionalByte.of(e);
+    //    }
+
     @Override
-    public OptionalByte findAny() {
-        return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements.next());
+    public OptionalByte findLast(BytePredicate predicate) {
+        if (elements.hasNext() == false) {
+            return OptionalByte.empty();
+        }
+
+        boolean hasResult = false;
+        byte e = 0;
+        byte result = 0;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (predicate.test(e)) {
+                result = e;
+                hasResult = true;
+            }
+        }
+
+        return hasResult ? OptionalByte.of(result) : OptionalByte.empty();
     }
+
+    //    @Override
+    //    public OptionalByte findAny() {
+    //        return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements.next());
+    //    }
 
     @Override
     public OptionalByte findAny(BytePredicate predicate) {
@@ -808,7 +875,7 @@ final class IteratorByteStream extends ByteStream {
 
     @Override
     public Stream<Byte> boxed() {
-        return new IteratorStream<Byte>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? BYTE_COMPARATOR : null);
     }
 
     @Override

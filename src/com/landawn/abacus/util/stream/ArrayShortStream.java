@@ -265,13 +265,25 @@ final class ArrayShortStream extends ShortStream {
 
             @Override
             public T next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
                 return cur.next();
             }
         }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ShortStream> split(int size) {
+        final List<short[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final ShortStream[] a = new ShortStream[tmp.size()];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = new ArrayShortStream(tmp.get(i), null, sorted);
+        }
+
+        return new ArrayStream<ShortStream>(a, closeHandlers);
     }
 
     @Override
@@ -304,6 +316,8 @@ final class ArrayShortStream extends ShortStream {
     public ShortStream limit(long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         if (maxSize >= toIndex - fromIndex) {
@@ -425,7 +439,7 @@ final class ArrayShortStream extends ShortStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(N.average(elements, fromIndex, toIndex).doubleValue());
+        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
     }
 
     @Override
@@ -461,10 +475,10 @@ final class ArrayShortStream extends ShortStream {
         return true;
     }
 
-    @Override
-    public OptionalShort findFirst() {
-        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
-    }
+    //    @Override
+    //    public OptionalShort findFirst() {
+    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalShort findFirst(ShortPredicate predicate) {
@@ -477,10 +491,26 @@ final class ArrayShortStream extends ShortStream {
         return OptionalShort.empty();
     }
 
+    //    @Override
+    //    public OptionalShort findLast() {
+    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[toIndex - 1]);
+    //    }
+
     @Override
-    public OptionalShort findAny() {
-        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
+    public OptionalShort findLast(ShortPredicate predicate) {
+        for (int i = toIndex - 1; i >= fromIndex; i--) {
+            if (predicate.test(elements[i])) {
+                return OptionalShort.of(elements[i]);
+            }
+        }
+
+        return OptionalShort.empty();
     }
+
+    //    @Override
+    //    public OptionalShort findAny() {
+    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
+    //    }
 
     @Override
     public OptionalShort findAny(ShortPredicate predicate) {
@@ -506,7 +536,7 @@ final class ArrayShortStream extends ShortStream {
 
     @Override
     public Stream<Short> boxed() {
-        return new ArrayStream<Short>(Array.box(elements, fromIndex, toIndex), sorted, null, closeHandlers);
+        return new ArrayStream<Short>(Array.box(elements, fromIndex, toIndex), closeHandlers, sorted, null);
     }
 
     @Override

@@ -255,6 +255,14 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract <T> Stream<T> flatMapToObj(IntFunction<? extends Stream<T>> mapper);
 
     /**
+     * Returns Stream of IntStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<IntStream> split(int size);
+
+    /**
      * Returns a stream consisting of the distinct elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">stateful
@@ -683,9 +691,13 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return an {@code OptionalInt} describing the first element of this stream,
      * or an empty {@code OptionalInt} if the stream is empty
      */
-    public abstract OptionalInt findFirst();
+    // public abstract OptionalInt findFirst();
 
     public abstract OptionalInt findFirst(IntPredicate predicate);
+
+    // public abstract OptionalInt findLast();
+
+    public abstract OptionalInt findLast(IntPredicate predicate);
 
     /**
      * Returns an {@link OptionalInt} describing some element of the stream, or
@@ -704,7 +716,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * an empty {@code OptionalInt} if the stream is empty
      * @see #findFirst()
      */
-    public abstract OptionalInt findAny();
+    // public abstract OptionalInt findAny();
 
     public abstract OptionalInt findAny(IntPredicate predicate);
 
@@ -772,15 +784,15 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         return new ArrayIntStream(a, startIndex, endIndex);
     }
 
-    public static IntStream from(final char... a) {
+    static IntStream from(final char... a) {
         return Stream.from(IntList.from(a).trimToSize().array());
     }
 
-    public static IntStream from(final byte... a) {
+    static IntStream from(final byte... a) {
         return Stream.from(IntList.from(a).trimToSize().array());
     }
 
-    public static IntStream from(final short... a) {
+    static IntStream from(final short... a) {
         return Stream.from(IntList.from(a).trimToSize().array());
     }
 
@@ -828,7 +840,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -853,7 +865,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 

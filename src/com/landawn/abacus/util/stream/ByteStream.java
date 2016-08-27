@@ -206,6 +206,14 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     public abstract <T> Stream<T> flatMapToObj(ByteFunction<? extends Stream<T>> mapper);
 
     /**
+     * Returns Stream of ByteStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<ByteStream> split(int size);
+
+    /**
      * Returns a stream consisting of the distinct elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">stateful
@@ -613,9 +621,13 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @return an {@code OptionalByte} describing the first element of this stream,
      * or an empty {@code OptionalByte} if the stream is empty
      */
-    public abstract OptionalByte findFirst();
+    // public abstract OptionalByte findFirst();
 
     public abstract OptionalByte findFirst(BytePredicate predicate);
+
+    // public abstract OptionalByte findLast();
+
+    public abstract OptionalByte findLast(BytePredicate predicate);
 
     /**
      * Returns an {@link OptionalByte} describing some element of the stream, or
@@ -634,7 +646,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * an empty {@code OptionalByte} if the stream is empty
      * @see #findFirst()
      */
-    public abstract OptionalByte findAny();
+    // public abstract OptionalByte findAny();
 
     public abstract OptionalByte findAny(BytePredicate predicate);
 
@@ -678,7 +690,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
         return new ArrayByteStream(a, startIndex, endIndex);
     }
 
-    public static ByteStream from(final int... a) {
+    static ByteStream from(final int... a) {
         return Stream.from(ByteList.from(a).trimToSize().array());
     }
 
@@ -726,7 +738,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
 
             @Override
             public byte next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -751,7 +763,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
 
             @Override
             public byte next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 

@@ -489,6 +489,6 @@ public final class OptionalNullable<T> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("Optional[%s]", value) : "Optional.empty";
+        return isPresent ? String.format("OptionalNullable[%s]", value) : "OptionalNullable.empty";
     }
 }

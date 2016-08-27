@@ -52,8 +52,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayStream(T[] values, boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
-        this(values, 0, values.length, sorted, cmp, closeHandlers);
+    ArrayStream(T[] values, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
+        this(values, 0, values.length, closeHandlers, sorted, cmp);
     }
 
     ArrayStream(T[] values, int fromIndex, int toIndex) {
@@ -61,10 +61,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     ArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, false, null, closeHandlers);
+        this(values, fromIndex, toIndex, closeHandlers, false, null);
     }
 
-    ArrayStream(T[] values, int fromIndex, int toIndex, boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
+    ArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
         Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
@@ -117,7 +117,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public T next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -126,7 +126,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
                 return elements[cursor++];
             }
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -173,7 +173,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public T next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -182,7 +182,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
                 return elements[cursor++];
             }
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -238,7 +238,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public T next() {
-                if (hasNext == false) {
+                if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -247,7 +247,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
                 return elements[cursor++];
             }
-        }, sorted, cmp, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -653,7 +653,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public R next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -743,7 +743,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public R next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -787,7 +787,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public char next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -841,7 +841,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public byte next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -895,7 +895,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public short next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -949,7 +949,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public int next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1003,7 +1003,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public long next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1057,7 +1057,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public float next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1111,7 +1111,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public double next() {
-                if (cur == null) {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1191,8 +1191,44 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public Stream<Stream<T>> split(final int size) {
+        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final Stream<T>[] a = new Stream[tmp.size()];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = new ArrayStream<T>(tmp.get(i), null, sorted, cmp);
+        }
+
+        return new ArrayStream<Stream<T>>(a, closeHandlers);
+    }
+
+    @Override
+    public Stream<List<T>> splitIntoList(final int size) {
+        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final List<T>[] lists = new List[tmp.size()];
+
+        for (int i = 0, len = lists.length; i < len; i++) {
+            lists[i] = N.asList(tmp.get(i));
+        }
+
+        return new ArrayStream<List<T>>(lists, closeHandlers);
+    }
+
+    @Override
+    public Stream<Set<T>> splitIntoSet(final int size) {
+        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        final Set<T>[] sets = new Set[tmp.size()];
+
+        for (int i = 0, len = sets.length; i < len; i++) {
+            sets[i] = N.asLinkedHashSet(tmp.get(i));
+        }
+
+        return new ArrayStream<Set<T>>(sets, closeHandlers);
+    }
+
+    @Override
     public Stream<T> distinct() {
-        return new ArrayStream<T>(N.removeDuplicates(elements, fromIndex, toIndex, sorted), sorted, cmp, closeHandlers);
+        return new ArrayStream<T>(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1203,12 +1239,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     @Override
     public Stream<T> sorted(Comparator<? super T> comparator) {
         if (sorted && this.cmp == comparator) {
-            return new ArrayStream<T>(elements, fromIndex, toIndex, sorted, cmp, closeHandlers);
+            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp);
         }
 
         final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
         Arrays.sort(a, comparator);
-        return new ArrayStream<T>(a, true, comparator, closeHandlers);
+        return new ArrayStream<T>(a, closeHandlers, true, comparator);
     }
 
     @Override
@@ -1225,12 +1261,14 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     public Stream<T> limit(long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
+        } else if (maxSize == Long.MAX_VALUE) {
+            return this;
         }
 
         if (maxSize >= toIndex - fromIndex) {
-            return new ArrayStream<T>(elements, fromIndex, toIndex, sorted, cmp, closeHandlers);
+            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp);
         } else {
-            return new ArrayStream<T>(elements, fromIndex, (int) (fromIndex + maxSize), sorted, cmp, closeHandlers);
+            return new ArrayStream<T>(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted, cmp);
         }
     }
 
@@ -1243,9 +1281,9 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayStream<T>(elements, toIndex, toIndex, sorted, cmp, closeHandlers);
+            return new ArrayStream<T>(elements, toIndex, toIndex, closeHandlers, sorted, cmp);
         } else {
-            return new ArrayStream<T>(elements, (int) (fromIndex + n), toIndex, sorted, cmp, closeHandlers);
+            return new ArrayStream<T>(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted, cmp);
         }
     }
 
@@ -1407,10 +1445,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return true;
     }
 
-    @Override
-    public Optional<T> findFirst() {
-        return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[fromIndex]);
-    }
+    //    @Override
+    //    public Optional<T> findFirst() {
+    //        return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[fromIndex]);
+    //    }
 
     @Override
     public Optional<T> findFirst(Predicate<? super T> predicate) {
@@ -1423,10 +1461,26 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return (Optional<T>) Optional.empty();
     }
 
+    //    @Override
+    //    public Optional<T> findLast() {
+    //        return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[toIndex - 1]);
+    //    }
+
     @Override
-    public Optional<T> findAny() {
-        return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[fromIndex]);
+    public Optional<T> findLast(Predicate<? super T> predicate) {
+        for (int i = toIndex - 1; i >= fromIndex; i--) {
+            if (predicate.test(elements[i])) {
+                return Optional.of(elements[i]);
+            }
+        }
+
+        return (Optional<T>) Optional.empty();
     }
+
+    //    @Override
+    //    public Optional<T> findAny() {
+    //        return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[fromIndex]);
+    //    }
 
     @Override
     public Optional<T> findAny(Predicate<? super T> predicate) {
@@ -1470,7 +1524,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
         closeHandlerList.add(closeHandler);
 
-        return new ArrayStream<T>(elements, fromIndex, toIndex, sorted, cmp, closeHandlerList);
+        return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlerList, sorted, cmp);
     }
 
     @Override

@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -222,22 +221,42 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return elementData;
     }
 
-    /**
-     * Return the first element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalFloat findFirst() {
-        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[0]);
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalFloat findFirst() {
+    //        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[0]);
+    //    }
+
+    public OptionalFloat findFirst(FloatPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalFloat.of(elementData[i]);
+            }
+        }
+
+        return OptionalFloat.empty();
     }
 
-    /**
-     * Return the last element of the array list.
-     * @return
-     */
-    @Beta
-    public OptionalFloat findLast() {
-        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[size - 1]);
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalFloat findLast() {
+    //        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[size - 1]);
+    //    }
+
+    public OptionalFloat findLast(FloatPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalFloat.of(elementData[i]);
+            }
+        }
+
+        return OptionalFloat.empty();
     }
 
     public float get(int index) {
@@ -543,7 +562,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex).doubleValue());
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override
