@@ -14,7 +14,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
     }
 
     public static <E> ImmutableList<E> of(E... a) {
-        return new ImmutableList<E>(N.asUnmodifiableList(a));
+        return new ImmutableList<E>(N.asImmutableList(a));
     }
 
     /**
@@ -23,7 +23,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      * @return
      */
     public static <E> ImmutableList<E> of(List<E> list) {
-        return new ImmutableList<E>(N.asUnmodifiableList(list));
+        return new ImmutableList<E>(N.asImmutableList(list));
     }
 
     @Override

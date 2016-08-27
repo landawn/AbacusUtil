@@ -1,9 +1,14 @@
 package com.landawn.abacus.util.stream;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Ignore any error happened at calling <code>hasNext()</code> or <code>next()</code> 
+ * and call <code>hasNext()</code> or <code>next()</code> continually until error not occurs or <code>hasNext()</code> returns false.
+ *
+ * @param <T>
+ */
 public final class ErrorSkippedIterator<T> implements Iterator<T> {
     private static final Object NONE = new Object();
     private final Iterator<? extends T> iter;
@@ -17,23 +22,24 @@ public final class ErrorSkippedIterator<T> implements Iterator<T> {
         return new ErrorSkippedIterator<T>(iter);
     }
 
-    public static <T> ErrorSkippedIterator<T> of(final Collection<? extends T> c) {
-        return new ErrorSkippedIterator<T>(c.iterator());
+    public static <T> ErrorSkippedIterator<T> of(final T[] a) {
+        return of(a, 0, a.length);
     }
 
-    public static <T> ErrorSkippedIterator<T> of(final T[] a) {
+    public static <T> ErrorSkippedIterator<T> of(final T[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a.length);
+
         return new ErrorSkippedIterator<T>(new Iterator<T>() {
-            private final int len = a.length;
-            private int cursor = 0;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
-                return cursor < len;
+                return cursor < toIndex;
             }
 
             @Override
             public T next() {
-                if (cursor >= len) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 

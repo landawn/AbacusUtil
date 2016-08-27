@@ -12,7 +12,7 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
     }
 
     public static <E> ImmutableSet<E> of(E... a) {
-        return new ImmutableSet<E>(N.asUnmodifiableSet(a));
+        return new ImmutableSet<E>(N.asImmutableSet(a));
     }
 
     /**
@@ -21,7 +21,7 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
      * @return
      */
     public static <E> ImmutableSet<E> of(Set<E> set) {
-        return new ImmutableSet<E>(N.asUnmodifiableSet(set));
+        return new ImmutableSet<E>(N.asImmutableSet(set));
     }
 
     @Override

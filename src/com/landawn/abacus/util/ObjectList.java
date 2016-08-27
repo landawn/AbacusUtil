@@ -783,6 +783,34 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
         return res;
     }
 
+    public <R> List<R> flatMap3(final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(0, size(), func);
+    }
+
+    public <R> List<R> flatMap3(final int fromIndex, final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass,
+            final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends Collection<? extends R>> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(func.apply(elementData[i]));
+        }
+
+        return res;
+    }
+
     public <K> Map<K, List<T>> groupBy(final Function<? super T, ? extends K> func) {
         return groupBy(0, size(), func);
     }
@@ -971,11 +999,13 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
         return size;
     }
 
-    public <R> R unboxed() {
+    @SuppressWarnings("rawtypes")
+    public <R extends com.landawn.abacus.util.ArrayList> R unboxed() {
         return unboxed(0, size);
     }
 
-    public <R> R unboxed(int fromIndex, int toIndex) {
+    @SuppressWarnings("rawtypes")
+    public <R extends com.landawn.abacus.util.ArrayList> R unboxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Class<?> cls = elementData.getClass().getComponentType();

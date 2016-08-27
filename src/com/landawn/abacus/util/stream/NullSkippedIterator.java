@@ -4,6 +4,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * <code>hasNext()</code> returns false when meet null element.
+ *
+ * @param <T>
+ */
 public final class NullSkippedIterator<T> implements Iterator<T> {
     private final Iterator<? extends T> iter;
     private T next;
@@ -21,18 +26,23 @@ public final class NullSkippedIterator<T> implements Iterator<T> {
     }
 
     public static <T> NullSkippedIterator<T> of(final T[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static <T> NullSkippedIterator<T> of(final T[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a.length);
+
         return new NullSkippedIterator<T>(new Iterator<T>() {
-            private final int len = a.length;
-            private int cursor = 0;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
-                return cursor < len;
+                return cursor < toIndex;
             }
 
             @Override
             public T next() {
-                if (cursor >= len) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 

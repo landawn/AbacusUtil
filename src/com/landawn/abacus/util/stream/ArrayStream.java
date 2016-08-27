@@ -270,6 +270,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public R next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.apply(elements[cursor++]);
             }
 
@@ -316,6 +320,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public char next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.applyAsChar(elements[cursor++]);
             }
 
@@ -362,6 +370,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public byte next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.applyAsByte(elements[cursor++]);
             }
 
@@ -408,6 +420,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public short next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.applyAsShort(elements[cursor++]);
             }
 
@@ -454,6 +470,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.applyAsInt(elements[cursor++]);
             }
 
@@ -500,6 +520,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public long next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.applyAsLong(elements[cursor++]);
             }
 
@@ -546,6 +570,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public float next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.applyAsFloat(elements[cursor++]);
             }
 
@@ -592,6 +620,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public double next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.applyAsDouble(elements[cursor++]);
             }
 
@@ -807,6 +839,21 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public CharStream flatMapToChar3(final Function<? super T, ? extends Collection<Character>> mapper) {
+        return flatMapToChar(new Function<T, CharStream>() {
+            @Override
+            public CharStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToChar(new ToCharFunction<Character>() {
+                    @Override
+                    public char applyAsChar(Character value) {
+                        return value == null ? 0 : value.charValue();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
         //        final List<byte[]> listOfArray = new ArrayList<byte[]>();
         //
@@ -856,6 +903,21 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
             @Override
             public ByteStream apply(T t) {
                 return Stream.from(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public ByteStream flatMapToByte3(final Function<? super T, ? extends Collection<Byte>> mapper) {
+        return flatMapToByte(new Function<T, ByteStream>() {
+            @Override
+            public ByteStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToByte(new ToByteFunction<Byte>() {
+                    @Override
+                    public byte applyAsByte(Byte value) {
+                        return value == null ? 0 : value.byteValue();
+                    }
+                });
             }
         });
     }
@@ -915,6 +977,21 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public ShortStream flatMapToShort3(final Function<? super T, ? extends Collection<Short>> mapper) {
+        return flatMapToShort(new Function<T, ShortStream>() {
+            @Override
+            public ShortStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToShort(new ToShortFunction<Short>() {
+                    @Override
+                    public short applyAsShort(Short value) {
+                        return value == null ? 0 : value.shortValue();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
         //        final List<int[]> listOfArray = new ArrayList<int[]>();
         //
@@ -964,6 +1041,21 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
             @Override
             public IntStream apply(T t) {
                 return Stream.from(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public IntStream flatMapToInt3(final Function<? super T, ? extends Collection<Integer>> mapper) {
+        return flatMapToInt(new Function<T, IntStream>() {
+            @Override
+            public IntStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToInt(new ToIntFunction<Integer>() {
+                    @Override
+                    public int applyAsInt(Integer value) {
+                        return value == null ? 0 : value.intValue();
+                    }
+                });
             }
         });
     }
@@ -1023,6 +1115,21 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public LongStream flatMapToLong3(final Function<? super T, ? extends Collection<Long>> mapper) {
+        return flatMapToLong(new Function<T, LongStream>() {
+            @Override
+            public LongStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToLong(new ToLongFunction<Long>() {
+                    @Override
+                    public long applyAsLong(Long value) {
+                        return value == null ? 0 : value.longValue();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
         //        final List<float[]> listOfArray = new ArrayList<float[]>();
         //
@@ -1077,6 +1184,21 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public FloatStream flatMapToFloat3(final Function<? super T, ? extends Collection<Float>> mapper) {
+        return flatMapToFloat(new Function<T, FloatStream>() {
+            @Override
+            public FloatStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToFloat(new ToFloatFunction<Float>() {
+                    @Override
+                    public float applyAsFloat(Float value) {
+                        return value == null ? 0 : value.floatValue();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
         //        final List<double[]> listOfArray = new ArrayList<double[]>();
         //
@@ -1126,6 +1248,21 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
             @Override
             public DoubleStream apply(T t) {
                 return Stream.from(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream flatMapToDouble3(final Function<? super T, ? extends Collection<Double>> mapper) {
+        return flatMapToDouble(new Function<T, DoubleStream>() {
+            @Override
+            public DoubleStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToDouble(new ToDoubleFunction<Double>() {
+                    @Override
+                    public double applyAsDouble(Double value) {
+                        return value == null ? 0 : value.doubleValue();
+                    }
+                });
             }
         });
     }
@@ -1495,23 +1632,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Iterator<T> iterator() {
-        return new ImmutableIterator<T>() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public T next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return elements[cursor++];
-            }
-        };
+        return ImmutableIterator.of(elements, fromIndex, toIndex);
     }
 
     @Override

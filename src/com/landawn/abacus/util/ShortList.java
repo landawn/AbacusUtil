@@ -691,6 +691,33 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return res;
     }
 
+    public <R> List<R> flatMap3(final ShortFunction<? extends Collection<? extends R>> func) {
+        return flatMap3(0, size(), func);
+    }
+
+    public <R> List<R> flatMap3(final int fromIndex, final int toIndex, final ShortFunction<? extends Collection<? extends R>> func) {
+        return flatMap3(List.class, fromIndex, toIndex, func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final ShortFunction<? extends Collection<? extends R>> func) {
+        return flatMap3(List.class, 0, size(), func);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final ShortFunction<? extends Collection<? extends R>> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(func.apply(elementData[i]));
+        }
+
+        return res;
+    }
+
     public <K> Map<K, List<Short>> groupBy(final ShortFunction<? extends K> func) {
         return groupBy(0, size(), func);
     }

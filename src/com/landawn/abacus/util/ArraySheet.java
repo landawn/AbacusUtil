@@ -348,7 +348,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             N.fill(column, 0, rowLength, null);
         }
 
-        return N.asUnmodifiableList(column);
+        return N.asImmutableList(column);
     }
 
     @Override

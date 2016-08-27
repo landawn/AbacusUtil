@@ -160,6 +160,10 @@ final class ArrayCharStream extends CharStream {
 
             @Override
             public U next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.apply(elements[cursor++]);
             }
 

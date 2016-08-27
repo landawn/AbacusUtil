@@ -60,6 +60,7 @@ import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -73,6 +74,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.DoubleSupplier;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -357,6 +359,36 @@ public final class Collectors {
         final BinaryOperator<Multiset<T>> combiner = new BinaryOperator<Multiset<T>>() {
             @Override
             public Multiset<T> apply(Multiset<T> a, Multiset<T> b) {
+                a.addAll(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_UNORDERED_ID);
+    }
+
+    public static <T> Collector<T, ?, LongMultiset<T>> toLongMultiset() {
+        final Supplier<LongMultiset<T>> supplier = new Supplier<LongMultiset<T>>() {
+            @Override
+            public LongMultiset<T> get() {
+                return new LongMultiset<T>();
+            }
+        };
+
+        return toLongMultiset(supplier);
+    }
+
+    public static <T> Collector<T, ?, LongMultiset<T>> toLongMultiset(Supplier<LongMultiset<T>> supplier) {
+        final BiConsumer<LongMultiset<T>, T> accumulator = new BiConsumer<LongMultiset<T>, T>() {
+            @Override
+            public void accept(LongMultiset<T> c, T t) {
+                c.add(t);
+            }
+        };
+
+        final BinaryOperator<LongMultiset<T>> combiner = new BinaryOperator<LongMultiset<T>>() {
+            @Override
+            public LongMultiset<T> apply(LongMultiset<T> a, LongMultiset<T> b) {
                 a.addAll(b);
                 return a;
             }
@@ -1611,7 +1643,7 @@ public final class Collectors {
      * @param mapper a function extracting the property to be summed
      * @return a {@code Collector} that produces the sum of a derived property
      */
-    public static <T> Collector<T, ?, OptionalDouble> averagingInt(final ToIntFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, Double> averagingInt(final ToIntFunction<? super T> mapper) {
         final Supplier<long[]> supplier = new Supplier<long[]>() {
             @Override
             public long[] get() {
@@ -1636,6 +1668,19 @@ public final class Collectors {
             }
         };
 
+        final Function<long[], Double> finisher = new Function<long[], Double>() {
+            @Override
+            public Double apply(long[] a) {
+                return (a[1] == 0) ? 0d : (double) a[0] / a[1];
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, OptionalDouble> averagingInt2(final ToIntFunction<? super T> mapper) {
+        final Collector<T, long[], Double> collector = (Collector<T, long[], Double>) averagingInt(mapper);
+
         final Function<long[], OptionalDouble> finisher = new Function<long[], OptionalDouble>() {
             @Override
             public OptionalDouble apply(long[] a) {
@@ -1647,7 +1692,34 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, Double> averagingInt2OrGet(final ToIntFunction<? super T> mapper, final DoubleSupplier other) {
+        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingInt2(mapper);
+
+        final Function<long[], Double> finisher = new Function<long[], Double>() {
+            @Override
+            public Double apply(long[] a) {
+                return collector.finisher().apply(a).orGet(other);
+            }
+        };
+
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    }
+
+    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingInt2OrThrow(final ToIntFunction<? super T> mapper,
+            final Supplier<? extends X> exceptionSupplier) {
+        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingInt2(mapper);
+
+        final Function<long[], Double> finisher = new Function<long[], Double>() {
+            @Override
+            public Double apply(long[] a) {
+                return collector.finisher().apply(a).orThrow(exceptionSupplier);
+            }
+        };
+
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     /**
@@ -1659,7 +1731,7 @@ public final class Collectors {
      * @param mapper a function extracting the property to be summed
      * @return a {@code Collector} that produces the sum of a derived property
      */
-    public static <T> Collector<T, ?, OptionalDouble> averagingLong(final ToLongFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, Double> averagingLong(final ToLongFunction<? super T> mapper) {
         final Supplier<long[]> supplier = new Supplier<long[]>() {
             @Override
             public long[] get() {
@@ -1684,6 +1756,19 @@ public final class Collectors {
             }
         };
 
+        final Function<long[], Double> finisher = new Function<long[], Double>() {
+            @Override
+            public Double apply(long[] a) {
+                return a[1] == 0 ? 0d : (double) a[0] / a[1];
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, OptionalDouble> averagingLong2(final ToLongFunction<? super T> mapper) {
+        final Collector<T, long[], Double> collector = (Collector<T, long[], Double>) averagingLong(mapper);
+
         final Function<long[], OptionalDouble> finisher = new Function<long[], OptionalDouble>() {
             @Override
             public OptionalDouble apply(long[] a) {
@@ -1695,7 +1780,34 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, Double> averagingLong2OrGet(final ToLongFunction<? super T> mapper, final DoubleSupplier other) {
+        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingLong2(mapper);
+
+        final Function<long[], Double> finisher = new Function<long[], Double>() {
+            @Override
+            public Double apply(long[] a) {
+                return collector.finisher().apply(a).orGet(other);
+            }
+        };
+
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    }
+
+    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingLong2OrThrow(final ToLongFunction<? super T> mapper,
+            final Supplier<? extends X> exceptionSupplier) {
+        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingLong2(mapper);
+
+        final Function<long[], Double> finisher = new Function<long[], Double>() {
+            @Override
+            public Double apply(long[] a) {
+                return collector.finisher().apply(a).orThrow(exceptionSupplier);
+            }
+        };
+
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     /**
@@ -1720,7 +1832,7 @@ public final class Collectors {
      * @param mapper a function extracting the property to be summed
      * @return a {@code Collector} that produces the sum of a derived property
      */
-    public static <T> Collector<T, ?, OptionalDouble> averagingDouble(final ToDoubleFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, Double> averagingDouble(final ToDoubleFunction<? super T> mapper) {
         /*
          * In the arrays allocated for the collect operation, index 0
          * holds the high-order bits of the running sum, index 1 holds
@@ -1762,6 +1874,19 @@ public final class Collectors {
             }
         };
 
+        final Function<double[], Double> finisher = new Function<double[], Double>() {
+            @Override
+            public Double apply(double[] a) {
+                return a[2] == 0 ? 0d : computeFinalSum(a) / a[2];
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, OptionalDouble> averagingDouble2(final ToDoubleFunction<? super T> mapper) {
+        final Collector<T, double[], Double> collector = (Collector<T, double[], Double>) averagingDouble(mapper);
+
         final Function<double[], OptionalDouble> finisher = new Function<double[], OptionalDouble>() {
             @Override
             public OptionalDouble apply(double[] a) {
@@ -1773,7 +1898,34 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, Double> averagingDouble2OrGet(final ToDoubleFunction<? super T> mapper, final DoubleSupplier other) {
+        final Collector<T, double[], OptionalDouble> collector = (Collector<T, double[], OptionalDouble>) averagingDouble2(mapper);
+
+        final Function<double[], Double> finisher = new Function<double[], Double>() {
+            @Override
+            public Double apply(double[] a) {
+                return collector.finisher().apply(a).orGet(other);
+            }
+        };
+
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    }
+
+    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingDouble2OrThrow(final ToDoubleFunction<? super T> mapper,
+            final Supplier<? extends X> exceptionSupplier) {
+        final Collector<T, double[], OptionalDouble> collector = (Collector<T, double[], OptionalDouble>) averagingDouble2(mapper);
+
+        final Function<double[], Double> finisher = new Function<double[], Double>() {
+            @Override
+            public Double apply(double[] a) {
+                return collector.finisher().apply(a).orThrow(exceptionSupplier);
+            }
+        };
+
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     /**
@@ -1859,38 +2011,23 @@ public final class Collectors {
      * @see #reducing(Object, Function, BinaryOperator)
      */
     public static <T> Collector<T, ?, Optional<T>> reducing(final BinaryOperator<T> op) {
-        class OptionalBox implements Consumer<T> {
-            T value = null;
-            boolean present = false;
-
+        final Supplier<OptionalBox<T>> supplier = new Supplier<OptionalBox<T>>() {
             @Override
-            public void accept(T t) {
-                if (present) {
-                    value = op.apply(value, t);
-                } else {
-                    value = t;
-                    present = true;
-                }
-            }
-        }
-
-        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
-            @Override
-            public OptionalBox get() {
-                return new OptionalBox();
+            public OptionalBox<T> get() {
+                return new OptionalBox<T>(op);
             }
         };
 
-        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
+        final BiConsumer<OptionalBox<T>, T> accumulator = new BiConsumer<OptionalBox<T>, T>() {
             @Override
-            public void accept(OptionalBox a, T t) {
+            public void accept(OptionalBox<T> a, T t) {
                 a.accept(t);
             }
         };
 
-        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
+        final BinaryOperator<OptionalBox<T>> combiner = new BinaryOperator<OptionalBox<T>>() {
             @Override
-            public OptionalBox apply(OptionalBox a, OptionalBox b) {
+            public OptionalBox<T> apply(OptionalBox<T> a, OptionalBox<T> b) {
                 if (b.present) {
                     a.accept(b.value);
                 }
@@ -1899,9 +2036,9 @@ public final class Collectors {
             }
         };
 
-        final Function<OptionalBox, Optional<T>> finisher = new Function<OptionalBox, Optional<T>>() {
+        final Function<OptionalBox<T>, Optional<T>> finisher = new Function<OptionalBox<T>, Optional<T>>() {
             @Override
-            public Optional<T> apply(OptionalBox a) {
+            public Optional<T> apply(OptionalBox<T> a) {
                 return Optional.ofNullable(a.value);
             }
         };
@@ -1909,111 +2046,51 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T> Collector<T, ?, T> reducingOrGet(final BinaryOperator<T> op, final Supplier<? extends T> other) {
-        class OptionalBox implements Consumer<T> {
-            T value = null;
-            boolean present = false;
+    private static class OptionalBox<T> implements Consumer<T> {
+        BinaryOperator<T> op = null;
+        T value = null;
+        boolean present = false;
 
-            @Override
-            public void accept(T t) {
-                if (present) {
-                    value = op.apply(value, t);
-                } else {
-                    value = t;
-                    present = true;
-                }
-            }
+        OptionalBox(final BinaryOperator<T> op) {
+            this.op = op;
         }
 
-        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
+        @Override
+        public void accept(T t) {
+            if (present) {
+                value = op.apply(value, t);
+            } else {
+                value = t;
+                present = true;
+            }
+        }
+    }
+
+    public static <T> Collector<T, ?, T> reducingOrGet(final BinaryOperator<T> op, final Supplier<? extends T> other) {
+        final Collector<T, OptionalBox<T>, Optional<T>> collector = (Collector<T, OptionalBox<T>, Optional<T>>) reducing(op);
+
+        final Function<OptionalBox<T>, T> finisher = new Function<OptionalBox<T>, T>() {
             @Override
-            public OptionalBox get() {
-                return new OptionalBox();
+            public T apply(OptionalBox<T> a) {
+                return collector.finisher().apply(a).orGet(other);
             }
         };
 
-        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
-            @Override
-            public void accept(OptionalBox a, T t) {
-                a.accept(t);
-            }
-        };
-
-        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
-            @Override
-            public OptionalBox apply(OptionalBox a, OptionalBox b) {
-                if (b.present) {
-                    a.accept(b.value);
-                }
-
-                return a;
-            }
-        };
-
-        final Function<OptionalBox, T> finisher = new Function<OptionalBox, T>() {
-            @Override
-            public T apply(OptionalBox a) {
-                return a.present ? a.value : other.get();
-            }
-        };
-
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     public static <T, X extends RuntimeException> Collector<T, ?, T> reducingOrThrow(final BinaryOperator<T> op,
             final Supplier<? extends X> exceptionSupplier) {
-        class OptionalBox implements Consumer<T> {
-            T value = null;
-            boolean present = false;
+        final Collector<T, OptionalBox<T>, Optional<T>> collector = (Collector<T, OptionalBox<T>, Optional<T>>) reducing(op);
 
+        final Function<OptionalBox<T>, T> finisher = new Function<OptionalBox<T>, T>() {
             @Override
-            public void accept(T t) {
-                if (present) {
-                    value = op.apply(value, t);
-                } else {
-                    value = t;
-                    present = true;
-                }
-            }
-        }
-
-        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
-            @Override
-            public OptionalBox get() {
-                return new OptionalBox();
+            public T apply(OptionalBox<T> a) {
+                return collector.finisher().apply(a).orThrow(exceptionSupplier);
             }
         };
 
-        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
-            @Override
-            public void accept(OptionalBox a, T t) {
-                a.accept(t);
-            }
-        };
-
-        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
-            @Override
-            public OptionalBox apply(OptionalBox a, OptionalBox b) {
-                if (b.present) {
-                    a.accept(b.value);
-                }
-
-                return a;
-            }
-        };
-
-        final Function<OptionalBox, T> finisher = new Function<OptionalBox, T>() {
-            @Override
-            public T apply(OptionalBox a) {
-                if (a.present) {
-                    return a.value;
-                } else {
-                    throw exceptionSupplier.get();
-                }
-            }
-        };
-
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     /**
@@ -2078,38 +2155,23 @@ public final class Collectors {
     }
 
     public static <T, U> Collector<T, ?, Optional<U>> reducing(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
-        class OptionalBox implements Consumer<T> {
-            U value = null;
-            boolean present = false;
-
+        final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
             @Override
-            public void accept(T t) {
-                if (present) {
-                    value = op.apply(value, mapper.apply(t));
-                } else {
-                    value = mapper.apply(t);
-                    present = true;
-                }
-            }
-        }
-
-        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
-            @Override
-            public OptionalBox get() {
-                return new OptionalBox();
+            public OptionalBox2<T, U> get() {
+                return new OptionalBox2<T, U>(mapper, op);
             }
         };
 
-        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
+        final BiConsumer<OptionalBox2<T, U>, T> accumulator = new BiConsumer<OptionalBox2<T, U>, T>() {
             @Override
-            public void accept(OptionalBox a, T t) {
+            public void accept(OptionalBox2<T, U> a, T t) {
                 a.accept(t);
             }
         };
 
-        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
+        final BinaryOperator<OptionalBox2<T, U>> combiner = new BinaryOperator<OptionalBox2<T, U>>() {
             @Override
-            public OptionalBox apply(OptionalBox a, OptionalBox b) {
+            public OptionalBox2<T, U> apply(OptionalBox2<T, U> a, OptionalBox2<T, U> b) {
                 if (b.present) {
                     a.value = b.value;
                     a.present = true;
@@ -2119,9 +2181,9 @@ public final class Collectors {
             }
         };
 
-        final Function<OptionalBox, Optional<U>> finisher = new Function<OptionalBox, Optional<U>>() {
+        final Function<OptionalBox2<T, U>, Optional<U>> finisher = new Function<OptionalBox2<T, U>, Optional<U>>() {
             @Override
-            public Optional<U> apply(OptionalBox a) {
+            public Optional<U> apply(OptionalBox2<T, U> a) {
                 return Optional.ofNullable(a.value);
             }
         };
@@ -2129,114 +2191,54 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T, U> Collector<T, ?, U> reducingOrGet(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op,
-            final Supplier<? extends U> other) {
-        class OptionalBox implements Consumer<T> {
-            U value = null;
-            boolean present = false;
+    private static class OptionalBox2<T, U> implements Consumer<T> {
+        Function<? super T, ? extends U> mapper;
+        BinaryOperator<U> op;
+        U value = null;
+        boolean present = false;
 
-            @Override
-            public void accept(T t) {
-                if (present) {
-                    value = op.apply(value, mapper.apply(t));
-                } else {
-                    value = mapper.apply(t);
-                    present = true;
-                }
-            }
+        OptionalBox2(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
+            this.mapper = mapper;
+            this.op = op;
         }
 
-        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
+        @Override
+        public void accept(T t) {
+            if (present) {
+                value = op.apply(value, mapper.apply(t));
+            } else {
+                value = mapper.apply(t);
+                present = true;
+            }
+        }
+    }
+
+    public static <T, U> Collector<T, ?, U> reducingOrGet(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op,
+            final Supplier<? extends U> other) {
+        final Collector<T, OptionalBox2<T, U>, Optional<U>> collector = (Collector<T, OptionalBox2<T, U>, Optional<U>>) reducing(mapper, op);
+
+        final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
             @Override
-            public OptionalBox get() {
-                return new OptionalBox();
+            public U apply(OptionalBox2<T, U> a) {
+                return collector.finisher().apply(a).orGet(other);
             }
         };
 
-        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
-            @Override
-            public void accept(OptionalBox a, T t) {
-                a.accept(t);
-            }
-        };
-
-        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
-            @Override
-            public OptionalBox apply(OptionalBox a, OptionalBox b) {
-                if (b.present) {
-                    a.value = b.value;
-                    a.present = true;
-                }
-
-                return a;
-            }
-        };
-
-        final Function<OptionalBox, U> finisher = new Function<OptionalBox, U>() {
-            @Override
-            public U apply(OptionalBox a) {
-                return a.present ? a.value : other.get();
-            }
-        };
-
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     public static <T, U, X extends RuntimeException> Collector<T, ?, U> reducingOrThrow(final Function<? super T, ? extends U> mapper,
             final BinaryOperator<U> op, final Supplier<? extends X> exceptionSupplier) {
-        class OptionalBox implements Consumer<T> {
-            U value = null;
-            boolean present = false;
+        final Collector<T, OptionalBox2<T, U>, Optional<U>> collector = (Collector<T, OptionalBox2<T, U>, Optional<U>>) reducing(mapper, op);
 
+        final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
             @Override
-            public void accept(T t) {
-                if (present) {
-                    value = op.apply(value, mapper.apply(t));
-                } else {
-                    value = mapper.apply(t);
-                    present = true;
-                }
-            }
-        }
-
-        final Supplier<OptionalBox> supplier = new Supplier<OptionalBox>() {
-            @Override
-            public OptionalBox get() {
-                return new OptionalBox();
+            public U apply(OptionalBox2<T, U> a) {
+                return collector.finisher().apply(a).orThrow(exceptionSupplier);
             }
         };
 
-        final BiConsumer<OptionalBox, T> accumulator = new BiConsumer<OptionalBox, T>() {
-            @Override
-            public void accept(OptionalBox a, T t) {
-                a.accept(t);
-            }
-        };
-
-        final BinaryOperator<OptionalBox> combiner = new BinaryOperator<OptionalBox>() {
-            @Override
-            public OptionalBox apply(OptionalBox a, OptionalBox b) {
-                if (b.present) {
-                    a.value = b.value;
-                    a.present = true;
-                }
-
-                return a;
-            }
-        };
-
-        final Function<OptionalBox, U> finisher = new Function<OptionalBox, U>() {
-            @Override
-            public U apply(OptionalBox a) {
-                if (a.present) {
-                    return a.value;
-                } else {
-                    throw exceptionSupplier.get();
-                }
-            }
-        };
-
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     /**

@@ -1920,7 +1920,7 @@ public final class JdbcUtil {
         IOUtil.parse(iters, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
     }
 
-    static void parseII(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
+    private static void parseII(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
         while (offset-- > 0 && iter.moveToNext()) {
         }
@@ -1932,60 +1932,62 @@ public final class JdbcUtil {
 
             rowParser.accept(null);
         } else {
-            final Iterator<Object[]> iteratorII = Stream.concatInParallel(N.asList(iter), 1, queueSize).limit(count).iterator();
-            final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
-            final AtomicInteger activeThreadNum = new AtomicInteger();
-            final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
+            try (final Stream<Object[]> stream = Stream.parallelConcat(N.asList(iter), 1, queueSize)) {
+                final Iterator<Object[]> iteratorII = stream.limit(count).iterator();
+                final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
+                final AtomicInteger activeThreadNum = new AtomicInteger();
+                final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
 
-            for (int i = 0; i < processThreadNumber; i++) {
-                activeThreadNum.incrementAndGet();
+                for (int i = 0; i < processThreadNumber; i++) {
+                    activeThreadNum.incrementAndGet();
 
-                executorService.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        Object[] row = null;
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            Object[] row = null;
 
-                        try {
-                            while (exceptionHandle.getValue() == null) {
-                                synchronized (iteratorII) {
-                                    if (iteratorII.hasNext()) {
-                                        row = iteratorII.next();
+                            try {
+                                while (exceptionHandle.getValue() == null) {
+                                    synchronized (iteratorII) {
+                                        if (iteratorII.hasNext()) {
+                                            row = iteratorII.next();
+                                        } else {
+                                            break;
+                                        }
+                                    }
+
+                                    rowParser.accept(row);
+                                }
+                            } catch (Throwable e) {
+                                synchronized (exceptionHandle) {
+                                    if (exceptionHandle.value() == null) {
+                                        exceptionHandle.setValue(e);
                                     } else {
-                                        break;
+                                        exceptionHandle.value().addSuppressed(e);
                                     }
                                 }
-
-                                rowParser.accept(row);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
                             }
-                        } catch (Throwable e) {
-                            synchronized (exceptionHandle) {
-                                if (exceptionHandle.value() == null) {
-                                    exceptionHandle.setValue(e);
-                                } else {
-                                    exceptionHandle.value().addSuppressed(e);
-                                }
-                            }
-                        } finally {
-                            activeThreadNum.decrementAndGet();
                         }
-                    }
-                });
-            }
-
-            while (activeThreadNum.get() > 0) {
-                N.sleep(10);
-            }
-
-            if (exceptionHandle.value() == null) {
-                try {
-                    rowParser.accept(null);
-                } catch (Throwable e) {
-                    exceptionHandle.setValue(e);
+                    });
                 }
-            }
 
-            if (exceptionHandle.value() != null) {
-                throw N.toRuntimeException(exceptionHandle.value());
+                while (activeThreadNum.get() > 0) {
+                    N.sleep(10);
+                }
+
+                if (exceptionHandle.value() == null) {
+                    try {
+                        rowParser.accept(null);
+                    } catch (Throwable e) {
+                        exceptionHandle.setValue(e);
+                    }
+                }
+
+                if (exceptionHandle.value() != null) {
+                    throw N.toRuntimeException(exceptionHandle.value());
+                }
             }
         }
     }

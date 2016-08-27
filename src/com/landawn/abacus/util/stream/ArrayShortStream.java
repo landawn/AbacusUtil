@@ -161,6 +161,10 @@ final class ArrayShortStream extends ShortStream {
 
             @Override
             public U next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.apply(elements[cursor++]);
             }
 

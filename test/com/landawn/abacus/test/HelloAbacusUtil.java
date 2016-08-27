@@ -57,10 +57,10 @@ public class HelloAbacusUtil {
         Map<String, Integer> map = N.asMap("a", 1, "b", 2, "c", 3);
         N.println(map);
 
-        List<String> unmodifiableList = N.asUnmodifiableList(list);
+        List<String> unmodifiableList = N.asImmutableList(list);
         N.println(unmodifiableList);
 
-        Map<String, Integer> unmodifiableMap = N.asUnmodifiableMap(map);
+        Map<String, Integer> unmodifiableMap = N.asImmutableMap(map);
         N.println(unmodifiableMap);
     }
 

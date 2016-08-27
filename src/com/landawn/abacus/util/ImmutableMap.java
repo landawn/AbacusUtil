@@ -13,17 +13,17 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
     }
 
     public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final k k1, final v v1) {
-        final Map<k, v> map = N.asUnmodifiableMap(k1, v1);
+        final Map<k, v> map = N.asImmutableMap(k1, v1);
         return new ImmutableMap<K, V>(map);
     }
 
     public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final k k1, final v v1, final k k2, final v v2) {
-        final Map<k, v> map = N.asUnmodifiableMap(k1, v1, k2, v2);
+        final Map<k, v> map = N.asImmutableMap(k1, v1, k2, v2);
         return new ImmutableMap<K, V>(map);
     }
 
     public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
-        final Map<k, v> map = N.asUnmodifiableMap(k1, v1, k2, v2, k3, v3);
+        final Map<k, v> map = N.asImmutableMap(k1, v1, k2, v2, k3, v3);
         return new ImmutableMap<K, V>(map);
     }
 
@@ -33,7 +33,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
      * @return
      */
     public static <K, V> ImmutableMap<K, V> from(Map<? extends K, ? extends V> map) {
-        return new ImmutableMap<K, V>(N.asUnmodifiableMap(map));
+        return new ImmutableMap<K, V>(N.asImmutableMap(map));
     }
 
     /**

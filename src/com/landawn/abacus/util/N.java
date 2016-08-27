@@ -2921,7 +2921,7 @@ public final class N {
         List<E> enumList = (List<E>) enumListPool.get(enumClass);
 
         if (enumList == null) {
-            enumList = N.asUnmodifiableList(N.asList(enumClass.getEnumConstants()));
+            enumList = N.asImmutableList(N.asList(enumClass.getEnumConstants()));
 
             enumListPool.put(enumClass, enumList);
         }
@@ -2933,7 +2933,7 @@ public final class N {
         Set<E> enumSet = (Set<E>) enumSetPool.get(enumClass);
 
         if (enumSet == null) {
-            enumSet = N.asUnmodifiableSet(EnumSet.allOf(enumClass));
+            enumSet = N.asImmutableSet(EnumSet.allOf(enumClass));
 
             enumSetPool.put(enumClass, enumSet);
         }
@@ -2953,7 +2953,7 @@ public final class N {
                 valueMap.put(e.name(), e);
             }
 
-            enumMap = N.asUnmodifiableBiMap(new BiMap<E, String>(keyMap, valueMap));
+            enumMap = N.asImmutableBiMap(new BiMap<E, String>(keyMap, valueMap));
 
             enumMapPool.put(enumClass, enumMap);
         }
@@ -4082,7 +4082,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableList(List)
      */
-    public static <T> List<T> asUnmodifiableList(final T... a) {
+    public static <T> List<T> asImmutableList(final T... a) {
         return Collections.unmodifiableList(asList(a));
     }
 
@@ -4093,7 +4093,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableList(List)
      */
-    public static <T> List<T> asUnmodifiableList(final List<? extends T> list) {
+    public static <T> List<T> asImmutableList(final List<? extends T> list) {
         return Collections.unmodifiableList(list);
     }
 
@@ -4104,7 +4104,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableSet(Set)
      */
-    public static <T> Set<T> asUnmodifiableSet(final T... a) {
+    public static <T> Set<T> asImmutableSet(final T... a) {
         return Collections.unmodifiableSet(asSet(a));
     }
 
@@ -4115,7 +4115,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableSet(Set)
      */
-    public static <T> Set<T> asUnmodifiableSet(final Set<? extends T> s) {
+    public static <T> Set<T> asImmutableSet(final Set<? extends T> s) {
         return Collections.unmodifiableSet(s);
     }
 
@@ -4126,7 +4126,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableSortedSet(SortedSet)
      */
-    public static <T> SortedSet<T> asUnmodifiableSortedSet(final SortedSet<T> s) {
+    public static <T> SortedSet<T> asImmutableSortedSet(final SortedSet<T> s) {
         return Collections.unmodifiableSortedSet(s);
     }
 
@@ -4137,19 +4137,19 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableCollection(Collection)
      */
-    public static <T> Collection<T> asUnmodifiableCollection(final Collection<? extends T> c) {
+    public static <T> Collection<T> asImmutableCollection(final Collection<? extends T> c) {
         return Collections.unmodifiableCollection(c);
     }
 
-    public static <K, V, k extends K, v extends V> Map<K, V> asUnmodifiableMap(final k k1, final v v1) {
+    public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1) {
         return Collections.unmodifiableMap((Map<K, V>) asMap(k1, v1));
     }
 
-    public static <K, V, k extends K, v extends V> Map<K, V> asUnmodifiableMap(final k k1, final v v1, final k k2, final v v2) {
+    public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1, final k k2, final v v2) {
         return Collections.unmodifiableMap((Map<K, V>) asMap(k1, v1, k2, v2));
     }
 
-    public static <K, V, k extends K, v extends V> Map<K, V> asUnmodifiableMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
+    public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
         return Collections.unmodifiableMap((Map<K, V>) asMap(k1, v1, k2, v2, k3, v3));
     }
 
@@ -4160,7 +4160,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableMap(Map)
      */
-    public static <K, V> Map<K, V> asUnmodifiableMap(final Map<? extends K, ? extends V> m) {
+    public static <K, V> Map<K, V> asImmutableMap(final Map<? extends K, ? extends V> m) {
         return Collections.unmodifiableMap(m);
     }
 
@@ -4171,7 +4171,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableSortedMap(SortedMap)
      */
-    public static <K, V> SortedMap<K, V> asUnmodifiableSortedMap(final SortedMap<K, ? extends V> m) {
+    public static <K, V> SortedMap<K, V> asImmutableSortedMap(final SortedMap<K, ? extends V> m) {
         return Collections.unmodifiableSortedMap(m);
     }
 
@@ -4182,7 +4182,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>keyMap</code> has duplicated values
      */
-    public static <K, V> BiMap<K, V> asUnmodifiableBiMap(final Map<? extends K, ? extends V> keyMap) {
+    public static <K, V> BiMap<K, V> asImmutableBiMap(final Map<? extends K, ? extends V> keyMap) {
         final Map<V, K> valueMap = new LinkedHashMap<>();
 
         for (Map.Entry<? extends K, ? extends V> entry : keyMap.entrySet()) {
@@ -4193,7 +4193,7 @@ public final class N {
             throw new IllegalArgumentException("Duplicated values are included in the specified Map: " + keyMap.toString());
         }
 
-        return new BiMap<K, V>(asUnmodifiableMap(keyMap), asUnmodifiableMap(valueMap));
+        return new BiMap<K, V>(asImmutableMap(keyMap), asImmutableMap(valueMap));
     }
 
     /**
@@ -4205,7 +4205,7 @@ public final class N {
      * @param keyMap
      * @return null if the specified <code>keyMap</code> has duplicated values
      */
-    public static <K, V> BiMap<K, V> asUnmodifiableBiMapForInterface(final Map<? extends K, ? extends V> keyMap) {
+    public static <K, V> BiMap<K, V> asImmutableBiMapForInterface(final Map<? extends K, ? extends V> keyMap) {
         final Map<V, K> valueMap = new LinkedHashMap<>();
 
         for (Map.Entry<? extends K, ? extends V> entry : keyMap.entrySet()) {
@@ -4216,7 +4216,7 @@ public final class N {
             return null;
         }
 
-        return new BiMap<K, V>(asUnmodifiableMap(keyMap), asUnmodifiableMap(valueMap));
+        return new BiMap<K, V>(asImmutableMap(keyMap), asImmutableMap(valueMap));
     }
 
     /**
@@ -17367,53 +17367,7 @@ public final class N {
         Array.parallelSort(c, fromIndex, toIndex, cmp);
     }
 
-    public static int[] mergeSort(final int[][] sortedArrays) {
-        return Array.mergeSort(sortedArrays);
-    }
-
-    public static long[] mergeSort(final long[][] sortedArrays) {
-        return Array.mergeSort(sortedArrays);
-    }
-
-    public static float[] mergeSort(final float[][] sortedArrays) {
-        return Array.mergeSort(sortedArrays);
-    }
-
-    public static double[] mergeSort(final double[][] sortedArrays) {
-        return Array.mergeSort(sortedArrays);
-    }
-
-    public static <T extends Comparable<? super T>> T[] mergeSort(final T[][] sortedArrays) {
-        return Array.mergeSort(sortedArrays);
-    }
-
-    public static <T> T[] mergeSort(final T[][] sortedArrays, final Comparator<? super T> cmp) {
-        return Array.mergeSort(sortedArrays, cmp);
-    }
-
-    public static int[] parallelMergeSort(final int[][] sortedArrays) {
-        return Array.parallelMergeSort(sortedArrays);
-    }
-
-    public static long[] parallelMergeSort(final long[][] sortedArrays) {
-        return Array.parallelMergeSort(sortedArrays);
-    }
-
-    public static float[] parallelMergeSort(final float[][] sortedArrays) {
-        return Array.parallelMergeSort(sortedArrays);
-    }
-
-    public static double[] parallelMergeSort(final double[][] sortedArrays) {
-        return Array.parallelMergeSort(sortedArrays);
-    }
-
-    public static <T extends Comparable<? super T>> T[] parallelMergeSort(final T[][] sortedArrays) {
-        return Array.parallelMergeSort(sortedArrays);
-    }
-
-    public static <T> T[] parallelMergeSort(final T[][] sortedArrays, final Comparator<? super T> cmp) {
-        return Array.parallelMergeSort(sortedArrays, cmp);
-    }
+    
 
     /*
     public static void bucketSort(final char[] a) {
@@ -22859,6 +22813,173 @@ public final class N {
                 }
 
                 res.addAll(Arrays.asList(func.apply(e)));
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    public static <T, R> List<R> flatMap3(final T[] a, final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(ArrayList.class, a, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    public static <T, R> List<R> flatMap3(final T[] a, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(ArrayList.class, a, fromIndex, toIndex, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param a
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final T[] a,
+            final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(collClass, a, 0, a.length, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends Collection<? extends R>> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        final V res = (V) N.newInstance(collClass);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.addAll(func.apply(a[i]));
+        }
+
+        return res;
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    public static <T, R> List<R> flatMap3(final Collection<? extends T> c, final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(ArrayList.class, c, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    public static <T, R> List<R> flatMap3(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(ArrayList.class, c, fromIndex, toIndex, func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param c
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+            final Function<? super T, ? extends Collection<? extends R>> func) {
+        return flatMap3(collClass, c, 0, c.size(), func);
+    }
+
+    /**
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+     */
+    @SuppressWarnings("rawtypes")
+    public static <T, R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
+            final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        final V res = (V) N.newInstance(collClass);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                res.addAll(func.apply(list.get(i)));
+            }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            T e = null;
+
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                res.addAll(func.apply(e));
             }
         }
 

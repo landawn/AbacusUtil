@@ -54,6 +54,7 @@ import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.LineIterator;
+import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
@@ -64,6 +65,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.NFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
@@ -394,13 +396,19 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract CharStream flatMapToChar2(Function<? super T, char[]> mapper);
 
+    public abstract CharStream flatMapToChar3(Function<? super T, ? extends Collection<Character>> mapper);
+
     public abstract ByteStream flatMapToByte(Function<? super T, ? extends ByteStream> mapper);
 
     public abstract ByteStream flatMapToByte2(Function<? super T, byte[]> mapper);
 
+    public abstract ByteStream flatMapToByte3(Function<? super T, ? extends Collection<Byte>> mapper);
+
     public abstract ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper);
 
     public abstract ShortStream flatMapToShort2(Function<? super T, short[]> mapper);
+
+    public abstract ShortStream flatMapToShort3(Function<? super T, ? extends Collection<Short>> mapper);
 
     /**
      * Returns an {@code IntStream} consisting of the results of replacing each
@@ -424,6 +432,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract IntStream flatMapToInt2(Function<? super T, int[]> mapper);
 
+    public abstract IntStream flatMapToInt3(Function<? super T, ? extends Collection<Integer>> mapper);
+
     /**
      * Returns an {@code LongStream} consisting of the results of replacing each
      * element of this stream with the contents of a mapped stream produced by
@@ -446,9 +456,13 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract LongStream flatMapToLong2(Function<? super T, long[]> mapper);
 
+    public abstract LongStream flatMapToLong3(Function<? super T, ? extends Collection<Long>> mapper);
+
     public abstract FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper);
 
     public abstract FloatStream flatMapToFloat2(Function<? super T, float[]> mapper);
+
+    public abstract FloatStream flatMapToFloat3(Function<? super T, ? extends Collection<Float>> mapper);
 
     /**
      * Returns an {@code DoubleStream} consisting of the results of replacing
@@ -471,6 +485,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper);
 
     public abstract DoubleStream flatMapToDouble2(Function<? super T, double[]> mapper);
+
+    public abstract DoubleStream flatMapToDouble3(Function<? super T, ? extends Collection<Double>> mapper);
 
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
@@ -1648,44 +1664,13 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     }
 
     public static <T> Stream<T> concat(final T[]... a) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
-            private final Iterator<T[]> iter = N.asList(a).iterator();
-            private ImmutableIterator<T> cur;
+        final Iterator<? extends T>[] iter = new Iterator[a.length];
 
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = new ImmutableIterator<T>() {
-                        private final T[] cur = iter.next();
-                        private int cursor = 0;
+        for (int i = 0, len = a.length; i < len; i++) {
+            iter[i] = of(a[i]).iterator();
+        }
 
-                        @Override
-                        public boolean hasNext() {
-                            return cursor < cur.length;
-                        }
-
-                        @Override
-                        public T next() {
-                            if (cursor >= cur.length) {
-                                throw new NoSuchElementException();
-                            }
-
-                            return cur[cursor++];
-                        }
-                    };
-                }
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-        });
+        return concat(iter);
     }
 
     //    static <T> Stream<T> concat(Collection<? extends T>... a) {
@@ -1697,6 +1682,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     //
     //        return concat(iterators);
     //    }
+
     public static <T> Stream<T> concat(Stream<? extends T>... a) {
         final Iterator<? extends T>[] iter = new Iterator[a.length];
 
@@ -1736,39 +1722,84 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         });
     }
 
-    public static <T> Stream<T> concatInParallel(final Iterator<? extends T>... a) {
-        return concatInParallel(a, 64, 1024);
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(iter1, iter2...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Iterator<? extends T>... a) {
+        return parallelConcat(a, 64, 1024);
     }
 
     /**
      * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
+     * 
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(iter1, iter2...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
      * 
      * @param a
      * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, a.length)
      * @param queueSize Default value is 1024
      * @return
      */
-    public static <T> Stream<T> concatInParallel(final Iterator<? extends T>[] a, final int iteratorReadThreadNum, final int queueSize) {
-        return concatInParallel(N.asList(a), iteratorReadThreadNum, queueSize);
+    public static <T> Stream<T> parallelConcat(final Iterator<? extends T>[] a, final int iteratorReadThreadNum, final int queueSize) {
+        return parallelConcat(N.asList(a), iteratorReadThreadNum, queueSize);
     }
 
-    public static <T> Stream<T> concatInParallel(final Collection<? extends Iterator<? extends T>> c) {
-        return concatInParallel(c, 64, 1024);
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(iter1, iter2...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c) {
+        return parallelConcat(c, 64, 1024);
     }
 
     /**
      * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
      * 
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(iter1, iter2...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
      * @param a
-     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, a.length)
+     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, c.size())
      * @param queueSize Default value is 1024
      * @return
      */
-    public static <T> Stream<T> concatInParallel(final Collection<? extends Iterator<? extends T>> c, final int iteratorReadThreadNum, final int queueSize) {
+    public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int iteratorReadThreadNum, final int queueSize) {
+        if (c.size() == 0) {
+            return Stream.empty();
+        }
+
         final AsyncExecutor asyncExecutor = new AsyncExecutor(N.min(iteratorReadThreadNum, c.size()), 300L, TimeUnit.SECONDS);
-        final AtomicInteger counter = new AtomicInteger(c.size());
+        final AtomicInteger threadCounter = new AtomicInteger(c.size());
         final BlockingQueue<T> queue = new ArrayBlockingQueue<T>(queueSize);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
+        final MutableBoolean onGoing = MutableBoolean.of(true);
 
         for (Iterator<? extends T> e : c) {
             final Iterator<? extends T> iter = e;
@@ -1779,27 +1810,21 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                     try {
                         T next = null;
 
-                        while (eHolder.getValue() == null && iter.hasNext()) {
+                        while (onGoing.booleanValue() && iter.hasNext()) {
                             next = iter.next();
 
                             if (next == null) {
                                 next = (T) NONE;
                             }
 
-                            while (eHolder.getValue() == null && queue.offer(next, 100, TimeUnit.MILLISECONDS) == false) {
+                            while (onGoing.booleanValue() && queue.offer(next, 100, TimeUnit.MILLISECONDS) == false) {
                                 // continue.
                             }
                         }
                     } catch (Throwable e) {
-                        synchronized (eHolder) {
-                            if (eHolder.getValue() == null) {
-                                eHolder.setValue(e);
-                            } else {
-                                eHolder.getValue().addSuppressed(e);
-                            }
-                        }
+                        setError(errorHolder, e, onGoing);
                     } finally {
-                        counter.decrementAndGet();
+                        threadCounter.decrementAndGet();
                     }
                 }
             });
@@ -1811,21 +1836,15 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             @Override
             public boolean hasNext() {
                 try {
-                    while (next == null && (queue.size() > 0 || counter.get() > 0) && eHolder.getValue() == null) {
+                    while (next == null && onGoing.booleanValue() && (threadCounter.get() > 0 || queue.size() > 0)) { // (queue.size() > 0 || counter.get() > 0) is wrong. has to check counter first
                         next = queue.poll(100, TimeUnit.MILLISECONDS);
                     }
                 } catch (Throwable e) {
-                    synchronized (eHolder) {
-                        if (eHolder.getValue() == null) {
-                            eHolder.setValue(e);
-                        } else {
-                            eHolder.getValue().addSuppressed(e);
-                        }
-                    }
+                    setError(errorHolder, e, onGoing);
                 }
 
-                if (eHolder.getValue() != null) {
-                    throw N.toRuntimeException(eHolder.getValue());
+                if (errorHolder.value() != null) {
+                    throwError(errorHolder, onGoing);
                 }
 
                 return next != null;
@@ -1841,6 +1860,11 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                 next = null;
                 return result;
             }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                onGoing.setFalse();
+            }
         });
     }
 
@@ -1853,33 +1877,44 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <A, B, R> Stream<R> zip(final A[] a, final B[] b, final BiFunction<A, B, R> combiner) {
-        final int len = N.min(a.length, b.length);
-        final Object[] r = new Object[len];
-
-        for (int i = 0; i < len; i++) {
-            r[i] = combiner.apply(a[i], b[i]);
-        }
-
-        return of((R[]) r);
+        return zip(Stream.of(a).iterator(), Stream.of(b).iterator(), combiner);
     }
 
     /**
      * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied combiner function.
      * 
      * @param a
      * @param b
      * @return
      */
     public static <A, B, C, R> Stream<R> zip(final A[] a, final B[] b, final C[] c, final TriFunction<A, B, C, R> combiner) {
-        final int len = N.min(a.length, b.length, c.length);
-        final Object[] r = new Object[len];
+        return zip(Stream.of(a).iterator(), Stream.of(b).iterator(), Stream.of(c).iterator(), combiner);
+    }
 
-        for (int i = 0; i < len; i++) {
-            r[i] = combiner.apply(a[i], b[i], c[i]);
-        }
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner) {
+        return zip(a.iterator(), b.iterator(), combiner);
+    }
 
-        return of((R[]) r);
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
+            final TriFunction<A, B, C, R> combiner) {
+        return zip(a.iterator(), b.iterator(), c.iterator(), combiner);
     }
 
     /**
@@ -1906,7 +1941,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     /**
      * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied combiner function.
      * 
      * @param a
      * @param b
@@ -1928,35 +1963,192 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     }
 
     /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Zip together the iterators until one of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param combiner
+     * @return
+     */
+    public static <R> Stream<R> zip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner) {
+        if (c.size() == 0) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+
+        return new IteratorStream<R>(new ImmutableIterator<R>() {
+
+            @Override
+            public boolean hasNext() {
+                for (Iterator<?> e : c) {
+                    if (e.hasNext() == false) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            @Override
+            public R next() {
+                final Object[] args = new Object[len];
+                int idx = 0;
+
+                for (Iterator<?> e : c) {
+                    args[idx++] = e.next();
+                }
+
+                return combiner.apply(args);
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
      * Each pair of values is combined into a single value using the supplied combiner function.
      * 
      * @param a
      * @param b
+     * @param combiner
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
      * @return
      */
-    public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner) {
-        return zip(a.iterator(), b.iterator(), combiner);
+    public static <A, B, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
+            final A valueForNoneA, final B valueForNoneB) {
+        return new IteratorStream<R>(new ImmutableIterator<R>() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return combiner.apply(a.hasNext() ? a.next() : valueForNoneA, b.hasNext() ? b.next() : valueForNoneB);
+            }
+        });
     }
 
     /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
      * 
      * @param a
      * @param b
+     * @param c
+     * @param combiner
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
      * @return
      */
-    public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
-            final TriFunction<A, B, C, R> combiner) {
-        return zip(a.iterator(), b.iterator(), c.iterator(), combiner);
-    }
+    public static <A, B, C, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+            final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+        return new IteratorStream<R>(new ImmutableIterator<R>() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || c.hasNext();
+            }
 
-    public static <A, B, R> Stream<R> zipInParallel(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner) {
-        return zipInParallel(a, b, combiner, 1024);
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return combiner.apply(a.hasNext() ? a.next() : valueForNoneA, b.hasNext() ? b.next() : valueForNoneB, c.hasNext() ? c.next() : valueForNoneC);
+            }
+        });
     }
 
     /**
+     * Zip together the iterators until all of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param combiner
+     * @param valuesForNone value to fill for any iterator runs out of values.
+     * @return
+     */
+    public static <R> Stream<R> zip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final Object[] valuesForNone) {
+        if (c.size() != valuesForNone.length) {
+            throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
+        }
+
+        if (c.size() == 0) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+
+        return new IteratorStream<R>(new ImmutableIterator<R>() {
+            @Override
+            public boolean hasNext() {
+                for (Iterator<?> e : c) {
+                    if (e.hasNext()) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public R next() {
+                final Object[] args = new Object[len];
+                int idx = 0;
+                boolean hasNext = false;
+
+                for (Iterator<?> e : c) {
+                    if (e.hasNext()) {
+                        hasNext = true;
+                        args[idx] = e.next();
+                    } else {
+                        args[idx] = valuesForNone[idx];
+                    }
+                    idx++;
+                }
+
+                if (hasNext == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return combiner.apply(args);
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner) {
+        return parallelZip(a, b, combiner, 1024);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
      * 
      * @param a
      * @param b
@@ -1964,76 +2156,17 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param queueSize Default value is 1024
      * @return
      */
-    public static <A, B, R> Stream<R> zipInParallel(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
+    public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
             final int queueSize) {
         final AsyncExecutor asyncExecutor = new AsyncExecutor(2, 300L, TimeUnit.SECONDS);
-        final AtomicInteger counterA = new AtomicInteger(1);
-        final AtomicInteger counterB = new AtomicInteger(1);
+        final AtomicInteger threadCounterA = new AtomicInteger(1);
+        final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
+        final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        asyncExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    A nextA = null;
-
-                    while (eHolder.getValue() == null && a.hasNext()) {
-                        nextA = a.next();
-
-                        if (nextA == null) {
-                            nextA = (A) NONE;
-                        }
-
-                        while (eHolder.getValue() == null && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
-                            // continue
-                        }
-                    }
-                } catch (Throwable e) {
-                    synchronized (eHolder) {
-                        if (eHolder.getValue() == null) {
-                            eHolder.setValue(e);
-                        } else {
-                            eHolder.getValue().addSuppressed(e);
-                        }
-                    }
-                } finally {
-                    counterA.decrementAndGet();
-                }
-            }
-        });
-
-        asyncExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    B nextB = null;
-
-                    while (eHolder.getValue() == null && b.hasNext()) {
-                        nextB = b.next();
-
-                        if (nextB == null) {
-                            nextB = (B) NONE;
-                        }
-
-                        while (eHolder.getValue() == null && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
-                            // continue
-                        }
-                    }
-                } catch (Throwable e) {
-                    synchronized (eHolder) {
-                        if (eHolder.getValue() == null) {
-                            eHolder.setValue(e);
-                        } else {
-                            eHolder.getValue().addSuppressed(e);
-                        }
-                    }
-                } finally {
-                    counterB.decrementAndGet();
-                }
-            }
-        });
+        readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, errorHolder, onGoing);
 
         return of(new ImmutableIterator<R>() {
             A nextA = null;
@@ -2042,28 +2175,34 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             @Override
             public boolean hasNext() {
                 try {
-                    while (nextA == null && counterA.get() > 0 && eHolder.getValue() == null) {
+                    while (nextA == null && onGoing.booleanValue() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
                         nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
                     }
 
-                    while (nextB == null && counterB.get() > 0 && eHolder.getValue() == null) {
+                    if (nextA == null) {
+                        onGoing.setFalse();
+
+                        return false;
+                    }
+
+                    while (nextB == null && onGoing.booleanValue() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
                         nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
                     }
-                } catch (Throwable e) {
-                    synchronized (eHolder) {
-                        if (eHolder.getValue() == null) {
-                            eHolder.setValue(e);
-                        } else {
-                            eHolder.getValue().addSuppressed(e);
-                        }
+
+                    if (nextB == null) {
+                        onGoing.setFalse();
+
+                        return false;
                     }
+                } catch (Throwable e) {
+                    setError(errorHolder, e, onGoing);
                 }
 
-                if (eHolder.getValue() != null) {
-                    throw N.toRuntimeException(eHolder.getValue());
+                if (errorHolder.value() != null) {
+                    throwError(errorHolder, onGoing);
                 }
 
-                return nextA != null && nextB != null;
+                return true;
             }
 
             @Override
@@ -2072,20 +2211,42 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                     throw new NoSuchElementException();
                 }
 
-                final R result = combiner.apply(nextA == NONE ? null : nextA, nextB == NONE ? null : nextB);
-                nextA = null;
-                nextB = null;
-                return result;
+                boolean isOK = false;
+
+                try {
+                    final R result = combiner.apply(nextA == NONE ? null : nextA, nextB == NONE ? null : nextB);
+                    nextA = null;
+                    nextB = null;
+                    isOK = true;
+                    return result;
+                } finally {
+                    // error happened
+                    if (isOK == false) {
+                        onGoing.setFalse();
+                    }
+                }
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                onGoing.setFalse();
             }
         });
     }
 
-    public static <A, B, C, R> Stream<R> zipInParallel(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+    public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<A, B, C, R> combiner) {
-        return zipInParallel(a, b, c, combiner, 1024);
+        return parallelZip(a, b, c, combiner, 1024);
     }
 
     /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
      * 
      * @param a
      * @param b
@@ -2094,44 +2255,611 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param queueSize Default value is 1024
      * @return
      */
-    public static <A, B, C, R> Stream<R> zipInParallel(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+    public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<A, B, C, R> combiner, final int queueSize) {
         final AsyncExecutor asyncExecutor = new AsyncExecutor(3, 300L, TimeUnit.SECONDS);
-        final AtomicInteger counterA = new AtomicInteger(1);
-        final AtomicInteger counterB = new AtomicInteger(1);
-        final AtomicInteger counterC = new AtomicInteger(1);
+        final AtomicInteger threadCounterA = new AtomicInteger(1);
+        final AtomicInteger threadCounterB = new AtomicInteger(1);
+        final AtomicInteger threadCounterC = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
+        final MutableBoolean onGoing = MutableBoolean.of(true);
 
+        readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, errorHolder, onGoing);
+
+        return of(new ImmutableIterator<R>() {
+            A nextA = null;
+            B nextB = null;
+            C nextC = null;
+
+            @Override
+            public boolean hasNext() {
+                try {
+                    while (nextA == null && onGoing.booleanValue() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    if (nextA == null) {
+                        onGoing.setFalse();
+
+                        return false;
+                    }
+
+                    while (nextB == null && onGoing.booleanValue() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    if (nextB == null) {
+                        onGoing.setFalse();
+
+                        return false;
+                    }
+
+                    while (nextC == null && onGoing.booleanValue() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
+                        nextC = queueC.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    if (nextC == null) {
+                        onGoing.setFalse();
+
+                        return false;
+                    }
+                } catch (Throwable e) {
+                    setError(errorHolder, e, onGoing);
+                }
+
+                if (errorHolder.value() != null) {
+                    throwError(errorHolder, onGoing);
+                }
+
+                return true;
+            }
+
+            @Override
+            public R next() {
+                if ((nextA == null || nextB == null || nextC == null) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                boolean isOK = false;
+
+                try {
+                    final R result = combiner.apply(nextA == NONE ? null : nextA, nextB == NONE ? null : nextB, nextC == NONE ? null : nextC);
+                    nextA = null;
+                    nextB = null;
+                    nextC = null;
+                    isOK = true;
+                    return result;
+                } finally {
+                    // error happened
+                    if (isOK == false) {
+                        onGoing.setFalse();
+                    }
+                }
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                onGoing.setFalse();
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @param combiner
+     * @return
+     */
+    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner) {
+        return parallelZip(c, combiner, 1024);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param combiner
+     * @param queueSize Default value is 1024
+     * @return
+     */
+    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final int queueSize) {
+        if (c.size() == 0) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+        final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
+        final AtomicInteger[] counters = new AtomicInteger[len];
+        final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
+        final Holder<Throwable> errorHolder = new Holder<>();
+        final MutableBoolean onGoing = MutableBoolean.of(true);
+
+        readToQueue(c, queueSize, asyncExecutor, counters, queues, errorHolder, onGoing);
+
+        return of(new ImmutableIterator<R>() {
+            Object[] next = null;
+
+            @Override
+            public boolean hasNext() {
+                if (next == null) {
+                    next = new Object[len];
+                }
+
+                for (int i = 0; i < len; i++) {
+                    try {
+                        while (next[i] == null && onGoing.booleanValue() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
+                            next[i] = queues[i].poll(100, TimeUnit.MILLISECONDS);
+                        }
+
+                        if (next[i] == null) {
+                            onGoing.setFalse();
+
+                            return false;
+                        }
+                    } catch (Throwable e) {
+                        setError(errorHolder, e, onGoing);
+                    }
+
+                    if (errorHolder.value() != null) {
+                        throwError(errorHolder, onGoing);
+                    }
+                }
+
+                return true;
+            }
+
+            @Override
+            public R next() {
+                if (next == null) {
+                    if (hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+                } else {
+                    for (int i = 0; i < len; i++) {
+                        if (next[i] == null) {
+                            if (hasNext() == false) {
+                                throw new NoSuchElementException();
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                for (int i = 0; i < len; i++) {
+                    if (next[i] == NONE) {
+                        next[i] = null;
+                    }
+                }
+
+                boolean isOK = false;
+
+                try {
+                    R result = combiner.apply(next);
+                    next = null;
+                    isOK = true;
+                    return result;
+                } finally {
+                    // error happened
+                    if (isOK == false) {
+                        onGoing.setFalse();
+                    }
+                }
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                onGoing.setFalse();
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
+            final A valueForNoneA, final B valueForNoneB) {
+        return parallelZip(a, b, combiner, 1024, valueForNoneA, valueForNoneB);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @param queueSize
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
+            final int queueSize, final A valueForNoneA, final B valueForNoneB) {
+        final AsyncExecutor asyncExecutor = new AsyncExecutor(2, 300L, TimeUnit.SECONDS);
+        final AtomicInteger threadCounterA = new AtomicInteger(1);
+        final AtomicInteger threadCounterB = new AtomicInteger(1);
+        final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
+        final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
+        final Holder<Throwable> errorHolder = new Holder<>();
+        final MutableBoolean onGoing = MutableBoolean.of(true);
+
+        readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, errorHolder, onGoing);
+
+        return of(new ImmutableIterator<R>() {
+            A nextA = null;
+            B nextB = null;
+
+            @Override
+            public boolean hasNext() {
+                try {
+                    while (nextA == null && onGoing.booleanValue() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    while (nextB == null && onGoing.booleanValue() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                    }
+                } catch (Throwable e) {
+                    setError(errorHolder, e, onGoing);
+                }
+
+                if (errorHolder.value() != null) {
+                    throwError(errorHolder, onGoing);
+                }
+
+                if (nextA != null || nextB != null) {
+                    return true;
+                } else {
+                    onGoing.setFalse();
+                    return false;
+                }
+            }
+
+            @Override
+            public R next() {
+                if ((nextA == null && nextB == null) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                nextA = nextA == NONE ? null : (nextA == null ? valueForNoneA : nextA);
+                nextB = nextB == NONE ? null : (nextB == null ? valueForNoneB : nextB);
+                boolean isOK = false;
+
+                try {
+                    final R result = combiner.apply(nextA, nextB);
+                    nextA = null;
+                    nextB = null;
+                    isOK = true;
+                    return result;
+                } finally {
+                    // error happened
+                    if (isOK == false) {
+                        onGoing.setFalse();
+                    }
+                }
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                onGoing.setFalse();
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param combiner
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param valueForNoneC
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+            final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+        return parallelZip(a, b, c, combiner, 1024, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param combiner
+     * @param queueSize
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param valueForNoneC
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+            final TriFunction<A, B, C, R> combiner, final int queueSize, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+        final AsyncExecutor asyncExecutor = new AsyncExecutor(3, 300L, TimeUnit.SECONDS);
+        final AtomicInteger threadCounterA = new AtomicInteger(1);
+        final AtomicInteger threadCounterB = new AtomicInteger(1);
+        final AtomicInteger threadCounterC = new AtomicInteger(1);
+        final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
+        final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
+        final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
+        final Holder<Throwable> errorHolder = new Holder<>();
+        final MutableBoolean onGoing = MutableBoolean.of(true);
+
+        readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, errorHolder, onGoing);
+
+        return of(new ImmutableIterator<R>() {
+            A nextA = null;
+            B nextB = null;
+            C nextC = null;
+
+            @Override
+            public boolean hasNext() {
+                try {
+                    while (nextA == null && onGoing.booleanValue() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    while (nextB == null && onGoing.booleanValue() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                    }
+
+                    while (nextC == null && onGoing.booleanValue() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
+                        nextC = queueC.poll(100, TimeUnit.MILLISECONDS);
+                    }
+                } catch (Throwable e) {
+                    setError(errorHolder, e, onGoing);
+                }
+
+                if (errorHolder.value() != null) {
+                    throwError(errorHolder, onGoing);
+                }
+
+                if (nextA != null || nextB != null || nextC != null) {
+                    return true;
+                } else {
+                    onGoing.setFalse();
+
+                    return false;
+                }
+            }
+
+            @Override
+            public R next() {
+                if ((nextA == null && nextB == null && nextC == null) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                nextA = nextA == NONE ? null : (nextA == null ? valueForNoneA : nextA);
+                nextB = nextB == NONE ? null : (nextB == null ? valueForNoneB : nextB);
+                nextC = nextC == NONE ? null : (nextC == null ? valueForNoneC : nextC);
+                boolean isOK = false;
+
+                try {
+                    final R result = combiner.apply(nextA, nextB, nextC);
+                    nextA = null;
+                    nextB = null;
+                    nextC = null;
+                    isOK = true;
+                    return result;
+                } finally {
+                    // error happened
+                    if (isOK == false) {
+                        onGoing.setFalse();
+                    }
+                }
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                onGoing.setFalse();
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @param combiner
+     * @param valuesForNone
+     * @return
+     */
+    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final Object[] valuesForNone) {
+        return parallelZip(c, combiner, 1024, valuesForNone);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @param combiner
+     * @param queueSize
+     * @param valuesForNone
+     * @return
+     */
+    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final int queueSize,
+            final Object[] valuesForNone) {
+        if (c.size() != valuesForNone.length) {
+            throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
+        }
+
+        if (c.size() == 0) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+        final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
+        final Holder<Throwable> errorHolder = new Holder<>();
+        final MutableBoolean onGoing = MutableBoolean.of(true);
+        final AtomicInteger[] counters = new AtomicInteger[len];
+        final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
+
+        readToQueue(c, queueSize, asyncExecutor, counters, queues, errorHolder, onGoing);
+
+        return of(new ImmutableIterator<R>() {
+            Object[] next = null;
+
+            @Override
+            public boolean hasNext() {
+                if (next == null) {
+                    next = new Object[len];
+                }
+
+                for (int i = 0; i < len; i++) {
+                    try {
+                        while (next[i] == null && onGoing.booleanValue() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
+                            next[i] = queues[i].poll(100, TimeUnit.MILLISECONDS);
+                        }
+                    } catch (Throwable e) {
+                        setError(errorHolder, e, onGoing);
+                    }
+
+                    if (errorHolder.value() != null) {
+                        throwError(errorHolder, onGoing);
+                    }
+                }
+
+                for (int i = 0; i < len; i++) {
+                    if (next[i] != null) {
+                        return true;
+                    }
+                }
+
+                onGoing.setFalse();
+                return false;
+            }
+
+            @Override
+            public R next() {
+                if (next == null) {
+                    if (hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+                } else {
+                    for (int i = 0; i < len; i++) {
+                        if (next[i] == null) {
+                            if (hasNext() == false) {
+                                throw new NoSuchElementException();
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                for (int i = 0; i < len; i++) {
+                    next[i] = next[i] == NONE ? null : (next[i] == null ? valuesForNone[i] : next[i]);
+                }
+
+                boolean isOK = false;
+                try {
+                    R result = combiner.apply(next);
+                    next = null;
+                    isOK = true;
+                    return result;
+                } finally {
+                    // error happened
+                    if (isOK == false) {
+                        onGoing.setFalse();
+                    }
+                }
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                onGoing.setFalse();
+            }
+        });
+    }
+
+    private static <B, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final AsyncExecutor asyncExecutor,
+            final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final BlockingQueue<A> queueA, final BlockingQueue<B> queueB,
+            final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
         asyncExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     A nextA = null;
 
-                    while (eHolder.getValue() == null && a.hasNext()) {
+                    while (onGoing.booleanValue() && a.hasNext()) {
                         nextA = a.next();
 
                         if (nextA == null) {
                             nextA = (A) NONE;
                         }
 
-                        while (eHolder.getValue() == null && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
+                        while (onGoing.booleanValue() && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
                             // continue
                         }
                     }
                 } catch (Throwable e) {
-                    synchronized (eHolder) {
-                        if (eHolder.getValue() == null) {
-                            eHolder.setValue(e);
-                        } else {
-                            eHolder.getValue().addSuppressed(e);
-                        }
-                    }
+                    setError(errorHolder, e, onGoing);
                 } finally {
-                    counterA.decrementAndGet();
+                    threadCounterA.decrementAndGet();
                 }
             }
         });
@@ -2142,27 +2870,76 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                 try {
                     B nextB = null;
 
-                    while (eHolder.getValue() == null && b.hasNext()) {
+                    while (onGoing.booleanValue() && b.hasNext()) {
                         nextB = b.next();
 
                         if (nextB == null) {
                             nextB = (B) NONE;
                         }
 
-                        while (eHolder.getValue() == null && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
+                        while (onGoing.booleanValue() && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
                             // continue
                         }
                     }
                 } catch (Throwable e) {
-                    synchronized (eHolder) {
-                        if (eHolder.getValue() == null) {
-                            eHolder.setValue(e);
-                        } else {
-                            eHolder.getValue().addSuppressed(e);
+                    setError(errorHolder, e, onGoing);
+                } finally {
+                    threadCounterB.decrementAndGet();
+                }
+            }
+        });
+    }
+
+    private static <B, C, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
+            final AsyncExecutor asyncExecutor, final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final AtomicInteger threadCounterC,
+            final BlockingQueue<A> queueA, final BlockingQueue<B> queueB, final BlockingQueue<C> queueC, final Holder<Throwable> errorHolder,
+            final MutableBoolean onGoing) {
+        asyncExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    A nextA = null;
+
+                    while (onGoing.booleanValue() && a.hasNext()) {
+                        nextA = a.next();
+
+                        if (nextA == null) {
+                            nextA = (A) NONE;
+                        }
+
+                        while (onGoing.booleanValue() && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
+                            // continue
                         }
                     }
+                } catch (Throwable e) {
+                    setError(errorHolder, e, onGoing);
                 } finally {
-                    counterB.decrementAndGet();
+                    threadCounterA.decrementAndGet();
+                }
+            }
+        });
+
+        asyncExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    B nextB = null;
+
+                    while (onGoing.booleanValue() && b.hasNext()) {
+                        nextB = b.next();
+
+                        if (nextB == null) {
+                            nextB = (B) NONE;
+                        }
+
+                        while (onGoing.booleanValue() && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
+                            // continue
+                        }
+                    }
+                } catch (Throwable e) {
+                    setError(errorHolder, e, onGoing);
+                } finally {
+                    threadCounterB.decrementAndGet();
                 }
             }
         });
@@ -2173,80 +2950,83 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                 try {
                     C nextC = null;
 
-                    while (eHolder.getValue() == null && c.hasNext()) {
+                    while (onGoing.booleanValue() && c.hasNext()) {
                         nextC = c.next();
 
                         if (nextC == null) {
                             nextC = (C) NONE;
                         }
 
-                        while (eHolder.getValue() == null && queueC.offer(nextC, 100, TimeUnit.MILLISECONDS) == false) {
+                        while (onGoing.booleanValue() && queueC.offer(nextC, 100, TimeUnit.MILLISECONDS) == false) {
                             // continue
                         }
                     }
                 } catch (Throwable e) {
-                    synchronized (eHolder) {
-                        if (eHolder.getValue() == null) {
-                            eHolder.setValue(e);
-                        } else {
-                            eHolder.getValue().addSuppressed(e);
-                        }
-                    }
+                    setError(errorHolder, e, onGoing);
                 } finally {
-                    counterC.decrementAndGet();
+                    threadCounterC.decrementAndGet();
                 }
             }
         });
+    }
 
-        return of(new ImmutableIterator<R>() {
-            A nextA = null;
-            B nextB = null;
-            C nextC = null;
+    private static void readToQueue(final Collection<? extends Iterator<?>> c, final int queueSize, final AsyncExecutor asyncExecutor,
+            final AtomicInteger[] counters, final BlockingQueue<Object>[] queues, final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
+        int idx = 0;
 
-            @Override
-            public boolean hasNext() {
-                try {
-                    while (nextA == null && (queueA.size() > 0 || counterA.get() > 0) && eHolder.getValue() == null) {
-                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
-                    }
+        for (Iterator<?> e : c) {
+            counters[idx] = new AtomicInteger(1);
+            queues[idx] = new ArrayBlockingQueue<>(queueSize);
 
-                    while (nextB == null && (queueB.size() > 0 || counterB.get() > 0) && eHolder.getValue() == null) {
-                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
-                    }
+            final Iterator<?> iter = e;
+            final AtomicInteger count = counters[idx];
+            final BlockingQueue<Object> queue = queues[idx];
 
-                    while (nextC == null && (queueC.size() > 0 || counterC.get() > 0) && eHolder.getValue() == null) {
-                        nextC = queueC.poll(100, TimeUnit.MILLISECONDS);
-                    }
-                } catch (Throwable e) {
-                    synchronized (eHolder) {
-                        if (eHolder.getValue() == null) {
-                            eHolder.setValue(e);
-                        } else {
-                            eHolder.getValue().addSuppressed(e);
+            asyncExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Object next = null;
+
+                        while (onGoing.booleanValue() && iter.hasNext()) {
+                            next = iter.next();
+
+                            if (next == null) {
+                                next = NONE;
+                            }
+
+                            while (onGoing.booleanValue() && queue.offer(next, 100, TimeUnit.MILLISECONDS) == false) {
+                                // continue
+                            }
                         }
+                    } catch (Throwable e) {
+                        setError(errorHolder, e, onGoing);
+                    } finally {
+                        count.decrementAndGet();
                     }
                 }
+            });
 
-                if (eHolder.getValue() != null) {
-                    throw N.toRuntimeException(eHolder.getValue());
-                }
+            idx++;
+        }
+    }
 
-                return nextA != null && nextB != null && nextC != null;
+    private static void setError(final Holder<Throwable> errorHolder, Throwable e, final MutableBoolean onGoing) {
+        onGoing.setFalse();
+
+        synchronized (errorHolder) {
+            if (errorHolder.value() == null) {
+                errorHolder.setValue(e);
+            } else {
+                errorHolder.value().addSuppressed(e);
             }
+        }
+    }
 
-            @Override
-            public R next() {
-                if ((nextA == null || nextB == null || nextC == null) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
+    private static void throwError(final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
+        onGoing.setFalse();
 
-                final R result = combiner.apply(nextA == NONE ? null : nextA, nextB == NONE ? null : nextB, nextC == NONE ? null : nextC);
-                nextA = null;
-                nextB = null;
-                nextC = null;
-                return result;
-            }
-        });
+        throw N.toRuntimeException(errorHolder.value());
     }
 
     static void checkIndex(int fromIndex, int toIndex, int length) {

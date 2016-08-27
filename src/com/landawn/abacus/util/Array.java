@@ -30,11 +30,7 @@ import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.RandomAccess;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.landawn.abacus.exception.AbacusException;
 
 /**
  *
@@ -2219,12 +2215,12 @@ public final class Array {
         Arrays.parallelSort(a, fromIndex, toIndex, cmp);
     }
 
-    //    static void parallelSort(final int[] a) {
-    //        if (N.isNullOrEmpty(a)) {
+    //    static void parallelSort(final int[] array) {
+    //        if (N.isNullOrEmpty(array)) {
     //            return;
     //        }
     //
-    //        parallelSort(a, 0, a.length);
+    //        parallelSort(array, 0, array.length);
     //    }
     //
     //    static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
@@ -2236,35 +2232,34 @@ public final class Array {
     //
     //        final int len = toIndex - fromIndex;
     //
-    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
     //            sort(a, fromIndex, toIndex);
     //            return;
     //        }
     //
-    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //        final int[][] subArrays = new int[CPU_CORES][];
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-    //        }
-    //
+    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
     //        final AtomicInteger activeThreadNum = new AtomicInteger();
     //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
     //
-    //        for (final int[] tmp : subArrays) {
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            final int start = fromIndex + i * lenOfSubArray;
+    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+    //            subArrayIndexQueue.add(Pair.of(start, end));
+    //
     //            activeThreadNum.incrementAndGet();
     //
     //            parallelSortExecutor.execute(new Runnable() {
     //                @Override
     //                public void run() {
     //                    try {
-    //                        if (errorHolder.getValue() != null) {
+    //                        if (errorHolder.value() != null) {
     //                            return;
     //                        }
     //
-    //                        Arrays.sort(tmp);
+    //                        Arrays.sort(a, start, end);
     //                    } catch (Throwable e) {
-    //                        errorHolder.setValue(e);
+    //                        setError(errorHolder, e);
     //                    } finally {
     //                        activeThreadNum.decrementAndGet();
     //                    }
@@ -2276,11 +2271,69 @@ public final class Array {
     //            N.sleep(10);
     //        }
     //
-    //        if (errorHolder.getValue() != null) {
-    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
     //        }
     //
-    //        parallelMergeSort(a, fromIndex, subArrays);
+    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+    //                if (++i == size) {
+    //                    subArrayIndexQueue.add(pairA);
+    //                } else {
+    //                    i++;
+    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+    //
+    //                    activeThreadNum.incrementAndGet();
+    //
+    //                    parallelSortExecutor.execute(new Runnable() {
+    //                        @Override
+    //                        public void run() {
+    //                            try {
+    //                                if (errorHolder.value() != null) {
+    //                                    return;
+    //                                }
+    //
+    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+    //
+    //                            } catch (Throwable e) {
+    //                                setError(errorHolder, e);
+    //                            } finally {
+    //                                activeThreadNum.decrementAndGet();
+    //                            }
+    //                        }
+    //                    });
+    //                }
+    //            }
+    //
+    //            while (activeThreadNum.get() > 0) {
+    //                N.sleep(10);
+    //            }
+    //
+    //            if (errorHolder.value() != null) {
+    //                throw N.toRuntimeException(errorHolder.value());
+    //            }
+    //        }
+    //
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
+    //        }
+    //    }
+    //
+    //    static void merge(final int[] a, int fromIndexA, int toIndexA, final int[] b, int fromIndexB, int toIndexB, int fromIndex) {
+    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+    //            if (a[fromIndexA] <= b[fromIndexB]) {
+    //                b[fromIndex++] = a[fromIndexA++];
+    //            } else {
+    //                b[fromIndex++] = b[fromIndexB++];
+    //            }
+    //        }
+    //
+    //        if (fromIndexA < toIndexA) {
+    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+    //            fromIndex += toIndexA - fromIndexA;
+    //        }
     //    }
     //
     //    static void parallelSort(final long[] array) {
@@ -2300,35 +2353,34 @@ public final class Array {
     //
     //        final int len = toIndex - fromIndex;
     //
-    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
     //            sort(a, fromIndex, toIndex);
     //            return;
     //        }
     //
-    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //        final long[][] subArrays = new long[CPU_CORES][];
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-    //        }
-    //
+    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
     //        final AtomicInteger activeThreadNum = new AtomicInteger();
     //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
     //
-    //        for (final long[] tmp : subArrays) {
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            final int start = fromIndex + i * lenOfSubArray;
+    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+    //            subArrayIndexQueue.add(Pair.of(start, end));
+    //
     //            activeThreadNum.incrementAndGet();
     //
     //            parallelSortExecutor.execute(new Runnable() {
     //                @Override
     //                public void run() {
     //                    try {
-    //                        if (errorHolder.getValue() != null) {
+    //                        if (errorHolder.value() != null) {
     //                            return;
     //                        }
     //
-    //                        Arrays.sort(tmp);
+    //                        Arrays.sort(a, start, end);
     //                    } catch (Throwable e) {
-    //                        errorHolder.setValue(e);
+    //                        setError(errorHolder, e);
     //                    } finally {
     //                        activeThreadNum.decrementAndGet();
     //                    }
@@ -2340,19 +2392,77 @@ public final class Array {
     //            N.sleep(10);
     //        }
     //
-    //        if (errorHolder.getValue() != null) {
-    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
     //        }
     //
-    //        parallelMergeSort(a, fromIndex, subArrays);
+    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+    //                if (++i == size) {
+    //                    subArrayIndexQueue.add(pairA);
+    //                } else {
+    //                    i++;
+    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+    //
+    //                    activeThreadNum.incrementAndGet();
+    //
+    //                    parallelSortExecutor.execute(new Runnable() {
+    //                        @Override
+    //                        public void run() {
+    //                            try {
+    //                                if (errorHolder.value() != null) {
+    //                                    return;
+    //                                }
+    //
+    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+    //
+    //                            } catch (Throwable e) {
+    //                                setError(errorHolder, e);
+    //                            } finally {
+    //                                activeThreadNum.decrementAndGet();
+    //                            }
+    //                        }
+    //                    });
+    //                }
+    //            }
+    //
+    //            while (activeThreadNum.get() > 0) {
+    //                N.sleep(10);
+    //            }
+    //
+    //            if (errorHolder.value() != null) {
+    //                throw N.toRuntimeException(errorHolder.value());
+    //            }
+    //        }
+    //
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
+    //        }
     //    }
     //
-    //    static void parallelSort(final float[] a) {
-    //        if (N.isNullOrEmpty(a)) {
+    //    static void merge(final long[] a, int fromIndexA, int toIndexA, final long[] b, int fromIndexB, int toIndexB, int fromIndex) {
+    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+    //            if (a[fromIndexA] <= b[fromIndexB]) {
+    //                b[fromIndex++] = a[fromIndexA++];
+    //            } else {
+    //                b[fromIndex++] = b[fromIndexB++];
+    //            }
+    //        }
+    //
+    //        if (fromIndexA < toIndexA) {
+    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+    //            fromIndex += toIndexA - fromIndexA;
+    //        }
+    //    }
+    //
+    //    static void parallelSort(final float[] array) {
+    //        if (N.isNullOrEmpty(array)) {
     //            return;
     //        }
     //
-    //        parallelSort(a, 0, a.length);
+    //        parallelSort(array, 0, array.length);
     //    }
     //
     //    static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
@@ -2364,35 +2474,34 @@ public final class Array {
     //
     //        final int len = toIndex - fromIndex;
     //
-    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
     //            sort(a, fromIndex, toIndex);
     //            return;
     //        }
     //
-    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //        final float[][] subArrays = new float[CPU_CORES][];
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-    //        }
-    //
+    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
     //        final AtomicInteger activeThreadNum = new AtomicInteger();
     //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
     //
-    //        for (final float[] tmp : subArrays) {
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            final int start = fromIndex + i * lenOfSubArray;
+    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+    //            subArrayIndexQueue.add(Pair.of(start, end));
+    //
     //            activeThreadNum.incrementAndGet();
     //
     //            parallelSortExecutor.execute(new Runnable() {
     //                @Override
     //                public void run() {
     //                    try {
-    //                        if (errorHolder.getValue() != null) {
+    //                        if (errorHolder.value() != null) {
     //                            return;
     //                        }
     //
-    //                        Arrays.sort(tmp);
+    //                        Arrays.sort(a, start, end);
     //                    } catch (Throwable e) {
-    //                        errorHolder.setValue(e);
+    //                        setError(errorHolder, e);
     //                    } finally {
     //                        activeThreadNum.decrementAndGet();
     //                    }
@@ -2404,11 +2513,88 @@ public final class Array {
     //            N.sleep(10);
     //        }
     //
-    //        if (errorHolder.getValue() != null) {
-    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
     //        }
     //
-    //        parallelMergeSort(a, fromIndex, subArrays);
+    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+    //                if (++i == size) {
+    //                    subArrayIndexQueue.add(pairA);
+    //                } else {
+    //                    i++;
+    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+    //
+    //                    activeThreadNum.incrementAndGet();
+    //
+    //                    parallelSortExecutor.execute(new Runnable() {
+    //                        @Override
+    //                        public void run() {
+    //                            try {
+    //                                if (errorHolder.value() != null) {
+    //                                    return;
+    //                                }
+    //
+    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+    //
+    //                            } catch (Throwable e) {
+    //                                setError(errorHolder, e);
+    //                            } finally {
+    //                                activeThreadNum.decrementAndGet();
+    //                            }
+    //                        }
+    //                    });
+    //                }
+    //            }
+    //
+    //            while (activeThreadNum.get() > 0) {
+    //                N.sleep(10);
+    //            }
+    //
+    //            if (errorHolder.value() != null) {
+    //                throw N.toRuntimeException(errorHolder.value());
+    //            }
+    //        }
+    //
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
+    //        }
+    //    }
+    //
+    //    static void merge(final float[] a, int fromIndexA, int toIndexA, final float[] b, int fromIndexB, int toIndexB, int fromIndex) {
+    //        int numOfNaN = 0;
+    //
+    //        for (int i = toIndexA - 1; i >= fromIndexA && Float.isNaN(a[i]); i--) {
+    //            toIndexA--;
+    //            numOfNaN++;
+    //        }
+    //
+    //        for (int i = toIndexB - 1; i >= fromIndexB && Float.isNaN(b[i]); i--) {
+    //            toIndexB--;
+    //            numOfNaN++;
+    //        }
+    //
+    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+    //            if (Float.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
+    //                b[fromIndex++] = a[fromIndexA++];
+    //            } else {
+    //                b[fromIndex++] = b[fromIndexB++];
+    //            }
+    //        }
+    //
+    //        if (fromIndexA < toIndexA) {
+    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+    //            fromIndex += toIndexA - fromIndexA;
+    //        } else if (fromIndexB < toIndexB && numOfNaN > 0) {
+    //            N.copy(b, fromIndexB, b, fromIndex, toIndexB - fromIndexB);
+    //            fromIndex += toIndexB - fromIndexB;
+    //        }
+    //
+    //        if (numOfNaN > 0) {
+    //            N.fill(b, fromIndex, fromIndex + numOfNaN, Float.NaN);
+    //        }
     //    }
     //
     //    static void parallelSort(final double[] array) {
@@ -2428,35 +2614,34 @@ public final class Array {
     //
     //        final int len = toIndex - fromIndex;
     //
-    //        if (len < MIN_ARRAY_SORT_GRAN) {
+    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
     //            sort(a, fromIndex, toIndex);
     //            return;
     //        }
     //
-    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //        final double[][] subArrays = new double[CPU_CORES][];
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-    //        }
-    //
+    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
     //        final AtomicInteger activeThreadNum = new AtomicInteger();
     //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
     //
-    //        for (final double[] tmp : subArrays) {
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            final int start = fromIndex + i * lenOfSubArray;
+    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+    //            subArrayIndexQueue.add(Pair.of(start, end));
+    //
     //            activeThreadNum.incrementAndGet();
     //
     //            parallelSortExecutor.execute(new Runnable() {
     //                @Override
     //                public void run() {
     //                    try {
-    //                        if (errorHolder.getValue() != null) {
+    //                        if (errorHolder.value() != null) {
     //                            return;
     //                        }
     //
-    //                        Arrays.sort(tmp);
+    //                        Arrays.sort(a, start, end);
     //                    } catch (Throwable e) {
-    //                        errorHolder.setValue(e);
+    //                        setError(errorHolder, e);
     //                    } finally {
     //                        activeThreadNum.decrementAndGet();
     //                    }
@@ -2468,11 +2653,88 @@ public final class Array {
     //            N.sleep(10);
     //        }
     //
-    //        if (errorHolder.getValue() != null) {
-    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
     //        }
     //
-    //        parallelMergeSort(a, fromIndex, subArrays);
+    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+    //                if (++i == size) {
+    //                    subArrayIndexQueue.add(pairA);
+    //                } else {
+    //                    i++;
+    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+    //
+    //                    activeThreadNum.incrementAndGet();
+    //
+    //                    parallelSortExecutor.execute(new Runnable() {
+    //                        @Override
+    //                        public void run() {
+    //                            try {
+    //                                if (errorHolder.value() != null) {
+    //                                    return;
+    //                                }
+    //
+    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+    //
+    //                            } catch (Throwable e) {
+    //                                setError(errorHolder, e);
+    //                            } finally {
+    //                                activeThreadNum.decrementAndGet();
+    //                            }
+    //                        }
+    //                    });
+    //                }
+    //            }
+    //
+    //            while (activeThreadNum.get() > 0) {
+    //                N.sleep(10);
+    //            }
+    //
+    //            if (errorHolder.value() != null) {
+    //                throw N.toRuntimeException(errorHolder.value());
+    //            }
+    //        }
+    //
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
+    //        }
+    //    }
+    //
+    //    static void merge(final double[] a, int fromIndexA, int toIndexA, final double[] b, int fromIndexB, int toIndexB, int fromIndex) {
+    //        int numOfNaN = 0;
+    //
+    //        for (int i = toIndexA - 1; i >= fromIndexA && Double.isNaN(a[i]); i--) {
+    //            toIndexA--;
+    //            numOfNaN++;
+    //        }
+    //
+    //        for (int i = toIndexB - 1; i >= fromIndexB && Double.isNaN(b[i]); i--) {
+    //            toIndexB--;
+    //            numOfNaN++;
+    //        }
+    //
+    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+    //            if (Double.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
+    //                b[fromIndex++] = a[fromIndexA++];
+    //            } else {
+    //                b[fromIndex++] = b[fromIndexB++];
+    //            }
+    //        }
+    //
+    //        if (fromIndexA < toIndexA) {
+    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+    //            fromIndex += toIndexA - fromIndexA;
+    //        } else if (fromIndexB < toIndexB && numOfNaN > 0) {
+    //            N.copy(b, fromIndexB, b, fromIndex, toIndexB - fromIndexB);
+    //            fromIndex += toIndexB - fromIndexB;
+    //        }
+    //
+    //        if (numOfNaN > 0) {
+    //            N.fill(b, fromIndex, fromIndex + numOfNaN, Double.NaN);
+    //        }
     //    }
     //
     //    static <T extends Comparable<? super T>> void parallelSort(final T[] a) {
@@ -2495,44 +2757,44 @@ public final class Array {
     //        parallelSort(a, 0, a.length, cmp);
     //    }
     //
-    //    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    //    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, Comparator<? super T> cmp) {
     //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
     //
     //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
     //            return;
     //        }
     //
+    //        final Comparator<? super T> comparator = cmp == null ? N.comparableCmp : cmp;
     //        final int len = toIndex - fromIndex;
     //
-    //        if (len < MIN_ARRAY_SORT_GRAN) {
-    //            sort(a, fromIndex, toIndex, cmp);
+    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+    //            sort(a, fromIndex, toIndex, comparator);
     //            return;
     //        }
     //
-    //        final int size = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //        final T[][] subArrays = N.newArray(a.getClass(), CPU_CORES);
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            subArrays[i] = N.copyOfRange(a, fromIndex + i * size, fromIndex + i * size < toIndex - size ? fromIndex + i * size + size : toIndex);
-    //        }
-    //
+    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
     //        final AtomicInteger activeThreadNum = new AtomicInteger();
     //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
     //
-    //        for (final T[] tmp : subArrays) {
+    //        for (int i = 0; i < CPU_CORES; i++) {
+    //            final int start = fromIndex + i * lenOfSubArray;
+    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+    //            subArrayIndexQueue.add(Pair.of(start, end));
+    //
     //            activeThreadNum.incrementAndGet();
     //
     //            parallelSortExecutor.execute(new Runnable() {
     //                @Override
     //                public void run() {
     //                    try {
-    //                        if (errorHolder.getValue() != null) {
+    //                        if (errorHolder.value() != null) {
     //                            return;
     //                        }
     //
-    //                        Arrays.sort(tmp, cmp);
+    //                        Arrays.sort(a, start, end, comparator);
     //                    } catch (Throwable e) {
-    //                        errorHolder.setValue(e);
+    //                        setError(errorHolder, e);
     //                    } finally {
     //                        activeThreadNum.decrementAndGet();
     //                    }
@@ -2544,11 +2806,70 @@ public final class Array {
     //            N.sleep(10);
     //        }
     //
-    //        if (errorHolder.getValue() != null) {
-    //            throw new AbacusException("Failed to sort", errorHolder.getValue());
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
     //        }
     //
-    //        parallelMergeSort(a, fromIndex, subArrays, cmp);
+    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+    //                if (++i == size) {
+    //                    subArrayIndexQueue.add(pairA);
+    //                } else {
+    //                    i++;
+    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+    //
+    //                    activeThreadNum.incrementAndGet();
+    //
+    //                    parallelSortExecutor.execute(new Runnable() {
+    //                        @Override
+    //                        public void run() {
+    //                            try {
+    //                                if (errorHolder.value() != null) {
+    //                                    return;
+    //                                }
+    //
+    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left,
+    //                                        comparator);
+    //
+    //                            } catch (Throwable e) {
+    //                                setError(errorHolder, e);
+    //                            } finally {
+    //                                activeThreadNum.decrementAndGet();
+    //                            }
+    //                        }
+    //                    });
+    //                }
+    //            }
+    //
+    //            while (activeThreadNum.get() > 0) {
+    //                N.sleep(10);
+    //            }
+    //
+    //            if (errorHolder.value() != null) {
+    //                throw N.toRuntimeException(errorHolder.value());
+    //            }
+    //        }
+    //
+    //        if (errorHolder.value() != null) {
+    //            throw N.toRuntimeException(errorHolder.value());
+    //        }
+    //    }
+    //
+    //    static <T> void merge(final T[] a, int fromIndexA, int toIndexA, final T[] b, int fromIndexB, int toIndexB, int fromIndex, Comparator<? super T> cmp) {
+    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+    //            if (cmp.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
+    //                b[fromIndex++] = a[fromIndexA++];
+    //            } else {
+    //                b[fromIndex++] = b[fromIndexB++];
+    //            }
+    //        }
+    //
+    //        if (fromIndexA < toIndexA) {
+    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+    //            fromIndex += toIndexA - fromIndexA;
+    //        }
     //    }
 
     static <T extends Comparable<? super T>> void parallelSort(final List<? extends T> c) {
@@ -2605,2066 +2926,6 @@ public final class Array {
 
             it.set(array[i]);
         }
-    }
-
-    static int[] mergeSort(final int[][] sortedArrays) {
-        int totalLength = 0;
-
-        for (int[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final int[] a = new int[totalLength];
-
-        mergeSort(a, 0, sortedArrays);
-
-        return a;
-    }
-
-    static void mergeSort(final int[] output, final int fromIndex, final int[][] sortedArrays) {
-        if (sortedArrays.length == 1) {
-            N.copy(sortedArrays[0], 0, output, fromIndex, sortedArrays[0].length);
-        } else if (sortedArrays.length == 2) {
-            final int[] a = sortedArrays[0];
-            final int[] b = sortedArrays[1];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    output[k++] = a[aIndex++];
-                } else {
-                    output[k++] = b[bIndex++];
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            }
-        } else if (sortedArrays.length == 3) {
-            final int[] a = sortedArrays[0];
-            final int[] b = sortedArrays[1];
-            final int[] c = sortedArrays[2];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-
-                } else {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            }
-
-        } else if (sortedArrays.length == 4) {
-            final int[] a = sortedArrays[0];
-            final int[] b = sortedArrays[1];
-            final int[] c = sortedArrays[2];
-            final int[] d = sortedArrays[3];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int dLength = d.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-            int dIndex = 0;
-            int k = fromIndex;
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-
-                } else {
-                    if (b[bIndex] <= c[cIndex]) {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        if (a[aIndex] <= c[cIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    } else {
-                        if (b[bIndex] <= c[cIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                while (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                while (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                while (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && dIndex < dLength) {
-                while (aIndex < aLength && dIndex < dLength) {
-                    if (a[aIndex] <= d[dIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && dIndex < dLength) {
-                while (bIndex < bLength && dIndex < dLength) {
-                    if (b[bIndex] <= d[dIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (cIndex < cLength && dIndex < dLength) {
-                while (cIndex < cLength && dIndex < dLength) {
-                    if (c[cIndex] <= d[dIndex]) {
-                        output[k++] = c[cIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            } else if (dIndex < dLength) {
-                N.copy(d, dIndex, output, k, dLength - dIndex);
-            }
-        } else {
-            final int[][] tmpSortedArrays = N.copyOfRange(sortedArrays, 0, 4);
-            final int[] sortedTmpArray = mergeSort(tmpSortedArrays);
-
-            final int[][] newSortedArrays = new int[sortedArrays.length - 4 + 1][];
-
-            newSortedArrays[0] = sortedTmpArray;
-
-            N.copy(sortedArrays, 4, newSortedArrays, 1, newSortedArrays.length - 1);
-
-            mergeSort(output, fromIndex, newSortedArrays);
-        }
-    }
-
-    static long[] mergeSort(final long[][] sortedArrays) {
-        int totalLength = 0;
-
-        for (long[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final long[] a = new long[totalLength];
-
-        mergeSort(a, 0, sortedArrays);
-
-        return a;
-    }
-
-    static void mergeSort(final long[] output, final int fromIndex, final long[][] sortedArrays) {
-        if (sortedArrays.length == 1) {
-            N.copy(sortedArrays[0], 0, output, fromIndex, sortedArrays[0].length);
-        } else if (sortedArrays.length == 2) {
-            final long[] a = sortedArrays[0];
-            final long[] b = sortedArrays[1];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    output[k++] = a[aIndex++];
-                } else {
-                    output[k++] = b[bIndex++];
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            }
-        } else if (sortedArrays.length == 3) {
-            final long[] a = sortedArrays[0];
-            final long[] b = sortedArrays[1];
-            final long[] c = sortedArrays[2];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-
-                } else {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            }
-
-        } else if (sortedArrays.length == 4) {
-            final long[] a = sortedArrays[0];
-            final long[] b = sortedArrays[1];
-            final long[] c = sortedArrays[2];
-            final long[] d = sortedArrays[3];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int dLength = d.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-            int dIndex = 0;
-            int k = fromIndex;
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-
-                } else {
-                    if (b[bIndex] <= c[cIndex]) {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        if (a[aIndex] <= c[cIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    } else {
-                        if (b[bIndex] <= c[cIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                while (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                while (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                while (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && dIndex < dLength) {
-                while (aIndex < aLength && dIndex < dLength) {
-                    if (a[aIndex] <= d[dIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && dIndex < dLength) {
-                while (bIndex < bLength && dIndex < dLength) {
-                    if (b[bIndex] <= d[dIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (cIndex < cLength && dIndex < dLength) {
-                while (cIndex < cLength && dIndex < dLength) {
-                    if (c[cIndex] <= d[dIndex]) {
-                        output[k++] = c[cIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            } else if (dIndex < dLength) {
-                N.copy(d, dIndex, output, k, dLength - dIndex);
-            }
-        } else {
-            final long[][] tmpSortedArrays = N.copyOfRange(sortedArrays, 0, 4);
-            final long[] sortedTmpArray = mergeSort(tmpSortedArrays);
-
-            final long[][] newSortedArrays = new long[sortedArrays.length - 4 + 1][];
-
-            newSortedArrays[0] = sortedTmpArray;
-
-            N.copy(sortedArrays, 4, newSortedArrays, 1, newSortedArrays.length - 1);
-
-            mergeSort(output, fromIndex, newSortedArrays);
-        }
-    }
-
-    static float[] mergeSort(final float[][] sortedArrays) {
-        int totalLength = 0;
-
-        for (float[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final float[] a = new float[totalLength];
-
-        mergeSort(a, 0, sortedArrays);
-
-        return a;
-    }
-
-    static void mergeSort(final float[] output, final int fromIndex, final float[][] sortedArrays) {
-        if (sortedArrays.length == 1) {
-            N.copy(sortedArrays[0], 0, output, fromIndex, sortedArrays[0].length);
-        } else if (sortedArrays.length == 2) {
-            final float[] a = sortedArrays[0];
-            final float[] b = sortedArrays[1];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int aIndex = 0;
-            int bIndex = 0;
-
-            int numOfNaN = 0;
-            while (aLength > 0 && Float.isNaN(a[aLength - 1])) {
-                aLength--;
-                numOfNaN++;
-            }
-            while (bLength > 0 && Float.isNaN(b[bLength - 1])) {
-                bLength--;
-                numOfNaN++;
-            }
-
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    output[k++] = a[aIndex++];
-                } else {
-                    output[k++] = b[bIndex++];
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            }
-
-            if (numOfNaN > 0) {
-                N.fill(output, fromIndex + aLength + bLength, fromIndex + aLength + bLength + numOfNaN, Float.NaN);
-            }
-
-        } else if (sortedArrays.length == 3) {
-            final float[] a = sortedArrays[0];
-            final float[] b = sortedArrays[1];
-            final float[] c = sortedArrays[2];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-
-            int numOfNaN = 0;
-            while (aLength > 0 && Float.isNaN(a[aLength - 1])) {
-                aLength--;
-                numOfNaN++;
-            }
-            while (bLength > 0 && Float.isNaN(b[bLength - 1])) {
-                bLength--;
-                numOfNaN++;
-            }
-            while (cLength > 0 && Float.isNaN(c[cLength - 1])) {
-                cLength--;
-                numOfNaN++;
-            }
-
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-
-                } else {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            }
-
-            if (numOfNaN > 0) {
-                N.fill(output, fromIndex + aLength + bLength + cLength, fromIndex + aLength + bLength + cLength + numOfNaN, Float.NaN);
-            }
-
-        } else if (sortedArrays.length == 4) {
-            final float[] a = sortedArrays[0];
-            final float[] b = sortedArrays[1];
-            final float[] c = sortedArrays[2];
-            final float[] d = sortedArrays[3];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int dLength = d.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-            int dIndex = 0;
-
-            int numOfNaN = 0;
-            while (aLength > 0 && Float.isNaN(a[aLength - 1])) {
-                aLength--;
-                numOfNaN++;
-            }
-            while (bLength > 0 && Float.isNaN(b[bLength - 1])) {
-                bLength--;
-                numOfNaN++;
-            }
-            while (cLength > 0 && Float.isNaN(c[cLength - 1])) {
-                cLength--;
-                numOfNaN++;
-            }
-            while (dLength > 0 && Float.isNaN(d[dLength - 1])) {
-                dLength--;
-                numOfNaN++;
-            }
-
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-
-                } else {
-                    if (b[bIndex] <= c[cIndex]) {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        if (a[aIndex] <= c[cIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    } else {
-                        if (b[bIndex] <= c[cIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                while (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                while (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                while (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && dIndex < dLength) {
-                while (aIndex < aLength && dIndex < dLength) {
-                    if (a[aIndex] <= d[dIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && dIndex < dLength) {
-                while (bIndex < bLength && dIndex < dLength) {
-                    if (b[bIndex] <= d[dIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (cIndex < cLength && dIndex < dLength) {
-                while (cIndex < cLength && dIndex < dLength) {
-                    if (c[cIndex] <= d[dIndex]) {
-                        output[k++] = c[cIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            } else if (dIndex < dLength) {
-                N.copy(d, dIndex, output, k, dLength - dIndex);
-            }
-
-            if (numOfNaN > 0) {
-                N.fill(output, fromIndex + aLength + bLength + cLength + dLength, fromIndex + aLength + bLength + cLength + dLength + numOfNaN, Float.NaN);
-            }
-        } else {
-            final float[][] tmpSortedArrays = N.copyOfRange(sortedArrays, 0, 4);
-            final float[] sortedTmpArray = mergeSort(tmpSortedArrays);
-
-            final float[][] newSortedArrays = new float[sortedArrays.length - 4 + 1][];
-
-            newSortedArrays[0] = sortedTmpArray;
-
-            N.copy(sortedArrays, 4, newSortedArrays, 1, newSortedArrays.length - 1);
-
-            mergeSort(output, fromIndex, newSortedArrays);
-        }
-    }
-
-    static double[] mergeSort(final double[][] sortedArrays) {
-        int totalLength = 0;
-
-        for (double[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final double[] a = new double[totalLength];
-
-        mergeSort(a, 0, sortedArrays);
-
-        return a;
-    }
-
-    static void mergeSort(final double[] output, final int fromIndex, final double[][] sortedArrays) {
-        if (sortedArrays.length == 1) {
-            N.copy(sortedArrays[0], 0, output, fromIndex, sortedArrays[0].length);
-        } else if (sortedArrays.length == 2) {
-            final double[] a = sortedArrays[0];
-            final double[] b = sortedArrays[1];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int aIndex = 0;
-            int bIndex = 0;
-
-            int numOfNaN = 0;
-            while (aLength > 0 && Double.isNaN(a[aLength - 1])) {
-                aLength--;
-                numOfNaN++;
-            }
-            while (bLength > 0 && Double.isNaN(b[bLength - 1])) {
-                bLength--;
-                numOfNaN++;
-            }
-
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    output[k++] = a[aIndex++];
-                } else {
-                    output[k++] = b[bIndex++];
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            }
-
-            if (numOfNaN > 0) {
-                N.fill(output, fromIndex + aLength + bLength, fromIndex + aLength + bLength + numOfNaN, Double.NaN);
-            }
-
-        } else if (sortedArrays.length == 3) {
-            final double[] a = sortedArrays[0];
-            final double[] b = sortedArrays[1];
-            final double[] c = sortedArrays[2];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-
-            int numOfNaN = 0;
-            while (aLength > 0 && Double.isNaN(a[aLength - 1])) {
-                aLength--;
-                numOfNaN++;
-            }
-            while (bLength > 0 && Double.isNaN(b[bLength - 1])) {
-                bLength--;
-                numOfNaN++;
-            }
-            while (cLength > 0 && Double.isNaN(c[cLength - 1])) {
-                cLength--;
-                numOfNaN++;
-            }
-
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-
-                } else {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            }
-
-            if (numOfNaN > 0) {
-                N.fill(output, fromIndex + aLength + bLength + cLength, fromIndex + aLength + bLength + cLength + numOfNaN, Double.NaN);
-            }
-
-        } else if (sortedArrays.length == 4) {
-            final double[] a = sortedArrays[0];
-            final double[] b = sortedArrays[1];
-            final double[] c = sortedArrays[2];
-            final double[] d = sortedArrays[3];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int dLength = d.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-            int dIndex = 0;
-
-            int numOfNaN = 0;
-            while (aLength > 0 && Double.isNaN(a[aLength - 1])) {
-                aLength--;
-                numOfNaN++;
-            }
-            while (bLength > 0 && Double.isNaN(b[bLength - 1])) {
-                bLength--;
-                numOfNaN++;
-            }
-            while (cLength > 0 && Double.isNaN(c[cLength - 1])) {
-                cLength--;
-                numOfNaN++;
-            }
-            while (dLength > 0 && Double.isNaN(d[dLength - 1])) {
-                dLength--;
-                numOfNaN++;
-            }
-
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                if (a[aIndex] <= b[bIndex]) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-
-                } else {
-                    if (b[bIndex] <= c[cIndex]) {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        if (a[aIndex] <= c[cIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    } else {
-                        if (b[bIndex] <= c[cIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                while (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                while (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        if (a[aIndex] <= d[dIndex]) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                while (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        if (b[bIndex] <= d[dIndex]) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (c[cIndex] <= d[dIndex]) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (a[aIndex] <= b[bIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (a[aIndex] <= c[cIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && dIndex < dLength) {
-                while (aIndex < aLength && dIndex < dLength) {
-                    if (a[aIndex] <= d[dIndex]) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (b[bIndex] <= c[cIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && dIndex < dLength) {
-                while (bIndex < bLength && dIndex < dLength) {
-                    if (b[bIndex] <= d[dIndex]) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (cIndex < cLength && dIndex < dLength) {
-                while (cIndex < cLength && dIndex < dLength) {
-                    if (c[cIndex] <= d[dIndex]) {
-                        output[k++] = c[cIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            } else if (dIndex < dLength) {
-                N.copy(d, dIndex, output, k, dLength - dIndex);
-            }
-
-            if (numOfNaN > 0) {
-                N.fill(output, fromIndex + aLength + bLength + cLength + dLength, fromIndex + aLength + bLength + cLength + dLength + numOfNaN, Double.NaN);
-            }
-        } else {
-            final double[][] tmpSortedArrays = N.copyOfRange(sortedArrays, 0, 4);
-            final double[] sortedTmpArray = mergeSort(tmpSortedArrays);
-
-            final double[][] newSortedArrays = new double[sortedArrays.length - 4 + 1][];
-
-            newSortedArrays[0] = sortedTmpArray;
-
-            N.copy(sortedArrays, 4, newSortedArrays, 1, newSortedArrays.length - 1);
-
-            mergeSort(output, fromIndex, newSortedArrays);
-        }
-    }
-
-    static <T extends Comparable<? super T>> T[] mergeSort(final T[][] sortedArrays) {
-        return mergeSort(sortedArrays, null);
-    }
-
-    static <T> T[] mergeSort(final T[][] sortedArrays, final Comparator<? super T> cmp) {
-        int totalLength = 0;
-
-        for (T[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final T[] a = N.newArray(sortedArrays.getClass().getComponentType().getComponentType(), totalLength);
-
-        mergeSort(a, 0, sortedArrays, cmp);
-
-        return a;
-    }
-
-    static <T> void mergeSort(final T[] output, final int fromIndex, final T[][] sortedArrays, final Comparator<? super T> cmp) {
-        final Comparator<? super T> comparator = cmp == null ? N.comparableCmp : cmp;
-
-        if (sortedArrays.length == 1) {
-            N.copy(sortedArrays[0], 0, output, fromIndex, sortedArrays[0].length);
-
-        } else if (sortedArrays.length == 2) {
-            final T[] a = sortedArrays[0];
-            final T[] b = sortedArrays[1];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength) {
-                if (comparator.compare(a[aIndex], b[bIndex]) <= 0) {
-                    output[k++] = a[aIndex++];
-                } else {
-                    output[k++] = b[bIndex++];
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            }
-        } else if (sortedArrays.length == 3) {
-            final T[] a = sortedArrays[0];
-            final T[] b = sortedArrays[1];
-            final T[] c = sortedArrays[2];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-            int k = fromIndex;
-
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                if (comparator.compare(a[aIndex], b[bIndex]) <= 0) {
-                    if (comparator.compare(a[aIndex], c[cIndex]) <= 0) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-
-                } else {
-                    if (comparator.compare(b[bIndex], c[cIndex]) <= 0) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (comparator.compare(a[aIndex], b[bIndex]) <= 0) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (comparator.compare(a[aIndex], c[cIndex]) <= 0) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (comparator.compare(b[bIndex], c[cIndex]) <= 0) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            }
-
-        } else if (sortedArrays.length == 4) {
-            final T[] a = sortedArrays[0];
-            final T[] b = sortedArrays[1];
-            final T[] c = sortedArrays[2];
-            final T[] d = sortedArrays[3];
-
-            int aLength = a.length;
-            int bLength = b.length;
-            int cLength = c.length;
-            int dLength = d.length;
-            int aIndex = 0;
-            int bIndex = 0;
-            int cIndex = 0;
-            int dIndex = 0;
-            int k = fromIndex;
-            while (aIndex < aLength && bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                if (comparator.compare(a[aIndex], b[bIndex]) <= 0) {
-                    if (comparator.compare(a[aIndex], c[cIndex]) <= 0) {
-                        if (comparator.compare(a[aIndex], d[dIndex]) <= 0) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-
-                    } else {
-                        if (comparator.compare(c[cIndex], d[dIndex]) <= 0) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-
-                } else {
-                    if (comparator.compare(b[bIndex], c[cIndex]) <= 0) {
-                        if (comparator.compare(b[bIndex], d[dIndex]) <= 0) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (comparator.compare(c[cIndex], d[dIndex]) <= 0) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                while (aIndex < aLength && bIndex < bLength && cIndex < cLength) {
-                    if (comparator.compare(a[aIndex], b[bIndex]) <= 0) {
-                        if (comparator.compare(a[aIndex], c[cIndex]) <= 0) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    } else {
-                        if (comparator.compare(b[bIndex], c[cIndex]) <= 0) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = c[cIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                while (aIndex < aLength && bIndex < bLength && dIndex < dLength) {
-                    if (comparator.compare(a[aIndex], b[bIndex]) <= 0) {
-                        if (comparator.compare(a[aIndex], d[dIndex]) <= 0) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (comparator.compare(b[bIndex], d[dIndex]) <= 0) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                while (aIndex < aLength && cIndex < cLength && dIndex < dLength) {
-                    if (comparator.compare(a[aIndex], c[cIndex]) <= 0) {
-                        if (comparator.compare(a[aIndex], d[dIndex]) <= 0) {
-                            output[k++] = a[aIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (comparator.compare(c[cIndex], d[dIndex]) <= 0) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                while (bIndex < bLength && cIndex < cLength && dIndex < dLength) {
-                    if (comparator.compare(b[bIndex], c[cIndex]) <= 0) {
-                        if (comparator.compare(b[bIndex], d[dIndex]) <= 0) {
-                            output[k++] = b[bIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    } else {
-                        if (comparator.compare(c[cIndex], d[dIndex]) <= 0) {
-                            output[k++] = c[cIndex++];
-                        } else {
-                            output[k++] = d[dIndex++];
-                        }
-                    }
-                }
-            }
-
-            if (aIndex < aLength && bIndex < bLength) {
-                while (aIndex < aLength && bIndex < bLength) {
-                    if (comparator.compare(a[aIndex], b[bIndex]) <= 0) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = b[bIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && cIndex < cLength) {
-                while (aIndex < aLength && cIndex < cLength) {
-                    if (comparator.compare(a[aIndex], c[cIndex]) <= 0) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (aIndex < aLength && dIndex < dLength) {
-                while (aIndex < aLength && dIndex < dLength) {
-                    if (comparator.compare(a[aIndex], d[dIndex]) <= 0) {
-                        output[k++] = a[aIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && cIndex < cLength) {
-                while (bIndex < bLength && cIndex < cLength) {
-                    if (comparator.compare(b[bIndex], c[cIndex]) <= 0) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = c[cIndex++];
-                    }
-                }
-
-            } else if (bIndex < bLength && dIndex < dLength) {
-                while (bIndex < bLength && dIndex < dLength) {
-                    if (comparator.compare(b[bIndex], d[dIndex]) <= 0) {
-                        output[k++] = b[bIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-
-            } else if (cIndex < cLength && dIndex < dLength) {
-                while (cIndex < cLength && dIndex < dLength) {
-                    if (comparator.compare(c[cIndex], d[dIndex]) <= 0) {
-                        output[k++] = c[cIndex++];
-                    } else {
-                        output[k++] = d[dIndex++];
-                    }
-                }
-            }
-
-            if (aIndex < aLength) {
-                N.copy(a, aIndex, output, k, aLength - aIndex);
-            } else if (bIndex < bLength) {
-                N.copy(b, bIndex, output, k, bLength - bIndex);
-            } else if (cIndex < cLength) {
-                N.copy(c, cIndex, output, k, cLength - cIndex);
-            } else if (dIndex < dLength) {
-                N.copy(d, dIndex, output, k, dLength - dIndex);
-            }
-        } else {
-            final T[][] tmpSortedArrays = N.copyOfRange(sortedArrays, 0, 4);
-            final T[] sortedTmpArray = mergeSort(tmpSortedArrays, comparator);
-
-            final T[][] newSortedArrays = N.newArray(sortedArrays.getClass().getComponentType(), sortedArrays.length - 4 + 1);
-
-            newSortedArrays[0] = sortedTmpArray;
-
-            N.copy(sortedArrays, 4, newSortedArrays, 1, newSortedArrays.length - 1);
-
-            mergeSort(output, fromIndex, newSortedArrays, comparator);
-        }
-    }
-
-    static int[] parallelMergeSort(final int[][] sortedArrays) {
-        int totalLength = 0;
-
-        for (int[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final int[] a = new int[totalLength];
-
-        parallelMergeSort(a, 0, sortedArrays);
-
-        return a;
-    }
-
-    static void parallelMergeSort(final int[] output, final int fromIndex, int[][] sortedArrays) {
-        if (sortedArrays.length <= 3) {
-            mergeSort(output, fromIndex, sortedArrays);
-            return;
-        }
-
-        final int len = sortedArrays.length;
-        final Queue<int[]> queue = new ConcurrentLinkedQueue<>();
-
-        for (int[] e : sortedArrays) {
-            queue.add(e);
-        }
-
-        sortedArrays = null; // GC
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final AtomicInteger sortCount = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-
-        for (int i = 0; i < N.min(CPU_CORES, len / 2); i++) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-                            if (errorHolder.getValue() != null || sortCount.get() >= len - 1) {
-                                return;
-                            }
-
-                            if (queue.size() < 2) {
-                                N.sleep(10);
-                            }
-
-                            int[][] ab = null;
-
-                            synchronized (queue) {
-                                if (queue.size() >= 2) {
-                                    ab = N.asArray(queue.poll(), queue.poll());
-                                }
-                            }
-
-                            if (ab != null) {
-                                final int[] c = mergeSort(ab);
-                                queue.offer(c);
-                                sortCount.incrementAndGet();
-                            }
-                        }
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        final int[] last = queue.poll();
-
-        N.copy(last, 0, output, fromIndex, last.length);
-    }
-
-    static long[] parallelMergeSort(final long[][] sortedArrays) {
-        int totalLength = 0;
-
-        for (long[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final long[] a = new long[totalLength];
-
-        parallelMergeSort(a, 0, sortedArrays);
-
-        return a;
-    }
-
-    static void parallelMergeSort(final long[] output, final int fromIndex, long[][] sortedArrays) {
-        if (sortedArrays.length <= 3) {
-            mergeSort(output, fromIndex, sortedArrays);
-            return;
-        }
-
-        final int len = sortedArrays.length;
-        final Queue<long[]> queue = new ConcurrentLinkedQueue<>();
-
-        for (long[] e : sortedArrays) {
-            queue.add(e);
-        }
-
-        sortedArrays = null; // GC
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final AtomicInteger sortCount = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-
-        for (int i = 0; i < N.min(CPU_CORES, len / 2); i++) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-                            if (errorHolder.getValue() != null || sortCount.get() >= len - 1) {
-                                return;
-                            }
-
-                            if (queue.size() < 2) {
-                                N.sleep(10);
-                            }
-
-                            long[][] ab = null;
-
-                            synchronized (queue) {
-                                if (queue.size() >= 2) {
-                                    ab = N.asArray(queue.poll(), queue.poll());
-                                }
-                            }
-
-                            if (ab != null) {
-                                final long[] c = mergeSort(ab);
-                                queue.offer(c);
-                                sortCount.incrementAndGet();
-                            }
-                        }
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        final long[] last = queue.poll();
-
-        N.copy(last, 0, output, fromIndex, last.length);
-    }
-
-    static float[] parallelMergeSort(final float[][] sortedArrays) {
-        int totalLength = 0;
-
-        for (float[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final float[] a = new float[totalLength];
-
-        parallelMergeSort(a, 0, sortedArrays);
-
-        return a;
-    }
-
-    static void parallelMergeSort(final float[] output, final int fromIndex, float[][] sortedArrays) {
-        if (sortedArrays.length <= 3) {
-            mergeSort(output, fromIndex, sortedArrays);
-            return;
-        }
-
-        final int len = sortedArrays.length;
-        final Queue<float[]> queue = new ConcurrentLinkedQueue<>();
-
-        for (float[] e : sortedArrays) {
-            queue.add(e);
-        }
-
-        sortedArrays = null; // GC
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final AtomicInteger sortCount = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-
-        for (int i = 0; i < N.min(CPU_CORES, len / 2); i++) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-                            if (errorHolder.getValue() != null || sortCount.get() >= len - 1) {
-                                return;
-                            }
-
-                            if (queue.size() < 2) {
-                                N.sleep(10);
-                            }
-
-                            float[][] ab = null;
-
-                            synchronized (queue) {
-                                if (queue.size() >= 2) {
-                                    ab = N.asArray(queue.poll(), queue.poll());
-                                }
-                            }
-
-                            if (ab != null) {
-                                final float[] c = mergeSort(ab);
-                                queue.offer(c);
-                                sortCount.incrementAndGet();
-                            }
-                        }
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        final float[] last = queue.poll();
-
-        N.copy(last, 0, output, fromIndex, last.length);
-    }
-
-    static double[] parallelMergeSort(final double[][] sortedArrays) {
-        int totalLength = 0;
-
-        for (double[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final double[] a = new double[totalLength];
-
-        parallelMergeSort(a, 0, sortedArrays);
-
-        return a;
-    }
-
-    static void parallelMergeSort(final double[] output, final int fromIndex, double[][] sortedArrays) {
-        if (sortedArrays.length <= 3) {
-            mergeSort(output, fromIndex, sortedArrays);
-            return;
-        }
-
-        final int len = sortedArrays.length;
-        final Queue<double[]> queue = new ConcurrentLinkedQueue<>();
-
-        for (double[] e : sortedArrays) {
-            queue.add(e);
-        }
-
-        sortedArrays = null; // GC
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final AtomicInteger sortCount = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-
-        for (int i = 0; i < N.min(CPU_CORES, len / 2); i++) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-                            if (errorHolder.getValue() != null || sortCount.get() >= len - 1) {
-                                return;
-                            }
-
-                            if (queue.size() < 2) {
-                                N.sleep(10);
-                            }
-
-                            double[][] ab = null;
-
-                            synchronized (queue) {
-                                if (queue.size() >= 2) {
-                                    ab = N.asArray(queue.poll(), queue.poll());
-                                }
-                            }
-
-                            if (ab != null) {
-                                final double[] c = mergeSort(ab);
-                                queue.offer(c);
-                                sortCount.incrementAndGet();
-                            }
-                        }
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        final double[] last = queue.poll();
-
-        N.copy(last, 0, output, fromIndex, last.length);
-    }
-
-    static <T extends Comparable<? super T>> T[] parallelMergeSort(final T[][] sortedArrays) {
-        return parallelMergeSort(sortedArrays, null);
-    }
-
-    static <T> T[] parallelMergeSort(final T[][] sortedArrays, final Comparator<? super T> cmp) {
-        int totalLength = 0;
-
-        for (T[] a : sortedArrays) {
-            totalLength += a.length;
-        }
-
-        final T[] a = N.newArray(sortedArrays.getClass().getComponentType().getComponentType(), totalLength);
-
-        parallelMergeSort(a, 0, sortedArrays, cmp);
-
-        return a;
-    }
-
-    static <T> void parallelMergeSort(final T[] output, final int fromIndex, T[][] sortedArrays, final Comparator<? super T> cmp) {
-        if (sortedArrays.length <= 3) {
-            mergeSort(output, fromIndex, sortedArrays, cmp);
-            return;
-        }
-
-        final int len = sortedArrays.length;
-        final Queue<T[]> queue = new ConcurrentLinkedQueue<>();
-
-        for (T[] e : sortedArrays) {
-            queue.add(e);
-        }
-
-        sortedArrays = null; // GC
-
-        final AtomicInteger activeThreadNum = new AtomicInteger();
-        final AtomicInteger sortCount = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-
-        for (int i = 0; i < N.min(CPU_CORES, len / 2); i++) {
-            activeThreadNum.incrementAndGet();
-
-            parallelSortExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-                            if (errorHolder.getValue() != null || sortCount.get() >= len - 1) {
-                                return;
-                            }
-
-                            if (queue.size() < 2) {
-                                N.sleep(10);
-                            }
-
-                            T[][] ab = null;
-
-                            synchronized (queue) {
-                                if (queue.size() >= 2) {
-                                    ab = N.asArray(queue.poll(), queue.poll());
-                                }
-                            }
-
-                            if (ab != null) {
-                                final T[] c = mergeSort(ab, cmp);
-                                queue.offer(c);
-                                sortCount.incrementAndGet();
-                            }
-                        }
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    } finally {
-                        activeThreadNum.decrementAndGet();
-                    }
-                }
-            });
-        }
-
-        while (activeThreadNum.get() > 0) {
-            N.sleep(10);
-        }
-
-        if (errorHolder.getValue() != null) {
-            throw new AbacusException("Failed to sort", errorHolder.getValue());
-        }
-
-        final T[] last = queue.poll();
-
-        N.copy(last, 0, output, fromIndex, last.length);
     }
 
     static void bucketSort(final int[] a) {
@@ -4879,6 +3140,7 @@ public final class Array {
             return;
         }
 
+        final Comparator<? super T> comparator = cmp == null ? N.comparableCmp : cmp;
         final Multiset<T> multiset = new Multiset<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -4888,7 +3150,7 @@ public final class Array {
         final Map<T, Integer> m = multiset.toMapSortedBy(new Comparator<Map.Entry<T, MutableInt>>() {
             @Override
             public int compare(Entry<T, MutableInt> a, Entry<T, MutableInt> b) {
-                return cmp.compare(a.getKey(), a.getKey());
+                return comparator.compare(a.getKey(), a.getKey());
             }
         });
         int idx = fromIndex;
@@ -4957,6 +3219,7 @@ public final class Array {
             return;
         }
 
+        final Comparator<? super T> comparator = cmp == null ? N.comparableCmp : cmp;
         final Multiset<T> multiset = new Multiset<>();
         ListIterator<T> itr = (ListIterator<T>) c.listIterator(fromIndex);
         int i = fromIndex;
@@ -4972,7 +3235,7 @@ public final class Array {
         final Map<T, Integer> m = multiset.toMapSortedBy(new Comparator<Map.Entry<T, MutableInt>>() {
             @Override
             public int compare(Entry<T, MutableInt> a, Entry<T, MutableInt> b) {
-                return cmp.compare(a.getKey(), a.getKey());
+                return comparator.compare(a.getKey(), a.getKey());
             }
         });
 
@@ -6024,6 +4287,16 @@ public final class Array {
         }
 
         return queue.peek();
+    }
+
+    static void setError(final Holder<Throwable> errorHolder, Throwable e) {
+        synchronized (errorHolder) {
+            if (errorHolder.value() == null) {
+                errorHolder.setValue(e);
+            } else {
+                errorHolder.value().addSuppressed(e);
+            }
+        }
     }
 
     //    static double medianOfTwoSortedArrays(final int[] a, final int[] b) {

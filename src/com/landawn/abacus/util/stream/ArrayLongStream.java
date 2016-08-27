@@ -185,6 +185,10 @@ final class ArrayLongStream extends LongStream {
 
             @Override
             public U next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.apply(elements[cursor++]);
             }
 
@@ -628,6 +632,10 @@ final class ArrayLongStream extends LongStream {
 
             @Override
             public Long next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return elements[cursor++];
             }
         };
@@ -645,6 +653,10 @@ final class ArrayLongStream extends LongStream {
 
             @Override
             public long next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return elements[cursor++];
             }
 

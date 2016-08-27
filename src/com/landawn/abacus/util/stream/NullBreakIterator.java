@@ -4,6 +4,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Ignore any null element and move to next element until next element is not null or end of the iterator.  
+ *
+ * @param <T>
+ */
 public final class NullBreakIterator<T> implements Iterator<T> {
     private static final Object NONE = new Object();
     private final Iterator<? extends T> iter;
@@ -22,18 +27,23 @@ public final class NullBreakIterator<T> implements Iterator<T> {
     }
 
     public static <T> NullBreakIterator<T> of(final T[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static <T> NullBreakIterator<T> of(final T[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a.length);
+
         return new NullBreakIterator<T>(new Iterator<T>() {
-            private final int len = a.length;
-            private int cursor = 0;
+            private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
-                return cursor < len;
+                return cursor < toIndex;
             }
 
             @Override
             public T next() {
-                if (cursor >= len) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 

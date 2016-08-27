@@ -3729,11 +3729,12 @@ public final class IOUtil {
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
         logger.info("### Start to parse");
 
-        final Iterator<? extends T> iteratorII = ((readThreadNum > 1 || processThreadNumber > 0)
-                ? Stream.concatInParallel(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize)) : Stream.concat(iterators))
-                        .skip(offset).limit(count).iterator();
+        try (final Stream<T> stream = ((readThreadNum > 1 || processThreadNumber > 0)
+                ? Stream.parallelConcat(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
+                : Stream.concat(iterators))) {
 
-        try {
+            final Iterator<? extends T> iteratorII = stream.skip(offset).limit(count).iterator();
+
             if (processThreadNumber == 0) {
                 while (iteratorII.hasNext()) {
                     elementParser.accept(iteratorII.next());

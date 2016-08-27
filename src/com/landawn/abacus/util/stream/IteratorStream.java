@@ -629,6 +629,21 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public CharStream flatMapToChar3(final Function<? super T, ? extends Collection<Character>> mapper) {
+        return flatMapToChar(new Function<T, CharStream>() {
+            @Override
+            public CharStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToChar(new ToCharFunction<Character>() {
+                    @Override
+                    public char applyAsChar(Character value) {
+                        return value == null ? 0 : value.charValue();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
         return new IteratorByteStream(new ImmutableByteIterator() {
             private ImmutableByteIterator cur = null;
@@ -659,6 +674,21 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             @Override
             public ByteStream apply(T t) {
                 return Stream.from(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public ByteStream flatMapToByte3(final Function<? super T, ? extends Collection<Byte>> mapper) {
+        return flatMapToByte(new Function<T, ByteStream>() {
+            @Override
+            public ByteStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToByte(new ToByteFunction<Byte>() {
+                    @Override
+                    public byte applyAsByte(Byte value) {
+                        return value == null ? 0 : value.byteValue();
+                    }
+                });
             }
         });
     }
@@ -699,6 +729,21 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public ShortStream flatMapToShort3(final Function<? super T, ? extends Collection<Short>> mapper) {
+        return flatMapToShort(new Function<T, ShortStream>() {
+            @Override
+            public ShortStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToShort(new ToShortFunction<Short>() {
+                    @Override
+                    public short applyAsShort(Short value) {
+                        return value == null ? 0 : value.shortValue();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private ImmutableIntIterator cur = null;
@@ -729,6 +774,21 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             @Override
             public IntStream apply(T t) {
                 return Stream.from(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public IntStream flatMapToInt3(final Function<? super T, ? extends Collection<Integer>> mapper) {
+        return flatMapToInt(new Function<T, IntStream>() {
+            @Override
+            public IntStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToInt(new ToIntFunction<Integer>() {
+                    @Override
+                    public int applyAsInt(Integer value) {
+                        return value == null ? 0 : value.intValue();
+                    }
+                });
             }
         });
     }
@@ -769,6 +829,21 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public LongStream flatMapToLong3(final Function<? super T, ? extends Collection<Long>> mapper) {
+        return flatMapToLong(new Function<T, LongStream>() {
+            @Override
+            public LongStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToLong(new ToLongFunction<Long>() {
+                    @Override
+                    public long applyAsLong(Long value) {
+                        return value == null ? 0 : value.longValue();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private ImmutableFloatIterator cur = null;
@@ -804,6 +879,21 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public FloatStream flatMapToFloat3(final Function<? super T, ? extends Collection<Float>> mapper) {
+        return flatMapToFloat(new Function<T, FloatStream>() {
+            @Override
+            public FloatStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToFloat(new ToFloatFunction<Float>() {
+                    @Override
+                    public float applyAsFloat(Float value) {
+                        return value == null ? 0 : value.floatValue();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private ImmutableDoubleIterator cur = null;
@@ -834,6 +924,21 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             @Override
             public DoubleStream apply(T t) {
                 return Stream.from(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream flatMapToDouble3(final Function<? super T, ? extends Collection<Double>> mapper) {
+        return flatMapToDouble(new Function<T, DoubleStream>() {
+            @Override
+            public DoubleStream apply(T t) {
+                return Stream.of(mapper.apply(t)).mapToDouble(new ToDoubleFunction<Double>() {
+                    @Override
+                    public double applyAsDouble(Double value) {
+                        return value == null ? 0 : value.doubleValue();
+                    }
+                });
             }
         });
     }

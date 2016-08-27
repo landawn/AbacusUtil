@@ -184,6 +184,10 @@ final class ArrayFloatStream extends FloatStream {
 
             @Override
             public U next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
                 return mapper.apply(elements[cursor++]);
             }
 
