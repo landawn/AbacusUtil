@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -708,12 +707,7 @@ final class IteratorCharStream extends CharStream {
             return OptionalChar.empty();
         }
 
-        final Optional<Character> optional = boxed().kthLargest(k, new Comparator<Character>() {
-            @Override
-            public int compare(Character o1, Character o2) {
-                return N.compare(o1.charValue(), o2.charValue());
-            }
-        });
+        final Optional<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
 
         return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
     }

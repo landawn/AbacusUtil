@@ -19,7 +19,6 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -619,17 +618,15 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return map(List.class, fromIndex, toIndex, func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final ByteFunction<? extends R> func) {
+    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final ByteFunction<? extends R> func) {
         return map(collClass, 0, size(), func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
             final ByteFunction<? extends R> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.add(func.apply(elementData[i]));
@@ -646,17 +643,15 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return flatMap(List.class, fromIndex, toIndex, func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final ByteFunction<? extends Collection<? extends R>> func) {
-        return flatMap(List.class, 0, size(), func);
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final ByteFunction<? extends Collection<? extends R>> func) {
+        return flatMap(collClass, 0, size(), func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
             final ByteFunction<? extends Collection<? extends R>> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.addAll(func.apply(elementData[i]));
@@ -673,47 +668,17 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return flatMap2(List.class, fromIndex, toIndex, func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final ByteFunction<R[]> func) {
-        return flatMap2(List.class, 0, size(), func);
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final ByteFunction<R[]> func) {
+        return flatMap2(collClass, 0, size(), func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<R[]> func) {
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final ByteFunction<R[]> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.addAll(Arrays.asList(func.apply(elementData[i])));
-        }
-
-        return res;
-    }
-
-    public <R> List<R> flatMap3(final ByteFunction<? extends Collection<? extends R>> func) {
-        return flatMap3(0, size(), func);
-    }
-
-    public <R> List<R> flatMap3(final int fromIndex, final int toIndex, final ByteFunction<? extends Collection<? extends R>> func) {
-        return flatMap3(List.class, fromIndex, toIndex, func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final ByteFunction<? extends Collection<? extends R>> func) {
-        return flatMap3(List.class, 0, size(), func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = (V) N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(func.apply(elementData[i]));
         }
 
         return res;
@@ -729,24 +694,22 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
 
     @SuppressWarnings("rawtypes")
     public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final ByteFunction<? extends K> func) {
-        return groupBy(HashMap.class, List.class, 0, size(), func);
+        return groupBy(HashMap.class, collClass, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
     public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
             final ByteFunction<? extends K> func) {
-        return groupBy(HashMap.class, List.class, fromIndex, toIndex, func);
+        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
             final ByteFunction<? extends K> func) {
 
-        return groupBy(outputClass, List.class, 0, size(), func);
+        return groupBy(outputClass, collClass, 0, size(), func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
             final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
@@ -760,7 +723,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
             values = outputResult.get(key);
 
             if (values == null) {
-                values = (V) N.newInstance(collClass);
+                values = N.newInstance(collClass);
                 outputResult.put(key, values);
             }
 
@@ -819,26 +782,6 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         }
 
         return result;
-    }
-
-    @Override
-    public ByteList top(int top) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ByteList top(int fromIndex, int toIndex, int top) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ByteList top(int top, Comparator<Byte> cmp) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ByteList top(int fromIndex, int toIndex, int top, Comparator<Byte> cmp) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -944,8 +887,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return toMap(HashMap.class, keyMapper, valueMapper);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final ByteFunction<? extends K> keyMapper,
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final ByteFunction<? extends K> keyMapper,
             final ByteFunction<? extends U> valueMapper) {
         return toMap(outputClass, 0, size(), keyMapper, valueMapper);
     }
@@ -955,8 +897,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final int fromIndex, final int toIndex,
             final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex);
 

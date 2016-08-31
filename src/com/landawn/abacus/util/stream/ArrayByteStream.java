@@ -192,45 +192,91 @@ final class ArrayByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream flatMap(ByteFunction<? extends ByteStream> mapper) {
-        final List<byte[]> listOfArray = new ArrayList<byte[]>();
+    public ByteStream flatMap(final ByteFunction<? extends ByteStream> mapper) {
+        //        final List<byte[]> listOfArray = new ArrayList<byte[]>();
+        //
+        //        int lengthOfAll = 0;
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final byte[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final byte[] arrayOfAll = new byte[lengthOfAll];
+        //        int from = 0;
+        //        for (byte[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayByteStream(arrayOfAll, closeHandlers);
 
-        int lengthOfAll = 0;
-        for (int i = fromIndex; i < toIndex; i++) {
-            final byte[] tmp = mapper.apply(elements[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private int cursor = fromIndex;
+            private ImmutableByteIterator cur = null;
 
-        final byte[] arrayOfAll = new byte[lengthOfAll];
-        int from = 0;
-        for (byte[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).byteIterator();
+                }
 
-        return new ArrayByteStream(arrayOfAll, closeHandlers);
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public byte next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        }, closeHandlers);
     }
 
     @Override
-    public IntStream flatMapToInt(ByteFunction<? extends IntStream> mapper) {
-        final List<int[]> listOfArray = new ArrayList<int[]>();
+    public IntStream flatMapToInt(final ByteFunction<? extends IntStream> mapper) {
+        //        final List<int[]> listOfArray = new ArrayList<int[]>();
+        //
+        //        int lengthOfAll = 0;
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final int[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final int[] arrayOfAll = new int[lengthOfAll];
+        //        int from = 0;
+        //        for (int[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayIntStream(arrayOfAll, closeHandlers);
 
-        int lengthOfAll = 0;
-        for (int i = fromIndex; i < toIndex; i++) {
-            final int[] tmp = mapper.apply(elements[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int cursor = fromIndex;
+            private ImmutableIntIterator cur = null;
 
-        final int[] arrayOfAll = new int[lengthOfAll];
-        int from = 0;
-        for (int[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).intIterator();
+                }
 
-        return new ArrayIntStream(arrayOfAll, closeHandlers);
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -425,7 +471,7 @@ final class ArrayByteStream extends ByteStream {
 
     @Override
     public OptionalByte kthLargest(int k) {
-        if (count() == 0) {
+        if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalByte.empty();
         }
 

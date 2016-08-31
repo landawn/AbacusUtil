@@ -191,45 +191,91 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public CharStream flatMap(CharFunction<? extends CharStream> mapper) {
-        final List<char[]> listOfArray = new ArrayList<char[]>();
+    public CharStream flatMap(final CharFunction<? extends CharStream> mapper) {
+        //        final List<char[]> listOfArray = new ArrayList<char[]>();
+        //
+        //        int lengthOfAll = 0;
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final char[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final char[] arrayOfAll = new char[lengthOfAll];
+        //        int from = 0;
+        //        for (char[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayCharStream(arrayOfAll, closeHandlers);
 
-        int lengthOfAll = 0;
-        for (int i = fromIndex; i < toIndex; i++) {
-            final char[] tmp = mapper.apply(elements[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private int cursor = fromIndex;
+            private ImmutableCharIterator cur = null;
 
-        final char[] arrayOfAll = new char[lengthOfAll];
-        int from = 0;
-        for (char[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).charIterator();
+                }
 
-        return new ArrayCharStream(arrayOfAll, closeHandlers);
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public char next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        }, closeHandlers);
     }
 
     @Override
-    public IntStream flatMapToInt(CharFunction<? extends IntStream> mapper) {
-        final List<int[]> listOfArray = new ArrayList<int[]>();
+    public IntStream flatMapToInt(final CharFunction<? extends IntStream> mapper) {
+        //        final List<int[]> listOfArray = new ArrayList<int[]>();
+        //
+        //        int lengthOfAll = 0;
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final int[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final int[] arrayOfAll = new int[lengthOfAll];
+        //        int from = 0;
+        //        for (int[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayIntStream(arrayOfAll, closeHandlers);
 
-        int lengthOfAll = 0;
-        for (int i = fromIndex; i < toIndex; i++) {
-            final int[] tmp = mapper.apply(elements[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int cursor = fromIndex;
+            private ImmutableIntIterator cur = null;
 
-        final int[] arrayOfAll = new int[lengthOfAll];
-        int from = 0;
-        for (int[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).intIterator();
+                }
 
-        return new ArrayIntStream(arrayOfAll, closeHandlers);
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -419,7 +465,7 @@ final class ArrayCharStream extends CharStream {
 
     @Override
     public OptionalChar kthLargest(int k) {
-        if (count() == 0) {
+        if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalChar.empty();
         }
 

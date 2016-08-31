@@ -650,17 +650,15 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return map(List.class, fromIndex, toIndex, func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final FloatFunction<? extends R> func) {
+    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final FloatFunction<? extends R> func) {
         return map(collClass, 0, size(), func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
             final FloatFunction<? extends R> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.add(func.apply(elementData[i]));
@@ -677,17 +675,15 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return flatMap(List.class, fromIndex, toIndex, func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final FloatFunction<? extends Collection<? extends R>> func) {
-        return flatMap(List.class, 0, size(), func);
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final FloatFunction<? extends Collection<? extends R>> func) {
+        return flatMap(collClass, 0, size(), func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
             final FloatFunction<? extends Collection<? extends R>> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.addAll(func.apply(elementData[i]));
@@ -704,47 +700,17 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return flatMap2(List.class, fromIndex, toIndex, func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final FloatFunction<R[]> func) {
-        return flatMap2(List.class, 0, size(), func);
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final FloatFunction<R[]> func) {
+        return flatMap2(collClass, 0, size(), func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final FloatFunction<R[]> func) {
+    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final FloatFunction<R[]> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.addAll(Arrays.asList(func.apply(elementData[i])));
-        }
-
-        return res;
-    }
-
-    public <R> List<R> flatMap3(final FloatFunction<? extends Collection<? extends R>> func) {
-        return flatMap3(0, size(), func);
-    }
-
-    public <R> List<R> flatMap3(final int fromIndex, final int toIndex, final FloatFunction<? extends Collection<? extends R>> func) {
-        return flatMap3(List.class, fromIndex, toIndex, func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final FloatFunction<? extends Collection<? extends R>> func) {
-        return flatMap3(List.class, 0, size(), func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final FloatFunction<? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = (V) N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(func.apply(elementData[i]));
         }
 
         return res;
@@ -760,24 +726,22 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
 
     @SuppressWarnings("rawtypes")
     public <K, V extends Collection<Float>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final FloatFunction<? extends K> func) {
-        return groupBy(HashMap.class, List.class, 0, size(), func);
+        return groupBy(HashMap.class, collClass, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
     public <K, V extends Collection<Float>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
             final FloatFunction<? extends K> func) {
-        return groupBy(HashMap.class, List.class, fromIndex, toIndex, func);
+        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Float>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Float>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
             final FloatFunction<? extends K> func) {
 
-        return groupBy(outputClass, List.class, 0, size(), func);
+        return groupBy(outputClass, collClass, 0, size(), func);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Float>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends Collection> collClass,
+    public <K, V extends Collection<Float>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
             final int fromIndex, final int toIndex, final FloatFunction<? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
@@ -791,7 +755,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
             values = outputResult.get(key);
 
             if (values == null) {
-                values = (V) N.newInstance(collClass);
+                values = N.newInstance(collClass);
                 outputResult.put(key, values);
             }
 
@@ -852,34 +816,36 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return result;
     }
 
-    @Override
-    public FloatList top(final int top) {
-        return top(0, size(), top);
+    public FloatList top(final int n) {
+        return top(0, size(), n);
     }
 
-    @Override
-    public FloatList top(final int fromIndex, final int toIndex, final int top) {
+    public FloatList top(final int fromIndex, final int toIndex, final int n) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.top(elementData, fromIndex, toIndex, top));
+        return of(N.top(elementData, fromIndex, toIndex, n));
     }
 
-    @Override
-    public FloatList top(final int top, Comparator<Float> cmp) {
-        return top(0, size(), top, cmp);
+    public FloatList top(final int n, Comparator<? super Float> cmp) {
+        return top(0, size(), n, cmp);
     }
 
-    @Override
-    public FloatList top(final int fromIndex, final int toIndex, final int top, Comparator<Float> cmp) {
+    public FloatList top(final int fromIndex, final int toIndex, final int n, Comparator<? super Float> cmp) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.top(elementData, fromIndex, toIndex, top, cmp));
+        return of(N.top(elementData, fromIndex, toIndex, n, cmp));
     }
 
     @Override
     public void sort() {
         if (size > 1) {
             N.sort(elementData, 0, size);
+        }
+    }
+
+    public void parallelSort() {
+        if (size > 1) {
+            N.parallelSort(elementData, 0, size);
         }
     }
 
@@ -979,8 +945,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return toMap(HashMap.class, keyMapper, valueMapper);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final FloatFunction<? extends K> keyMapper,
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final FloatFunction<? extends K> keyMapper,
             final FloatFunction<? extends U> valueMapper) {
         return toMap(outputClass, 0, size(), keyMapper, valueMapper);
     }
@@ -990,8 +955,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final int fromIndex, final int toIndex,
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final int fromIndex, final int toIndex,
             final FloatFunction<? extends K> keyMapper, final FloatFunction<? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex);
 

@@ -258,6 +258,10 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      */
     public abstract DoubleStream distinct();
 
+    public abstract DoubleStream top(int n);
+
+    public abstract DoubleStream top(final int n, Comparator<? super Double> comparator);
+
     /**
      * Returns a stream consisting of the elements of this stream in sorted
      * order. The elements are compared for equality according to
@@ -269,6 +273,8 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @return the result stream
      */
     public abstract DoubleStream sorted();
+
+    public abstract DoubleStream parallelSorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -603,7 +609,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     /**
      * 
      * @param k
-     * @return OptionalByte.empty() if there is no element or min(k, length of this stream) largest element.
+     * @return OptionalByte.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
     public abstract OptionalDouble kthLargest(int k);
 

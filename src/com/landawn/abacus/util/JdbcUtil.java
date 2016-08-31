@@ -848,28 +848,7 @@ public final class JdbcUtil {
         return extractData(rs, offset, count, closeResultSet, null);
     }
 
-    public static DataSet extractData(final ResultSet rs, final int offset, final int count, final boolean closeResultSet, final Predicate<ResultSet> filter) {
-        return extractData(null, rs, offset, count, closeResultSet, filter);
-    }
-
-    static DataSet extractData(final Class<?> entityClass, final ResultSet rs) {
-        return extractData(entityClass, rs, false);
-    }
-
-    static DataSet extractData(final Class<?> entityClass, final ResultSet rs, final boolean closeResultSet) {
-        return extractData(entityClass, rs, 0, Integer.MAX_VALUE, closeResultSet);
-    }
-
-    static DataSet extractData(final Class<?> entityClass, final ResultSet rs, final int offset, final int count) {
-        return extractData(entityClass, rs, offset, count, false);
-    }
-
-    static DataSet extractData(final Class<?> entityClass, final ResultSet rs, int offset, int count, final boolean closeResultSet) {
-        return extractData(entityClass, rs, offset, count, closeResultSet, null);
-    }
-
-    static DataSet extractData(final Class<?> entityClass, final ResultSet rs, int offset, int count, final boolean closeResultSet,
-            final Predicate<ResultSet> filter) {
+    public static DataSet extractData(final ResultSet rs, int offset, int count, final boolean closeResultSet, final Predicate<ResultSet> filter) {
         try {
             // TODO [performance improvement]. it will improve performance a lot if MetaData is cached.
             final ResultSetMetaData metaData = rs.getMetaData();
@@ -1903,21 +1882,18 @@ public final class JdbcUtil {
         parseII(iter, offset, count, processThreadNumber, queueSize, rowParser);
     }
 
-    public static <T> void parse(final Collection<? extends RowIterator> iterators, final int readThreadNumber, final int processThreadNumber,
-            final int queueSize, final Consumer<Object[]> elementParser) {
+    public static void parse(final Collection<? extends RowIterator> iterators, final int readThreadNumber, final int processThreadNumber, final int queueSize,
+            final Consumer<Object[]> elementParser) {
         parse(iterators, 0, Long.MAX_VALUE, readThreadNumber, processThreadNumber, queueSize, elementParser);
     }
 
-    public static <T> void parse(final Collection<? extends RowIterator> iterators, final long offset, final long count, final int readThreadNumber,
+    public static void parse(final Collection<? extends RowIterator> iterators, final long offset, final long count, final int readThreadNumber,
             final int processThreadNumber, final int queueSize, final Consumer<Object[]> elementParser) {
         if (N.isNullOrEmpty(iterators)) {
             return;
         }
 
-        @SuppressWarnings("rawtypes")
-        final List<Iterator<Object[]>> iters = (List) iterators;
-
-        IOUtil.parse(iters, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
+        IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
     }
 
     private static void parseII(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
@@ -1936,7 +1912,7 @@ public final class JdbcUtil {
                 final Iterator<Object[]> iteratorII = stream.limit(count).iterator();
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
                 final AtomicInteger activeThreadNum = new AtomicInteger();
-                final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
+                final Holder<Throwable> errorHolder = new Holder<Throwable>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();
@@ -1947,7 +1923,7 @@ public final class JdbcUtil {
                             Object[] row = null;
 
                             try {
-                                while (exceptionHandle.getValue() == null) {
+                                while (errorHolder.getValue() == null) {
                                     synchronized (iteratorII) {
                                         if (iteratorII.hasNext()) {
                                             row = iteratorII.next();
@@ -1959,11 +1935,11 @@ public final class JdbcUtil {
                                     rowParser.accept(row);
                                 }
                             } catch (Throwable e) {
-                                synchronized (exceptionHandle) {
-                                    if (exceptionHandle.value() == null) {
-                                        exceptionHandle.setValue(e);
+                                synchronized (errorHolder) {
+                                    if (errorHolder.value() == null) {
+                                        errorHolder.setValue(e);
                                     } else {
-                                        exceptionHandle.value().addSuppressed(e);
+                                        errorHolder.value().addSuppressed(e);
                                     }
                                 }
                             } finally {
@@ -1977,16 +1953,16 @@ public final class JdbcUtil {
                     N.sleep(10);
                 }
 
-                if (exceptionHandle.value() == null) {
+                if (errorHolder.value() == null) {
                     try {
                         rowParser.accept(null);
                     } catch (Throwable e) {
-                        exceptionHandle.setValue(e);
+                        errorHolder.setValue(e);
                     }
                 }
 
-                if (exceptionHandle.value() != null) {
-                    throw N.toRuntimeException(exceptionHandle.value());
+                if (errorHolder.value() != null) {
+                    throw N.toRuntimeException(errorHolder.value());
                 }
             }
         }

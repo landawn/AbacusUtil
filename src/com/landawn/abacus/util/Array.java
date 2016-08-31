@@ -2183,20 +2183,28 @@ public final class Array {
         Arrays.parallelSort(a, fromIndex, toIndex);
     }
 
-    static <T extends Comparable<? super T>> void parallelSort(T[] a) {
+    static void parallelSort(final Object[] a) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        Arrays.parallelSort(a);
+        if (a instanceof Comparable[]) {
+            Arrays.parallelSort((Comparable[]) a);
+        } else {
+            Arrays.parallelSort(a, N.OBJECT_COMPARATOR);
+        }
     }
 
-    static <T extends Comparable<? super T>> void parallelSort(T[] a, int fromIndex, int toIndex) {
+    static void parallelSort(final Object[] a, int fromIndex, int toIndex) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        Arrays.parallelSort(a, fromIndex, toIndex);
+        if (a instanceof Comparable[]) {
+            Arrays.parallelSort((Comparable[]) a, fromIndex, toIndex);
+        } else {
+            Arrays.parallelSort(a, fromIndex, toIndex, N.OBJECT_COMPARATOR);
+        }
     }
 
     static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
@@ -2737,7 +2745,7 @@ public final class Array {
     //        }
     //    }
     //
-    //    static <T extends Comparable<? super T>> void parallelSort(final T[] a) {
+    //    static void parallelSort(final Object[] a) {
     //        if (N.isNullOrEmpty(a)) {
     //            return;
     //        }
@@ -2745,7 +2753,7 @@ public final class Array {
     //        parallelSort(a, 0, a.length);
     //    }
     //
-    //    static <T extends Comparable<? super T>> void parallelSort(final T[] a, final int fromIndex, final int toIndex) {
+    //    static void parallelSort(final Object[] a, final int fromIndex, final int toIndex) {
     //        parallelSort(a, fromIndex, toIndex, null);
     //    }
     //
@@ -3140,7 +3148,7 @@ public final class Array {
             return;
         }
 
-        final Comparator<? super T> comparator = cmp == null ? N.comparableCmp : cmp;
+        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
         final Multiset<T> multiset = new Multiset<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -3219,7 +3227,7 @@ public final class Array {
             return;
         }
 
-        final Comparator<? super T> comparator = cmp == null ? N.comparableCmp : cmp;
+        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
         final Multiset<T> multiset = new Multiset<>();
         ListIterator<T> itr = (ListIterator<T>) c.listIterator(fromIndex);
         int i = fromIndex;
@@ -3550,7 +3558,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return Arrays.binarySearch(a, key, cmp == null ? N.comparableCmp : cmp);
+        return Arrays.binarySearch(a, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
     }
 
     /**
@@ -3568,7 +3576,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return Arrays.binarySearch(a, key, cmp == null ? N.comparableCmp : cmp);
+        return Arrays.binarySearch(a, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
     }
 
     /**
@@ -3591,7 +3599,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return binarySearch(list, fromIndex, toIndex, key, N.comparableCmp);
+        return binarySearch(list, fromIndex, toIndex, key, N.OBJECT_COMPARATOR);
     }
 
     static <T> int binarySearch(final List<? extends T> list, final T key, final Comparator<? super T> cmp) {
@@ -3628,14 +3636,14 @@ public final class Array {
             }
 
             if (array != null) {
-                return binarySearch(array, fromIndex, toIndex, key, cmp == null ? N.comparableCmp : cmp);
+                return binarySearch(array, fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
             }
         }
 
         if (list instanceof RandomAccess || list.size() < BINARYSEARCH_THRESHOLD) {
-            return indexedBinarySearch(list, fromIndex, toIndex, key, cmp == null ? N.comparableCmp : cmp);
+            return indexedBinarySearch(list, fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
         } else {
-            return iteratorBinarySearch(list, fromIndex, toIndex, key, cmp == null ? N.comparableCmp : cmp);
+            return iteratorBinarySearch(list, fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
         }
     }
 
@@ -3715,8 +3723,8 @@ public final class Array {
     static char kthLargest(final char[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -3774,8 +3782,8 @@ public final class Array {
     static byte kthLargest(final byte[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -3833,8 +3841,8 @@ public final class Array {
     static short kthLargest(final short[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -3892,8 +3900,8 @@ public final class Array {
     static int kthLargest(final int[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -3951,8 +3959,8 @@ public final class Array {
     static long kthLargest(final long[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -4010,8 +4018,8 @@ public final class Array {
     static float kthLargest(final float[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -4069,8 +4077,8 @@ public final class Array {
     static double kthLargest(final double[] a, final int fromIndex, final int toIndex, int k) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -4141,8 +4149,8 @@ public final class Array {
     static <T> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
         N.checkIndex(fromIndex, toIndex, a.length);
 
-        if (N.isNullOrEmpty(a) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;
@@ -4213,8 +4221,8 @@ public final class Array {
     static <T> T kthLargest(final Collection<T> c, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
         N.checkIndex(fromIndex, toIndex, c.size());
 
-        if (N.isNullOrEmpty(c) || k < 1 || toIndex - fromIndex < 1) {
-            throw new IllegalArgumentException("Collection is empty or null, or the input k is less than 1. k=" + k);
+        if (N.isNullOrEmpty(c) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
+            throw new IllegalArgumentException("Collection is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
         final int len = toIndex - fromIndex;

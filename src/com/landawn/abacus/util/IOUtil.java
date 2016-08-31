@@ -3744,7 +3744,7 @@ public final class IOUtil {
             } else {
                 final AtomicInteger activeThreadNum = new AtomicInteger();
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
-                final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
+                final Holder<Throwable> errorHolder = new Holder<Throwable>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();
@@ -3754,7 +3754,7 @@ public final class IOUtil {
                         public void run() {
                             T element = null;
                             try {
-                                while (exceptionHandle.getValue() == null) {
+                                while (errorHolder.getValue() == null) {
                                     synchronized (iteratorII) {
                                         if (iteratorII.hasNext()) {
                                             element = iteratorII.next();
@@ -3766,11 +3766,11 @@ public final class IOUtil {
                                     elementParser.accept(element);
                                 }
                             } catch (Throwable e) {
-                                synchronized (exceptionHandle) {
-                                    if (exceptionHandle.value() == null) {
-                                        exceptionHandle.setValue(e);
+                                synchronized (errorHolder) {
+                                    if (errorHolder.value() == null) {
+                                        errorHolder.setValue(e);
                                     } else {
-                                        exceptionHandle.value().addSuppressed(e);
+                                        errorHolder.value().addSuppressed(e);
                                     }
                                 }
                             } finally {
@@ -3784,16 +3784,16 @@ public final class IOUtil {
                     N.sleep(10);
                 }
 
-                if (exceptionHandle.value() == null) {
+                if (errorHolder.value() == null) {
                     try {
                         elementParser.accept(null);
                     } catch (Throwable e) {
-                        exceptionHandle.setValue(e);
+                        errorHolder.setValue(e);
                     }
                 }
 
-                if (exceptionHandle.value() != null) {
-                    throw N.toRuntimeException(exceptionHandle.value());
+                if (errorHolder.value() != null) {
+                    throw N.toRuntimeException(errorHolder.value());
                 }
             }
         } finally {

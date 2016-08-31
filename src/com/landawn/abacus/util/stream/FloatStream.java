@@ -78,7 +78,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     static final Comparator<Float> FLOAT_COMPARATOR = new Comparator<Float>() {
         @Override
         public int compare(Float o1, Float o2) {
-            return Double.compare(o1, o2);
+            return Float.compare(o1, o2);
         }
     };
 
@@ -259,6 +259,10 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      */
     public abstract FloatStream distinct();
 
+    public abstract FloatStream top(int n);
+
+    public abstract FloatStream top(final int n, Comparator<? super Float> comparator);
+
     /**
      * Returns a stream consisting of the elements of this stream in sorted
      * order. The elements are compared for equality according to
@@ -270,6 +274,8 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * @return the result stream
      */
     public abstract FloatStream sorted();
+
+    public abstract FloatStream parallelSorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -604,7 +610,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     /**
      * 
      * @param k
-     * @return OptionalByte.empty() if there is no element or min(k, length of this stream) largest element.
+     * @return OptionalByte.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
     public abstract OptionalFloat kthLargest(int k);
 

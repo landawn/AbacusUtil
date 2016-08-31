@@ -1,7 +1,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -29,6 +28,7 @@ import com.landawn.abacus.util.function.IntToShortFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToIntFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -659,6 +659,25 @@ final class IteratorIntStream extends IntStream {
     }
 
     @Override
+    public IntStream top(int n) {
+        return top(n, INT_COMPARATOR);
+    }
+
+    @Override
+    public IntStream top(int n, Comparator<? super Integer> comparator) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        return boxed().top(n, comparator).mapToInt(new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        });
+    }
+
+    @Override
     public IntStream sorted() {
         if (sorted) {
             return new IteratorIntStream(elements, sorted, closeHandlers);
@@ -724,7 +743,78 @@ final class IteratorIntStream extends IntStream {
             private void sort() {
                 a = elements.toArray();
 
-                Arrays.sort(a);
+                N.sort(a);
+            }
+        }, true, closeHandlers);
+    }
+
+    @Override
+    public IntStream parallelSorted() {
+        if (sorted) {
+            return new IteratorIntStream(elements, sorted, closeHandlers);
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            int[] a = null;
+            int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                if (a == null) {
+                    parallelSort();
+                }
+
+                return cursor < a.length;
+            }
+
+            @Override
+            public int next() {
+                if (a == null) {
+                    parallelSort();
+                }
+
+                if (cursor >= a.length) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (a == null) {
+                    parallelSort();
+                }
+
+                return a.length - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (a == null) {
+                    parallelSort();
+                }
+
+                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+            }
+
+            @Override
+            public int[] toArray() {
+                if (a == null) {
+                    parallelSort();
+                }
+
+                if (cursor == 0) {
+                    return a;
+                } else {
+                    return N.copyOfRange(a, cursor, a.length);
+                }
+            }
+
+            private void parallelSort() {
+                a = elements.toArray();
+
+                N.parallelSort(a);
             }
         }, true, closeHandlers);
     }
@@ -975,12 +1065,7 @@ final class IteratorIntStream extends IntStream {
             return OptionalInt.empty();
         }
 
-        final Optional<Integer> optional = boxed().kthLargest(k, new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return N.compare(o1.intValue(), o2.intValue());
-            }
-        });
+        final Optional<Integer> optional = boxed().kthLargest(k, INT_COMPARATOR);
 
         return optional.isPresent() ? OptionalInt.of(optional.get()) : OptionalInt.empty();
     }

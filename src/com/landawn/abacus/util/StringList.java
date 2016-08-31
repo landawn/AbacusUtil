@@ -109,6 +109,22 @@ public abstract class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
+    public static ObjectList<String> from(int... a) {
+        return from(a, 0, a.length);
+    }
+
+    public static ObjectList<String> from(int[] a, int startIndex, int endIndex) {
+        N.checkIndex(startIndex, endIndex, a.length);
+
+        final String[] elementData = new String[endIndex - startIndex];
+
+        for (int i = startIndex; i < endIndex; i++) {
+            elementData[i - startIndex] = String.valueOf(a[i]);
+        }
+
+        return of(elementData);
+    }
+
     public static ObjectList<String> from(long... a) {
         return from(a, 0, a.length);
     }

@@ -2,6 +2,7 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -192,45 +193,91 @@ final class ArrayShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream flatMap(ShortFunction<? extends ShortStream> mapper) {
-        final List<short[]> listOfArray = new ArrayList<short[]>();
+    public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
+        //        final List<short[]> listOfArray = new ArrayList<short[]>();
+        //
+        //        int lengthOfAll = 0;
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final short[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final short[] arrayOfAll = new short[lengthOfAll];
+        //        int from = 0;
+        //        for (short[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayShortStream(arrayOfAll, closeHandlers);
 
-        int lengthOfAll = 0;
-        for (int i = fromIndex; i < toIndex; i++) {
-            final short[] tmp = mapper.apply(elements[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private int cursor = fromIndex;
+            private ImmutableShortIterator cur = null;
 
-        final short[] arrayOfAll = new short[lengthOfAll];
-        int from = 0;
-        for (short[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).shortIterator();
+                }
 
-        return new ArrayShortStream(arrayOfAll, closeHandlers);
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public short next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        }, closeHandlers);
     }
 
     @Override
-    public IntStream flatMapToInt(ShortFunction<? extends IntStream> mapper) {
-        final List<int[]> listOfArray = new ArrayList<int[]>();
+    public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
+        //        final List<int[]> listOfArray = new ArrayList<int[]>();
+        //
+        //        int lengthOfAll = 0;
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            final int[] tmp = mapper.apply(elements[i]).toArray();
+        //            lengthOfAll += tmp.length;
+        //            listOfArray.add(tmp);
+        //        }
+        //
+        //        final int[] arrayOfAll = new int[lengthOfAll];
+        //        int from = 0;
+        //        for (int[] tmp : listOfArray) {
+        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
+        //            from += tmp.length;
+        //        }
+        //
+        //        return new ArrayIntStream(arrayOfAll, closeHandlers);
 
-        int lengthOfAll = 0;
-        for (int i = fromIndex; i < toIndex; i++) {
-            final int[] tmp = mapper.apply(elements[i]).toArray();
-            lengthOfAll += tmp.length;
-            listOfArray.add(tmp);
-        }
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int cursor = fromIndex;
+            private ImmutableIntIterator cur = null;
 
-        final int[] arrayOfAll = new int[lengthOfAll];
-        int from = 0;
-        for (int[] tmp : listOfArray) {
-            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-            from += tmp.length;
-        }
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
+                    cur = mapper.apply(elements[cursor++]).intIterator();
+                }
 
-        return new ArrayIntStream(arrayOfAll, closeHandlers);
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -293,6 +340,26 @@ final class ArrayShortStream extends ShortStream {
     @Override
     public ShortStream distinct() {
         return new ArrayShortStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
+    }
+
+    @Override
+    public ShortStream top(int n) {
+        return top(n, SHORT_COMPARATOR);
+    }
+
+    @Override
+    public ShortStream top(int n, Comparator<? super Short> comparator) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
+            return this;
+        } else if (sorted && (comparator == null || comparator == SHORT_COMPARATOR)) {
+            return new ArrayShortStream(elements, N.max(fromIndex, toIndex - n), toIndex, closeHandlers, sorted);
+        } else {
+            return new ArrayShortStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers);
+        }
     }
 
     @Override
@@ -425,7 +492,7 @@ final class ArrayShortStream extends ShortStream {
 
     @Override
     public OptionalShort kthLargest(int k) {
-        if (count() == 0) {
+        if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalShort.empty();
         }
 

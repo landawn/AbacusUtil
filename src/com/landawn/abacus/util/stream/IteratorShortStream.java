@@ -24,6 +24,7 @@ import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortToIntFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToShortFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -374,6 +375,25 @@ final class IteratorShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream top(int n) {
+        return top(n, SHORT_COMPARATOR);
+    }
+
+    @Override
+    public ShortStream top(int n, Comparator<? super Short> comparator) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        return boxed().top(n, comparator).mapToShort(new ToShortFunction<Short>() {
+            @Override
+            public short applyAsShort(Short value) {
+                return value.shortValue();
+            }
+        });
+    }
+
+    @Override
     public ShortStream sorted() {
         if (sorted) {
             return new IteratorShortStream(elements, closeHandlers, sorted);
@@ -690,12 +710,7 @@ final class IteratorShortStream extends ShortStream {
             return OptionalShort.empty();
         }
 
-        final Optional<Short> optional = boxed().kthLargest(k, new Comparator<Short>() {
-            @Override
-            public int compare(Short o1, Short o2) {
-                return N.compare(o1.shortValue(), o2.shortValue());
-            }
-        });
+        final Optional<Short> optional = boxed().kthLargest(k, SHORT_COMPARATOR);
 
         return optional.isPresent() ? OptionalShort.of(optional.get()) : OptionalShort.empty();
     }

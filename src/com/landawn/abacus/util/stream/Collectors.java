@@ -2284,7 +2284,7 @@ public final class Collectors {
         return groupingBy(classifier, downstream);
     }
 
-    public static <T, K, A, M extends Map<K, List<T>>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
+    public static <T, K, M extends Map<K, List<T>>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
             final Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = toList();
 
@@ -2507,7 +2507,7 @@ public final class Collectors {
         return groupingByConcurrent(classifier, downstream);
     }
 
-    public static <T, K, A, M extends ConcurrentMap<K, List<T>>> Collector<T, ?, M> groupingByConcurrent(final Function<? super T, ? extends K> classifier,
+    public static <T, K, M extends ConcurrentMap<K, List<T>>> Collector<T, ?, M> groupingByConcurrent(final Function<? super T, ? extends K> classifier,
             final Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = toList();
 

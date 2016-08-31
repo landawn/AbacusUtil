@@ -184,6 +184,16 @@ import com.landawn.abacus.util.function.UnaryOperator;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
+    private static final int DEFAULT_READING_THREAD_NUM = 64;
+    private static final int DEFAULT_QUEUE_SIZE = 1024;
+
+    @SuppressWarnings("rawtypes")
+    static final Comparator OBJECT_COMPARATOR = new Comparator<Comparable>() {
+        @Override
+        public int compare(final Comparable a, final Comparable b) {
+            return N.compare(a, b);
+        }
+    };
 
     static final Object NONE = new Object();
     static final Field listElementDataField;
@@ -562,6 +572,12 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract Stream<T> distinct();
 
+    public abstract Stream<T> distinct(Comparator<? super T> comparator);
+
+    public abstract Stream<T> top(int n);
+
+    public abstract Stream<T> top(int n, Comparator<? super T> comparator);
+
     /**
      * Returns a stream consisting of the elements of this stream, sorted
      * according to natural order.  If the elements of this stream are not
@@ -594,6 +610,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return the new stream
      */
     public abstract Stream<T> sorted(Comparator<? super T> comparator);
+
+    public abstract Stream<T> parallelSorted();
+
+    public abstract Stream<T> parallelSorted(Comparator<? super T> comparator);
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -1028,7 +1048,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * 
      * @param k
      * @param cmp
-     * @return Optional.empty() if there is no element or min(k, length of this stream) largest element.
+     * @return Optional.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
     public abstract Optional<T> kthLargest(int k, Comparator<? super T> cmp);
 
@@ -1639,6 +1659,14 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         return from(Array.range(startInclusive, endExclusive));
     }
 
+    public static ByteStream range(final byte startInclusive, final byte endExclusive) {
+        return from(Array.range(startInclusive, endExclusive));
+    }
+
+    public static ShortStream range(final short startInclusive, final short endExclusive) {
+        return from(Array.range(startInclusive, endExclusive));
+    }
+
     public static IntStream range(final int startInclusive, final int endExclusive) {
         return from(Array.range(startInclusive, endExclusive));
     }
@@ -1648,6 +1676,14 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     }
 
     public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
+        return from(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive) {
+        return from(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static ShortStream rangeClosed(final short startInclusive, final short endInclusive) {
         return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
@@ -1661,6 +1697,25 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public static <T> Stream<T> repeat(T element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static <T> Stream<T> queued(Iterator<? extends T> iterator) {
+        return queued(iterator, DEFAULT_QUEUE_SIZE);
+    }
+
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
+     * 
+     * @param iterator
+     * @param queueSize
+     * @return
+     */
+    public static <T> Stream<T> queued(Iterator<? extends T> iterator, int queueSize) {
+        if (iterator instanceof QueuedImmutableIterator && ((QueuedImmutableIterator<? extends T>) iterator).max() >= queueSize) {
+            return of(iterator);
+        } else {
+            return parallelConcat(N.asList(iterator), 1, queueSize);
+        }
     }
 
     public static <T> Stream<T> concat(final T[]... a) {
@@ -1735,7 +1790,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Iterator<? extends T>... a) {
-        return parallelConcat(a, 64, 1024);
+        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -1771,7 +1826,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c) {
-        return parallelConcat(c, 64, 1024);
+        return parallelConcat(c, DEFAULT_READING_THREAD_NUM, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -1830,7 +1885,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             });
         }
 
-        return of(new ImmutableIterator<T>() {
+        return of(new QueuedImmutableIterator<T>(queueSize) {
             T next = null;
 
             @Override
@@ -2138,7 +2193,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner) {
-        return parallelZip(a, b, combiner, 1024);
+        return parallelZip(a, b, combiner, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -2168,7 +2223,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, errorHolder, onGoing);
 
-        return of(new ImmutableIterator<R>() {
+        return of(new QueuedImmutableIterator<R>(queueSize) {
             A nextA = null;
             B nextB = null;
 
@@ -2236,7 +2291,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<A, B, C, R> combiner) {
-        return parallelZip(a, b, c, combiner, 1024);
+        return parallelZip(a, b, c, combiner, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -2269,7 +2324,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, errorHolder, onGoing);
 
-        return of(new ImmutableIterator<R>() {
+        return of(new QueuedImmutableIterator<R>(queueSize) {
             A nextA = null;
             B nextB = null;
             C nextC = null;
@@ -2361,7 +2416,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner) {
-        return parallelZip(c, combiner, 1024);
+        return parallelZip(c, combiner, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -2394,7 +2449,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(c, queueSize, asyncExecutor, counters, queues, errorHolder, onGoing);
 
-        return of(new ImmutableIterator<R>() {
+        return of(new QueuedImmutableIterator<R>(queueSize) {
             Object[] next = null;
 
             @Override
@@ -2490,7 +2545,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
             final A valueForNoneA, final B valueForNoneB) {
-        return parallelZip(a, b, combiner, 1024, valueForNoneA, valueForNoneB);
+        return parallelZip(a, b, combiner, DEFAULT_QUEUE_SIZE, valueForNoneA, valueForNoneB);
     }
 
     /**
@@ -2522,7 +2577,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, errorHolder, onGoing);
 
-        return of(new ImmutableIterator<R>() {
+        return of(new QueuedImmutableIterator<R>(queueSize) {
             A nextA = null;
             B nextB = null;
 
@@ -2603,7 +2658,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
-        return parallelZip(a, b, c, combiner, 1024, valueForNoneA, valueForNoneB, valueForNoneC);
+        return parallelZip(a, b, c, combiner, DEFAULT_QUEUE_SIZE, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     /**
@@ -2639,7 +2694,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, errorHolder, onGoing);
 
-        return of(new ImmutableIterator<R>() {
+        return of(new QueuedImmutableIterator<R>(queueSize) {
             A nextA = null;
             B nextB = null;
             C nextC = null;
@@ -2723,7 +2778,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final Object[] valuesForNone) {
-        return parallelZip(c, combiner, 1024, valuesForNone);
+        return parallelZip(c, combiner, DEFAULT_QUEUE_SIZE, valuesForNone);
     }
 
     /**
@@ -2760,7 +2815,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(c, queueSize, asyncExecutor, counters, queues, errorHolder, onGoing);
 
-        return of(new ImmutableIterator<R>() {
+        return of(new QueuedImmutableIterator<R>(queueSize) {
             Object[] next = null;
 
             @Override

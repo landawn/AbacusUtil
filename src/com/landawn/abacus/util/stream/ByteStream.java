@@ -76,7 +76,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     static final Comparator<Byte> BYTE_COMPARATOR = new Comparator<Byte>() {
         @Override
         public int compare(Byte o1, Byte o2) {
-            return Double.compare(o1, o2);
+            return Byte.compare(o1, o2);
         }
     };
 
@@ -523,7 +523,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     /**
      * 
      * @param k
-     * @return OptionalByte.empty() if there is no element or min(k, length of this stream) largest element.
+     * @return OptionalByte.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
     public abstract OptionalByte kthLargest(int k);
 

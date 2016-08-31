@@ -24,12 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.CharBinaryOperator;
-import com.landawn.abacus.util.function.CharConsumer;
-import com.landawn.abacus.util.function.CharFunction;
-import com.landawn.abacus.util.function.CharPredicate;
-import com.landawn.abacus.util.stream.CharStream;
-import com.landawn.abacus.util.stream.Stream;
+import com.landawn.abacus.util.function.BooleanBinaryOperator;
+import com.landawn.abacus.util.function.BooleanConsumer;
+import com.landawn.abacus.util.function.BooleanFunction;
+import com.landawn.abacus.util.function.BooleanPredicate;
 
 /**
  * 
@@ -37,18 +35,18 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class CharList extends AbastractArrayList<CharConsumer, CharPredicate, Character, char[], CharList> {
-    private char[] elementData = N.EMPTY_CHAR_ARRAY;
+public final class BooleanList extends AbastractArrayList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
+    private boolean[] elementData = N.EMPTY_BOOLEAN_ARRAY;
     private int size = 0;
 
-    public CharList() {
+    public BooleanList() {
         super();
     }
 
-    public CharList(int initialCapacity) {
+    public BooleanList(int initialCapacity) {
         this();
 
-        elementData = new char[initialCapacity];
+        elementData = new boolean[initialCapacity];
     }
 
     /**
@@ -56,14 +54,11 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
      * 
      * @param a
      */
-    public CharList(char[] a) {
-        this();
-
-        elementData = a;
-        size = a.length;
+    public BooleanList(boolean[] a) {
+        this(a, a.length);
     }
 
-    public CharList(char[] a, int size) {
+    public BooleanList(boolean[] a, int size) {
         this();
 
         if (a.length < size) {
@@ -74,90 +69,58 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         this.size = size;
     }
 
-    public static CharList empty() {
-        return new CharList(N.EMPTY_CHAR_ARRAY);
+    public static BooleanList empty() {
+        return new BooleanList(N.EMPTY_BOOLEAN_ARRAY);
     }
 
-    public static CharList of(char... a) {
-        return new CharList(a);
+    public static BooleanList of(boolean... a) {
+        return new BooleanList(a);
     }
 
-    public static CharList of(char[] a, int size) {
-        return new CharList(a, size);
+    public static BooleanList of(boolean[] a, int size) {
+        return new BooleanList(a, size);
     }
 
-    public static CharList from(int... a) {
+    public static BooleanList from(String... a) {
         return from(a, 0, a.length);
     }
 
-    public static CharList from(int[] a, int startIndex, int endIndex) {
+    public static BooleanList from(String[] a, int startIndex, int endIndex) {
         N.checkIndex(startIndex, endIndex, a.length);
 
-        final char[] elementData = new char[endIndex - startIndex];
+        final boolean[] elementData = new boolean[endIndex - startIndex];
 
         for (int i = startIndex; i < endIndex; i++) {
-            if (a[i] < Character.MIN_VALUE || a[i] > Character.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (char) a[i];
+            elementData[i - startIndex] = Boolean.valueOf(a[i]);
         }
 
         return of(elementData);
     }
 
-    public static CharList from(String... a) {
-        return from(a, 0, a.length);
+    public static BooleanList from(List<String> c) {
+        return from(c, false);
     }
 
-    public static CharList from(String[] a, int startIndex, int endIndex) {
-        N.checkIndex(startIndex, endIndex, a.length);
-
-        final char[] elementData = new char[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (a[i] == null) {
-                elementData[i - startIndex] = 0;
-            } else if (a[i].length() == 1) {
-                elementData[i - startIndex] = a[i].charAt(0);
-            } else {
-                throw new IllegalArgumentException("Invalid char: " + a[i]);
-            }
-        }
-
-        return of(elementData);
-    }
-
-    public static CharList from(List<String> c) {
-        return from(c, (char) 0);
-    }
-
-    public static CharList from(List<String> c, char defaultValueForNull) {
-        final char[] a = new char[c.size()];
+    public static BooleanList from(List<String> c, boolean defaultValueForNull) {
+        final boolean[] a = new boolean[c.size()];
         int idx = 0;
 
         for (String e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else if (e.length() == 1) {
-                a[idx++] = e.charAt(0);
-            } else {
-                throw new IllegalArgumentException("Invalid char: " + e);
-            }
+            a[idx++] = e == null ? defaultValueForNull : Boolean.valueOf(e);
         }
 
         return of(a);
     }
 
-    public static CharList from(Collection<Character> c) {
-        return from(c, (char) 0);
+    public static BooleanList from(Collection<Boolean> c) {
+        return from(c, false);
     }
 
-    public static CharList from(Collection<Character> c, char defaultValueForNull) {
-        final char[] a = new char[c.size()];
+    public static BooleanList from(Collection<Boolean> c, boolean defaultValueForNull) {
+        final boolean[] a = new boolean[c.size()];
         int idx = 0;
 
-        for (Character e : c) {
+        for (Boolean e : c) {
             a[idx++] = e == null ? defaultValueForNull : e;
         }
 
@@ -170,7 +133,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
      * @return
      */
     @Override
-    public char[] array() {
+    public boolean[] array() {
         return elementData;
     }
 
@@ -179,18 +142,18 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     //     * @return
     //     */
     //    @Beta
-    //    public OptionalChar findFirst() {
-    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[0]);
+    //    public OptionalBoolean findFirst() {
+    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[0]);
     //    }
 
-    public OptionalChar findFirst(CharPredicate predicate) {
+    public OptionalBoolean findFirst(BooleanPredicate predicate) {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
-                return OptionalChar.of(elementData[i]);
+                return OptionalBoolean.of(elementData[i]);
             }
         }
 
-        return OptionalChar.empty();
+        return OptionalBoolean.empty();
     }
 
     //    /**
@@ -198,21 +161,21 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     //     * @return
     //     */
     //    @Beta
-    //    public OptionalChar findLast() {
-    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[size - 1]);
+    //    public OptionalBoolean findLast() {
+    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[size - 1]);
     //    }
 
-    public OptionalChar findLast(CharPredicate predicate) {
+    public OptionalBoolean findLast(BooleanPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
-                return OptionalChar.of(elementData[i]);
+                return OptionalBoolean.of(elementData[i]);
             }
         }
 
-        return OptionalChar.empty();
+        return OptionalBoolean.empty();
     }
 
-    public char get(int index) {
+    public boolean get(int index) {
         rangeCheck(index);
 
         return elementData[index];
@@ -230,23 +193,23 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
      * @param e
      * @return the old value in the specified position.
      */
-    public char set(int index, char e) {
+    public boolean set(int index, boolean e) {
         rangeCheck(index);
 
-        char oldValue = elementData[index];
+        boolean oldValue = elementData[index];
 
         elementData[index] = e;
 
         return oldValue;
     }
 
-    public void add(char e) {
+    public void add(boolean e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
     }
 
-    public void add(int index, char e) {
+    public void add(int index, boolean e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -263,7 +226,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public void addAll(CharList c) {
+    public void addAll(BooleanList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -274,7 +237,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public void addAll(int index, CharList c) {
+    public void addAll(int index, BooleanList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -303,7 +266,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
      * @param e
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(char e) {
+    public boolean remove(boolean e) {
         for (int i = 0; i < size; i++) {
             if (elementData[i] == e) {
 
@@ -321,7 +284,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
      * @param e
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean removeAllOccurrences(char e) {
+    public boolean removeAllOccurrences(boolean e) {
         int w = 0;
 
         for (int i = 0; i < size; i++) {
@@ -333,7 +296,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         int numRemoved = size - w;
 
         if (numRemoved > 0) {
-            N.fill(elementData, w, size, (char) 0);
+            N.fill(elementData, w, size, false);
 
             size = w;
         }
@@ -348,21 +311,21 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
             N.copy(elementData, index + 1, elementData, index, numMoved);
         }
 
-        elementData[--size] = 0; // clear to let GC do its work
+        elementData[--size] = false; // clear to let GC do its work
     }
 
     @Override
-    public boolean removeAll(CharList c) {
+    public boolean removeAll(BooleanList c) {
         return batchRemove(c, false) > 0;
     }
 
     @Override
-    public boolean retainAll(CharList c) {
+    public boolean retainAll(BooleanList c) {
         return batchRemove(c, true) > 0;
     }
 
-    private int batchRemove(CharList c, boolean complement) {
-        final char[] elementData = this.elementData;
+    private int batchRemove(BooleanList c, boolean complement) {
+        final boolean[] elementData = this.elementData;
 
         int w = 0;
 
@@ -375,7 +338,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         int numRemoved = size - w;
 
         if (numRemoved > 0) {
-            N.fill(elementData, w, size, (char) 0);
+            N.fill(elementData, w, size, false);
 
             size = w;
         }
@@ -388,23 +351,23 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
      * @param index
      * @return the deleted element
      */
-    public char delete(int index) {
+    public boolean delete(int index) {
         rangeCheck(index);
 
-        char oldValue = elementData[index];
+        boolean oldValue = elementData[index];
 
         fastRemove(index);
 
         return oldValue;
     }
 
-    public boolean contains(char e) {
+    public boolean contains(boolean e) {
         return indexOf(e) >= 0;
     }
 
     @Override
-    public boolean containsAll(CharList c) {
-        final char[] srcElementData = c.array();
+    public boolean containsAll(BooleanList c) {
+        final boolean[] srcElementData = c.array();
 
         for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
 
@@ -417,17 +380,17 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public CharList subList(final int fromIndex, final int toIndex) {
+    public BooleanList subList(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return new CharList(N.copyOfRange(elementData, fromIndex, toIndex));
+        return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
-    public int indexOf(char e) {
+    public int indexOf(boolean e) {
         return indexOf(0, e);
     }
 
-    public int indexOf(final int fromIndex, char e) {
+    public int indexOf(final int fromIndex, boolean e) {
         checkIndex(fromIndex, size);
 
         for (int i = fromIndex; i < size; i++) {
@@ -439,7 +402,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return -1;
     }
 
-    public int lastIndexOf(char e) {
+    public int lastIndexOf(boolean e) {
         return lastIndexOf(size, e);
     }
 
@@ -449,7 +412,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
      * @param e
      * @return
      */
-    public int lastIndexOf(final int fromIndex, char e) {
+    public int lastIndexOf(final int fromIndex, boolean e) {
         checkIndex(0, fromIndex);
 
         for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
@@ -461,48 +424,8 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return -1;
     }
 
-    public OptionalChar min() {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.min(elementData, 0, size));
-    }
-
-    public OptionalChar min(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.min(elementData, fromIndex, toIndex));
-    }
-
-    public OptionalChar median() {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.median(elementData, 0, size));
-    }
-
-    public OptionalChar median(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.median(elementData, fromIndex, toIndex));
-    }
-
-    public OptionalChar max() {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.max(elementData, 0, size));
-    }
-
-    public OptionalChar max(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.max(elementData, fromIndex, toIndex));
-    }
-
-    public OptionalChar kthLargest(final int k) {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, 0, size, k));
-    }
-
-    public OptionalChar kthLargest(final int fromIndex, final int toIndex, final int k) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, fromIndex, toIndex, k));
-    }
-
     @Override
-    public void forEach(final int fromIndex, final int toIndex, CharConsumer action) {
+    public void forEach(final int fromIndex, final int toIndex, BooleanConsumer action) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -513,7 +436,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, CharPredicate filter) {
+    public boolean allMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -528,7 +451,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, CharPredicate filter) {
+    public boolean anyMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -543,7 +466,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, CharPredicate filter) {
+    public boolean noneMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -558,40 +481,40 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public int count(final int fromIndex, final int toIndex, CharPredicate filter) {
+    public int count(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
-    public CharList filter(final int fromIndex, final int toIndex, CharPredicate filter) {
+    public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.filter(elementData, fromIndex, toIndex, filter));
     }
 
     @Override
-    public CharList filter(final int fromIndex, final int toIndex, CharPredicate filter, final int max) {
+    public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter, int max) {
         checkIndex(fromIndex, toIndex);
 
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
-    public <R> List<R> map(final CharFunction<? extends R> func) {
+    public <R> List<R> map(final BooleanFunction<? extends R> func) {
         return map(0, size(), func);
     }
 
-    public <R> List<R> map(final int fromIndex, final int toIndex, final CharFunction<? extends R> func) {
+    public <R> List<R> map(final int fromIndex, final int toIndex, final BooleanFunction<? extends R> func) {
         return map(List.class, fromIndex, toIndex, func);
     }
 
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final CharFunction<? extends R> func) {
+    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final BooleanFunction<? extends R> func) {
         return map(collClass, 0, size(), func);
     }
 
     public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final CharFunction<? extends R> func) {
+            final BooleanFunction<? extends R> func) {
         checkIndex(fromIndex, toIndex);
 
         final V res = N.newInstance(collClass);
@@ -603,20 +526,20 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return res;
     }
 
-    public <R> List<R> flatMap(final CharFunction<? extends Collection<? extends R>> func) {
+    public <R> List<R> flatMap(final BooleanFunction<? extends Collection<? extends R>> func) {
         return flatMap(0, size(), func);
     }
 
-    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final CharFunction<? extends Collection<? extends R>> func) {
+    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends Collection<? extends R>> func) {
         return flatMap(List.class, fromIndex, toIndex, func);
     }
 
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final CharFunction<? extends Collection<? extends R>> func) {
+    public <R, V extends Collection<? super R>> V flatMap(final Class<? extends V> collClass, final BooleanFunction<? extends Collection<? extends R>> func) {
         return flatMap(collClass, 0, size(), func);
     }
 
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final CharFunction<? extends Collection<? extends R>> func) {
+    public <R, V extends Collection<? super R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+            final BooleanFunction<? extends Collection<? extends R>> func) {
         checkIndex(fromIndex, toIndex);
 
         final V res = N.newInstance(collClass);
@@ -628,19 +551,20 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return res;
     }
 
-    public <R> List<R> flatMap2(final CharFunction<R[]> func) {
+    public <R> List<R> flatMap2(final BooleanFunction<R[]> func) {
         return flatMap2(0, size(), func);
     }
 
-    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final CharFunction<R[]> func) {
+    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final BooleanFunction<R[]> func) {
         return flatMap2(List.class, fromIndex, toIndex, func);
     }
 
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final CharFunction<R[]> func) {
+    public <R, V extends Collection<? super R>> V flatMap2(final Class<? extends V> collClass, final BooleanFunction<R[]> func) {
         return flatMap2(collClass, 0, size(), func);
     }
 
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final CharFunction<R[]> func) {
+    public <R, V extends Collection<? super R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+            final BooleanFunction<R[]> func) {
         checkIndex(fromIndex, toIndex);
 
         final V res = N.newInstance(collClass);
@@ -652,33 +576,33 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return res;
     }
 
-    public <K> Map<K, List<Character>> groupBy(final CharFunction<? extends K> func) {
+    public <K> Map<K, List<Boolean>> groupBy(final BooleanFunction<? extends K> func) {
         return groupBy(0, size(), func);
     }
 
-    public <K> Map<K, List<Character>> groupBy(final int fromIndex, final int toIndex, final CharFunction<? extends K> func) {
+    public <K> Map<K, List<Boolean>> groupBy(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> func) {
         return groupBy(List.class, fromIndex, toIndex, func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Character>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final CharFunction<? extends K> func) {
+    public <K, V extends Collection<Boolean>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final BooleanFunction<? extends K> func) {
         return groupBy(HashMap.class, collClass, 0, size(), func);
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Character>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final CharFunction<? extends K> func) {
+    public <K, V extends Collection<Boolean>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+            final BooleanFunction<? extends K> func) {
         return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
     }
 
-    public <K, V extends Collection<Character>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final CharFunction<? extends K> func) {
+    public <K, V extends Collection<Boolean>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+            final BooleanFunction<? extends K> func) {
 
         return groupBy(outputClass, collClass, 0, size(), func);
     }
 
-    public <K, V extends Collection<Character>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final int fromIndex, final int toIndex, final CharFunction<? extends K> func) {
+    public <K, V extends Collection<Boolean>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+            final int fromIndex, final int toIndex, final BooleanFunction<? extends K> func) {
         checkIndex(fromIndex, toIndex);
 
         final M outputResult = N.newInstance(outputClass);
@@ -701,51 +625,62 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return outputResult;
     }
 
-    public OptionalChar reduce(final CharBinaryOperator accumulator) {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(reduce((char) 0, accumulator));
+    public OptionalBoolean reduce(final BooleanBinaryOperator accumulator) {
+        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(reduce(false, accumulator));
     }
 
-    public OptionalChar reduce(final int fromIndex, final int toIndex, final CharBinaryOperator accumulator) {
+    public OptionalBoolean reduce(final int fromIndex, final int toIndex, final BooleanBinaryOperator accumulator) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(reduce(fromIndex, toIndex, (char) 0, accumulator));
+        return fromIndex == toIndex ? OptionalBoolean.empty() : OptionalBoolean.of(reduce(fromIndex, toIndex, false, accumulator));
     }
 
-    public char reduce(final char identity, final CharBinaryOperator accumulator) {
+    public boolean reduce(final boolean identity, final BooleanBinaryOperator accumulator) {
         return reduce(0, size(), identity, accumulator);
     }
 
-    public char reduce(final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator accumulator) {
+    public boolean reduce(final int fromIndex, final int toIndex, final boolean identity, final BooleanBinaryOperator accumulator) {
         checkIndex(fromIndex, toIndex);
 
-        char result = identity;
+        boolean result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.applyAsChar(result, elementData[i]);
+            result = accumulator.applyAsBoolean(result, elementData[i]);
         }
 
         return result;
     }
 
     @Override
-    public CharList distinct(final int fromIndex, final int toIndex) {
+    public BooleanList distinct(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
+            final Boolean[] a = new Boolean[2];
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (a[0] == null) {
+                    a[0] = elementData[i];
+                } else if (a[0].booleanValue() != elementData[i]) {
+                    a[1] = elementData[i];
+                    break;
+                }
+            }
+
+            return a[1] == null ? of(a[0].booleanValue()) : of(a[0].booleanValue(), a[1].booleanValue());
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
     }
 
     @Override
-    public List<CharList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<char[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<CharList> result = new ArrayList<>(list.size());
+        final List<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<BooleanList> result = new ArrayList<>(list.size());
 
-        for (char[] a : list) {
+        for (boolean[] a : list) {
             result.add(of(a));
         }
 
@@ -754,8 +689,22 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
 
     @Override
     public void sort() {
-        if (size > 1) {
-            N.sort(elementData, 0, size);
+        if (size <= 1) {
+            return;
+        }
+
+        final int[] count = new int[2];
+
+        for (int i = 0; i < size; i++) {
+            count[elementData[i] == false ? 0 : 1]++;
+        }
+
+        if (count[0] > 0) {
+            N.fill(elementData, 0, count[0], false);
+        }
+
+        if (count[1] > 0) {
+            N.fill(elementData, count[0], count[0] + count[1], true);
         }
     }
 
@@ -774,14 +723,14 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public CharList copy(final int fromIndex, final int toIndex) {
+    public BooleanList copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return new CharList(N.copyOfRange(elementData, fromIndex, toIndex));
+        return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override
-    public CharList trimToSize() {
+    public BooleanList trimToSize() {
         if (elementData.length != size) {
             elementData = N.copyOfRange(elementData, 0, size);
         }
@@ -792,7 +741,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     @Override
     public void clear() {
         if (size > 0) {
-            N.fill(elementData, 0, size, (char) 0);
+            N.fill(elementData, 0, size, false);
         }
 
         size = 0;
@@ -808,14 +757,14 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return size;
     }
 
-    public ObjectList<Character> boxed() {
+    public ObjectList<Boolean> boxed() {
         return boxed(0, size);
     }
 
-    public ObjectList<Character> boxed(int fromIndex, int toIndex) {
+    public ObjectList<Boolean> boxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        final Character[] b = new Character[toIndex - fromIndex];
+        final Boolean[] b = new Boolean[toIndex - fromIndex];
 
         for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
             b[j] = elementData[i];
@@ -825,7 +774,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public void toList(List<Character> list, final int fromIndex, final int toIndex) {
+    public void toList(List<Boolean> list, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -834,7 +783,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public void toSet(Set<Character> set, final int fromIndex, final int toIndex) {
+    public void toSet(Set<Boolean> set, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -843,7 +792,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public void toMultiset(Multiset<Character> multiset, final int fromIndex, final int toIndex) {
+    public void toMultiset(Multiset<Boolean> multiset, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -851,22 +800,22 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         }
     }
 
-    public <K, U> Map<K, U> toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+    public <K, U> Map<K, U> toMap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
         return toMap(HashMap.class, keyMapper, valueMapper);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final CharFunction<? extends K> keyMapper,
-            final CharFunction<? extends U> valueMapper) {
+    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final BooleanFunction<? extends K> keyMapper,
+            final BooleanFunction<? extends U> valueMapper) {
         return toMap(outputClass, 0, size(), keyMapper, valueMapper);
     }
 
-    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
-            final CharFunction<? extends U> valueMapper) {
+    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
+            final BooleanFunction<? extends U> valueMapper) {
         return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
     }
 
     public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final int fromIndex, final int toIndex,
-            final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+            final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex);
 
         final Map<K, U> map = N.newInstance(outputClass);
@@ -878,24 +827,24 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return (M) map;
     }
 
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
         return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
     }
 
     @SuppressWarnings("rawtypes")
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+            final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
         return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
     }
 
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
-            final CharFunction<? extends U> valueMapper) {
+    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
+            final BooleanFunction<? extends U> valueMapper) {
         return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
     }
 
     @SuppressWarnings("rawtypes")
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+            final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex);
 
         final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
@@ -907,16 +856,6 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return multimap;
     }
 
-    public CharStream stream() {
-        return stream(0, size());
-    }
-
-    public CharStream stream(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return Stream.from(elementData, fromIndex, toIndex);
-    }
-
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());
@@ -924,7 +863,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || (obj instanceof CharList && N.equals(elementData, 0, size(), ((CharList) obj).elementData));
+        return obj == this || (obj instanceof BooleanList && N.equals(elementData, 0, size(), ((BooleanList) obj).elementData));
 
     }
 
@@ -934,7 +873,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     private void ensureCapacityInternal(int minCapacity) {
-        if (elementData == N.EMPTY_CHAR_ARRAY) {
+        if (elementData == N.EMPTY_BOOLEAN_ARRAY) {
             minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
         }
 

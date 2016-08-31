@@ -719,7 +719,7 @@ public final class N {
     static final Random rand = new SecureRandom();
 
     @SuppressWarnings("rawtypes")
-    static final Comparator comparableCmp = new Comparator<Comparable>() {
+    static final Comparator OBJECT_COMPARATOR = new Comparator<Comparable>() {
         @Override
         public int compare(final Comparable a, final Comparable b) {
             return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
@@ -17335,11 +17335,11 @@ public final class N {
         Array.parallelSort(a, fromIndex, toIndex);
     }
 
-    public static <T extends Comparable<? super T>> void parallelSort(final T[] a) {
+    public static void parallelSort(final Object[] a) {
         Array.parallelSort(a);
     }
 
-    public static <T extends Comparable<? super T>> void parallelSort(final T[] a, final int fromIndex, final int toIndex) {
+    public static void parallelSort(final Object[] a, final int fromIndex, final int toIndex) {
         Array.parallelSort(a, fromIndex, toIndex);
     }
 
@@ -17366,8 +17366,6 @@ public final class N {
     public static <T> void parallelSort(final List<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         Array.parallelSort(c, fromIndex, toIndex, cmp);
     }
-
-    
 
     /*
     public static void bucketSort(final char[] a) {
@@ -22185,8 +22183,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#map(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final T[] a, final Function<? super T, ? extends R> func) {
+    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final T[] a, final Function<? super T, ? extends R> func) {
         return map(collClass, a, 0, a.length, func);
     }
 
@@ -22203,12 +22200,11 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#map(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex,
+    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends R> func) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.add(func.apply(a[i]));
@@ -22258,8 +22254,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#map(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final Collection<? extends T> c,
             final Function<? super T, ? extends R> func) {
         return map(collClass, c, 0, c.size(), func);
     }
@@ -22277,12 +22272,11 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#map(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V map(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
+    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
             final int toIndex, final Function<? super T, ? extends R> func) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -22530,8 +22524,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#flatMap(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final T[] a,
+    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final T[] a,
             final Function<? super T, ? extends Collection<? extends R>> func) {
         return flatMap(collClass, a, 0, a.length, func);
     }
@@ -22549,12 +22542,11 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#flatMap(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex,
+    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends Collection<? extends R>> func) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.addAll(func.apply(a[i]));
@@ -22605,8 +22597,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#flatMap(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final Collection<? extends T> c,
             final Function<? super T, ? extends Collection<? extends R>> func) {
         return flatMap(collClass, c, 0, c.size(), func);
     }
@@ -22624,12 +22615,11 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#flatMap(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
+    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
             final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -22696,8 +22686,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#flatMap(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final T[] a, final Function<? super T, R[]> func) {
+    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final T[] a, final Function<? super T, R[]> func) {
         return flatMap2(collClass, a, 0, a.length, func);
     }
 
@@ -22714,12 +22703,11 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#flatMap(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex,
+    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
             final Function<? super T, R[]> func) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         for (int i = fromIndex; i < toIndex; i++) {
             res.addAll(Arrays.asList(func.apply(a[i])));
@@ -22769,8 +22757,7 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#flatMap(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final Collection<? extends T> c,
             final Function<? super T, R[]> func) {
         return flatMap2(collClass, c, 0, c.size(), func);
     }
@@ -22788,12 +22775,11 @@ public final class N {
      * @return
      * @see java.util.stream.Stream#flatMap(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
+    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
             final int toIndex, final Function<? super T, R[]> func) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final V res = (V) N.newInstance(collClass);
+        final V res = N.newInstance(collClass);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -22813,173 +22799,6 @@ public final class N {
                 }
 
                 res.addAll(Arrays.asList(func.apply(e)));
-            }
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap3(final T[] a, final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap3(ArrayList.class, a, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap3(final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap3(ArrayList.class, a, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final T[] a,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap3(collClass, a, 0, a.length, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final V res = (V) N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(func.apply(a[i]));
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap3(final Collection<? extends T> c, final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap3(ArrayList.class, c, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap3(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap3(ArrayList.class, c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final Collection<? extends T> c,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap3(collClass, c, 0, c.size(), func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, R, V extends Collection<R>> V flatMap3(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
-            final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final V res = (V) N.newInstance(collClass);
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                res.addAll(func.apply(list.get(i)));
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                res.addAll(func.apply(e));
             }
         }
 
@@ -23052,6 +22871,11 @@ public final class N {
         return N.groupBy(HashMap.class, collClass, a, fromIndex, toIndex, func);
     }
 
+    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+            final T[] a, final Function<? super T, ? extends K> func) {
+        return N.groupBy(outputClass, collClass, a, 0, a.length, func);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -23066,9 +22890,8 @@ public final class N {
      * @return
      * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass,
-            final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+            final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         final Map<? super K, V> outputResult = N.newInstance(outputClass);
@@ -23081,7 +22904,7 @@ public final class N {
             values = outputResult.get(key);
 
             if (values == null) {
-                values = (V) N.newInstance(collClass);
+                values = N.newInstance(collClass);
                 outputResult.put(key, values);
             }
 
@@ -23158,6 +22981,11 @@ public final class N {
         return N.groupBy(HashMap.class, collClass, c, fromIndex, toIndex, func);
     }
 
+    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+            final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
+        return N.groupBy(outputClass, collClass, c, 0, c.size(), func);
+    }
+
     /**
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -23172,10 +23000,8 @@ public final class N {
      * @return
      * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass,
-            final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
+    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+            final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final Map<? super K, V> outputResult = N.newInstance(outputClass);
@@ -23193,7 +23019,7 @@ public final class N {
                 values = outputResult.get(key);
 
                 if (values == null) {
-                    values = (V) N.newInstance(collClass);
+                    values = N.newInstance(collClass);
                     outputResult.put(key, values);
                 }
 
@@ -23213,7 +23039,7 @@ public final class N {
                 values = outputResult.get(key);
 
                 if (values == null) {
-                    values = (V) N.newInstance(collClass);
+                    values = N.newInstance(collClass);
                     outputResult.put(key, values);
                 }
 
@@ -23851,8 +23677,7 @@ public final class N {
         return toMap(HashMap.class, a, keyMapper, valueMapper);
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final T[] a, final Function<? super T, ? extends K> keyMapper,
+    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final T[] a, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
         return toMap(outputClass, a, 0, a.length, keyMapper, valueMapper);
     }
@@ -23862,8 +23687,7 @@ public final class N {
         return toMap(HashMap.class, a, fromIndex, toIndex, keyMapper, valueMapper);
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final T[] a, final int fromIndex, final int toIndex,
+    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final T[] a, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
@@ -23881,8 +23705,7 @@ public final class N {
         return toMap(HashMap.class, c, keyMapper, valueMapper);
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final Collection<T> c,
+    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final Collection<T> c,
             final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
         return toMap(outputClass, c, 0, c.size(), keyMapper, valueMapper);
     }
@@ -23892,8 +23715,7 @@ public final class N {
         return toMap(HashMap.class, c, fromIndex, toIndex, keyMapper, valueMapper);
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends Map> outputClass, final Collection<T> c, final int fromIndex, final int toIndex,
+    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final Collection<T> c, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
@@ -23928,7 +23750,7 @@ public final class N {
 
     public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final T[] a, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, a, keyMapper, valueMapper);
+        return toMultimap(HashMap.class, ArrayList.class, a, keyMapper, valueMapper);
     }
 
     @SuppressWarnings("rawtypes")
@@ -23940,7 +23762,7 @@ public final class N {
 
     public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final T[] a, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, a, fromIndex, toIndex, keyMapper, valueMapper);
+        return toMultimap(HashMap.class, ArrayList.class, a, fromIndex, toIndex, keyMapper, valueMapper);
     }
 
     @SuppressWarnings("rawtypes")
@@ -23960,7 +23782,7 @@ public final class N {
 
     public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, c, keyMapper, valueMapper);
+        return toMultimap(HashMap.class, ArrayList.class, c, keyMapper, valueMapper);
     }
 
     @SuppressWarnings("rawtypes")
@@ -23972,7 +23794,7 @@ public final class N {
 
     public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final Collection<T> c, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, c, fromIndex, toIndex, keyMapper, valueMapper);
+        return toMultimap(HashMap.class, ArrayList.class, c, fromIndex, toIndex, keyMapper, valueMapper);
     }
 
     @SuppressWarnings("rawtypes")
@@ -24079,20 +23901,24 @@ public final class N {
         return multiset;
     }
 
-    public static short[] top(final short[] a, final int top) {
-        return top(a, top, null);
+    public static short[] top(final short[] a, final int n) {
+        return top(a, n, null);
     }
 
-    public static short[] top(final short[] a, final int top, final Comparator<Short> cmp) {
-        return top(a, 0, a.length, top, cmp);
+    public static short[] top(final short[] a, final int n, final Comparator<? super Short> cmp) {
+        return top(a, 0, a.length, n, cmp);
     }
 
-    public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int top) {
-        return top(a, fromIndex, toIndex, top, null);
+    public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int n) {
+        return top(a, fromIndex, toIndex, n, null);
     }
 
-    public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int top, final Comparator<Short> cmp) {
-        if (top >= toIndex - fromIndex) {
+    public static short[] top(final short[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Short> cmp) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
@@ -24108,13 +23934,13 @@ public final class N {
             }
         };
 
-        final Queue<Pair<Short, Integer>> heap = new PriorityQueue<Pair<Short, Integer>>(top, pairCmp);
+        final Queue<Pair<Short, Integer>> heap = new PriorityQueue<Pair<Short, Integer>>(n, pairCmp);
         Pair<Short, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
             pair = Pair.of(a[i], i);
 
-            if (heap.size() >= top) {
+            if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
                     heap.poll();
                     heap.add(pair);
@@ -24142,20 +23968,24 @@ public final class N {
         return res;
     }
 
-    public static int[] top(final int[] a, final int top) {
-        return top(a, top, null);
+    public static int[] top(final int[] a, final int n) {
+        return top(a, n, null);
     }
 
-    public static int[] top(final int[] a, final int top, final Comparator<Integer> cmp) {
-        return top(a, 0, a.length, top, cmp);
+    public static int[] top(final int[] a, final int n, final Comparator<? super Integer> cmp) {
+        return top(a, 0, a.length, n, cmp);
     }
 
-    public static int[] top(final int[] a, final int fromIndex, final int toIndex, final int top) {
-        return top(a, fromIndex, toIndex, top, null);
+    public static int[] top(final int[] a, final int fromIndex, final int toIndex, final int n) {
+        return top(a, fromIndex, toIndex, n, null);
     }
 
-    public static int[] top(final int[] a, final int fromIndex, final int toIndex, final int top, final Comparator<Integer> cmp) {
-        if (top >= toIndex - fromIndex) {
+    public static int[] top(final int[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Integer> cmp) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
@@ -24171,13 +24001,13 @@ public final class N {
             }
         };
 
-        final Queue<Pair<Integer, Integer>> heap = new PriorityQueue<Pair<Integer, Integer>>(top, pairCmp);
+        final Queue<Pair<Integer, Integer>> heap = new PriorityQueue<Pair<Integer, Integer>>(n, pairCmp);
         Pair<Integer, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
             pair = Pair.of(a[i], i);
 
-            if (heap.size() >= top) {
+            if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
                     heap.poll();
                     heap.add(pair);
@@ -24205,20 +24035,24 @@ public final class N {
         return res;
     }
 
-    public static long[] top(final long[] a, final int top) {
-        return top(a, top, null);
+    public static long[] top(final long[] a, final int n) {
+        return top(a, n, null);
     }
 
-    public static long[] top(final long[] a, final int top, final Comparator<Long> cmp) {
-        return top(a, 0, a.length, top, cmp);
+    public static long[] top(final long[] a, final int n, final Comparator<? super Long> cmp) {
+        return top(a, 0, a.length, n, cmp);
     }
 
-    public static long[] top(final long[] a, final int fromIndex, final int toIndex, final int top) {
-        return top(a, fromIndex, toIndex, top, null);
+    public static long[] top(final long[] a, final int fromIndex, final int toIndex, final int n) {
+        return top(a, fromIndex, toIndex, n, null);
     }
 
-    public static long[] top(final long[] a, final int fromIndex, final int toIndex, final int top, final Comparator<Long> cmp) {
-        if (top >= toIndex - fromIndex) {
+    public static long[] top(final long[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Long> cmp) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
@@ -24234,13 +24068,13 @@ public final class N {
             }
         };
 
-        final Queue<Pair<Long, Integer>> heap = new PriorityQueue<Pair<Long, Integer>>(top, pairCmp);
+        final Queue<Pair<Long, Integer>> heap = new PriorityQueue<Pair<Long, Integer>>(n, pairCmp);
         Pair<Long, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
             pair = Pair.of(a[i], i);
 
-            if (heap.size() >= top) {
+            if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
                     heap.poll();
                     heap.add(pair);
@@ -24268,20 +24102,24 @@ public final class N {
         return res;
     }
 
-    public static float[] top(final float[] a, final int top) {
-        return top(a, top, null);
+    public static float[] top(final float[] a, final int n) {
+        return top(a, n, null);
     }
 
-    public static float[] top(final float[] a, final int top, final Comparator<Float> cmp) {
-        return top(a, 0, a.length, top, cmp);
+    public static float[] top(final float[] a, final int n, final Comparator<? super Float> cmp) {
+        return top(a, 0, a.length, n, cmp);
     }
 
-    public static float[] top(final float[] a, final int fromIndex, final int toIndex, final int top) {
-        return top(a, fromIndex, toIndex, top, null);
+    public static float[] top(final float[] a, final int fromIndex, final int toIndex, final int n) {
+        return top(a, fromIndex, toIndex, n, null);
     }
 
-    public static float[] top(final float[] a, final int fromIndex, final int toIndex, final int top, final Comparator<Float> cmp) {
-        if (top >= toIndex - fromIndex) {
+    public static float[] top(final float[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Float> cmp) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
@@ -24297,13 +24135,13 @@ public final class N {
             }
         };
 
-        final Queue<Pair<Float, Integer>> heap = new PriorityQueue<Pair<Float, Integer>>(top, pairCmp);
+        final Queue<Pair<Float, Integer>> heap = new PriorityQueue<Pair<Float, Integer>>(n, pairCmp);
         Pair<Float, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
             pair = Pair.of(a[i], i);
 
-            if (heap.size() >= top) {
+            if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
                     heap.poll();
                     heap.add(pair);
@@ -24331,20 +24169,24 @@ public final class N {
         return res;
     }
 
-    public static double[] top(final double[] a, final int top) {
-        return top(a, top, null);
+    public static double[] top(final double[] a, final int n) {
+        return top(a, n, null);
     }
 
-    public static double[] top(final double[] a, final int top, final Comparator<Double> cmp) {
-        return top(a, 0, a.length, top, cmp);
+    public static double[] top(final double[] a, final int n, final Comparator<? super Double> cmp) {
+        return top(a, 0, a.length, n, cmp);
     }
 
-    public static double[] top(final double[] a, final int fromIndex, final int toIndex, final int top) {
-        return top(a, fromIndex, toIndex, top, null);
+    public static double[] top(final double[] a, final int fromIndex, final int toIndex, final int n) {
+        return top(a, fromIndex, toIndex, n, null);
     }
 
-    public static double[] top(final double[] a, final int fromIndex, final int toIndex, final int top, final Comparator<Double> cmp) {
-        if (top >= toIndex - fromIndex) {
+    public static double[] top(final double[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super Double> cmp) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
@@ -24360,13 +24202,13 @@ public final class N {
             }
         };
 
-        final Queue<Pair<Double, Integer>> heap = new PriorityQueue<Pair<Double, Integer>>(top, pairCmp);
+        final Queue<Pair<Double, Integer>> heap = new PriorityQueue<Pair<Double, Integer>>(n, pairCmp);
         Pair<Double, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
             pair = Pair.of(a[i], i);
 
-            if (heap.size() >= top) {
+            if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
                     heap.poll();
                     heap.add(pair);
@@ -24394,21 +24236,25 @@ public final class N {
         return res;
     }
 
-    public static <T extends Comparable<T>> T[] top(final T[] a, final int top) {
-        return top(a, top, null);
+    public static <T extends Comparable<T>> T[] top(final T[] a, final int n) {
+        return top(a, n, null);
     }
 
-    public static <T> T[] top(final T[] a, final int top, final Comparator<T> cmp) {
-        return top(a, 0, a.length, top, cmp);
+    public static <T> T[] top(final T[] a, final int n, final Comparator<? super T> cmp) {
+        return top(a, 0, a.length, n, cmp);
     }
 
-    public static <T extends Comparable<T>> T[] top(final T[] a, final int fromIndex, final int toIndex, final int top) {
-        return top(a, fromIndex, toIndex, top, null);
+    public static <T extends Comparable<T>> T[] top(final T[] a, final int fromIndex, final int toIndex, final int n) {
+        return top(a, fromIndex, toIndex, n, null);
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> T[] top(final T[] a, final int fromIndex, final int toIndex, final int top, final Comparator<T> cmp) {
-        if (top >= toIndex - fromIndex) {
+    public static <T> T[] top(final T[] a, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
@@ -24424,13 +24270,13 @@ public final class N {
             }
         };
 
-        final Queue<Pair<T, Integer>> heap = new PriorityQueue<Pair<T, Integer>>(top, pairCmp);
+        final Queue<Pair<T, Integer>> heap = new PriorityQueue<Pair<T, Integer>>(n, pairCmp);
         Pair<T, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
             pair = Pair.of(a[i], i);
 
-            if (heap.size() >= top) {
+            if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
                     heap.poll();
                     heap.add(pair);
@@ -24458,21 +24304,25 @@ public final class N {
         return res;
     }
 
-    public static <T extends Comparable<T>> List<T> top(final Collection<T> c, final int top) {
-        return top(c, top, null);
+    public static <T extends Comparable<T>> List<T> top(final Collection<T> c, final int n) {
+        return top(c, n, null);
     }
 
-    public static <T> List<T> top(final Collection<T> c, final int top, final Comparator<T> cmp) {
-        return top(c, 0, c.size(), top, cmp);
+    public static <T> List<T> top(final Collection<T> c, final int n, final Comparator<? super T> cmp) {
+        return top(c, 0, c.size(), n, cmp);
     }
 
-    public static <T extends Comparable<T>> List<T> top(final Collection<T> c, final int fromIndex, final int toIndex, final int top) {
-        return top(c, fromIndex, toIndex, top, null);
+    public static <T extends Comparable<T>> List<T> top(final Collection<T> c, final int fromIndex, final int toIndex, final int n) {
+        return top(c, fromIndex, toIndex, n, null);
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> List<T> top(final Collection<T> c, final int fromIndex, final int toIndex, final int top, final Comparator<T> cmp) {
-        if (top >= toIndex - fromIndex) {
+    public static <T> List<T> top(final Collection<T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
             final List<T> res = new ArrayList<T>(toIndex - fromIndex);
             final Iterator<T> iter = c.iterator();
             T e = null;
@@ -24502,7 +24352,7 @@ public final class N {
             }
         };
 
-        final Queue<Pair<T, Integer>> heap = new PriorityQueue<Pair<T, Integer>>(top, pairCmp);
+        final Queue<Pair<T, Integer>> heap = new PriorityQueue<Pair<T, Integer>>(n, pairCmp);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -24514,7 +24364,7 @@ public final class N {
 
                 pair = Pair.of(e, i);
 
-                if (heap.size() >= top) {
+                if (heap.size() >= n) {
                     if (pairCmp.compare(heap.peek(), pair) < 0) {
                         heap.poll();
                         heap.add(pair);
@@ -24537,7 +24387,7 @@ public final class N {
 
                 pair = Pair.of(e, i);
 
-                if (heap.size() >= top) {
+                if (heap.size() >= n) {
                     if (pairCmp.compare(heap.peek(), pair) < 0) {
                         heap.poll();
                         heap.add(pair);
@@ -24766,8 +24616,7 @@ public final class N {
      * @param a
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final T[] a) {
+    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a) {
         return distinct(collClass, a, 0, a.length);
     }
 
@@ -24781,9 +24630,8 @@ public final class N {
      * @param toIndex
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex) {
-        return (R) distinct(N.newInstance(collClass), a, fromIndex, toIndex);
+    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex) {
+        return distinct(N.newInstance(collClass), a, fromIndex, toIndex);
     }
 
     /**
@@ -24797,7 +24645,7 @@ public final class N {
      * @return
      * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
      */
-    static <T, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex) {
+    static <T, V extends Collection<T>> V distinct(final V outputResult, final T[] a, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         final Set<T> keySet = new HashSet<>();
@@ -24844,8 +24692,7 @@ public final class N {
      * @param c
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final Collection<? extends T> c) {
+    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c) {
         return distinct(collClass, c, 0, c.size());
     }
 
@@ -24859,10 +24706,9 @@ public final class N {
      * @param toIndex
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
+    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
             final int toIndex) {
-        return (R) distinct(N.newInstance(collClass), c, fromIndex, toIndex);
+        return distinct(N.newInstance(collClass), c, fromIndex, toIndex);
     }
 
     /**
@@ -24875,7 +24721,7 @@ public final class N {
      * @param toIndex
      * @return
      */
-    static <T, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+    static <T, V extends Collection<T>> V distinct(final V outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final Set<T> keySet = new HashSet<>();
@@ -24891,207 +24737,6 @@ public final class N {
 
             if (keySet.add(e)) {
                 outputResult.add(e);
-            }
-        }
-
-        return outputResult;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param func
-     * @return
-     */
-    public static <T, K> List<T> distinct(final T[] a, final Function<? super T, ? extends K> func) {
-        return distinct(a, 0, a.length, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     */
-    public static <T, K> List<T> distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        return distinct(ArrayList.class, a, fromIndex, toIndex, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param func
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final T[] a,
-            final Function<? super T, ? extends K> func) {
-        return distinct(collClass, a, 0, a.length, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        return (R) distinct(N.newInstance(collClass), a, fromIndex, toIndex, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    static <T, K, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final Set<K> keySet = new HashSet<>();
-        K key = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = func.apply(a[i]);
-
-            if (keySet.add(key)) {
-                outputResult.add(a[i]);
-            }
-        }
-
-        return outputResult;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param func
-     * @return
-     */
-    public static <T, K> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
-        return distinct(c, 0, c.size(), func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     */
-    public static <T, K> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        return distinct(ArrayList.class, c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param func
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final Collection<? extends T> c,
-            final Function<? super T, ? extends K> func) {
-        return distinct(collClass, c, 0, c.size(), func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
-            final int toIndex, final Function<? super T, ? extends K> func) {
-        return (R) distinct(N.newInstance(collClass), c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     */
-    static <T, K, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final Set<K> keySet = new HashSet<>();
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-            K key = null;
-            T e = null;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                e = list.get(i);
-
-                key = func.apply(e);
-
-                if (keySet.add(key)) {
-                    outputResult.add(e);
-                }
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            K key = null;
-            T e = null;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                key = func.apply(e);
-
-                if (keySet.add(key)) {
-                    outputResult.add(e);
-                }
             }
         }
 
@@ -25133,8 +24778,7 @@ public final class N {
      * @param cmp
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final T[] a, final Comparator<? super T> cmp) {
+    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final Comparator<? super T> cmp) {
         return distinct(collClass, a, 0, a.length, cmp);
     }
 
@@ -25149,19 +24793,18 @@ public final class N {
      * @param cmp
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex,
+    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
             final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (collClass.equals(SortedSet.class) || collClass.equals(TreeSet.class)) {
-            final R res = (R) new TreeSet<T>(cmp);
+            final V res = (V) new TreeSet<T>(cmp);
             for (int i = fromIndex; i < toIndex; i++) {
                 res.add(a[i]);
             }
             return res;
         } else {
-            return (R) distinct(N.newInstance(collClass), a, fromIndex, toIndex, cmp);
+            return distinct(N.newInstance(collClass), a, fromIndex, toIndex, cmp);
         }
     }
 
@@ -25177,7 +24820,7 @@ public final class N {
      * @return
      * @see java.util.stream.Collectors#groupingBy(java.util.cmption.Function)
      */
-    static <T, R extends Collection<T>> R distinct(final R outputResult, final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    static <T, V extends Collection<T>> V distinct(final V outputResult, final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         final Set<T> sortedSet = new TreeSet<T>(cmp);
         boolean hasNull = false;
 
@@ -25232,8 +24875,7 @@ public final class N {
      * @param cmp
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c,
             final Comparator<? super T> cmp) {
         return distinct(collClass, c, 0, c.size(), cmp);
     }
@@ -25249,13 +24891,12 @@ public final class N {
      * @param cmp
      * @return
      */
-    @SuppressWarnings("rawtypes")
-    public static <T, R extends Collection<T>> R distinct(final Class<? extends Collection> collClass, final Collection<? extends T> c, final int fromIndex,
+    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
             final int toIndex, final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (collClass.equals(SortedSet.class) || collClass.equals(TreeSet.class)) {
-            final R res = (R) new TreeSet<T>(cmp);
+            final V res = (V) new TreeSet<T>(cmp);
 
             if (c instanceof List && c instanceof RandomAccess) {
                 final List<T> list = (List<T>) c;
@@ -25280,7 +24921,7 @@ public final class N {
 
             return res;
         } else {
-            return (R) distinct(N.newInstance(collClass), c, fromIndex, toIndex, cmp);
+            return distinct(N.newInstance(collClass), c, fromIndex, toIndex, cmp);
         }
     }
 
@@ -25295,7 +24936,7 @@ public final class N {
      * @param cmp
      * @return
      */
-    static <T, R extends Collection<T>> R distinct(final R outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    static <T, V extends Collection<T>> V distinct(final V outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
@@ -25341,6 +24982,202 @@ public final class N {
                     if (sortedSet.add(e)) {
                         outputResult.add(e);
                     }
+                }
+            }
+        }
+
+        return outputResult;
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param func
+     * @return
+     */
+    public static <T, K> List<T> distinct(final T[] a, final Function<? super T, ? extends K> func) {
+        return distinct(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     */
+    public static <T, K> List<T> distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+        return distinct(ArrayList.class, a, fromIndex, toIndex, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param a
+     * @param func
+     * @return
+     */
+    public static <T, K, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final Function<? super T, ? extends K> func) {
+        return distinct(collClass, a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     */
+    public static <T, K, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> func) {
+        return distinct(N.newInstance(collClass), a, fromIndex, toIndex, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param func
+     * @return
+     */
+    public static <T, K> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
+        return distinct(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     */
+    public static <T, K> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> func) {
+        return distinct(ArrayList.class, c, fromIndex, toIndex, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param c
+     * @param func
+     * @return
+     */
+    public static <T, K, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c,
+            final Function<? super T, ? extends K> func) {
+        return distinct(collClass, c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param collClass
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     */
+    public static <T, K, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
+            final int toIndex, final Function<? super T, ? extends K> func) {
+        return distinct(N.newInstance(collClass), c, fromIndex, toIndex, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param outputResult
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+     */
+    static <T, K, V extends Collection<T>> V distinct(final V outputResult, final T[] a, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        final Set<K> keySet = new HashSet<>();
+        K key = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = func.apply(a[i]);
+
+            if (keySet.add(key)) {
+                outputResult.add(a[i]);
+            }
+        }
+
+        return outputResult;
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param outputResult
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @return
+     */
+    static <T, K, V extends Collection<T>> V distinct(final V outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        final Set<K> keySet = new HashSet<>();
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+            K key = null;
+            T e = null;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
+
+                key = func.apply(e);
+
+                if (keySet.add(key)) {
+                    outputResult.add(e);
+                }
+            }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+            K key = null;
+            T e = null;
+
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                key = func.apply(e);
+
+                if (keySet.add(key)) {
+                    outputResult.add(e);
                 }
             }
         }
@@ -31606,7 +31443,7 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T min(final T[] a, final int from, final int to) {
-        return (T) min(a, from, to, comparableCmp);
+        return (T) min(a, from, to, OBJECT_COMPARATOR);
     }
 
     /**
@@ -31630,7 +31467,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        cmp = cmp == null ? comparableCmp : cmp;
+        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
 
         T candidate = a[from];
         for (int i = from + 1; i < to; i++) {
@@ -31659,7 +31496,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) min(c, from, to, comparableCmp);
+        return (T) min(c, from, to, OBJECT_COMPARATOR);
     }
 
     public static <T> T min(final Collection<T> c, Comparator<? super T> cmp) {
@@ -31686,7 +31523,7 @@ public final class N {
             throw new IllegalArgumentException("The size of collection can't be null or empty");
         }
 
-        cmp = cmp == null ? comparableCmp : cmp;
+        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
 
         T candidate = null;
         T e = null;
@@ -32259,7 +32096,7 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T max(final T[] a, final int from, final int to) {
-        return (T) max(a, from, to, comparableCmp);
+        return (T) max(a, from, to, OBJECT_COMPARATOR);
     }
 
     /**
@@ -32283,7 +32120,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        cmp = cmp == null ? comparableCmp : cmp;
+        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
 
         T candidate = a[from];
         for (int i = from + 1; i < to; i++) {
@@ -32308,7 +32145,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) max(c, from, to, comparableCmp);
+        return (T) max(c, from, to, OBJECT_COMPARATOR);
     }
 
     public static <T> T max(final Collection<T> c, Comparator<? super T> cmp) {
@@ -32335,7 +32172,7 @@ public final class N {
             throw new IllegalArgumentException("The size of collection can't be null or empty");
         }
 
-        cmp = cmp == null ? comparableCmp : cmp;
+        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
 
         T candidate = null;
         T e = null;
@@ -32808,7 +32645,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) median(a, from, to, comparableCmp);
+        return (T) median(a, from, to, OBJECT_COMPARATOR);
     }
 
     public static <T> T median(final T[] a, Comparator<? super T> cmp) {
@@ -32833,7 +32670,7 @@ public final class N {
 
         checkIndex(from, to, a.length);
 
-        cmp = cmp == null ? comparableCmp : cmp;
+        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
 
         final int len = to - from;
 
@@ -32855,7 +32692,7 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T median(final Collection<? extends T> c, final int from, final int to) {
-        return (T) median(c, from, to, comparableCmp);
+        return (T) median(c, from, to, OBJECT_COMPARATOR);
     }
 
     public static <T> T median(final Collection<T> c, Comparator<? super T> cmp) {
@@ -32863,7 +32700,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) median(c, 0, c.size(), comparableCmp);
+        return median(c, 0, c.size(), cmp);
     }
 
     /**
@@ -32880,7 +32717,7 @@ public final class N {
 
         checkIndex(from, to, c.size());
 
-        cmp = cmp == null ? comparableCmp : cmp;
+        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
 
         final int len = to - from;
 
@@ -32891,7 +32728,7 @@ public final class N {
      * 
      * @param a
      * @param k
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static char kthLargest(final char[] a, final int k) {
         if (N.isNullOrEmpty(a)) {
@@ -32913,7 +32750,7 @@ public final class N {
      * 
      * @param a
      * @param k
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static byte kthLargest(final byte[] a, final int k) {
         if (N.isNullOrEmpty(a)) {
@@ -32935,7 +32772,7 @@ public final class N {
      * 
      * @param a
      * @param k
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static short kthLargest(final short[] a, final int k) {
         if (N.isNullOrEmpty(a)) {
@@ -32957,7 +32794,7 @@ public final class N {
      * 
      * @param a
      * @param k
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static int kthLargest(final int[] a, final int k) {
         if (N.isNullOrEmpty(a)) {
@@ -32987,7 +32824,7 @@ public final class N {
      * 
      * @param a
      * @param k
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static long kthLargest(final long[] a, final int k) {
         if (N.isNullOrEmpty(a)) {
@@ -33017,7 +32854,7 @@ public final class N {
      * 
      * @param a
      * @param k
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static float kthLargest(final float[] a, final int k) {
         if (N.isNullOrEmpty(a)) {
@@ -33047,7 +32884,7 @@ public final class N {
      * 
      * @param a
      * @param k
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static double kthLargest(final double[] a, final int k) {
         if (N.isNullOrEmpty(a)) {
@@ -33077,7 +32914,7 @@ public final class N {
      * 
      * @param a
      * @param k
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static <T extends Comparable<T>> T kthLargest(final T[] a, final int k) {
         if (N.isNullOrEmpty(a)) {
@@ -33108,7 +32945,7 @@ public final class N {
      * @param a
      * @param k
      * @param cmp
-     * @return the min(k, length of this array) largest element.
+     * @return the kth largest element.
      */
     public static <T> T kthLargest(final T[] a, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a)) {
@@ -33139,7 +32976,7 @@ public final class N {
      * 
      * @param c
      * @param k
-     * @return the min(k, length of this collection) largest element.
+     * @return the kth largest element.
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int k) {
         if (N.isNullOrEmpty(c)) {
@@ -33155,7 +32992,7 @@ public final class N {
      * @param from
      * @param to
      * @param k
-     * @return the min(k, to - from) largest element.
+     * @return the kth largest element.
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
@@ -33170,7 +33007,7 @@ public final class N {
      * @param c
      * @param k
      * @param cmp
-     * @return the min(k, length of this collection) largest element.
+     * @return the kth largest element.
      */
     public static <T> T kthLargest(final Collection<T> c, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
@@ -33187,7 +33024,7 @@ public final class N {
      * @param to
      * @param k
      * @param cmp
-     * @return the min(k, to - from) largest element.
+     * @return the kth largest element.
      */
     public static <T> T kthLargest(final Collection<T> c, final int from, final int to, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c) || to - from < 1) {

@@ -76,7 +76,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     static final Comparator<Short> SHORT_COMPARATOR = new Comparator<Short>() {
         @Override
         public int compare(Short o1, Short o2) {
-            return Double.compare(o1, o2);
+            return Short.compare(o1, o2);
         }
     };
 
@@ -222,6 +222,10 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return the new stream
      */
     public abstract ShortStream distinct();
+
+    public abstract ShortStream top(int n);
+
+    public abstract ShortStream top(final int n, Comparator<? super Short> comparator);
 
     /**
      * Returns a stream consisting of the elements of this stream in sorted
@@ -519,7 +523,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     /**
      * 
      * @param k
-     * @return OptionalByte.empty() if there is no element or min(k, length of this stream) largest element.
+     * @return OptionalByte.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
     public abstract OptionalShort kthLargest(int k);
 

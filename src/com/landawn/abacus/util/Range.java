@@ -61,7 +61,7 @@ public final class Range<T> implements Serializable {
     /**
      * The ordering scheme used in this range.
      */
-    private final Comparator<T> comparator;
+    private final Comparator<? super T> comparator;
     /**
      * Cached output hashCode (class is immutable).
      */
@@ -78,7 +78,7 @@ public final class Range<T> implements Serializable {
      *            the comparator to be used, null for natural ordering
      */
     @SuppressWarnings("unchecked")
-    private Range(final T element1, final T element2, final Comparator<T> cmp) {
+    private Range(final T element1, final T element2, final Comparator<? super T> cmp) {
         if (element1 == null || element2 == null) {
             throw new IllegalArgumentException("Elements in a range must not be null: element1=" + element1 + ", element2=" + element2);
         }
@@ -141,7 +141,7 @@ public final class Range<T> implements Serializable {
      * @throws ClassCastException
      *             if using natural ordering and the elements are not {@code Comparable}
      */
-    public static <T> Range<T> of(final T element, final Comparator<T> comparator) {
+    public static <T> Range<T> of(final T element, final Comparator<? super T> comparator) {
         return of(element, element, comparator);
     }
 
@@ -203,7 +203,7 @@ public final class Range<T> implements Serializable {
      * @throws ClassCastException
      *             if using natural ordering and the elements are not {@code Comparable}
      */
-    public static <T> Range<T> of(final T fromInclusive, final T toInclusive, final Comparator<T> comparator) {
+    public static <T> Range<T> of(final T fromInclusive, final T toInclusive, final Comparator<? super T> comparator) {
         return new Range<T>(fromInclusive, toInclusive, comparator);
     }
 
@@ -241,7 +241,7 @@ public final class Range<T> implements Serializable {
      * 
      * @return the comparator being used, not null
      */
-    public Comparator<T> getComparator() {
+    public Comparator<? super T> getComparator() {
         return comparator;
     }
 

@@ -81,7 +81,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     static final Comparator<Integer> INT_COMPARATOR = new Comparator<Integer>() {
         @Override
         public int compare(Integer o1, Integer o2) {
-            return Double.compare(o1, o2);
+            return Integer.compare(o1, o2);
         }
     };
 
@@ -272,6 +272,10 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract IntStream distinct();
 
+    public abstract IntStream top(int n);
+
+    public abstract IntStream top(final int n, Comparator<? super Integer> comparator);
+
     /**
      * Returns a stream consisting of the elements of this stream in sorted
      * order.
@@ -282,6 +286,8 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return the new stream
      */
     public abstract IntStream sorted();
+
+    public abstract IntStream parallelSorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -581,7 +587,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     /**
      * 
      * @param k
-     * @return OptionalByte.empty() if there is no element or min(k, length of this stream) largest element.
+     * @return OptionalByte.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
     public abstract OptionalInt kthLargest(int k);
 

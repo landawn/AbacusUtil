@@ -1,7 +1,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -1369,8 +1368,35 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public Stream<T> distinct(Comparator<? super T> comparator) {
+        final List<T> list = N.distinct(elements, fromIndex, toIndex, comparator);
+        final T[] a = list.toArray((T[]) N.newArray(elements.getClass().getComponentType(), list.size()));
+        return new ArrayStream<T>(a, closeHandlers);
+    }
+
+    @Override
+    public Stream<T> top(int n) {
+        return top(n, OBJECT_COMPARATOR);
+    }
+
+    @Override
+    public Stream<T> top(int n, Comparator<? super T> comparator) {
+        if (n < 1) {
+            throw new IllegalArgumentException("'n' can not be less than 1");
+        }
+
+        if (n >= toIndex - fromIndex) {
+            return this;
+        } else if (sorted && comparator == cmp) {
+            return new ArrayStream<T>(elements, N.max(fromIndex, toIndex - n), toIndex, closeHandlers, sorted, cmp);
+        } else {
+            return new ArrayStream<T>(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers);
+        }
+    }
+
+    @Override
     public Stream<T> sorted() {
-        return sorted(null);
+        return sorted(OBJECT_COMPARATOR);
     }
 
     @Override
@@ -1380,7 +1406,23 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        Arrays.sort(a, comparator);
+        N.sort(a, comparator);
+        return new ArrayStream<T>(a, closeHandlers, true, comparator);
+    }
+
+    @Override
+    public Stream<T> parallelSorted() {
+        return parallelSorted(OBJECT_COMPARATOR);
+    }
+
+    @Override
+    public Stream<T> parallelSorted(Comparator<? super T> comparator) {
+        if (sorted && this.cmp == comparator) {
+            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp);
+        }
+
+        final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
+        N.parallelSort(a, comparator);
         return new ArrayStream<T>(a, closeHandlers, true, comparator);
     }
 
@@ -1537,7 +1579,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Optional<T> kthLargest(int k, Comparator<? super T> cmp) {
-        if (fromIndex == toIndex) {
+        if (count() == 0 || k > toIndex - fromIndex) {
             return Optional.empty();
         }
 

@@ -78,7 +78,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     static final Comparator<Long> LONG_COMPARATOR = new Comparator<Long>() {
         @Override
         public int compare(Long o1, Long o2) {
-            return Double.compare(o1, o2);
+            return Long.compare(o1, o2);
         }
     };
 
@@ -257,6 +257,10 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      */
     public abstract LongStream distinct();
 
+    public abstract LongStream top(int n);
+
+    public abstract LongStream top(final int n, Comparator<? super Long> comparator);
+
     /**
      * Returns a stream consisting of the elements of this stream in sorted
      * order.
@@ -267,6 +271,8 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @return the new stream
      */
     public abstract LongStream sorted();
+
+    public abstract LongStream parallelSorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -566,7 +572,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     /**
      * 
      * @param k
-     * @return OptionalByte.empty() if there is no element or min(k, length of this stream) largest element.
+     * @return OptionalByte.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
     public abstract OptionalLong kthLargest(int k);
 

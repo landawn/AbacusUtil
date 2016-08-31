@@ -1,3 +1,19 @@
+========Changes in 0.9.4=========================================================================
+
+1, Add top(...)/parallelSorted(...) to Stream/IntStream/DoubleStream/.../ObjectList/IntList/DoubleList/....
+
+2, Change the specification of kthLargest(...) in stream. Return OptionalXXX if the length of the stream is 0 or less than k. 
+
+3, bug fix and improvements
+
+========Changes in 0.9.3=========================================================================
+
+1, Rename methods from asUnmodifiableXXX to asImmutableXXX.
+
+2, Add flatMap3(...) to N/Stream/ObjectList/IntList/DoubleList/...
+
+3, bug fix and improvements
+
 ========Changes in 0.9.2=========================================================================
 
 1, Add split/splitIntoList/splitIntoSet to Stream/IntStream/LongStream/DoubleStream/...
