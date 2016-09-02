@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,6 +31,7 @@ import java.util.Set;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -253,7 +255,7 @@ public final class Multiset<E> implements Iterable<E> {
         return Optional.of((Map.Entry<E, Integer>) MapEntry.of(maxCountElement, maxCount));
     }
 
-    public long sumOfOccurrences() {
+    public Long sumOfOccurrences() {
         long sum = 0;
 
         for (MutableInt count : valueMap.values()) {
@@ -357,6 +359,45 @@ public final class Multiset<E> implements Iterable<E> {
         return count.intValue();
     }
 
+    public int addAndGet(final E e) {
+        add(e);
+
+        return get(e);
+    }
+
+    public int getAndAdd(final E e) {
+        final int result = get(e);
+
+        add(e);
+
+        return result;
+    }
+
+    public int addAndGet(final E e, final int occurrences) {
+        add(e, occurrences);
+
+        return get(e);
+    }
+
+    public int getAndAdd(final E e, final int occurrences) {
+        final int result = get(e);
+
+        add(e, occurrences);
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param m
+     * @throws IllegalArgumentException if the occurrences of element is less than 0.
+     */
+    public void addAll(final Multiset<? extends E> multiset) throws IllegalArgumentException {
+        for (Map.Entry<? extends E, MutableInt> entry : multiset.entrySet()) {
+            add(entry.getKey(), entry.getValue().intValue());
+        }
+    }
+
     /**
      * 
      * @param c
@@ -385,17 +426,6 @@ public final class Multiset<E> implements Iterable<E> {
      */
     public void addAll(final Map<? extends E, Integer> m) throws IllegalArgumentException {
         for (Map.Entry<? extends E, Integer> entry : m.entrySet()) {
-            add(entry.getKey(), entry.getValue().intValue());
-        }
-    }
-
-    /**
-     * 
-     * @param m
-     * @throws IllegalArgumentException if the occurrences of element is less than 0.
-     */
-    public void addAll(final Multiset<? extends E> multiset) throws IllegalArgumentException {
-        for (Map.Entry<? extends E, MutableInt> entry : multiset.entrySet()) {
             add(entry.getKey(), entry.getValue().intValue());
         }
     }
@@ -455,6 +485,34 @@ public final class Multiset<E> implements Iterable<E> {
         }
 
         return count.intValue();
+    }
+
+    public int removeAndGet(final E e) {
+        remove(e);
+
+        return get(e);
+    }
+
+    public int getAndRemove(final E e) {
+        final int result = get(e);
+
+        remove(e);
+
+        return result;
+    }
+
+    public int removeAndGet(final E e, final int occurrences) {
+        remove(e, occurrences);
+
+        return get(e);
+    }
+
+    public int getAndRemove(final E e, final int occurrences) {
+        final int result = get(e);
+
+        remove(e, occurrences);
+
+        return result;
     }
 
     public void removeAllOccurrences(final E e) {
@@ -591,10 +649,45 @@ public final class Multiset<E> implements Iterable<E> {
         return valueMap.keySet().toArray(a);
     }
 
+    /**
+     * 
+     * @return a list with all elements, each of them is repeated with the occurrences in this <code>Multiset</code>   
+     */
+    public List<E> flat() {
+        final Object[] a = new Object[sumOfOccurrences().intValue()];
+
+        int fromIndex = 0;
+        int toIndex = 0;
+
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            toIndex = fromIndex + entry.getValue().intValue();
+
+            Arrays.fill(a, fromIndex, toIndex, entry.getKey());
+            fromIndex = toIndex;
+        }
+
+        return N.asList((E[]) a);
+    }
+
     public void forEach(BiConsumer<? super E, MutableInt> action) {
         for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
             action.accept(entry.getKey(), entry.getValue());
         }
+    }
+
+    /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(BiFunction<? super E, MutableInt, Boolean> action) {
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            if (action.apply(entry.getKey(), entry.getValue()).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public Stream<Map.Entry<E, MutableInt>> stream() {

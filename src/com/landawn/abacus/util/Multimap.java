@@ -30,6 +30,7 @@ import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -49,11 +50,11 @@ public final class Multimap<K, E, V extends Collection<E>> {
     private final Class<V> collectionType;
     private final Class<V> concreteCollectionType;
 
-    public Multimap() {
+    Multimap() {
         this(HashMap.class, ArrayList.class);
     }
 
-    public Multimap(int initialCapacity) {
+    Multimap(int initialCapacity) {
         this(new HashMap<K, V>(initialCapacity), ArrayList.class);
     }
 
@@ -93,7 +94,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         }
     }
 
-    public Multimap(final Map<? extends K, ? extends E> m) {
+    Multimap(final Map<? extends K, ? extends E> m) {
         this();
 
         putAll(m);
@@ -446,6 +447,21 @@ public final class Multimap<K, E, V extends Collection<E>> {
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             action.accept(entry.getKey(), entry.getValue());
         }
+    }
+
+    /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(BiFunction<? super K, ? super V, Boolean> action) {
+        for (Map.Entry<K, V> entry : valueMap.entrySet()) {
+            if (action.apply(entry.getKey(), entry.getValue()).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public Stream<Map.Entry<K, V>> stream() {

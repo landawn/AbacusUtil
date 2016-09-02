@@ -139,27 +139,18 @@ import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
-import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.BytePredicate;
-import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
-import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
-import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
-import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
-import com.landawn.abacus.util.function.DoubleUnaryOperator;
-import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
-import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
-import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedBooleanConsumer;
 import com.landawn.abacus.util.function.IndexedByteConsumer;
@@ -170,24 +161,16 @@ import com.landawn.abacus.util.function.IndexedFloatConsumer;
 import com.landawn.abacus.util.function.IndexedIntConsumer;
 import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IndexedShortConsumer;
-import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
-import com.landawn.abacus.util.function.IntUnaryOperator;
-import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
-import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
-import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortPredicate;
-import com.landawn.abacus.util.function.ToDoubleFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * <p>
@@ -20439,35 +20422,37 @@ public final class N {
         return result;
     }
 
-    public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final Predicate<? super T> filter) {
-        return filter(outputResult, a, filter, Integer.MAX_VALUE);
+    public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+        return filter(a, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final Predicate<? super T> filter, final int max) {
-        return filter(outputResult, a, 0, a.length, filter, max);
+    public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
+        return filter(a, 0, a.length, filter, max, supplier);
     }
 
-    public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final int fromIndex, final int toIndex,
-            final Predicate<? super T> filter) {
-        return filter(outputResult, a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+            final IntFunction<R> supplier) {
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
-     * @param outputResult
      * @param a
      * @param fromIndex
      * @param toIndex
      * @param filter
      * @param max
+     * @param supplier
      * @return
      */
-    public static <T, R extends Collection<? super T>> R filter(final R outputResult, final T[] a, final int fromIndex, final int toIndex,
-            final Predicate<? super T> filter, final int max) {
+    public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max,
+            final IntFunction<R> supplier) {
         N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        final R outputResult = supplier.apply(N.min(64, toIndex - fromIndex));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
@@ -20479,58 +20464,55 @@ public final class N {
         return outputResult;
     }
 
-    public static <E, T extends Collection<E>> T filter(final T c, final Predicate<? super E> filter) {
+    public static <T> List<T> filter(final Collection<T> c, final Predicate<? super T> filter) {
         return filter(c, filter, Integer.MAX_VALUE);
     }
 
-    public static <E, T extends Collection<E>> T filter(final T c, final Predicate<? super E> filter, final int max) {
+    public static <T> List<T> filter(final Collection<T> c, final Predicate<? super T> filter, final int max) {
         return filter(c, 0, c.size(), filter, max);
     }
 
-    public static <E, T extends Collection<E>> T filter(final T c, final int fromIndex, final int toIndex, final Predicate<? super E> filter) {
+    public static <T> List<T> filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
-    public static <E, T extends Collection<E>> T filter(final T c, final int fromIndex, final int toIndex, final Predicate<? super E> filter, final int max) {
-        T outputResult = null;
-        Constructor<?> constructor = N.getDeclaredConstructor(c.getClass());
-
-        if (constructor == null) {
-            constructor = N.getDeclaredConstructor(c.getClass(), int.class);
-            outputResult = (T) N.invokeConstructor(constructor, min(9, (toIndex - fromIndex)));
-        } else {
-            outputResult = (T) N.invokeConstructor(constructor);
-        }
-
-        return filter(outputResult, c, fromIndex, toIndex, filter, max);
+    public static <T> List<T> filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
+        return filter(c, fromIndex, toIndex, filter, max, new IntFunction<List<T>>() {
+            @Override
+            public List<T> apply(int len) {
+                return new ArrayList<>(len);
+            }
+        });
     }
 
-    public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final Predicate<? super E> filter) {
-        return filter(outputResult, c, filter, Integer.MAX_VALUE);
+    public static <T, R extends Collection<T>> R filter(final Collection<T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+        return filter(c, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final Predicate<? super E> filter,
-            final int max) {
-        return filter(outputResult, c, 0, c.size(), filter, max);
+    public static <T, R extends Collection<T>> R filter(final Collection<T> c, final Predicate<? super T> filter, final int max,
+            final IntFunction<R> supplier) {
+        return filter(c, 0, c.size(), filter, max, supplier);
     }
 
-    public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final int fromIndex,
-            final int toIndex, final Predicate<? super E> filter) {
-        return filter(outputResult, c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    public static <T, R extends Collection<T>> R filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+            final IntFunction<R> supplier) {
+        return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <E, T extends Collection<E>, R extends Collection<? super E>> R filter(final R outputResult, final T c, final int fromIndex,
-            final int toIndex, final Predicate<? super E> filter, final int max) {
+    public static <T, R extends Collection<T>> R filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+            final int max, final IntFunction<R> supplier) {
         N.requireNonNull(c);
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        final R outputResult = supplier.apply(N.min(64, toIndex - fromIndex));
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
             return outputResult;
         }
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<E> list = (List<E>) c;
-            E e = null;
+            final List<T> list = (List<T>) c;
+            T e = null;
 
             for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
                 e = list.get(i);
@@ -20543,7 +20525,7 @@ public final class N {
         } else {
             int idx = 0;
             int cnt = 0;
-            for (E e : c) {
+            for (T e : c) {
                 if (cnt >= max) {
                     break;
                 }
@@ -20989,7 +20971,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <E, T extends Collection<E>> int count(final T c, final Predicate<? super E> filter) {
+    public static <T> int count(final Collection<T> c, final Predicate<? super T> filter) {
         if (N.isNullOrEmpty(c)) {
             return 0;
         }
@@ -21008,7 +20990,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <E, T extends Collection<E>> int count(final T c, final int fromIndex, final int toIndex, final Predicate<? super E> filter) {
+    public static <T> int count(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -21018,7 +21000,7 @@ public final class N {
         int count = 0;
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<E> list = (List<E>) c;
+            final List<T> list = (List<T>) c;
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (filter.test(list.get(i))) {
@@ -21028,7 +21010,7 @@ public final class N {
         } else {
             int idx = 0;
 
-            for (E e : c) {
+            for (T e : c) {
                 if (idx++ < fromIndex) {
                     continue;
                 }
@@ -21408,7 +21390,7 @@ public final class N {
      * @param a
      * @param action
      */
-    public static <T> void forEach(final T[] a, final Consumer<T> action) {
+    public static <T> void forEach(final T[] a, final Consumer<? super T> action) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -21430,7 +21412,7 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<T> action) {
+    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
@@ -21452,12 +21434,12 @@ public final class N {
      * @param c
      * @param action
      */
-    public static <E, T extends Collection<E>> void forEach(final T c, final Consumer<E> action) {
+    public static <T> void forEach(final Collection<T> c, final Consumer<? super T> action) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
 
-        for (E e : c) {
+        for (T e : c) {
             action.accept(e);
         }
     }
@@ -21474,7 +21456,7 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <E, T extends Collection<E>> void forEach(final T c, final int fromIndex, final int toIndex, final Consumer<E> action) {
+    public static <T> void forEach(final Collection<T> c, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -21482,7 +21464,7 @@ public final class N {
         }
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<E> list = (List<E>) c;
+            final List<T> list = (List<T>) c;
 
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(list.get(i));
@@ -21490,7 +21472,7 @@ public final class N {
         } else {
             int idx = 0;
 
-            for (E e : c) {
+            for (T e : c) {
                 if (idx++ < fromIndex) {
                     continue;
                 }
@@ -21520,7 +21502,7 @@ public final class N {
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21544,7 +21526,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21564,7 +21546,7 @@ public final class N {
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21588,7 +21570,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21608,7 +21590,7 @@ public final class N {
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21632,7 +21614,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21652,7 +21634,7 @@ public final class N {
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21676,7 +21658,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21696,7 +21678,7 @@ public final class N {
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21720,7 +21702,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21740,7 +21722,7 @@ public final class N {
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21764,7 +21746,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21784,7 +21766,7 @@ public final class N {
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21808,7 +21790,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21828,7 +21810,7 @@ public final class N {
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21852,7 +21834,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21866,13 +21848,13 @@ public final class N {
      * @param a
      * @param action
      */
-    public static <T> void forEach(final T[] a, final IndexedConsumer<T> action) {
+    public static <T> void forEach(final T[] a, final IndexedConsumer<? super T> action) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
         for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21888,7 +21870,7 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<T> action) {
+    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
@@ -21896,7 +21878,7 @@ public final class N {
         }
 
         for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i], i);
+            action.accept(i, a[i]);
         }
     }
 
@@ -21910,12 +21892,15 @@ public final class N {
      * @param c
      * @param action
      */
-    public static <E, T extends Collection<E>> void forEach(final T c, final IndexedConsumer<E> action) {
+    public static <T> void forEach(final Collection<T> c, final IndexedConsumer<? super T> action) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
 
-        forEach(c, 0, c.size(), action);
+        int idx = 0;
+        for (T e : c) {
+            action.accept(idx++, e);
+        }
     }
 
     /**
@@ -21930,7 +21915,7 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <E, T extends Collection<E>> void forEach(final T c, final int fromIndex, final int toIndex, final IndexedConsumer<E> action) {
+    public static <T> void forEach(final Collection<T> c, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -21938,13 +21923,13 @@ public final class N {
         }
 
         if (c instanceof List && c instanceof RandomAccess) {
-            final List<E> list = (List<E>) c;
+            final List<T> list = (List<T>) c;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(list.get(i), i);
+                action.accept(i, list.get(i));
             }
         } else {
-            final Iterator<E> iter = c.iterator();
+            final Iterator<T> iter = c.iterator();
             int idx = 0;
 
             while (idx < fromIndex && iter.hasNext()) {
@@ -21953,7 +21938,7 @@ public final class N {
             }
 
             while (iter.hasNext()) {
-                action.accept(iter.next(), idx);
+                action.accept(idx, iter.next());
 
                 if (++idx >= toIndex) {
                     break;
@@ -21963,1735 +21948,2012 @@ public final class N {
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
-     * @param mapper
-     * @return
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
      */
-    static char[] map(final char[] a, final CharUnaryOperator mapper) {
-        return map(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static char[] map(final char[] a, final int fromIndex, final int toIndex, final CharUnaryOperator mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final char[] res = new char[a.length];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res[i - fromIndex] = mapper.applyAsChar(a[i]);
+    public static <T> boolean forEach2(final T[] a, final Function<? super T, Boolean> action) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
         }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static int[] map(final int[] a, final IntUnaryOperator mapper) {
-        return map(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static int[] map(final int[] a, final int fromIndex, final int toIndex, final IntUnaryOperator mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final int[] res = new int[a.length];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res[i - fromIndex] = mapper.applyAsInt(a[i]);
+    
+        for (int i = 0, len = a.length; i < len; i++) {
+            if (action.apply(a[i]).booleanValue() == false) {
+                return false;
+            }
         }
-
-        return res;
+    
+        return true;
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static long[] map(final long[] a, final LongUnaryOperator mapper) {
-        return map(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param mapper
-     * @return
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
      */
-    static long[] map(final long[] a, final int fromIndex, final int toIndex, final LongUnaryOperator mapper) {
+    public static <T> boolean forEach2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final long[] res = new long[a.length];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res[i - fromIndex] = mapper.applyAsLong(a[i]);
+    
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return true;
         }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static float[] map(final float[] a, final FloatUnaryOperator mapper) {
-        return map(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static float[] map(final float[] a, final int fromIndex, final int toIndex, final FloatUnaryOperator mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final float[] res = new float[a.length];
-
+    
         for (int i = fromIndex; i < toIndex; i++) {
-            res[i - fromIndex] = mapper.applyAsFloat(a[i]);
+            if (action.apply(a[i]).booleanValue() == false) {
+                return false;
+            }
         }
-
-        return res;
+    
+        return true;
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static double[] map(final double[] a, final DoubleUnaryOperator mapper) {
-        return map(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static double[] map(final double[] a, final int fromIndex, final int toIndex, final DoubleUnaryOperator mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final double[] res = new double[a.length];
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res[i - fromIndex] = mapper.applyAsDouble(a[i]);
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#map(java.util.function.Function)
-     */
-    public static <T, R> List<R> map(final T[] a, final Function<? super T, ? extends R> func) {
-        return map(ArrayList.class, a, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#map(java.util.function.Function)
-     */
-    public static <T, R> List<R> map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
-        return map(ArrayList.class, a, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#map(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final T[] a, final Function<? super T, ? extends R> func) {
-        return map(collClass, a, 0, a.length, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#map(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends R> func) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.add(func.apply(a[i]));
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#map(java.util.function.Function)
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
      */
-    public static <T, R> List<R> map(final Collection<? extends T> c, final Function<? super T, ? extends R> func) {
-        return map(ArrayList.class, c, func);
+    public static <T> boolean forEach2(final Collection<T> c, final Function<? super T, Boolean> action) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+    
+        for (T e : c) {
+            if (action.apply(e).booleanValue() == false) {
+                return false;
+            }
+        }
+    
+        return true;
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
      * 
      * @param c
      * @param fromIndex
      * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#map(java.util.function.Function)
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
      */
-    public static <T, R> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
-        return map(ArrayList.class, c, fromIndex, toIndex, func);
+    public static <T> boolean forEach2(final Collection<T> c, final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+            return true;
+        }
+    
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+    
+            for (int i = fromIndex; i < toIndex; i++) {
+                if (action.apply(list.get(i)).booleanValue() == false) {
+                    return false;
+                }
+            }
+        } else {
+            int idx = 0;
+    
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+    
+                if (action.apply(e).booleanValue() == false) {
+                    return false;
+                }
+    
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+    
+        return true;
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
      * 
-     * @param collClass
+     * @param a
+     * @param action break if the action returns false. The first parameter is the index.
+     * @return false if it breaks, otherwise true.
+     */
+    public static <T> boolean forEach2(final T[] a, final BiFunction<Integer, ? super T, Boolean> action) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            if (action.apply(i, a[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false. The first parameter is the index.
+     * @return false if it breaks, otherwise true.
+     */
+    public static <T> boolean forEach2(final T[] a, final int fromIndex, final int toIndex, final BiFunction<Integer, ? super T, Boolean> action) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return true;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(i, a[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
+     * 
      * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#map(java.util.function.Function)
+     * @param action break if the action returns false. The first parameter is the index.
+     * @return false if it breaks, otherwise true.
      */
-    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final Collection<? extends T> c,
-            final Function<? super T, ? extends R> func) {
-        return map(collClass, c, 0, c.size(), func);
+    public static <T> boolean forEach2(final Collection<T> c, final BiFunction<Integer, ? super T, Boolean> action) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
+        int idx = 0;
+        for (T e : c) {
+            if (action.apply(idx++, e).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
-     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
      * 
-     * @param collClass
      * @param c
      * @param fromIndex
      * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#map(java.util.function.Function)
+     * @param action break if the action returns false. The first parameter is the index.
+     * @return false if it breaks, otherwise true.
      */
-    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
-            final int toIndex, final Function<? super T, ? extends R> func) {
+    public static <T> boolean forEach2(final Collection<T> c, final int fromIndex, final int toIndex, final BiFunction<Integer, ? super T, Boolean> action) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final V res = N.newInstance(collClass);
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+            return true;
+        }
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                res.add(func.apply(list.get(i)));
+                if (action.apply(i, list.get(i)).booleanValue() == false) {
+                    return false;
+                }
             }
         } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
+            int idx = 0;
 
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
+            for (T e : c) {
+                if (idx++ < fromIndex) {
                     continue;
                 }
 
-                res.add(func.apply(e));
-            }
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static char[] flatMap(final char[] a, final CharFunction<char[]> mapper) {
-        return flatMap(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static char[] flatMap(final char[] a, final int fromIndex, final int toIndex, final CharFunction<char[]> mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final CharList res = new CharList();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(CharList.of(mapper.apply(a[i])));
-        }
-
-        return res.trimToSize().array();
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static int[] flatMap(final int[] a, final IntFunction<int[]> mapper) {
-        return flatMap(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static int[] flatMap(final int[] a, final int fromIndex, final int toIndex, final IntFunction<int[]> mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final IntList res = new IntList();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(IntList.of(mapper.apply(a[i])));
-        }
-
-        return res.trimToSize().array();
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static long[] flatMap(final long[] a, final LongFunction<long[]> mapper) {
-        return flatMap(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static long[] flatMap(final long[] a, final int fromIndex, final int toIndex, final LongFunction<long[]> mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final LongList res = new LongList();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(LongList.of(mapper.apply(a[i])));
-        }
-
-        return res.trimToSize().array();
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static float[] flatMap(final float[] a, final FloatFunction<float[]> mapper) {
-        return flatMap(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static float[] flatMap(final float[] a, final int fromIndex, final int toIndex, final FloatFunction<float[]> mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final FloatList res = new FloatList();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(FloatList.of(mapper.apply(a[i])));
-        }
-
-        return res.trimToSize().array();
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param mapper
-     * @return
-     */
-    static double[] flatMap(final double[] a, final DoubleFunction<double[]> mapper) {
-        return flatMap(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param mapper
-     * @return
-     */
-    static double[] flatMap(final double[] a, final int fromIndex, final int toIndex, final DoubleFunction<double[]> mapper) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final DoubleList res = new DoubleList();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(DoubleList.of(mapper.apply(a[i])));
-        }
-
-        return res.trimToSize().array();
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap(final T[] a, final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(ArrayList.class, a, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap(final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(ArrayList.class, a, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final T[] a,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(collClass, a, 0, a.length, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(func.apply(a[i]));
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap(final Collection<? extends T> c, final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(ArrayList.class, c, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(ArrayList.class, c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final Collection<? extends T> c,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(collClass, c, 0, c.size(), func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
-            final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final V res = N.newInstance(collClass);
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                res.addAll(func.apply(list.get(i)));
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
+                if (action.apply(idx, e).booleanValue() == false) {
+                    return false;
                 }
 
-                res.addAll(func.apply(e));
-            }
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap2(final T[] a, final Function<? super T, R[]> func) {
-        return flatMap2(ArrayList.class, a, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
-        return flatMap2(ArrayList.class, a, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final T[] a, final Function<? super T, R[]> func) {
-        return flatMap2(collClass, a, 0, a.length, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, R[]> func) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(Arrays.asList(func.apply(a[i])));
-        }
-
-        return res;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap2(final Collection<? extends T> c, final Function<? super T, R[]> func) {
-        return flatMap2(ArrayList.class, c, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R> List<R> flatMap2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
-        return flatMap2(ArrayList.class, c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final Collection<? extends T> c,
-            final Function<? super T, R[]> func) {
-        return flatMap2(collClass, c, 0, c.size(), func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
-     */
-    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
-            final int toIndex, final Function<? super T, R[]> func) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final V res = N.newInstance(collClass);
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                res.addAll(Arrays.asList(func.apply(list.get(i))));
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
+                if (idx >= toIndex) {
+                    break;
                 }
-
-                res.addAll(Arrays.asList(func.apply(e)));
             }
         }
 
-        return res;
+        return true;
     }
 
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K> Map<K, List<T>> groupBy(final T[] a, final Function<? super T, ? extends K> func) {
-        return groupBy(ArrayList.class, a, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K> Map<K, List<T>> groupBy(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        return N.groupBy(ArrayList.class, a, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final T[] a,
-            final Function<? super T, ? extends K> func) {
-        return groupBy(collClass, a, 0, a.length, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final T[] a, final int fromIndex,
-            final int toIndex, final Function<? super T, ? extends K> func) {
-        return N.groupBy(HashMap.class, collClass, a, fromIndex, toIndex, func);
-    }
-
-    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final T[] a, final Function<? super T, ? extends K> func) {
-        return N.groupBy(outputClass, collClass, a, 0, a.length, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputClass
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final Map<? super K, V> outputResult = N.newInstance(outputClass);
-
-        K key = null;
-        V values = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = func.apply(a[i]);
-            values = outputResult.get(key);
-
-            if (values == null) {
-                values = N.newInstance(collClass);
-                outputResult.put(key, values);
-            }
-
-            values.add(a[i]);
-        }
-
-        return (M) outputResult;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
-        return groupBy(ArrayList.class, c, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        return N.groupBy(ArrayList.class, c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Collection<? extends T> c,
-            final Function<? super T, ? extends K> func) {
-        return groupBy(collClass, c, 0, c.size(), func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Collection<? extends T> c,
-            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        return N.groupBy(HashMap.class, collClass, c, fromIndex, toIndex, func);
-    }
-
-    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
-        return N.groupBy(outputClass, collClass, c, 0, c.size(), func);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputClass
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final Map<? super K, V> outputResult = N.newInstance(outputClass);
-
-        T e = null;
-        K key = null;
-        V values = null;
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                e = list.get(i);
-                key = func.apply(e);
-                values = outputResult.get(key);
-
-                if (values == null) {
-                    values = N.newInstance(collClass);
-                    outputResult.put(key, values);
-                }
-
-                values.add(e);
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                key = func.apply(e);
-                values = outputResult.get(key);
-
-                if (values == null) {
-                    values = N.newInstance(collClass);
-                    outputResult.put(key, values);
-                }
-
-                values.add(e);
-            }
-        }
-
-        return (M) outputResult;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param op
-     * @return
-     */
-    public static char reduce(final char[] a, final CharBinaryOperator op) {
-        return reduce(a, 0, a.length, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param op
-     * @return
-     */
-    public static char reduce(final char[] a, final int fromIndex, final int toIndex, final CharBinaryOperator op) {
-        boolean foundAny = false;
-        char result = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!foundAny) {
-                foundAny = true;
-                result = a[i];
-            } else {
-                result = op.applyAsChar(result, a[i]);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static char reduce(final char[] a, final char identity, final CharBinaryOperator op) {
-        return reduce(a, 0, a.length, identity, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static char reduce(final char[] a, final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator op) {
-        char result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsChar(result, a[i]);
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param op
-     * @return
-     */
-    public static short reduce(final short[] a, final ShortBinaryOperator op) {
-        return reduce(a, 0, a.length, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param op
-     * @return
-     */
-    public static short reduce(final short[] a, final int fromIndex, final int toIndex, final ShortBinaryOperator op) {
-        boolean foundAny = false;
-        short result = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!foundAny) {
-                foundAny = true;
-                result = a[i];
-            } else {
-                result = op.applyAsShort(result, a[i]);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static short reduce(final short[] a, final short identity, final ShortBinaryOperator op) {
-        return reduce(a, 0, a.length, identity, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static short reduce(final short[] a, final int fromIndex, final int toIndex, final short identity, final ShortBinaryOperator op) {
-        short result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsShort(result, a[i]);
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param op
-     * @return
-     */
-    public static int reduce(final int[] a, final IntBinaryOperator op) {
-        return reduce(a, 0, a.length, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param op
-     * @return
-     */
-    public static int reduce(final int[] a, final int fromIndex, final int toIndex, final IntBinaryOperator op) {
-        boolean foundAny = false;
-        int result = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!foundAny) {
-                foundAny = true;
-                result = a[i];
-            } else {
-                result = op.applyAsInt(result, a[i]);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static int reduce(final int[] a, final int identity, final IntBinaryOperator op) {
-        return reduce(a, 0, a.length, identity, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static int reduce(final int[] a, final int fromIndex, final int toIndex, final int identity, final IntBinaryOperator op) {
-        int result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsInt(result, a[i]);
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param op
-     * @return
-     */
-    public static long reduce(final long[] a, final LongBinaryOperator op) {
-        return reduce(a, 0, a.length, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param op
-     * @return
-     */
-    public static long reduce(final long[] a, final int fromIndex, final int toIndex, final LongBinaryOperator op) {
-        boolean foundAny = false;
-        long result = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!foundAny) {
-                foundAny = true;
-                result = a[i];
-            } else {
-                result = op.applyAsLong(result, a[i]);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static long reduce(final long[] a, final long identity, final LongBinaryOperator op) {
-        return reduce(a, 0, a.length, identity, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static long reduce(final long[] a, final int fromIndex, final int toIndex, final long identity, final LongBinaryOperator op) {
-        long result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsLong(result, a[i]);
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param op
-     * @return
-     */
-    public static float reduce(final float[] a, final FloatBinaryOperator op) {
-        return reduce(a, 0, a.length, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param op
-     * @return
-     */
-    public static float reduce(final float[] a, final int fromIndex, final int toIndex, final FloatBinaryOperator op) {
-        boolean foundAny = false;
-        float result = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!foundAny) {
-                foundAny = true;
-                result = a[i];
-            } else {
-                result = op.applyAsFloat(result, a[i]);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static float reduce(final float[] a, final float identity, final FloatBinaryOperator op) {
-        return reduce(a, 0, a.length, identity, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static float reduce(final float[] a, final int fromIndex, final int toIndex, final float identity, final FloatBinaryOperator op) {
-        float result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsFloat(result, a[i]);
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param op
-     * @return
-     */
-    public static double reduce(final double[] a, final DoubleBinaryOperator op) {
-        return reduce(a, 0, a.length, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param op
-     * @return
-     */
-    public static double reduce(final double[] a, final int fromIndex, final int toIndex, final DoubleBinaryOperator op) {
-        boolean foundAny = false;
-        double result = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!foundAny) {
-                foundAny = true;
-                result = a[i];
-            } else {
-                result = op.applyAsDouble(result, a[i]);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static double reduce(final double[] a, final double identity, final DoubleBinaryOperator op) {
-        return reduce(a, 0, a.length, identity, op);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param identity
-     * @param op
-     * @return
-     */
-    public static double reduce(final double[] a, final int fromIndex, final int toIndex, final double identity, final DoubleBinaryOperator op) {
-        double result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = op.applyAsDouble(result, a[i]);
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param accumulator
-     * @return
-     * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
-     */
-    public static <T> T reduce(final T[] a, final BinaryOperator<T> accumulator) {
-        return reduce(a, 0, a.length, accumulator);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param accumulator
-     * @return
-     * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
-     */
-    public static <T> T reduce(final T[] a, final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
-        boolean foundAny = false;
-        T result = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!foundAny) {
-                foundAny = true;
-                result = a[i];
-            } else {
-                result = accumulator.apply(result, a[i]);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param identity
-     * @param accumulator
-     * @return
-     * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
-     */
-    public static <T> T reduce(final T[] a, final T identity, final BinaryOperator<T> accumulator) {
-        return reduce(a, 0, a.length, identity, accumulator);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param identity
-     * @param accumulator
-     * @return
-     * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
-     */
-    public static <T> T reduce(final T[] a, final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
-        T result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, a[i]);
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param accumulator
-     * @return
-     * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
-     */
-    public static <T> T reduce(final Collection<? extends T> c, final BinaryOperator<T> accumulator) {
-        return reduce(c, 0, c.size(), accumulator);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param accumulator
-     * @return
-     */
-    public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
-        return reduce(c, fromIndex, toIndex, null, accumulator);
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param identity
-     * @param accumulator
-     * @return
-     * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
-     */
-    public static <T> T reduce(final Collection<? extends T> c, final T identity, final BinaryOperator<T> accumulator) {
-        return reduce(c, 0, c.size(), identity, accumulator);
-
-    }
-
-    /**
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param identity
-     * @param accumulator
-     * @return
-     * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
-     */
-    public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        T result = identity;
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                result = accumulator.apply(result, list.get(i));
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                result = accumulator.apply(result, e);
-            }
-        }
-
-        return result;
-    }
+    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
+
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static char[] map(final char[] a, final CharUnaryOperator mapper) {
+    //        return map(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static char[] map(final char[] a, final int fromIndex, final int toIndex, final CharUnaryOperator mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final char[] res = new char[a.length];
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res[i - fromIndex] = mapper.applyAsChar(a[i]);
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static int[] map(final int[] a, final IntUnaryOperator mapper) {
+    //        return map(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static int[] map(final int[] a, final int fromIndex, final int toIndex, final IntUnaryOperator mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final int[] res = new int[a.length];
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res[i - fromIndex] = mapper.applyAsInt(a[i]);
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static long[] map(final long[] a, final LongUnaryOperator mapper) {
+    //        return map(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static long[] map(final long[] a, final int fromIndex, final int toIndex, final LongUnaryOperator mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final long[] res = new long[a.length];
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res[i - fromIndex] = mapper.applyAsLong(a[i]);
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static float[] map(final float[] a, final FloatUnaryOperator mapper) {
+    //        return map(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static float[] map(final float[] a, final int fromIndex, final int toIndex, final FloatUnaryOperator mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final float[] res = new float[a.length];
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res[i - fromIndex] = mapper.applyAsFloat(a[i]);
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static double[] map(final double[] a, final DoubleUnaryOperator mapper) {
+    //        return map(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static double[] map(final double[] a, final int fromIndex, final int toIndex, final DoubleUnaryOperator mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final double[] res = new double[a.length];
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res[i - fromIndex] = mapper.applyAsDouble(a[i]);
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#map(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> map(final T[] a, final Function<? super T, ? extends R> func) {
+    //        return map(ArrayList.class, a, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#map(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+    //        return map(ArrayList.class, a, fromIndex, toIndex, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param a
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#map(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final T[] a, final Function<? super T, ? extends R> func) {
+    //        return map(collClass, a, 0, a.length, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#map(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends R> func) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.add(func.apply(a[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#map(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> map(final Collection<? extends T> c, final Function<? super T, ? extends R> func) {
+    //        return map(ArrayList.class, c, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#map(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+    //        return map(ArrayList.class, c, fromIndex, toIndex, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param c
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#map(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final Collection<? extends T> c,
+    //            final Function<? super T, ? extends R> func) {
+    //        return map(collClass, c, 0, c.size(), func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#map(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V map(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
+    //            final int toIndex, final Function<? super T, ? extends R> func) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                res.add(func.apply(list.get(i)));
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //            T e = null;
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                res.add(func.apply(e));
+    //            }
+    //        }
+    //
+    //        return res;
+    //    }
+
+    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
+
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static char[] flatMap(final char[] a, final CharFunction<char[]> mapper) {
+    //        return flatMap(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static char[] flatMap(final char[] a, final int fromIndex, final int toIndex, final CharFunction<char[]> mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final CharList res = new CharList();
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(CharList.of(mapper.apply(a[i])));
+    //        }
+    //
+    //        return res.trimToSize().array();
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static int[] flatMap(final int[] a, final IntFunction<int[]> mapper) {
+    //        return flatMap(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static int[] flatMap(final int[] a, final int fromIndex, final int toIndex, final IntFunction<int[]> mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final IntList res = new IntList();
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(IntList.of(mapper.apply(a[i])));
+    //        }
+    //
+    //        return res.trimToSize().array();
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static long[] flatMap(final long[] a, final LongFunction<long[]> mapper) {
+    //        return flatMap(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static long[] flatMap(final long[] a, final int fromIndex, final int toIndex, final LongFunction<long[]> mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final LongList res = new LongList();
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(LongList.of(mapper.apply(a[i])));
+    //        }
+    //
+    //        return res.trimToSize().array();
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static float[] flatMap(final float[] a, final FloatFunction<float[]> mapper) {
+    //        return flatMap(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static float[] flatMap(final float[] a, final int fromIndex, final int toIndex, final FloatFunction<float[]> mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final FloatList res = new FloatList();
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(FloatList.of(mapper.apply(a[i])));
+    //        }
+    //
+    //        return res.trimToSize().array();
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static double[] flatMap(final double[] a, final DoubleFunction<double[]> mapper) {
+    //        return flatMap(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    static double[] flatMap(final double[] a, final int fromIndex, final int toIndex, final DoubleFunction<double[]> mapper) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final DoubleList res = new DoubleList();
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(DoubleList.of(mapper.apply(a[i])));
+    //        }
+    //
+    //        return res.trimToSize().array();
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> flatMap(final T[] a, final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(ArrayList.class, a, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> flatMap(final T[] a, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(ArrayList.class, a, fromIndex, toIndex, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param a
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final T[] a,
+    //            final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(collClass, a, 0, a.length, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(func.apply(a[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> flatMap(final Collection<? extends T> c, final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(ArrayList.class, c, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(ArrayList.class, c, fromIndex, toIndex, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param c
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final Collection<? extends T> c,
+    //            final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(collClass, c, 0, c.size(), func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
+    //            final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                res.addAll(func.apply(list.get(i)));
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //            T e = null;
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                res.addAll(func.apply(e));
+    //            }
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> flatMap2(final T[] a, final Function<? super T, R[]> func) {
+    //        return flatMap2(ArrayList.class, a, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> flatMap2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
+    //        return flatMap2(ArrayList.class, a, fromIndex, toIndex, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param a
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final T[] a, final Function<? super T, R[]> func) {
+    //        return flatMap2(collClass, a, 0, a.length, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
+    //            final Function<? super T, R[]> func) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(Arrays.asList(func.apply(a[i])));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> flatMap2(final Collection<? extends T> c, final Function<? super T, R[]> func) {
+    //        return flatMap2(ArrayList.class, c, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R> List<R> flatMap2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
+    //        return flatMap2(ArrayList.class, c, fromIndex, toIndex, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param c
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final Collection<? extends T> c,
+    //            final Function<? super T, R[]> func) {
+    //        return flatMap2(collClass, c, 0, c.size(), func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Stream#flatMap(java.util.function.Function)
+    //     */
+    //    public static <T, R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
+    //            final int toIndex, final Function<? super T, R[]> func) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                res.addAll(Arrays.asList(func.apply(list.get(i))));
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //            T e = null;
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                res.addAll(Arrays.asList(func.apply(e)));
+    //            }
+    //        }
+    //
+    //        return res;
+    //    }
+
+    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
+
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    public static <T, K> Map<K, List<T>> groupBy(final T[] a, final Function<? super T, ? extends K> func) {
+    //        return groupBy(ArrayList.class, a, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    public static <T, K> Map<K, List<T>> groupBy(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+    //        return N.groupBy(ArrayList.class, a, fromIndex, toIndex, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param a
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final T[] a,
+    //            final Function<? super T, ? extends K> func) {
+    //        return groupBy(collClass, a, 0, a.length, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final T[] a, final int fromIndex,
+    //            final int toIndex, final Function<? super T, ? extends K> func) {
+    //        return N.groupBy(HashMap.class, collClass, a, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final T[] a, final Function<? super T, ? extends K> func) {
+    //        return N.groupBy(outputClass, collClass, a, 0, a.length, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param outputClass
+    //     * @param collClass
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final Map<? super K, V> outputResult = N.newInstance(outputClass);
+    //
+    //        K key = null;
+    //        V values = null;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            key = func.apply(a[i]);
+    //            values = outputResult.get(key);
+    //
+    //            if (values == null) {
+    //                values = N.newInstance(collClass);
+    //                outputResult.put(key, values);
+    //            }
+    //
+    //            values.add(a[i]);
+    //        }
+    //
+    //        return (M) outputResult;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
+    //        return groupBy(ArrayList.class, c, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    public static <T, K> Map<K, List<T>> groupBy(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends K> func) {
+    //        return N.groupBy(ArrayList.class, c, fromIndex, toIndex, func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param c
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+    //            final Function<? super T, ? extends K> func) {
+    //        return groupBy(collClass, c, 0, c.size(), func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param collClass
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    @SuppressWarnings("rawtypes")
+    //    public static <T, K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Collection<? extends T> c,
+    //            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+    //        return N.groupBy(HashMap.class, collClass, c, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
+    //        return N.groupBy(outputClass, collClass, c, 0, c.size(), func);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param outputClass
+    //     * @param collClass
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param func
+    //     * @return
+    //     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
+    //     */
+    //    public static <T, K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        final Map<? super K, V> outputResult = N.newInstance(outputClass);
+    //
+    //        T e = null;
+    //        K key = null;
+    //        V values = null;
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                e = list.get(i);
+    //                key = func.apply(e);
+    //                values = outputResult.get(key);
+    //
+    //                if (values == null) {
+    //                    values = N.newInstance(collClass);
+    //                    outputResult.put(key, values);
+    //                }
+    //
+    //                values.add(e);
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                key = func.apply(e);
+    //                values = outputResult.get(key);
+    //
+    //                if (values == null) {
+    //                    values = N.newInstance(collClass);
+    //                    outputResult.put(key, values);
+    //                }
+    //
+    //                values.add(e);
+    //            }
+    //        }
+    //
+    //        return (M) outputResult;
+    //    }
+
+    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
+
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static char reduce(final char[] a, final CharBinaryOperator op) {
+    //        return reduce(a, 0, a.length, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static char reduce(final char[] a, final int fromIndex, final int toIndex, final CharBinaryOperator op) {
+    //        boolean foundAny = false;
+    //        char result = 0;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (!foundAny) {
+    //                foundAny = true;
+    //                result = a[i];
+    //            } else {
+    //                result = op.applyAsChar(result, a[i]);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static char reduce(final char[] a, final char identity, final CharBinaryOperator op) {
+    //        return reduce(a, 0, a.length, identity, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static char reduce(final char[] a, final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator op) {
+    //        char result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = op.applyAsChar(result, a[i]);
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static short reduce(final short[] a, final ShortBinaryOperator op) {
+    //        return reduce(a, 0, a.length, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static short reduce(final short[] a, final int fromIndex, final int toIndex, final ShortBinaryOperator op) {
+    //        boolean foundAny = false;
+    //        short result = 0;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (!foundAny) {
+    //                foundAny = true;
+    //                result = a[i];
+    //            } else {
+    //                result = op.applyAsShort(result, a[i]);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static short reduce(final short[] a, final short identity, final ShortBinaryOperator op) {
+    //        return reduce(a, 0, a.length, identity, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static short reduce(final short[] a, final int fromIndex, final int toIndex, final short identity, final ShortBinaryOperator op) {
+    //        short result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = op.applyAsShort(result, a[i]);
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static int reduce(final int[] a, final IntBinaryOperator op) {
+    //        return reduce(a, 0, a.length, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static int reduce(final int[] a, final int fromIndex, final int toIndex, final IntBinaryOperator op) {
+    //        boolean foundAny = false;
+    //        int result = 0;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (!foundAny) {
+    //                foundAny = true;
+    //                result = a[i];
+    //            } else {
+    //                result = op.applyAsInt(result, a[i]);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static int reduce(final int[] a, final int identity, final IntBinaryOperator op) {
+    //        return reduce(a, 0, a.length, identity, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static int reduce(final int[] a, final int fromIndex, final int toIndex, final int identity, final IntBinaryOperator op) {
+    //        int result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = op.applyAsInt(result, a[i]);
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static long reduce(final long[] a, final LongBinaryOperator op) {
+    //        return reduce(a, 0, a.length, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static long reduce(final long[] a, final int fromIndex, final int toIndex, final LongBinaryOperator op) {
+    //        boolean foundAny = false;
+    //        long result = 0;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (!foundAny) {
+    //                foundAny = true;
+    //                result = a[i];
+    //            } else {
+    //                result = op.applyAsLong(result, a[i]);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static long reduce(final long[] a, final long identity, final LongBinaryOperator op) {
+    //        return reduce(a, 0, a.length, identity, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static long reduce(final long[] a, final int fromIndex, final int toIndex, final long identity, final LongBinaryOperator op) {
+    //        long result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = op.applyAsLong(result, a[i]);
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static float reduce(final float[] a, final FloatBinaryOperator op) {
+    //        return reduce(a, 0, a.length, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static float reduce(final float[] a, final int fromIndex, final int toIndex, final FloatBinaryOperator op) {
+    //        boolean foundAny = false;
+    //        float result = 0;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (!foundAny) {
+    //                foundAny = true;
+    //                result = a[i];
+    //            } else {
+    //                result = op.applyAsFloat(result, a[i]);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static float reduce(final float[] a, final float identity, final FloatBinaryOperator op) {
+    //        return reduce(a, 0, a.length, identity, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static float reduce(final float[] a, final int fromIndex, final int toIndex, final float identity, final FloatBinaryOperator op) {
+    //        float result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = op.applyAsFloat(result, a[i]);
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static double reduce(final double[] a, final DoubleBinaryOperator op) {
+    //        return reduce(a, 0, a.length, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static double reduce(final double[] a, final int fromIndex, final int toIndex, final DoubleBinaryOperator op) {
+    //        boolean foundAny = false;
+    //        double result = 0;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (!foundAny) {
+    //                foundAny = true;
+    //                result = a[i];
+    //            } else {
+    //                result = op.applyAsDouble(result, a[i]);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static double reduce(final double[] a, final double identity, final DoubleBinaryOperator op) {
+    //        return reduce(a, 0, a.length, identity, op);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param identity
+    //     * @param op
+    //     * @return
+    //     */
+    //    public static double reduce(final double[] a, final int fromIndex, final int toIndex, final double identity, final DoubleBinaryOperator op) {
+    //        double result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = op.applyAsDouble(result, a[i]);
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param accumulator
+    //     * @return
+    //     * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
+    //     */
+    //    public static <T> T reduce(final T[] a, final BinaryOperator<T> accumulator) {
+    //        return reduce(a, 0, a.length, accumulator);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param accumulator
+    //     * @return
+    //     * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
+    //     */
+    //    public static <T> T reduce(final T[] a, final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
+    //        boolean foundAny = false;
+    //        T result = null;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (!foundAny) {
+    //                foundAny = true;
+    //                result = a[i];
+    //            } else {
+    //                result = accumulator.apply(result, a[i]);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param identity
+    //     * @param accumulator
+    //     * @return
+    //     * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
+    //     */
+    //    public static <T> T reduce(final T[] a, final T identity, final BinaryOperator<T> accumulator) {
+    //        return reduce(a, 0, a.length, identity, accumulator);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param identity
+    //     * @param accumulator
+    //     * @return
+    //     * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
+    //     */
+    //    public static <T> T reduce(final T[] a, final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
+    //        T result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = accumulator.apply(result, a[i]);
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param accumulator
+    //     * @return
+    //     * @see java.util.stream.Stream#reduce(java.util.function.BinaryOperator)
+    //     */
+    //    public static <T> T reduce(final Collection<? extends T> c, final BinaryOperator<T> accumulator) {
+    //        return reduce(c, 0, c.size(), accumulator);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param accumulator
+    //     * @return
+    //     */
+    //    public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
+    //        return reduce(c, fromIndex, toIndex, null, accumulator);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param identity
+    //     * @param accumulator
+    //     * @return
+    //     * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
+    //     */
+    //    public static <T> T reduce(final Collection<? extends T> c, final T identity, final BinaryOperator<T> accumulator) {
+    //        return reduce(c, 0, c.size(), identity, accumulator);
+    //
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param identity
+    //     * @param accumulator
+    //     * @return
+    //     * @see java.util.stream.Stream#reduce(Object, java.util.function.BinaryOperator)
+    //     */
+    //    public static <T> T reduce(final Collection<? extends T> c, final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        T result = identity;
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                result = accumulator.apply(result, list.get(i));
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //            T e = null;
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                result = accumulator.apply(result, e);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
 
     public static <T, K, U> Map<K, U> toMap(final T[] a, final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMap(HashMap.class, a, keyMapper, valueMapper);
+        return toMap(a, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
+            @Override
+            public Map<K, U> apply(int len) {
+                return new HashMap<>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final T[] a, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMap(outputClass, a, 0, a.length, keyMapper, valueMapper);
+    public static <T, K, U, M extends Map<K, U>> M toMap(final T[] a, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
+        return toMap(a, 0, a.length, keyMapper, valueMapper, supplier);
     }
 
     public static <T, K, U> Map<K, U> toMap(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMap(HashMap.class, a, fromIndex, toIndex, keyMapper, valueMapper);
+        return toMap(a, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
+            @Override
+            public Map<K, U> apply(int len) {
+                return new HashMap<>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    public static <T, K, U, M extends Map<K, U>> M toMap(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final Map<K, U> map = N.newInstance(outputClass);
+        final Map<K, U> map = supplier.apply(N.min(128, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             map.put(keyMapper.apply(a[i]), valueMapper.apply(a[i]));
@@ -23702,24 +23964,34 @@ public final class N {
 
     public static <T, K, U> Map<K, U> toMap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMap(HashMap.class, c, keyMapper, valueMapper);
+        return toMap(c, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
+            @Override
+            public Map<K, U> apply(int len) {
+                return new HashMap<>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final Collection<T> c,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMap(outputClass, c, 0, c.size(), keyMapper, valueMapper);
+    public static <T, K, U, M extends Map<K, U>> M toMap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
+        return toMap(c, 0, c.size(), keyMapper, valueMapper, supplier);
     }
 
     public static <T, K, U> Map<K, U> toMap(final Collection<T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMap(HashMap.class, c, fromIndex, toIndex, keyMapper, valueMapper);
+        return toMap(c, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
+            @Override
+            public Map<K, U> apply(int len) {
+                return new HashMap<>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final Collection<T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    public static <T, K, U, M extends Map<K, U>> M toMap(final Collection<T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final Map<K, U> map = N.newInstance(outputClass);
+        final Map<K, U> map = supplier.apply(N.min(128, toIndex - fromIndex));
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -23750,28 +24022,35 @@ public final class N {
 
     public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final T[] a, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, ArrayList.class, a, keyMapper, valueMapper);
+        return toMultimap(a, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> apply(int len) {
+                return new Multimap<>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass,
-            final Class<? extends Collection> collClass, final T[] a, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(outputClass, collClass, a, 0, a.length, keyMapper, valueMapper);
+    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final T[] a, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+        return toMultimap(a, 0, a.length, keyMapper, valueMapper, supplier);
     }
 
     public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final T[] a, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, ArrayList.class, a, fromIndex, toIndex, keyMapper, valueMapper);
+        return toMultimap(a, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> apply(int len) {
+                return new Multimap<>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass,
-            final Class<? extends Collection> collClass, final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
+    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final T[] a, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            final IntFunction<Multimap<K, U, V>> supplier) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multimap.put(keyMapper.apply(a[i]), valueMapper.apply(a[i]));
@@ -23782,28 +24061,35 @@ public final class N {
 
     public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, ArrayList.class, c, keyMapper, valueMapper);
+        return toMultimap(c, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> apply(int len) {
+                return new Multimap<>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass,
-            final Class<? extends Collection> collClass, final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(outputClass, collClass, c, 0, c.size(), keyMapper, valueMapper);
+    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+        return toMultimap(c, 0, c.size(), keyMapper, valueMapper, supplier);
     }
 
     public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final Collection<T> c, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, ArrayList.class, c, fromIndex, toIndex, keyMapper, valueMapper);
+        return toMultimap(c, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> apply(int len) {
+                return new Multimap<>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass,
-            final Class<? extends Collection> collClass, final Collection<T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Collection<T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            final IntFunction<Multimap<K, U, V>> supplier) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -23833,23 +24119,39 @@ public final class N {
     }
 
     public static <T> Multiset<T> toMultiset(final T[] a) {
-        return toMultiset(HashMap.class, a);
+        return toMultiset(a, new IntFunction<Multiset<T>>() {
+            @Override
+            public Multiset<T> apply(int len) {
+                return new Multiset<T>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T> Multiset<T> toMultiset(final Class<? extends Map> valueClass, final T[] a) {
-        return toMultiset(valueClass, a, 0, a.length);
+    public static <T> Multiset<T> toMultiset(final T[] a, final IntFunction<Multiset<T>> supplier) {
+        return toMultiset(a, 0, a.length, supplier);
     }
 
     public static <T> Multiset<T> toMultiset(final T[] a, final int fromIndex, final int toIndex) {
-        return toMultiset(HashMap.class, a, fromIndex, toIndex);
+        return toMultiset(a, fromIndex, toIndex, new IntFunction<Multiset<T>>() {
+            @Override
+            public Multiset<T> apply(int len) {
+                return new Multiset<T>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T> Multiset<T> toMultiset(final Class<? extends Map> valueClass, final T[] a, final int fromIndex, final int toIndex) {
+    /**
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
+     * @return
+     */
+    public static <T> Multiset<T> toMultiset(final T[] a, final int fromIndex, final int toIndex, final IntFunction<Multiset<T>> supplier) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        final Multiset<T> multiset = new Multiset<>(valueClass);
+        final Multiset<T> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(a[i]);
@@ -23859,23 +24161,39 @@ public final class N {
     }
 
     public static <T> Multiset<T> toMultiset(final Collection<T> c) {
-        return toMultiset(HashMap.class, c);
+        return toMultiset(c, new IntFunction<Multiset<T>>() {
+            @Override
+            public Multiset<T> apply(int len) {
+                return new Multiset<T>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T> Multiset<T> toMultiset(final Class<? extends Map> valueClass, final Collection<T> c) {
-        return toMultiset(valueClass, c, 0, c.size());
+    public static <T> Multiset<T> toMultiset(final Collection<T> c, final IntFunction<Multiset<T>> supplier) {
+        return toMultiset(c, 0, c.size(), supplier);
     }
 
     public static <T> Multiset<T> toMultiset(final Collection<T> c, final int fromIndex, final int toIndex) {
-        return toMultiset(HashMap.class, c, fromIndex, toIndex);
+        return toMultiset(c, fromIndex, toIndex, new IntFunction<Multiset<T>>() {
+            @Override
+            public Multiset<T> apply(int len) {
+                return new Multiset<T>(N.initHashCapacity(len));
+            }
+        });
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T> Multiset<T> toMultiset(final Class<? extends Map> valueClass, final Collection<T> c, final int fromIndex, final int toIndex) {
+    /**
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
+     * @return
+     */
+    public static <T> Multiset<T> toMultiset(final Collection<T> c, final int fromIndex, final int toIndex, final IntFunction<Multiset<T>> supplier) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final Multiset<T> multiset = new Multiset<>(valueClass);
+        final Multiset<T> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -24605,59 +24923,19 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final T[] a, final int fromIndex, final int toIndex) {
-        return distinct(ArrayList.class, a, fromIndex, toIndex);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @return
-     */
-    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a) {
-        return distinct(collClass, a, 0, a.length);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     */
-    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex) {
-        return distinct(N.newInstance(collClass), a, fromIndex, toIndex);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    static <T, V extends Collection<T>> V distinct(final V outputResult, final T[] a, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
+        final List<T> result = new ArrayList<>();
         final Set<T> keySet = new HashSet<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
 
             if (keySet.add(a[i])) {
-                outputResult.add(a[i]);
+                result.add(a[i]);
             }
         }
 
-        return outputResult;
+        return result;
     }
 
     /**
@@ -24681,49 +24959,9 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
-        return distinct(ArrayList.class, c, fromIndex, toIndex);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @return
-     */
-    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c) {
-        return distinct(collClass, c, 0, c.size());
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     */
-    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
-            final int toIndex) {
-        return distinct(N.newInstance(collClass), c, fromIndex, toIndex);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     */
-    static <T, V extends Collection<T>> V distinct(final V outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
+        final List<T> result = new ArrayList<>();
         final Set<T> keySet = new HashSet<>();
         final Iterator<? extends T> it = c.iterator();
         T e = null;
@@ -24736,11 +24974,11 @@ public final class N {
             }
 
             if (keySet.add(e)) {
-                outputResult.add(e);
+                result.add(e);
             }
         }
 
-        return outputResult;
+        return result;
     }
 
     /**
@@ -24766,61 +25004,9 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        return distinct(ArrayList.class, a, fromIndex, toIndex, cmp);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param cmp
-     * @return
-     */
-    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final Comparator<? super T> cmp) {
-        return distinct(collClass, a, 0, a.length, cmp);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param cmp
-     * @return
-     */
-    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
-            final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (collClass.equals(SortedSet.class) || collClass.equals(TreeSet.class)) {
-            final V res = (V) new TreeSet<T>(cmp);
-            for (int i = fromIndex; i < toIndex; i++) {
-                res.add(a[i]);
-            }
-            return res;
-        } else {
-            return distinct(N.newInstance(collClass), a, fromIndex, toIndex, cmp);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param cmp
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.cmption.Function)
-     */
-    static <T, V extends Collection<T>> V distinct(final V outputResult, final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+        final List<T> result = new ArrayList<>();
         final Set<T> sortedSet = new TreeSet<T>(cmp);
         boolean hasNull = false;
 
@@ -24828,16 +25014,16 @@ public final class N {
             if (a[i] == null) {
                 if (hasNull == false) {
                     hasNull = true;
-                    outputResult.add(a[i]);
+                    result.add(a[i]);
                 }
             } else {
                 if (sortedSet.add(a[i])) {
-                    outputResult.add(a[i]);
+                    result.add(a[i]);
                 }
             }
         }
 
-        return outputResult;
+        return result;
     }
 
     /**
@@ -24863,83 +25049,9 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        return distinct(ArrayList.class, c, fromIndex, toIndex, cmp);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param cmp
-     * @return
-     */
-    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c,
-            final Comparator<? super T> cmp) {
-        return distinct(collClass, c, 0, c.size(), cmp);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param cmp
-     * @return
-     */
-    public static <T, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
-            final int toIndex, final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if (collClass.equals(SortedSet.class) || collClass.equals(TreeSet.class)) {
-            final V res = (V) new TreeSet<T>(cmp);
-
-            if (c instanceof List && c instanceof RandomAccess) {
-                final List<T> list = (List<T>) c;
-
-                for (int i = fromIndex; i < toIndex; i++) {
-                    res.add(list.get(i));
-                }
-            } else {
-                final Iterator<? extends T> it = c.iterator();
-                T e = null;
-
-                for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                    e = it.next();
-
-                    if (i < fromIndex) {
-                        continue;
-                    }
-
-                    res.add(e);
-                }
-            }
-
-            return res;
-        } else {
-            return distinct(N.newInstance(collClass), c, fromIndex, toIndex, cmp);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param cmp
-     * @return
-     */
-    static <T, V extends Collection<T>> V distinct(final V outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Comparator<? super T> cmp) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
+        final List<T> result = new ArrayList<>();
         final Set<T> sortedSet = new TreeSet<T>(cmp);
 
         if (c instanceof List && c instanceof RandomAccess) {
@@ -24953,11 +25065,11 @@ public final class N {
                 if (e == null) {
                     if (hasNull == false) {
                         hasNull = true;
-                        outputResult.add(e);
+                        result.add(e);
                     }
                 } else {
                     if (sortedSet.add(e)) {
-                        outputResult.add(e);
+                        result.add(e);
                     }
                 }
             }
@@ -24976,17 +25088,17 @@ public final class N {
                 if (e == null) {
                     if (hasNull == false) {
                         hasNull = true;
-                        outputResult.add(e);
+                        result.add(e);
                     }
                 } else {
                     if (sortedSet.add(e)) {
-                        outputResult.add(e);
+                        result.add(e);
                     }
                 }
             }
         }
 
-        return outputResult;
+        return result;
     }
 
     /**
@@ -24994,11 +25106,11 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
      * @param a
-     * @param func
+     * @param keyMapper
      * @return
      */
-    public static <T, K> List<T> distinct(final T[] a, final Function<? super T, ? extends K> func) {
-        return distinct(a, 0, a.length, func);
+    public static <T> List<T> distinct(final T[] a, final Function<? super T, ?> keyMapper) {
+        return distinct(a, 0, a.length, keyMapper);
     }
 
     /**
@@ -25008,40 +25120,25 @@ public final class N {
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func
+     * @param keyMapper
      * @return
      */
-    public static <T, K> List<T> distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        return distinct(ArrayList.class, a, fromIndex, toIndex, func);
-    }
+    public static <T> List<T> distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param func
-     * @return
-     */
-    public static <T, K, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final Function<? super T, ? extends K> func) {
-        return distinct(collClass, a, 0, a.length, func);
-    }
+        final List<T> result = new ArrayList<>();
+        final Set<Object> keySet = new HashSet<>();
+        Object key = null;
 
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     */
-    public static <T, K, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        return distinct(N.newInstance(collClass), a, fromIndex, toIndex, func);
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = keyMapper.apply(a[i]);
+
+            if (keySet.add(key)) {
+                result.add(a[i]);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -25052,7 +25149,7 @@ public final class N {
      * @param func
      * @return
      */
-    public static <T, K> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ? extends K> func) {
+    public static <T> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> func) {
         return distinct(c, 0, c.size(), func);
     }
 
@@ -25066,91 +25163,15 @@ public final class N {
      * @param func
      * @return
      */
-    public static <T, K> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        return distinct(ArrayList.class, c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param func
-     * @return
-     */
-    public static <T, K, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c,
-            final Function<? super T, ? extends K> func) {
-        return distinct(collClass, c, 0, c.size(), func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param collClass
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     */
-    public static <T, K, V extends Collection<T>> V distinct(final Class<? extends V> collClass, final Collection<? extends T> c, final int fromIndex,
-            final int toIndex, final Function<? super T, ? extends K> func) {
-        return distinct(N.newInstance(collClass), c, fromIndex, toIndex, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     * @see java.util.stream.Collectors#groupingBy(java.util.function.Function)
-     */
-    static <T, K, V extends Collection<T>> V distinct(final V outputResult, final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final Set<K> keySet = new HashSet<>();
-        K key = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = func.apply(a[i]);
-
-            if (keySet.add(key)) {
-                outputResult.add(a[i]);
-            }
-        }
-
-        return outputResult;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param outputResult
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param func
-     * @return
-     */
-    static <T, K, V extends Collection<T>> V distinct(final V outputResult, final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
+    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> func) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        final Set<K> keySet = new HashSet<>();
+        final List<T> result = new ArrayList<>();
+        final Set<Object> keySet = new HashSet<>();
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
-            K key = null;
+            Object key = null;
             T e = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
@@ -25159,12 +25180,12 @@ public final class N {
                 key = func.apply(e);
 
                 if (keySet.add(key)) {
-                    outputResult.add(e);
+                    result.add(e);
                 }
             }
         } else {
             final Iterator<? extends T> it = c.iterator();
-            K key = null;
+            Object key = null;
             T e = null;
 
             for (int i = 0; i < toIndex && it.hasNext(); i++) {
@@ -25177,12 +25198,12 @@ public final class N {
                 key = func.apply(e);
 
                 if (keySet.add(key)) {
-                    outputResult.add(e);
+                    result.add(e);
                 }
             }
         }
 
-        return outputResult;
+        return result;
     }
 
     /**
@@ -30431,190 +30452,190 @@ public final class N {
         return DoubleStream.of(a, from, to).sum();
     }
 
-    /**
-     * Limitation: only works for real byte/short/int/long/float/double number.
-     *
-     * @param a
-     * @return a double number. <code>0d</code> is returned if list is empty or
-     *         null.
-     */
-    public static <T extends Number> Double sum(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return 0d;
-        }
-
-        return sum(a, 0, a.length);
-    }
-
-    public static <T extends Number> Double sum(final T[] a, final int from, final int to) {
-        checkIndex(from, to, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a)) {
-            if (to > 0) {
-                throw new IndexOutOfBoundsException();
-            }
-
-            return 0d;
-        }
-
-        //        double sum = 0d;
-        //
-        //        for (int i = from; i < to; i++) {
-        //            sum += a[i].doubleValue();
-        //        }
-        //
-        //        return sum;
-
-        return sum(a, from, to, new ToDoubleFunction<Number>() {
-            @Override
-            public double applyAsDouble(Number value) {
-                return value == null ? 0d : value.doubleValue();
-            }
-        });
-    }
-
-    public static <T> Double sum(final T[] a, final ToDoubleFunction<? super T> mapper) {
-        if (N.isNullOrEmpty(a)) {
-            return 0d;
-        }
-
-        return sum(a, 0, a.length, mapper);
-    }
-
-    public static <T> Double sum(final T[] a, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
-        checkIndex(from, to, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a)) {
-            if (to > 0) {
-                throw new IndexOutOfBoundsException();
-            }
-
-            return 0d;
-        }
-
-        //        double sum = 0d;
-        //
-        //        for (int i = from; i < to; i++) {
-        //            sum += a[i].doubleValue();
-        //        }
-        //
-        //        return sum;
-
-        return Stream.of(a, from, to).mapToDouble(mapper).sum();
-    }
-
-    public static Double sum(final Collection<? extends Number> c) {
-        if (N.isNullOrEmpty(c)) {
-            return 0d;
-        }
-
-        return sum(c, 0, c.size());
-    }
-
-    /**
-     * Limitation: only works for real byte/short/int/long/float/double number.
-     *
-     * @param c
-     * @param from
-     * @param to
-     * @return a double number. <code>0d</code> is returned if list is empty or
-     *         null.
-     */
-    public static Double sum(final Collection<? extends Number> c, final int from, final int to) {
-        checkIndex(from, to, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c)) {
-            if (to > 0) {
-                throw new IndexOutOfBoundsException();
-            }
-
-            return 0d;
-        }
-
-        //        double sum = 0d;
-        //
-        //        if (c instanceof List && c instanceof RandomAccess) {
-        //            final List<Number> list = (List<Number>) c;
-        //
-        //            for (int i = from; i < to; i++) {
-        //                sum += list.get(i).doubleValue();
-        //            }
-        //        } else {
-        //            final Iterator<? extends Number> it = c.iterator();
-        //
-        //            for (int i = 0; i < to; i++) {
-        //                if (i < from) {
-        //                    it.next();
-        //                    continue;
-        //                } else {
-        //                    sum += it.next().doubleValue();
-        //                }
-        //            }
-        //        }
-        //
-        //        return sum;
-
-        return sum((Collection<Number>) c, from, to, new ToDoubleFunction<Number>() {
-            @Override
-            public double applyAsDouble(Number value) {
-                return value == null ? 0d : value.doubleValue();
-            }
-        });
-    }
-
-    public static <T> Double sum(final Collection<T> c, final ToDoubleFunction<? super T> mapper) {
-        if (N.isNullOrEmpty(c)) {
-            return 0d;
-        }
-
-        return sum(c, 0, c.size(), mapper);
-    }
-
-    /**
-     * 
-     * @param c
-     * @param from
-     * @param to
-     * @param mapper
-     * @return a double number. <code>0d</code> is returned if list is empty or
-     *         null.
-     */
-    public static <T> Double sum(final Collection<T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
-        checkIndex(from, to, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c)) {
-            if (to > 0) {
-                throw new IndexOutOfBoundsException();
-            }
-
-            return 0d;
-        }
-
-        //        double sum = 0d;
-        //
-        //        if (c instanceof List && c instanceof RandomAccess) {
-        //            final List<Number> list = (List<Number>) c;
-        //
-        //            for (int i = from; i < to; i++) {
-        //                sum += list.get(i).doubleValue();
-        //            }
-        //        } else {
-        //            final Iterator<? extends Number> it = c.iterator();
-        //
-        //            for (int i = 0; i < to; i++) {
-        //                if (i < from) {
-        //                    it.next();
-        //                    continue;
-        //                } else {
-        //                    sum += it.next().doubleValue();
-        //                }
-        //            }
-        //        }
-        //
-        //        return sum;
-
-        return Stream.of(c, from, to).mapToDouble(mapper).sum();
-    }
+    //    /**
+    //     * Limitation: only works for real byte/short/int/long/float/double number.
+    //     *
+    //     * @param a
+    //     * @return a double number. <code>0d</code> is returned if list is empty or
+    //     *         null.
+    //     */
+    //    public static <T extends Number> Double sum(final T[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return 0d;
+    //        }
+    //
+    //        return sum(a, 0, a.length);
+    //    }
+    //
+    //    public static <T extends Number> Double sum(final T[] a, final int from, final int to) {
+    //        checkIndex(from, to, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a)) {
+    //            if (to > 0) {
+    //                throw new IndexOutOfBoundsException();
+    //            }
+    //
+    //            return 0d;
+    //        }
+    //
+    //        //        double sum = 0d;
+    //        //
+    //        //        for (int i = from; i < to; i++) {
+    //        //            sum += a[i].doubleValue();
+    //        //        }
+    //        //
+    //        //        return sum;
+    //
+    //        return sum(a, from, to, new ToDoubleFunction<Number>() {
+    //            @Override
+    //            public double applyAsDouble(Number value) {
+    //                return value == null ? 0d : value.doubleValue();
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T> Double sum(final T[] a, final ToDoubleFunction<? super T> mapper) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return 0d;
+    //        }
+    //
+    //        return sum(a, 0, a.length, mapper);
+    //    }
+    //
+    //    public static <T> Double sum(final T[] a, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+    //        checkIndex(from, to, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a)) {
+    //            if (to > 0) {
+    //                throw new IndexOutOfBoundsException();
+    //            }
+    //
+    //            return 0d;
+    //        }
+    //
+    //        //        double sum = 0d;
+    //        //
+    //        //        for (int i = from; i < to; i++) {
+    //        //            sum += a[i].doubleValue();
+    //        //        }
+    //        //
+    //        //        return sum;
+    //
+    //        return Stream.of(a, from, to).mapToDouble(mapper).sum();
+    //    }
+    //
+    //    public static Double sum(final Collection<? extends Number> c) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return 0d;
+    //        }
+    //
+    //        return sum(c, 0, c.size());
+    //    }
+    //
+    //    /**
+    //     * Limitation: only works for real byte/short/int/long/float/double number.
+    //     *
+    //     * @param c
+    //     * @param from
+    //     * @param to
+    //     * @return a double number. <code>0d</code> is returned if list is empty or
+    //     *         null.
+    //     */
+    //    public static Double sum(final Collection<? extends Number> c, final int from, final int to) {
+    //        checkIndex(from, to, c == null ? 0 : c.size());
+    //
+    //        if (N.isNullOrEmpty(c)) {
+    //            if (to > 0) {
+    //                throw new IndexOutOfBoundsException();
+    //            }
+    //
+    //            return 0d;
+    //        }
+    //
+    //        //        double sum = 0d;
+    //        //
+    //        //        if (c instanceof List && c instanceof RandomAccess) {
+    //        //            final List<Number> list = (List<Number>) c;
+    //        //
+    //        //            for (int i = from; i < to; i++) {
+    //        //                sum += list.get(i).doubleValue();
+    //        //            }
+    //        //        } else {
+    //        //            final Iterator<? extends Number> it = c.iterator();
+    //        //
+    //        //            for (int i = 0; i < to; i++) {
+    //        //                if (i < from) {
+    //        //                    it.next();
+    //        //                    continue;
+    //        //                } else {
+    //        //                    sum += it.next().doubleValue();
+    //        //                }
+    //        //            }
+    //        //        }
+    //        //
+    //        //        return sum;
+    //
+    //        return sum((Collection<Number>) c, from, to, new ToDoubleFunction<Number>() {
+    //            @Override
+    //            public double applyAsDouble(Number value) {
+    //                return value == null ? 0d : value.doubleValue();
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T> Double sum(final Collection<T> c, final ToDoubleFunction<? super T> mapper) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return 0d;
+    //        }
+    //
+    //        return sum(c, 0, c.size(), mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param c
+    //     * @param from
+    //     * @param to
+    //     * @param mapper
+    //     * @return a double number. <code>0d</code> is returned if list is empty or
+    //     *         null.
+    //     */
+    //    public static <T> Double sum(final Collection<T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+    //        checkIndex(from, to, c == null ? 0 : c.size());
+    //
+    //        if (N.isNullOrEmpty(c)) {
+    //            if (to > 0) {
+    //                throw new IndexOutOfBoundsException();
+    //            }
+    //
+    //            return 0d;
+    //        }
+    //
+    //        //        double sum = 0d;
+    //        //
+    //        //        if (c instanceof List && c instanceof RandomAccess) {
+    //        //            final List<Number> list = (List<Number>) c;
+    //        //
+    //        //            for (int i = from; i < to; i++) {
+    //        //                sum += list.get(i).doubleValue();
+    //        //            }
+    //        //        } else {
+    //        //            final Iterator<? extends Number> it = c.iterator();
+    //        //
+    //        //            for (int i = 0; i < to; i++) {
+    //        //                if (i < from) {
+    //        //                    it.next();
+    //        //                    continue;
+    //        //                } else {
+    //        //                    sum += it.next().doubleValue();
+    //        //                }
+    //        //            }
+    //        //        }
+    //        //
+    //        //        return sum;
+    //
+    //        return Stream.of(c, from, to).mapToDouble(mapper).sum();
+    //    }
 
     /**
      *
@@ -30782,145 +30803,145 @@ public final class N {
         return DoubleStream.of(a, from, to).average().or(0);
     }
 
-    /**
-     * Limitation: only works for real byte/short/int/long/float/double number.
-     *
-     * @param a
-     * @return a double number. <code>0d</code> is returned if list is empty or
-     *         null.
-     */
-    public static <T extends Number> Double average(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return 0d;
-        }
-
-        return average(a, 0, a.length);
-    }
-
-    public static <T extends Number> Double average(final T[] a, final int from, final int to) {
-        checkIndex(from, to, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a)) {
-            if (to > 0) {
-                throw new IndexOutOfBoundsException();
-            }
-
-            return 0d;
-        }
-
-        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
-
-        return average(a, from, to, new ToDoubleFunction<Number>() {
-            @Override
-            public double applyAsDouble(Number value) {
-                return value == null ? 0d : value.doubleValue();
-            }
-        });
-    }
-
-    public static <T> Double average(final T[] a, final ToDoubleFunction<? super T> mapper) {
-        if (N.isNullOrEmpty(a)) {
-            return 0d;
-        }
-
-        return average(a, 0, a.length, mapper);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param from
-     * @param to
-     * @param mapper
-     * @return a double number. <code>0d</code> is returned if list is empty or
-     *         null.
-     */
-    public static <T> Double average(final T[] a, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
-        checkIndex(from, to, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a)) {
-            if (to > 0) {
-                throw new IndexOutOfBoundsException();
-            }
-
-            return 0d;
-        }
-
-        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
-
-        return Stream.of(a, from, to).mapToDouble(mapper).average().or(0d);
-    }
-
-    public static Double average(final Collection<? extends Number> c) {
-        if (N.isNullOrEmpty(c)) {
-            return 0d;
-        }
-
-        return average(c, 0, c.size());
-    }
-
-    /**
-     * Limitation: only works for real byte/short/int/long/float/double number.
-     *
-     * @param c
-     * @param from
-     * @param to
-     * @return a double number. <code>0d</code> is returned if list is empty or
-     *         null.
-     */
-    public static Double average(final Collection<? extends Number> c, final int from, final int to) {
-        checkIndex(from, to, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c)) {
-            if (to > 0) {
-                throw new IndexOutOfBoundsException();
-            }
-
-            return 0d;
-        }
-
-        // return from == to ? 0d : sum(c, from, to).doubleValue() / (to - from);
-
-        return average(c, from, to, new ToDoubleFunction<Number>() {
-            @Override
-            public double applyAsDouble(Number value) {
-                return value == null ? 0d : value.doubleValue();
-            }
-        });
-    }
-
-    public static <T> Double average(final Collection<T> c, final ToDoubleFunction<? super T> mapper) {
-        if (N.isNullOrEmpty(c)) {
-            return 0d;
-        }
-
-        return average(c, 0, c.size(), mapper);
-    }
-
-    /**
-     * 
-     * @param c
-     * @param from
-     * @param to
-     * @param mapper
-     * @return a double number. <code>0d</code> is returned if list is empty or
-     *         null.
-     */
-    public static <T> Double average(final Collection<T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
-        checkIndex(from, to, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c)) {
-            if (to > 0) {
-                throw new IndexOutOfBoundsException();
-            }
-
-            return 0d;
-        }
-
-        // return from == to ? 0d : sum(c, from, to).doubleValue() / (to - from);
-
-        return Stream.of(c, from, to).mapToDouble(mapper).average().or(0d);
-    }
+    //    /**
+    //     * Limitation: only works for real byte/short/int/long/float/double number.
+    //     *
+    //     * @param a
+    //     * @return a double number. <code>0d</code> is returned if list is empty or
+    //     *         null.
+    //     */
+    //    public static <T extends Number> Double average(final T[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return 0d;
+    //        }
+    //
+    //        return average(a, 0, a.length);
+    //    }
+    //
+    //    public static <T extends Number> Double average(final T[] a, final int from, final int to) {
+    //        checkIndex(from, to, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a)) {
+    //            if (to > 0) {
+    //                throw new IndexOutOfBoundsException();
+    //            }
+    //
+    //            return 0d;
+    //        }
+    //
+    //        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+    //
+    //        return average(a, from, to, new ToDoubleFunction<Number>() {
+    //            @Override
+    //            public double applyAsDouble(Number value) {
+    //                return value == null ? 0d : value.doubleValue();
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T> Double average(final T[] a, final ToDoubleFunction<? super T> mapper) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return 0d;
+    //        }
+    //
+    //        return average(a, 0, a.length, mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param a
+    //     * @param from
+    //     * @param to
+    //     * @param mapper
+    //     * @return a double number. <code>0d</code> is returned if list is empty or
+    //     *         null.
+    //     */
+    //    public static <T> Double average(final T[] a, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+    //        checkIndex(from, to, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a)) {
+    //            if (to > 0) {
+    //                throw new IndexOutOfBoundsException();
+    //            }
+    //
+    //            return 0d;
+    //        }
+    //
+    //        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+    //
+    //        return Stream.of(a, from, to).mapToDouble(mapper).average().or(0d);
+    //    }
+    //
+    //    public static Double average(final Collection<? extends Number> c) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return 0d;
+    //        }
+    //
+    //        return average(c, 0, c.size());
+    //    }
+    //
+    //    /**
+    //     * Limitation: only works for real byte/short/int/long/float/double number.
+    //     *
+    //     * @param c
+    //     * @param from
+    //     * @param to
+    //     * @return a double number. <code>0d</code> is returned if list is empty or
+    //     *         null.
+    //     */
+    //    public static Double average(final Collection<? extends Number> c, final int from, final int to) {
+    //        checkIndex(from, to, c == null ? 0 : c.size());
+    //
+    //        if (N.isNullOrEmpty(c)) {
+    //            if (to > 0) {
+    //                throw new IndexOutOfBoundsException();
+    //            }
+    //
+    //            return 0d;
+    //        }
+    //
+    //        // return from == to ? 0d : sum(c, from, to).doubleValue() / (to - from);
+    //
+    //        return average(c, from, to, new ToDoubleFunction<Number>() {
+    //            @Override
+    //            public double applyAsDouble(Number value) {
+    //                return value == null ? 0d : value.doubleValue();
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T> Double average(final Collection<T> c, final ToDoubleFunction<? super T> mapper) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return 0d;
+    //        }
+    //
+    //        return average(c, 0, c.size(), mapper);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param c
+    //     * @param from
+    //     * @param to
+    //     * @param mapper
+    //     * @return a double number. <code>0d</code> is returned if list is empty or
+    //     *         null.
+    //     */
+    //    public static <T> Double average(final Collection<T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+    //        checkIndex(from, to, c == null ? 0 : c.size());
+    //
+    //        if (N.isNullOrEmpty(c)) {
+    //            if (to > 0) {
+    //                throw new IndexOutOfBoundsException();
+    //            }
+    //
+    //            return 0d;
+    //        }
+    //
+    //        // return from == to ? 0d : sum(c, from, to).doubleValue() / (to - from);
+    //
+    //        return Stream.of(c, from, to).mapToDouble(mapper).average().or(0d);
+    //    }
 
     /**
      * <p>
@@ -33400,105 +33421,6 @@ public final class N {
 
     public static <T> CompletableFuture<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
         return asyncExecutor.invoke(instance, method, args);
-    }
-
-    /**
-     * Returns the value to which the specified key is mapped, or
-     * {@code defaultValue} if this map contains no mapping for the key.
-     *
-     * @param map
-     * @param key
-     * @param defaultValue
-     * @return
-     */
-    static <V> V getOrDefault(final Map<?, V> map, final Object key, final V defaultValue) {
-        final V value = map.get(key);
-        return value != null || map.containsKey(key) ? value : defaultValue;
-    }
-
-    /**
-     * If the specified key is not already associated with a value (or is mapped
-     * to {@code null}) associates it with the given value and returns
-     * {@code null}, else returns the current value.
-     *
-     * @param map
-     * @param key
-     * @param value
-     * @return
-     */
-    static <K, V> V putIfAbsent(final Map<K, V> map, final K key, final V value) {
-        V curValue = map.get(key);
-
-        if (curValue == null) {
-            curValue = map.put(key, value);
-        }
-
-        return curValue;
-    }
-
-    /**
-     * Removes the entry for the specified key only if it is currently
-     * mapped to the specified value.
-     *
-     * @param map
-     * @param key
-     * @param value
-     * @return {@code true} if the value was removed
-     */
-    static <K, V> boolean remove(final Map<K, V> map, final Object key, final Object value) {
-        final Object curValue = map.get(key);
-
-        if (equals(curValue, value) && (curValue != null || map.containsKey(key))) {
-            map.remove(key);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Replaces the entry for the specified key only if it is
-     * currently mapped to some value.
-     *
-     * @param map
-     * @param key
-     * @param newValue
-     * @return the previous value associated with the specified key, or
-     *         {@code null} if there was no mapping for the key.
-     *         (A {@code null} return can also indicate that the map
-     *         previously associated {@code null} with the key,
-     *         if the implementation supports null values.)
-     */
-    static <K, V> V replace(final Map<K, V> map, final K key, final V newValue) {
-        V curValue = map.get(key);
-
-        if (curValue != null || map.containsKey(key)) {
-            curValue = map.put(key, newValue);
-        }
-
-        return curValue;
-    }
-
-    /**
-     * Replaces the entry for the specified key only if currently
-     * mapped to the specified value.
-     *
-     * @param map
-     * @param key
-     * @param oldValue
-     * @param newValue
-     * @return {@code true} if the value was replaced
-     */
-    static <K, V> boolean replace(final Map<K, V> map, final K key, final V oldValue, final V newValue) {
-        final Object curValue = map.get(key);
-
-        if (equals(curValue, oldValue) && (curValue != null || map.containsKey(key))) {
-            map.put(key, newValue);
-
-            return true;
-        }
-
-        return false;
     }
 
     public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {

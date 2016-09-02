@@ -205,11 +205,11 @@ public abstract class StringList extends ObjectList<String> {
         return of(elementData);
     }
 
-    public static ObjectList<String> from(List<? extends Number> c) {
+    static ObjectList<String> from(List<? extends Number> c) {
         return from(c, null);
     }
 
-    public static ObjectList<String> from(List<? extends Number> c, String defaultValueForNull) {
+    static ObjectList<String> from(List<? extends Number> c, String defaultValueForNull) {
         final String[] a = new String[c.size()];
         int idx = 0;
 
@@ -220,11 +220,11 @@ public abstract class StringList extends ObjectList<String> {
         return of(a);
     }
 
-    public static ObjectList<String> from(Collection<String> c) {
+    static ObjectList<String> from(Collection<String> c) {
         return from(c, null);
     }
 
-    public static ObjectList<String> from(Collection<String> c, String defaultValueForNull) {
+    static ObjectList<String> from(Collection<String> c, String defaultValueForNull) {
         final String[] a = new String[c.size()];
         int idx = 0;
 

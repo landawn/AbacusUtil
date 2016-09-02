@@ -185,7 +185,6 @@ import com.landawn.abacus.util.function.UnaryOperator;
  */
 public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     private static final int DEFAULT_READING_THREAD_NUM = 64;
-    private static final int DEFAULT_QUEUE_SIZE = 1024;
 
     @SuppressWarnings("rawtypes")
     static final Comparator OBJECT_COMPARATOR = new Comparator<Comparable>() {
@@ -574,6 +573,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract Stream<T> distinct(Comparator<? super T> comparator);
 
+    public abstract Stream<T> distinct(Function<? super T, ?> keyMapper);
+
     public abstract Stream<T> top(int n);
 
     public abstract Stream<T> top(int n, Comparator<? super T> comparator);
@@ -722,6 +723,13 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract void forEach(Consumer<? super T> action);
 
     /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public abstract boolean forEach2(Function<? super T, Boolean> action);
+
+    /**
      * Returns an array containing the elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -730,8 +738,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return an array containing the elements of this stream
      */
     public abstract Object[] toArray();
-
-    public abstract <A> A[] toArray(A[] a);
 
     /**
      * Returns an array containing the elements of this stream, using the
@@ -1700,14 +1706,14 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     }
 
     public static <T> Stream<T> queued(Iterator<? extends T> iterator) {
-        return queued(iterator, DEFAULT_QUEUE_SIZE);
+        return queued(iterator, 128);
     }
 
     /**
      * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
      * 
      * @param iterator
-     * @param queueSize
+     * @param queueSize Default value is 128
      * @return
      */
     public static <T> Stream<T> queued(Iterator<? extends T> iterator, int queueSize) {
@@ -1790,7 +1796,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Iterator<? extends T>... a) {
-        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, DEFAULT_QUEUE_SIZE);
+        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, N.min(1024, N.max(128, a.length * 32)));
     }
 
     /**
@@ -1806,7 +1812,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * 
      * @param a
      * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, a.length)
-     * @param queueSize Default value is 1024
+     * @param queueSize Default value is N.min(1024, N.max(128, a.length * 32))
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Iterator<? extends T>[] a, final int iteratorReadThreadNum, final int queueSize) {
@@ -1826,7 +1832,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c) {
-        return parallelConcat(c, DEFAULT_READING_THREAD_NUM, DEFAULT_QUEUE_SIZE);
+        return parallelConcat(c, DEFAULT_READING_THREAD_NUM, N.min(1024, N.max(128, c.size() * 32)));
     }
 
     /**
@@ -1842,7 +1848,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * 
      * @param a
      * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, c.size())
-     * @param queueSize Default value is 1024
+     * @param queueSize Default value is N.min(1024, N.max(128, c.size() * 32))
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int iteratorReadThreadNum, final int queueSize) {
@@ -2193,7 +2199,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner) {
-        return parallelZip(a, b, combiner, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, combiner, 32);
     }
 
     /**
@@ -2208,7 +2214,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @param b
      * @param combiner
-     * @param queueSize Default value is 1024
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
@@ -2291,7 +2297,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<A, B, C, R> combiner) {
-        return parallelZip(a, b, c, combiner, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, c, combiner, 32);
     }
 
     /**
@@ -2307,7 +2313,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @param c
      * @param combiner
-     * @param queueSize Default value is 1024
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
@@ -2416,7 +2422,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner) {
-        return parallelZip(c, combiner, DEFAULT_QUEUE_SIZE);
+        return parallelZip(c, combiner, 32);
     }
 
     /**
@@ -2432,7 +2438,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @param c
      * @param combiner
-     * @param queueSize Default value is 1024
+     * @param queueSize for each iterator. Default value is 32
      * @return
      */
     public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final int queueSize) {
@@ -2545,7 +2551,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
             final A valueForNoneA, final B valueForNoneB) {
-        return parallelZip(a, b, combiner, DEFAULT_QUEUE_SIZE, valueForNoneA, valueForNoneB);
+        return parallelZip(a, b, combiner, 32, valueForNoneA, valueForNoneB);
     }
 
     /**
@@ -2560,7 +2566,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @param b
      * @param combiner
-     * @param queueSize
+     * @param queueSize for each iterator. Default value is 32
      * @param valueForNoneA
      * @param valueForNoneB
      * @return
@@ -2658,7 +2664,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
-        return parallelZip(a, b, c, combiner, DEFAULT_QUEUE_SIZE, valueForNoneA, valueForNoneB, valueForNoneC);
+        return parallelZip(a, b, c, combiner, 32, valueForNoneA, valueForNoneB, valueForNoneC);
     }
 
     /**
@@ -2674,7 +2680,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @param c
      * @param combiner
-     * @param queueSize
+     * @param queueSize for each iterator. Default value is 32
      * @param valueForNoneA
      * @param valueForNoneB
      * @param valueForNoneC
@@ -2778,7 +2784,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final Object[] valuesForNone) {
-        return parallelZip(c, combiner, DEFAULT_QUEUE_SIZE, valuesForNone);
+        return parallelZip(c, combiner, 32, valuesForNone);
     }
 
     /**
@@ -2792,7 +2798,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * 
      * @param c
      * @param combiner
-     * @param queueSize
+     * @param queueSize for each iterator. Default value is 32
      * @param valuesForNone
      * @return
      */

@@ -7,13 +7,13 @@ import com.landawn.abacus.util.N;
  */
 public interface IndexedConsumer<T> {
 
-    void accept(T t, int idx);
+    void accept(int idx, T t);
 
     default IndexedConsumer<T> andThen(IndexedConsumer<T> after) {
         N.requireNonNull(after);
-        return (T t, int idx) -> {
-            accept(t, idx);
-            after.accept(t, idx);
+        return (int idx, T t) -> {
+            accept(idx, t);
+            after.accept(idx, t);
         };
     }
 }

@@ -3,6 +3,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1099,36 +1100,73 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         //        return new ArrayStream<T>((T[]) set.toArray(), closeHandlers);
 
         return new IteratorStream<T>(new ImmutableIterator<T>() {
-            private Iterator<T> distinctIter;
+            T[] a = null;
+            int cursor = 0;
+            int toIndex;
 
             @Override
             public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
+                if (a == null) {
+                    getResult();
                 }
 
-                return distinctIter.hasNext();
+                return cursor < toIndex;
             }
 
             @Override
             public T next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
+                if (a == null) {
+                    getResult();
                 }
 
-                return distinctIter.next();
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
             }
 
-            private void removeDuplicated() {
+            @Override
+            public long count() {
+                if (a == null) {
+                    getResult();
+                }
+
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (a == null) {
+                    getResult();
+                }
+
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] b) {
+                if (a == null) {
+                    getResult();
+                }
+
+                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
+
+                N.copy(a, cursor, b, 0, toIndex - cursor);
+
+                return b;
+            }
+
+            private void getResult() {
                 final Set<T> set = new LinkedHashSet<T>();
 
                 while (elements.hasNext()) {
                     set.add(elements.next());
                 }
 
-                distinctIter = set.iterator();
+                a = (T[]) set.toArray();
+                toIndex = a.length;
             }
-
         }, closeHandlers, sorted, cmp);
     }
 
@@ -1147,36 +1185,154 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         }
 
         return new IteratorStream<T>(new ImmutableIterator<T>() {
-            private Iterator<T> distinctIter;
+            T[] a = null;
+            int cursor = 0;
+            int toIndex;
 
             @Override
             public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
+                if (a == null) {
+                    getResult();
                 }
 
-                return distinctIter.hasNext();
+                return cursor < toIndex;
             }
 
             @Override
             public T next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
+                if (a == null) {
+                    getResult();
                 }
 
-                return distinctIter.next();
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
             }
 
-            private void removeDuplicated() {
+            @Override
+            public long count() {
+                if (a == null) {
+                    getResult();
+                }
+
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (a == null) {
+                    getResult();
+                }
+
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] b) {
+                if (a == null) {
+                    getResult();
+                }
+
+                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
+
+                N.copy(a, cursor, b, 0, toIndex - cursor);
+
+                return b;
+            }
+
+            private void getResult() {
                 final Set<T> set = new TreeSet<T>(comparator);
 
                 while (elements.hasNext()) {
                     set.add(elements.next());
                 }
 
-                distinctIter = set.iterator();
+                a = (T[]) set.toArray();
+                toIndex = a.length;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
+            T[] a = null;
+            int cursor = 0;
+            int toIndex;
+
+            @Override
+            public boolean hasNext() {
+                if (a == null) {
+                    getResult();
+                }
+
+                return cursor < toIndex;
             }
 
+            @Override
+            public T next() {
+                if (a == null) {
+                    getResult();
+                }
+
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                if (a == null) {
+                    getResult();
+                }
+
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                if (a == null) {
+                    getResult();
+                }
+
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] b) {
+                if (a == null) {
+                    getResult();
+                }
+
+                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
+
+                N.copy(a, cursor, b, 0, toIndex - cursor);
+
+                return b;
+            }
+
+            private void getResult() {
+                final List<T> list = new ArrayList<>();
+                final Set<Object> keySet = new HashSet<>();
+
+                Object key = null;
+                T e = null;
+
+                while (elements.hasNext()) {
+                    key = keyMapper.apply(e);
+
+                    if (keySet.add(key)) {
+                        list.add(e);
+                    }
+                }
+
+                a = (T[]) list.toArray();
+                toIndex = a.length;
+            }
         }, closeHandlers);
     }
 
@@ -1672,12 +1828,22 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public boolean forEach2(Function<? super T, Boolean> action) {
+        while (elements.hasNext()) {
+            if (action.apply(elements.next()).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public Object[] toArray() {
         return toArray(N.EMPTY_OBJECT_ARRAY);
     }
 
-    @Override
-    public <A> A[] toArray(A[] a) {
+    <A> A[] toArray(A[] a) {
         return elements.toArray(a);
     }
 

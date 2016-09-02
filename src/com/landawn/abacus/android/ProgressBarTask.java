@@ -102,7 +102,7 @@ public class ProgressBarTask {
 
     static int activeProgressBarTaskCount() {
         synchronized (activeProgressBarSet) {
-            return (int) activeProgressBarSet.sumOfOccurrences();
+            return activeProgressBarSet.sumOfOccurrences().intValue();
         }
     }
 

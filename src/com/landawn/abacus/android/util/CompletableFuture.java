@@ -31,7 +31,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
      * @param result
      * @return a {@code CompletableFuture} which is already completed.
      */
-    public static <T> CompletableFuture<T> of(T result) {
+    public static <T> CompletableFuture<T> completed(T result) {
         return new CompletedFuture<T>(result);
     }
 

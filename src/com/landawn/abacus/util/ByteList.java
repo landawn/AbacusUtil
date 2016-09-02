@@ -19,15 +19,15 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
+import com.landawn.abacus.util.function.IndexedByteConsumer;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.ByteStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -128,11 +128,11 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return of(elementData);
     }
 
-    public static ByteList from(List<String> c) {
+    static ByteList from(List<String> c) {
         return from(c, (byte) 0);
     }
 
-    public static ByteList from(List<String> c, byte defaultValueForNull) {
+    static ByteList from(List<String> c, byte defaultValueForNull) {
         final byte[] a = new byte[c.size()];
         int idx = 0;
 
@@ -153,11 +153,11 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return of(a);
     }
 
-    public static ByteList from(Collection<? extends Number> c) {
+    static ByteList from(Collection<? extends Number> c) {
         return from(c, (byte) 0);
     }
 
-    public static ByteList from(Collection<? extends Number> c, byte defaultValueForNull) {
+    static ByteList from(Collection<? extends Number> c, byte defaultValueForNull) {
         final byte[] a = new byte[c.size()];
         int idx = 0;
 
@@ -507,13 +507,13 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     public OptionalByte kthLargest(final int k) {
-        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(N.kthLargest(elementData, 0, size, k));
+        return kthLargest(0, size(), k);
     }
 
     public OptionalByte kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.kthLargest(elementData, fromIndex, toIndex, k));
+        return toIndex - fromIndex < k ? OptionalByte.empty() : OptionalByte.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     public Long sum() {
@@ -540,6 +540,20 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elementData[i]);
+            }
+        }
+    }
+
+    public void forEach(IndexedByteConsumer action) {
+        forEach(0, size(), action);
+    }
+
+    public void forEach(final int fromIndex, final int toIndex, IndexedByteConsumer action) {
+        checkIndex(fromIndex, toIndex);
+
+        if (size > 0) {
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(i, elementData[i]);
             }
         }
     }
@@ -610,154 +624,156 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
-    public <R> List<R> map(final ByteFunction<? extends R> func) {
-        return map(0, size(), func);
-    }
+    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
 
-    public <R> List<R> map(final int fromIndex, final int toIndex, final ByteFunction<? extends R> func) {
-        return map(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final ByteFunction<? extends R> func) {
-        return map(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<? extends R> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.add(func.apply(elementData[i]));
-        }
-
-        return res;
-    }
-
-    public <R> List<R> flatMap(final ByteFunction<? extends Collection<? extends R>> func) {
-        return flatMap(0, size(), func);
-    }
-
-    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final ByteFunction<? extends Collection<? extends R>> func) {
-        return flatMap(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final ByteFunction<? extends Collection<? extends R>> func) {
-        return flatMap(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(func.apply(elementData[i]));
-        }
-
-        return res;
-    }
-
-    public <R> List<R> flatMap2(final ByteFunction<R[]> func) {
-        return flatMap2(0, size(), func);
-    }
-
-    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final ByteFunction<R[]> func) {
-        return flatMap2(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final ByteFunction<R[]> func) {
-        return flatMap2(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final ByteFunction<R[]> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(Arrays.asList(func.apply(elementData[i])));
-        }
-
-        return res;
-    }
-
-    public <K> Map<K, List<Byte>> groupBy(final ByteFunction<? extends K> func) {
-        return groupBy(0, size(), func);
-    }
-
-    public <K> Map<K, List<Byte>> groupBy(final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
-        return groupBy(List.class, fromIndex, toIndex, func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final ByteFunction<? extends K> func) {
-        return groupBy(HashMap.class, collClass, 0, size(), func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final ByteFunction<? extends K> func) {
-        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
-    }
-
-    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final ByteFunction<? extends K> func) {
-
-        return groupBy(outputClass, collClass, 0, size(), func);
-    }
-
-    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final M outputResult = N.newInstance(outputClass);
-
-        K key = null;
-        V values = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = func.apply(elementData[i]);
-            values = outputResult.get(key);
-
-            if (values == null) {
-                values = N.newInstance(collClass);
-                outputResult.put(key, values);
-            }
-
-            values.add(elementData[i]);
-        }
-
-        return outputResult;
-    }
-
-    public OptionalByte reduce(final ByteBinaryOperator accumulator) {
-        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(reduce((byte) 0, accumulator));
-    }
-
-    public OptionalByte reduce(final int fromIndex, final int toIndex, final ByteBinaryOperator accumulator) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(reduce(fromIndex, toIndex, (byte) 0, accumulator));
-    }
-
-    public byte reduce(final byte identity, final ByteBinaryOperator accumulator) {
-        return reduce(0, size(), identity, accumulator);
-    }
-
-    public byte reduce(final int fromIndex, final int toIndex, final byte identity, final ByteBinaryOperator accumulator) {
-        checkIndex(fromIndex, toIndex);
-
-        byte result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.applyAsByte(result, elementData[i]);
-        }
-
-        return result;
-    }
+    //    public <R> List<R> map(final ByteFunction<? extends R> func) {
+    //        return map(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> map(final int fromIndex, final int toIndex, final ByteFunction<? extends R> func) {
+    //        return map(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final ByteFunction<? extends R> func) {
+    //        return map(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final ByteFunction<? extends R> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.add(func.apply(elementData[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> flatMap(final ByteFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final ByteFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final ByteFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final ByteFunction<? extends Collection<? extends R>> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(func.apply(elementData[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> flatMap2(final ByteFunction<R[]> func) {
+    //        return flatMap2(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final ByteFunction<R[]> func) {
+    //        return flatMap2(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final ByteFunction<R[]> func) {
+    //        return flatMap2(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final ByteFunction<R[]> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(Arrays.asList(func.apply(elementData[i])));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <K> Map<K, List<Byte>> groupBy(final ByteFunction<? extends K> func) {
+    //        return groupBy(0, size(), func);
+    //    }
+    //
+    //    public <K> Map<K, List<Byte>> groupBy(final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
+    //        return groupBy(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final ByteFunction<? extends K> func) {
+    //        return groupBy(HashMap.class, collClass, 0, size(), func);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+    //            final ByteFunction<? extends K> func) {
+    //        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final ByteFunction<? extends K> func) {
+    //
+    //        return groupBy(outputClass, collClass, 0, size(), func);
+    //    }
+    //
+    //    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final M outputResult = N.newInstance(outputClass);
+    //
+    //        K key = null;
+    //        V values = null;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            key = func.apply(elementData[i]);
+    //            values = outputResult.get(key);
+    //
+    //            if (values == null) {
+    //                values = N.newInstance(collClass);
+    //                outputResult.put(key, values);
+    //            }
+    //
+    //            values.add(elementData[i]);
+    //        }
+    //
+    //        return outputResult;
+    //    }
+    //
+    //    public OptionalByte reduce(final ByteBinaryOperator accumulator) {
+    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(reduce((byte) 0, accumulator));
+    //    }
+    //
+    //    public OptionalByte reduce(final int fromIndex, final int toIndex, final ByteBinaryOperator accumulator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(reduce(fromIndex, toIndex, (byte) 0, accumulator));
+    //    }
+    //
+    //    public byte reduce(final byte identity, final ByteBinaryOperator accumulator) {
+    //        return reduce(0, size(), identity, accumulator);
+    //    }
+    //
+    //    public byte reduce(final int fromIndex, final int toIndex, final byte identity, final ByteBinaryOperator accumulator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        byte result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = accumulator.applyAsByte(result, elementData[i]);
+    //        }
+    //
+    //        return result;
+    //    }
 
     @Override
     public ByteList distinct(final int fromIndex, final int toIndex) {
@@ -857,51 +873,67 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public void toList(List<Byte> list, final int fromIndex, final int toIndex) {
+    public List<Byte> toList(final int fromIndex, final int toIndex, final IntFunction<List<Byte>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final List<Byte> list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
         }
+
+        return list;
     }
 
     @Override
-    public void toSet(Set<Byte> set, final int fromIndex, final int toIndex) {
+    public Set<Byte> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Byte>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final Set<Byte> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
         }
+
+        return set;
     }
 
     @Override
-    public void toMultiset(Multiset<Byte> multiset, final int fromIndex, final int toIndex) {
+    public Multiset<Byte> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<Byte>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final Multiset<Byte> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
+
+        return multiset;
     }
 
     public <K, U> Map<K, U> toMap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
-        return toMap(HashMap.class, keyMapper, valueMapper);
+        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+
+        return toMap(keyMapper, valueMapper, supplier);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final ByteFunction<? extends K> keyMapper,
-            final ByteFunction<? extends U> valueMapper) {
-        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    public <K, U, M extends Map<K, U>> M toMap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper,
+            final IntFunction<M> supplier) {
+        return toMap(0, size(), keyMapper, valueMapper, supplier);
     }
 
     public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
             final ByteFunction<? extends U> valueMapper) {
-        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+
+        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final int fromIndex, final int toIndex,
-            final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
+    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
+            final ByteFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
         checkIndex(fromIndex, toIndex);
 
-        final Map<K, U> map = N.newInstance(outputClass);
+        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
@@ -911,26 +943,28 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+
+        return toMultimap(keyMapper, valueMapper, supplier);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
-        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper,
+            final IntFunction<Multimap<K, U, V>> supplier) {
+        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
             final ByteFunction<? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+
+        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
+            final ByteFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
         checkIndex(fromIndex, toIndex);
 
-        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));

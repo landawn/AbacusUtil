@@ -1375,6 +1375,13 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
+        final List<T> list = N.distinct(elements, fromIndex, toIndex, keyMapper);
+        final T[] a = list.toArray((T[]) N.newArray(elements.getClass().getComponentType(), list.size()));
+        return new ArrayStream<T>(a, closeHandlers);
+    }
+
+    @Override
     public Stream<T> top(int n) {
         return top(n, OBJECT_COMPARATOR);
     }
@@ -1474,12 +1481,22 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public boolean forEach2(Function<? super T, Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(elements[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public Object[] toArray() {
         return N.copyOfRange(elements, fromIndex, toIndex);
     }
 
-    @Override
-    public <A> A[] toArray(A[] a) {
+    <A> A[] toArray(A[] a) {
         if (a.length < (toIndex - fromIndex)) {
             a = N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);
         }

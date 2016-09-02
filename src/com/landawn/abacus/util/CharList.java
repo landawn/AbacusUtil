@@ -19,15 +19,15 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
+import com.landawn.abacus.util.function.IndexedCharConsumer;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.CharStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -128,11 +128,11 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return of(elementData);
     }
 
-    public static CharList from(List<String> c) {
+    static CharList from(List<String> c) {
         return from(c, (char) 0);
     }
 
-    public static CharList from(List<String> c, char defaultValueForNull) {
+    static CharList from(List<String> c, char defaultValueForNull) {
         final char[] a = new char[c.size()];
         int idx = 0;
 
@@ -149,11 +149,11 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return of(a);
     }
 
-    public static CharList from(Collection<Character> c) {
+    static CharList from(Collection<Character> c) {
         return from(c, (char) 0);
     }
 
-    public static CharList from(Collection<Character> c, char defaultValueForNull) {
+    static CharList from(Collection<Character> c, char defaultValueForNull) {
         final char[] a = new char[c.size()];
         int idx = 0;
 
@@ -492,13 +492,13 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     public OptionalChar kthLargest(final int k) {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, 0, size, k));
+        return kthLargest(0, size(), k);
     }
 
     public OptionalChar kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, fromIndex, toIndex, k));
+        return toIndex - fromIndex < k ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     @Override
@@ -508,6 +508,20 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elementData[i]);
+            }
+        }
+    }
+
+    public void forEach(IndexedCharConsumer action) {
+        forEach(0, size(), action);
+    }
+
+    public void forEach(final int fromIndex, final int toIndex, IndexedCharConsumer action) {
+        checkIndex(fromIndex, toIndex);
+
+        if (size > 0) {
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(i, elementData[i]);
             }
         }
     }
@@ -578,154 +592,156 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
-    public <R> List<R> map(final CharFunction<? extends R> func) {
-        return map(0, size(), func);
-    }
+    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
 
-    public <R> List<R> map(final int fromIndex, final int toIndex, final CharFunction<? extends R> func) {
-        return map(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final CharFunction<? extends R> func) {
-        return map(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final CharFunction<? extends R> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.add(func.apply(elementData[i]));
-        }
-
-        return res;
-    }
-
-    public <R> List<R> flatMap(final CharFunction<? extends Collection<? extends R>> func) {
-        return flatMap(0, size(), func);
-    }
-
-    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final CharFunction<? extends Collection<? extends R>> func) {
-        return flatMap(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final CharFunction<? extends Collection<? extends R>> func) {
-        return flatMap(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final CharFunction<? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(func.apply(elementData[i]));
-        }
-
-        return res;
-    }
-
-    public <R> List<R> flatMap2(final CharFunction<R[]> func) {
-        return flatMap2(0, size(), func);
-    }
-
-    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final CharFunction<R[]> func) {
-        return flatMap2(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final CharFunction<R[]> func) {
-        return flatMap2(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final CharFunction<R[]> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(Arrays.asList(func.apply(elementData[i])));
-        }
-
-        return res;
-    }
-
-    public <K> Map<K, List<Character>> groupBy(final CharFunction<? extends K> func) {
-        return groupBy(0, size(), func);
-    }
-
-    public <K> Map<K, List<Character>> groupBy(final int fromIndex, final int toIndex, final CharFunction<? extends K> func) {
-        return groupBy(List.class, fromIndex, toIndex, func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Character>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final CharFunction<? extends K> func) {
-        return groupBy(HashMap.class, collClass, 0, size(), func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Character>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final CharFunction<? extends K> func) {
-        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
-    }
-
-    public <K, V extends Collection<Character>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final CharFunction<? extends K> func) {
-
-        return groupBy(outputClass, collClass, 0, size(), func);
-    }
-
-    public <K, V extends Collection<Character>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final int fromIndex, final int toIndex, final CharFunction<? extends K> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final M outputResult = N.newInstance(outputClass);
-
-        K key = null;
-        V values = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = func.apply(elementData[i]);
-            values = outputResult.get(key);
-
-            if (values == null) {
-                values = N.newInstance(collClass);
-                outputResult.put(key, values);
-            }
-
-            values.add(elementData[i]);
-        }
-
-        return outputResult;
-    }
-
-    public OptionalChar reduce(final CharBinaryOperator accumulator) {
-        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(reduce((char) 0, accumulator));
-    }
-
-    public OptionalChar reduce(final int fromIndex, final int toIndex, final CharBinaryOperator accumulator) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(reduce(fromIndex, toIndex, (char) 0, accumulator));
-    }
-
-    public char reduce(final char identity, final CharBinaryOperator accumulator) {
-        return reduce(0, size(), identity, accumulator);
-    }
-
-    public char reduce(final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator accumulator) {
-        checkIndex(fromIndex, toIndex);
-
-        char result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.applyAsChar(result, elementData[i]);
-        }
-
-        return result;
-    }
+    //    public <R> List<R> map(final CharFunction<? extends R> func) {
+    //        return map(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> map(final int fromIndex, final int toIndex, final CharFunction<? extends R> func) {
+    //        return map(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final CharFunction<? extends R> func) {
+    //        return map(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final CharFunction<? extends R> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.add(func.apply(elementData[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> flatMap(final CharFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final CharFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final CharFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final CharFunction<? extends Collection<? extends R>> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(func.apply(elementData[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> flatMap2(final CharFunction<R[]> func) {
+    //        return flatMap2(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final CharFunction<R[]> func) {
+    //        return flatMap2(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final CharFunction<R[]> func) {
+    //        return flatMap2(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final CharFunction<R[]> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(Arrays.asList(func.apply(elementData[i])));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <K> Map<K, List<Character>> groupBy(final CharFunction<? extends K> func) {
+    //        return groupBy(0, size(), func);
+    //    }
+    //
+    //    public <K> Map<K, List<Character>> groupBy(final int fromIndex, final int toIndex, final CharFunction<? extends K> func) {
+    //        return groupBy(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <K, V extends Collection<Character>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final CharFunction<? extends K> func) {
+    //        return groupBy(HashMap.class, collClass, 0, size(), func);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <K, V extends Collection<Character>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+    //            final CharFunction<? extends K> func) {
+    //        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <K, V extends Collection<Character>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final CharFunction<? extends K> func) {
+    //
+    //        return groupBy(outputClass, collClass, 0, size(), func);
+    //    }
+    //
+    //    public <K, V extends Collection<Character>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final int fromIndex, final int toIndex, final CharFunction<? extends K> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final M outputResult = N.newInstance(outputClass);
+    //
+    //        K key = null;
+    //        V values = null;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            key = func.apply(elementData[i]);
+    //            values = outputResult.get(key);
+    //
+    //            if (values == null) {
+    //                values = N.newInstance(collClass);
+    //                outputResult.put(key, values);
+    //            }
+    //
+    //            values.add(elementData[i]);
+    //        }
+    //
+    //        return outputResult;
+    //    }
+    //
+    //    public OptionalChar reduce(final CharBinaryOperator accumulator) {
+    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(reduce((char) 0, accumulator));
+    //    }
+    //
+    //    public OptionalChar reduce(final int fromIndex, final int toIndex, final CharBinaryOperator accumulator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(reduce(fromIndex, toIndex, (char) 0, accumulator));
+    //    }
+    //
+    //    public char reduce(final char identity, final CharBinaryOperator accumulator) {
+    //        return reduce(0, size(), identity, accumulator);
+    //    }
+    //
+    //    public char reduce(final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator accumulator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        char result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = accumulator.applyAsChar(result, elementData[i]);
+    //        }
+    //
+    //        return result;
+    //    }
 
     @Override
     public CharList distinct(final int fromIndex, final int toIndex) {
@@ -825,51 +841,68 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     @Override
-    public void toList(List<Character> list, final int fromIndex, final int toIndex) {
+    public List<Character> toList(final int fromIndex, final int toIndex, final IntFunction<List<Character>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final List<Character> list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
         }
+
+        return list;
     }
 
     @Override
-    public void toSet(Set<Character> set, final int fromIndex, final int toIndex) {
+    public Set<Character> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Character>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final Set<Character> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
         }
+
+        return set;
     }
 
     @Override
-    public void toMultiset(Multiset<Character> multiset, final int fromIndex, final int toIndex) {
+    public Multiset<Character> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<Character>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final Multiset<Character> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
+        ;
 
         for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
+
+        return multiset;
     }
 
     public <K, U> Map<K, U> toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
-        return toMap(HashMap.class, keyMapper, valueMapper);
+        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+
+        return toMap(keyMapper, valueMapper, supplier);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final CharFunction<? extends K> keyMapper,
-            final CharFunction<? extends U> valueMapper) {
-        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    public <K, U, M extends Map<K, U>> M toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
+            final IntFunction<M> supplier) {
+        return toMap(0, size(), keyMapper, valueMapper, supplier);
     }
 
     public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
             final CharFunction<? extends U> valueMapper) {
-        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+
+        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final int fromIndex, final int toIndex,
-            final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
+            final CharFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
         checkIndex(fromIndex, toIndex);
 
-        final Map<K, U> map = N.newInstance(outputClass);
+        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
@@ -879,26 +912,28 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+
+        return toMultimap(keyMapper, valueMapper, supplier);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
-        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
+            final IntFunction<Multimap<K, U, V>> supplier) {
+        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
             final CharFunction<? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+
+        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
+            final CharFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
         checkIndex(fromIndex, toIndex);
 
-        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));

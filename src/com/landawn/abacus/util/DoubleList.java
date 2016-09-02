@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.IndexedDoubleConsumer;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -151,11 +151,11 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return of(elementData);
     }
 
-    public static DoubleList from(List<String> c) {
+    static DoubleList from(List<String> c) {
         return from(c, 0d);
     }
 
-    public static DoubleList from(List<String> c, double defaultValueForNull) {
+    static DoubleList from(List<String> c, double defaultValueForNull) {
         final double[] a = new double[c.size()];
         int idx = 0;
 
@@ -166,11 +166,11 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return of(a);
     }
 
-    public static DoubleList from(Collection<? extends Number> c) {
+    static DoubleList from(Collection<? extends Number> c) {
         return from(c, 0d);
     }
 
-    public static DoubleList from(Collection<? extends Number> c, double defaultValueForNull) {
+    static DoubleList from(Collection<? extends Number> c, double defaultValueForNull) {
         final double[] a = new double[c.size()];
         int idx = 0;
 
@@ -509,13 +509,13 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     public OptionalDouble kthLargest(final int k) {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(N.kthLargest(elementData, 0, size, k));
+        return kthLargest(0, size(), k);
     }
 
     public OptionalDouble kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.kthLargest(elementData, fromIndex, toIndex, k));
+        return toIndex - fromIndex < k ? OptionalDouble.empty() : OptionalDouble.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
     public Double sum() {
@@ -542,6 +542,20 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
                 action.accept(elementData[i]);
+            }
+        }
+    }
+
+    public void forEach(IndexedDoubleConsumer action) {
+        forEach(0, size(), action);
+    }
+
+    public void forEach(final int fromIndex, final int toIndex, IndexedDoubleConsumer action) {
+        checkIndex(fromIndex, toIndex);
+
+        if (size > 0) {
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(i, elementData[i]);
             }
         }
     }
@@ -612,154 +626,156 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
-    public <R> List<R> map(final DoubleFunction<? extends R> func) {
-        return map(0, size(), func);
-    }
+    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
 
-    public <R> List<R> map(final int fromIndex, final int toIndex, final DoubleFunction<? extends R> func) {
-        return map(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final DoubleFunction<? extends R> func) {
-        return map(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final DoubleFunction<? extends R> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.add(func.apply(elementData[i]));
-        }
-
-        return res;
-    }
-
-    public <R> List<R> flatMap(final DoubleFunction<? extends Collection<? extends R>> func) {
-        return flatMap(0, size(), func);
-    }
-
-    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends Collection<? extends R>> func) {
-        return flatMap(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final DoubleFunction<? extends Collection<? extends R>> func) {
-        return flatMap(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final DoubleFunction<? extends Collection<? extends R>> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(func.apply(elementData[i]));
-        }
-
-        return res;
-    }
-
-    public <R> List<R> flatMap2(final DoubleFunction<R[]> func) {
-        return flatMap2(0, size(), func);
-    }
-
-    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final DoubleFunction<R[]> func) {
-        return flatMap2(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final DoubleFunction<R[]> func) {
-        return flatMap2(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final DoubleFunction<R[]> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final V res = N.newInstance(collClass);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(Arrays.asList(func.apply(elementData[i])));
-        }
-
-        return res;
-    }
-
-    public <K> Map<K, List<Double>> groupBy(final DoubleFunction<? extends K> func) {
-        return groupBy(0, size(), func);
-    }
-
-    public <K> Map<K, List<Double>> groupBy(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> func) {
-        return groupBy(List.class, fromIndex, toIndex, func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Double>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final DoubleFunction<? extends K> func) {
-        return groupBy(HashMap.class, collClass, 0, size(), func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<Double>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final DoubleFunction<? extends K> func) {
-        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
-    }
-
-    public <K, V extends Collection<Double>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final DoubleFunction<? extends K> func) {
-
-        return groupBy(outputClass, collClass, 0, size(), func);
-    }
-
-    public <K, V extends Collection<Double>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final int fromIndex, final int toIndex, final DoubleFunction<? extends K> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final M outputResult = N.newInstance(outputClass);
-
-        K key = null;
-        V values = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            key = func.apply(elementData[i]);
-            values = outputResult.get(key);
-
-            if (values == null) {
-                values = N.newInstance(collClass);
-                outputResult.put(key, values);
-            }
-
-            values.add(elementData[i]);
-        }
-
-        return outputResult;
-    }
-
-    public OptionalDouble reduce(final DoubleBinaryOperator accumulator) {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(reduce(0, accumulator));
-    }
-
-    public OptionalDouble reduce(final int fromIndex, final int toIndex, final DoubleBinaryOperator accumulator) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(reduce(fromIndex, toIndex, 0, accumulator));
-    }
-
-    public double reduce(final double identity, final DoubleBinaryOperator accumulator) {
-        return reduce(0, size(), identity, accumulator);
-    }
-
-    public double reduce(final int fromIndex, final int toIndex, final double identity, final DoubleBinaryOperator accumulator) {
-        checkIndex(fromIndex, toIndex);
-
-        double result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.applyAsDouble(result, elementData[i]);
-        }
-
-        return result;
-    }
+    //    public <R> List<R> map(final DoubleFunction<? extends R> func) {
+    //        return map(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> map(final int fromIndex, final int toIndex, final DoubleFunction<? extends R> func) {
+    //        return map(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final DoubleFunction<? extends R> func) {
+    //        return map(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final DoubleFunction<? extends R> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.add(func.apply(elementData[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> flatMap(final DoubleFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final DoubleFunction<? extends Collection<? extends R>> func) {
+    //        return flatMap(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final DoubleFunction<? extends Collection<? extends R>> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(func.apply(elementData[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> flatMap2(final DoubleFunction<R[]> func) {
+    //        return flatMap2(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final DoubleFunction<R[]> func) {
+    //        return flatMap2(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final DoubleFunction<R[]> func) {
+    //        return flatMap2(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final DoubleFunction<R[]> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(Arrays.asList(func.apply(elementData[i])));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <K> Map<K, List<Double>> groupBy(final DoubleFunction<? extends K> func) {
+    //        return groupBy(0, size(), func);
+    //    }
+    //
+    //    public <K> Map<K, List<Double>> groupBy(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> func) {
+    //        return groupBy(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <K, V extends Collection<Double>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final DoubleFunction<? extends K> func) {
+    //        return groupBy(HashMap.class, collClass, 0, size(), func);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <K, V extends Collection<Double>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+    //            final DoubleFunction<? extends K> func) {
+    //        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <K, V extends Collection<Double>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final DoubleFunction<? extends K> func) {
+    //
+    //        return groupBy(outputClass, collClass, 0, size(), func);
+    //    }
+    //
+    //    public <K, V extends Collection<Double>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final int fromIndex, final int toIndex, final DoubleFunction<? extends K> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final M outputResult = N.newInstance(outputClass);
+    //
+    //        K key = null;
+    //        V values = null;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            key = func.apply(elementData[i]);
+    //            values = outputResult.get(key);
+    //
+    //            if (values == null) {
+    //                values = N.newInstance(collClass);
+    //                outputResult.put(key, values);
+    //            }
+    //
+    //            values.add(elementData[i]);
+    //        }
+    //
+    //        return outputResult;
+    //    }
+    //
+    //    public OptionalDouble reduce(final DoubleBinaryOperator accumulator) {
+    //        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(reduce(0, accumulator));
+    //    }
+    //
+    //    public OptionalDouble reduce(final int fromIndex, final int toIndex, final DoubleBinaryOperator accumulator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(reduce(fromIndex, toIndex, 0, accumulator));
+    //    }
+    //
+    //    public double reduce(final double identity, final DoubleBinaryOperator accumulator) {
+    //        return reduce(0, size(), identity, accumulator);
+    //    }
+    //
+    //    public double reduce(final int fromIndex, final int toIndex, final double identity, final DoubleBinaryOperator accumulator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        double result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = accumulator.applyAsDouble(result, elementData[i]);
+    //        }
+    //
+    //        return result;
+    //    }
 
     @Override
     public DoubleList distinct(final int fromIndex, final int toIndex) {
@@ -885,51 +901,67 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     @Override
-    public void toList(List<Double> list, final int fromIndex, final int toIndex) {
+    public List<Double> toList(final int fromIndex, final int toIndex, final IntFunction<List<Double>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final List<Double> list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
         }
+
+        return list;
     }
 
     @Override
-    public void toSet(Set<Double> set, final int fromIndex, final int toIndex) {
+    public Set<Double> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Double>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final Set<Double> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
         }
+
+        return set;
     }
 
     @Override
-    public void toMultiset(Multiset<Double> multiset, final int fromIndex, final int toIndex) {
+    public Multiset<Double> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<Double>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final Multiset<Double> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
+
+        return multiset;
     }
 
     public <K, U> Map<K, U> toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
-        return toMap(HashMap.class, keyMapper, valueMapper);
+        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+
+        return toMap(keyMapper, valueMapper, supplier);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final DoubleFunction<? extends K> keyMapper,
-            final DoubleFunction<? extends U> valueMapper) {
-        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    public <K, U, M extends Map<K, U>> M toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper,
+            final IntFunction<M> supplier) {
+        return toMap(0, size(), keyMapper, valueMapper, supplier);
     }
 
     public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
             final DoubleFunction<? extends U> valueMapper) {
-        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+
+        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final int fromIndex, final int toIndex,
-            final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
+            final DoubleFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
         checkIndex(fromIndex, toIndex);
 
-        final Map<K, U> map = N.newInstance(outputClass);
+        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
@@ -939,26 +971,28 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+
+        return toMultimap(keyMapper, valueMapper, supplier);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
-        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final DoubleFunction<? extends K> keyMapper,
+            final DoubleFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
             final DoubleFunction<? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+
+        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
+            final DoubleFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
         checkIndex(fromIndex, toIndex);
 
-        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));

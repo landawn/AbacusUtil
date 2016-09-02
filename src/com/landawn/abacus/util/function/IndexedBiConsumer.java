@@ -5,15 +5,15 @@ import com.landawn.abacus.util.N;
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  */
-public interface IndexedShortConsumer {
+public interface IndexedBiConsumer<T, U> {
 
-    void accept(int idx, short t);
+    void accept(int idx, T t, U u);
 
-    default IndexedShortConsumer andThen(IndexedShortConsumer after) {
+    default IndexedBiConsumer<T, U> andThen(IndexedBiConsumer<T, U> after) {
         N.requireNonNull(after);
-        return (int idx, short t) -> {
-            accept(idx, t);
-            after.accept(idx, t);
+        return (int idx, T t, U u) -> {
+            accept(idx, t, u);
+            after.accept(idx, t, u);
         };
     }
 }

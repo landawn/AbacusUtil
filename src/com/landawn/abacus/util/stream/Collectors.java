@@ -423,44 +423,44 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
-    public static <T> Collector<T, ?, T[]> toArray(final Class<T[]> arrayClass) {
-        return toArray((T[]) N.newArray(arrayClass.getComponentType(), 0));
+    public static <T> Collector<T, ?, Object[]> toArray() {
+        return toArray(N.EMPTY_OBJECT_ARRAY, 0);
     }
 
-    public static <T> Collector<T, ?, T[]> toArray(final T[] array) {
-        return toArray(array, 0);
+    public static <T, A> Collector<T, ?, A[]> toArray(final Supplier<A[]> supplier) {
+        return toArray(supplier.get(), 0);
     }
 
-    static <T> Collector<T, ?, T[]> toArray(final T[] array, final int fromIndex) {
+    static <T, A> Collector<T, ?, A[]> toArray(final A[] array, final int fromIndex) {
         if (fromIndex < 0 || fromIndex > array.length) {
             throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
         }
 
-        final Supplier<ObjectList<T>> supplier = new Supplier<ObjectList<T>>() {
+        final Supplier<ObjectList<A>> supplier = new Supplier<ObjectList<A>>() {
             @Override
-            public ObjectList<T> get() {
-                return new ObjectList<T>(array, fromIndex);
+            public ObjectList<A> get() {
+                return new ObjectList<A>(array, fromIndex);
             }
         };
 
-        final BiConsumer<ObjectList<T>, T> accumulator = new BiConsumer<ObjectList<T>, T>() {
+        final BiConsumer<ObjectList<A>, T> accumulator = new BiConsumer<ObjectList<A>, T>() {
             @Override
-            public void accept(ObjectList<T> c, T t) {
-                c.add(t);
+            public void accept(ObjectList<A> c, T t) {
+                c.add((A) t);
             }
         };
 
-        final BinaryOperator<ObjectList<T>> combiner = new BinaryOperator<ObjectList<T>>() {
+        final BinaryOperator<ObjectList<A>> combiner = new BinaryOperator<ObjectList<A>>() {
             @Override
-            public ObjectList<T> apply(ObjectList<T> a, ObjectList<T> b) {
+            public ObjectList<A> apply(ObjectList<A> a, ObjectList<A> b) {
                 a.addAll(b);
                 return a;
             }
         };
 
-        final Function<ObjectList<T>, T[]> finisher = new Function<ObjectList<T>, T[]>() {
+        final Function<ObjectList<A>, A[]> finisher = new Function<ObjectList<A>, A[]>() {
             @Override
-            public T[] apply(ObjectList<T> t) {
+            public A[] apply(ObjectList<A> t) {
                 return t.array() == array ? array : t.trimToSize().array();
             }
         };
@@ -495,11 +495,11 @@ public final class Collectors {
     }
 
     public static Collector<Boolean, ?, boolean[]> toBooleanArray() {
-        return toBooleanArray(N.EMPTY_BOOLEAN_ARRAY);
+        return toBooleanArray(N.EMPTY_BOOLEAN_ARRAY, 0);
     }
 
-    public static Collector<Boolean, ?, boolean[]> toBooleanArray(final boolean[] array) {
-        return toBooleanArray(array, 0);
+    public static Collector<Boolean, ?, boolean[]> toBooleanArray(final Supplier<boolean[]> supplier) {
+        return toBooleanArray(supplier.get(), 0);
     }
 
     static Collector<Boolean, ?, boolean[]> toBooleanArray(final boolean[] array, final int fromIndex) {
@@ -566,11 +566,11 @@ public final class Collectors {
     }
 
     public static Collector<Character, ?, char[]> toCharArray() {
-        return toCharArray(N.EMPTY_CHAR_ARRAY);
+        return toCharArray(N.EMPTY_CHAR_ARRAY, 0);
     }
 
-    public static Collector<Character, ?, char[]> toCharArray(final char[] array) {
-        return toCharArray(array, 0);
+    public static Collector<Character, ?, char[]> toCharArray(final Supplier<char[]> supplier) {
+        return toCharArray(supplier.get(), 0);
     }
 
     static Collector<Character, ?, char[]> toCharArray(final char[] array, final int fromIndex) {
@@ -610,7 +610,7 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static Collector<Byte, ?, ByteList> toByteList() {
+    public static <T extends Number> Collector<T, ?, ByteList> toByteList() {
         final Supplier<ByteList> supplier = new Supplier<ByteList>() {
             @Override
             public ByteList get() {
@@ -618,10 +618,10 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<ByteList, Byte> accumulator = new BiConsumer<ByteList, Byte>() {
+        final BiConsumer<ByteList, T> accumulator = new BiConsumer<ByteList, T>() {
             @Override
-            public void accept(ByteList c, Byte t) {
-                c.add(t);
+            public void accept(ByteList c, T t) {
+                c.add(t.byteValue());
             }
         };
 
@@ -637,11 +637,11 @@ public final class Collectors {
     }
 
     public static <T extends Number> Collector<T, ?, byte[]> toByteArray() {
-        return toByteArray(N.EMPTY_BYTE_ARRAY);
+        return toByteArray(N.EMPTY_BYTE_ARRAY, 0);
     }
 
-    public static <T extends Number> Collector<T, ?, byte[]> toByteArray(final byte[] array) {
-        return toByteArray(array, 0);
+    public static <T extends Number> Collector<T, ?, byte[]> toByteArray(final Supplier<byte[]> supplier) {
+        return toByteArray(supplier.get(), 0);
     }
 
     static <T extends Number> Collector<T, ?, byte[]> toByteArray(final byte[] array, final int fromIndex) {
@@ -681,7 +681,7 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static Collector<Short, ?, ShortList> toShortList() {
+    public static <T extends Number> Collector<T, ?, ShortList> toShortList() {
         final Supplier<ShortList> supplier = new Supplier<ShortList>() {
             @Override
             public ShortList get() {
@@ -689,10 +689,10 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<ShortList, Short> accumulator = new BiConsumer<ShortList, Short>() {
+        final BiConsumer<ShortList, T> accumulator = new BiConsumer<ShortList, T>() {
             @Override
-            public void accept(ShortList c, Short t) {
-                c.add(t);
+            public void accept(ShortList c, T t) {
+                c.add(t.shortValue());
             }
         };
 
@@ -708,11 +708,11 @@ public final class Collectors {
     }
 
     public static <T extends Number> Collector<T, ?, short[]> toShortArray() {
-        return toShortArray(N.EMPTY_SHORT_ARRAY);
+        return toShortArray(N.EMPTY_SHORT_ARRAY, 0);
     }
 
-    public static <T extends Number> Collector<T, ?, short[]> toShortArray(final short[] array) {
-        return toShortArray(array, 0);
+    public static <T extends Number> Collector<T, ?, short[]> toShortArray(final Supplier<short[]> supplier) {
+        return toShortArray(supplier.get(), 0);
     }
 
     static <T extends Number> Collector<T, ?, short[]> toShortArray(final short[] array, final int fromIndex) {
@@ -752,7 +752,7 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static Collector<Integer, ?, IntList> toIntList() {
+    public static <T extends Number> Collector<T, ?, IntList> toIntList() {
         final Supplier<IntList> supplier = new Supplier<IntList>() {
             @Override
             public IntList get() {
@@ -760,10 +760,10 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<IntList, Integer> accumulator = new BiConsumer<IntList, Integer>() {
+        final BiConsumer<IntList, T> accumulator = new BiConsumer<IntList, T>() {
             @Override
-            public void accept(IntList c, Integer t) {
-                c.add(t);
+            public void accept(IntList c, T t) {
+                c.add(t.intValue());
             }
         };
 
@@ -779,11 +779,11 @@ public final class Collectors {
     }
 
     public static <T extends Number> Collector<T, ?, int[]> toIntArray() {
-        return toIntArray(N.EMPTY_INT_ARRAY);
+        return toIntArray(N.EMPTY_INT_ARRAY, 0);
     }
 
-    public static <T extends Number> Collector<T, ?, int[]> toIntArray(final int[] array) {
-        return toIntArray(array, 0);
+    public static <T extends Number> Collector<T, ?, int[]> toIntArray(final Supplier<int[]> supplier) {
+        return toIntArray(supplier.get(), 0);
     }
 
     static <T extends Number> Collector<T, ?, int[]> toIntArray(final int[] array, final int fromIndex) {
@@ -823,7 +823,7 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static Collector<Long, ?, LongList> toLongList() {
+    public static <T extends Number> Collector<T, ?, LongList> toLongList() {
         final Supplier<LongList> supplier = new Supplier<LongList>() {
             @Override
             public LongList get() {
@@ -831,10 +831,10 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<LongList, Long> accumulator = new BiConsumer<LongList, Long>() {
+        final BiConsumer<LongList, T> accumulator = new BiConsumer<LongList, T>() {
             @Override
-            public void accept(LongList c, Long t) {
-                c.add(t);
+            public void accept(LongList c, T t) {
+                c.add(t.longValue());
             }
         };
 
@@ -850,11 +850,11 @@ public final class Collectors {
     }
 
     public static <T extends Number> Collector<T, ?, long[]> toLongArray() {
-        return toLongArray(N.EMPTY_LONG_ARRAY);
+        return toLongArray(N.EMPTY_LONG_ARRAY, 0);
     }
 
-    public static <T extends Number> Collector<T, ?, long[]> toLongArray(final long[] array) {
-        return toLongArray(array, 0);
+    public static <T extends Number> Collector<T, ?, long[]> toLongArray(final Supplier<long[]> supplier) {
+        return toLongArray(supplier.get(), 0);
     }
 
     static <T extends Number> Collector<T, ?, long[]> toLongArray(final long[] array, final int fromIndex) {
@@ -894,7 +894,7 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static Collector<Float, ?, FloatList> toFloatList() {
+    public static <T extends Number> Collector<T, ?, FloatList> toFloatList() {
         final Supplier<FloatList> supplier = new Supplier<FloatList>() {
             @Override
             public FloatList get() {
@@ -902,10 +902,10 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<FloatList, Float> accumulator = new BiConsumer<FloatList, Float>() {
+        final BiConsumer<FloatList, T> accumulator = new BiConsumer<FloatList, T>() {
             @Override
-            public void accept(FloatList c, Float t) {
-                c.add(t);
+            public void accept(FloatList c, T t) {
+                c.add(t.floatValue());
             }
         };
 
@@ -921,11 +921,11 @@ public final class Collectors {
     }
 
     public static <T extends Number> Collector<T, ?, float[]> toFloatArray() {
-        return toFloatArray(N.EMPTY_FLOAT_ARRAY);
+        return toFloatArray(N.EMPTY_FLOAT_ARRAY, 0);
     }
 
-    public static <T extends Number> Collector<T, ?, float[]> toFloatArray(final float[] array) {
-        return toFloatArray(array, 0);
+    public static <T extends Number> Collector<T, ?, float[]> toFloatArray(final Supplier<float[]> supplier) {
+        return toFloatArray(supplier.get(), 0);
     }
 
     static <T extends Number> Collector<T, ?, float[]> toFloatArray(final float[] array, final int fromIndex) {
@@ -965,7 +965,7 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static Collector<Double, ?, DoubleList> toDoubleList() {
+    public static <T extends Number> Collector<T, ?, DoubleList> toDoubleList() {
         final Supplier<DoubleList> supplier = new Supplier<DoubleList>() {
             @Override
             public DoubleList get() {
@@ -973,10 +973,10 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<DoubleList, Double> accumulator = new BiConsumer<DoubleList, Double>() {
+        final BiConsumer<DoubleList, T> accumulator = new BiConsumer<DoubleList, T>() {
             @Override
-            public void accept(DoubleList c, Double t) {
-                c.add(t);
+            public void accept(DoubleList c, T t) {
+                c.add(t.doubleValue());
             }
         };
 
@@ -992,11 +992,11 @@ public final class Collectors {
     }
 
     public static <T extends Number> Collector<T, ?, double[]> toDoubleArray() {
-        return toDoubleArray(N.EMPTY_DOUBLE_ARRAY);
+        return toDoubleArray(N.EMPTY_DOUBLE_ARRAY, 0);
     }
 
-    public static <T extends Number> Collector<T, ?, double[]> toDoubleArray(final double[] array) {
-        return toDoubleArray(array, 0);
+    public static <T extends Number> Collector<T, ?, double[]> toDoubleArray(final Supplier<double[]> supplier) {
+        return toDoubleArray(supplier.get(), 0);
     }
 
     static <T extends Number> Collector<T, ?, double[]> toDoubleArray(final double[] array, final int fromIndex) {
@@ -3195,12 +3195,12 @@ public final class Collectors {
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
-    public static <T, K, U, V extends Collection<U>> Collector<T, ?, Multimap<K, U, V>> toMultimap(Function<? super T, ? extends K> keyMapper,
+    public static <T, K, U> Collector<T, ?, Multimap<K, U, List<U>>> toMultimap(Function<? super T, ? extends K> keyMapper,
             Function<? super T, ? extends U> valueMapper) {
-        final Supplier<Multimap<K, U, V>> mapSupplier = new Supplier<Multimap<K, U, V>>() {
+        final Supplier<Multimap<K, U, List<U>>> mapSupplier = new Supplier<Multimap<K, U, List<U>>>() {
             @Override
-            public Multimap<K, U, V> get() {
-                return new Multimap<>();
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
             }
         };
 

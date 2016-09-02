@@ -7,13 +7,13 @@ import com.landawn.abacus.util.N;
  */
 public interface IndexedDoubleConsumer {
 
-    void accept(double t, int idx);
+    void accept(int idx, double t);
 
     default IndexedDoubleConsumer andThen(IndexedDoubleConsumer after) {
         N.requireNonNull(after);
-        return (double t, int idx) -> {
-            accept(t, idx);
-            after.accept(t, idx);
+        return (int idx, double t) -> {
+            accept(idx, t);
+            after.accept(idx, t);
         };
     }
 }

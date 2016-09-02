@@ -20,18 +20,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IndexedConsumer;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.ToBooleanFunction;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -40,7 +46,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? super T>, T, T[], ObjectList<T>> {
+public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> {
     private T[] elementData = null;
     private int size = 0;
 
@@ -73,6 +79,22 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
 
     public static <T> ObjectList<T> of(T[] a, int size) {
         return new ObjectList<T>(a, size);
+    }
+
+    static <T> ObjectList<T> from(Class<T> cls, Collection<? extends T> c) {
+        return of(c.toArray((T[]) N.newArray(cls, c.size())));
+    }
+
+    static <T> ObjectList<T> from(Class<T> cls, Collection<? extends T> c, T defaultValueForNull) {
+        final T[] a = c.toArray((T[]) N.newArray(cls, c.size()));
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            if (a[i] == null) {
+                a[i] = defaultValueForNull;
+            }
+        }
+
+        return of(a);
     }
 
     /**
@@ -437,24 +459,24 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
     }
 
     public OptionalNullable<T> kthLargest(final int k) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.kthLargest((Comparable[]) elementData, 0, size, k));
+        return kthLargest(0, size(), k);
     }
 
     public OptionalNullable<T> kthLargest(final int k, Comparator<? super T> cmp) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.kthLargest(elementData, 0, size, k, cmp));
+        return kthLargest(0, size(), k, cmp);
     }
 
     public OptionalNullable<T> kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
+        return toIndex - fromIndex < k ? (OptionalNullable<T>) OptionalNullable.empty()
                 : OptionalNullable.of((T) N.kthLargest((Comparable[]) elementData, fromIndex, toIndex, k));
     }
 
     public OptionalNullable<T> kthLargest(final int fromIndex, final int toIndex, final int k, final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
+        return toIndex - fromIndex < k ? (OptionalNullable<T>) OptionalNullable.empty()
                 : OptionalNullable.of(N.kthLargest(elementData, fromIndex, toIndex, k, cmp));
     }
 
@@ -549,9 +571,12 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
     }
 
     public Double sumDouble(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? 0d : N.sum((Number[]) elementData, fromIndex, toIndex);
+        return sumDouble(fromIndex, toIndex, (ToDoubleFunction<? super T>) new ToDoubleFunction<Number>() {
+            @Override
+            public double applyAsDouble(Number value) {
+                return value == null ? 0d : value.doubleValue();
+            }
+        });
     }
 
     public Double sumDouble(ToDoubleFunction<? super T> mapper) {
@@ -561,7 +586,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
     public Double sumDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? 0d : N.sum(elementData, fromIndex, toIndex, mapper);
+        return fromIndex == toIndex ? 0d : Stream.of(elementData, fromIndex, toIndex).mapToDouble(mapper).sum();
     }
 
     public OptionalDouble averageInt() {
@@ -609,9 +634,12 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
     }
 
     public OptionalDouble averageDouble(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average((Number[]) elementData, fromIndex, toIndex));
+        return averageDouble(fromIndex, toIndex, (ToDoubleFunction<? super T>) new ToDoubleFunction<Number>() {
+            @Override
+            public double applyAsDouble(Number value) {
+                return value == null ? 0d : value.doubleValue();
+            }
+        });
     }
 
     public OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper) {
@@ -621,11 +649,11 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
     public OptionalDouble averageDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex, mapper));
+        return fromIndex == toIndex ? OptionalDouble.empty() : Stream.of(elementData, fromIndex, toIndex).mapToDouble(mapper).average();
     }
 
     @Override
-    public void forEach(final int fromIndex, final int toIndex, Consumer<T> action) {
+    public void forEach(final int fromIndex, final int toIndex, Consumer<? super T> action) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -633,6 +661,62 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
                 action.accept(elementData[i]);
             }
         }
+    }
+
+    public void forEach(IndexedConsumer<T> action) {
+        forEach(0, size(), action);
+    }
+
+    public void forEach(final int fromIndex, final int toIndex, IndexedConsumer<? super T> action) {
+        checkIndex(fromIndex, toIndex);
+
+        if (size > 0) {
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(i, elementData[i]);
+            }
+        }
+    }
+
+    public boolean forEach2(final Function<? super T, Boolean> action) {
+        return forEach2(0, size(), action);
+    }
+
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(elementData[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean forEach2(final BiFunction<Integer, ? super T, Boolean> action) {
+        return forEach2(0, size(), action);
+    }
+
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false. The first parameter is the index.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(final int fromIndex, final int toIndex, final BiFunction<Integer, ? super T, Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(i, elementData[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -701,155 +785,303 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
-    public <R> List<R> map(final Function<? super T, ? extends R> func) {
-        return map(0, size(), func);
+    // TODO 1, replace with Stream mapToXXX(...) APIs.
+
+    public <R> ObjectList<R> mapTo(final Class<R> targetClass, final Function<? super T, ? extends R> func) {
+        return mapTo(targetClass, 0, size(), func);
     }
 
-    public <R> List<R> map(final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
-        return map(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final Function<? super T, ? extends R> func) {
-        return map(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends R> func) {
+    public <R> ObjectList<R> mapTo(final Class<R> targetClass, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = N.newInstance(collClass);
+        final R[] res = N.newArray(targetClass, size());
 
         for (int i = fromIndex; i < toIndex; i++) {
-            res.add(func.apply(elementData[i]));
+            res[i - fromIndex] = func.apply(elementData[i]);
         }
 
-        return res;
+        return ObjectList.of(res);
     }
 
-    public <R> List<R> flatMap(final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(0, size(), func);
+    public BooleanList mapToBoolean(final ToBooleanFunction<? super T> func) {
+        return mapToBoolean(0, size(), func);
     }
 
-    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final Function<? super T, ? extends Collection<? extends R>> func) {
-        return flatMap(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends Collection<? extends R>> func) {
+    public BooleanList mapToBoolean(final int fromIndex, final int toIndex, final ToBooleanFunction<? super T> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = N.newInstance(collClass);
+        final boolean[] res = new boolean[size()];
 
         for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(func.apply(elementData[i]));
+            res[i - fromIndex] = func.applyAsBoolean(elementData[i]);
         }
 
-        return res;
+        return BooleanList.of(res);
     }
 
-    public <R> List<R> flatMap2(final Function<? super T, R[]> func) {
-        return flatMap2(0, size(), func);
+    public CharList mapToChar(final ToCharFunction<? super T> func) {
+        return mapToChar(0, size(), func);
     }
 
-    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
-        return flatMap2(List.class, fromIndex, toIndex, func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final Function<? super T, R[]> func) {
-        return flatMap2(collClass, 0, size(), func);
-    }
-
-    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-            final Function<? super T, R[]> func) {
+    public CharList mapToChar(final int fromIndex, final int toIndex, final ToCharFunction<? super T> func) {
         checkIndex(fromIndex, toIndex);
 
-        final V res = N.newInstance(collClass);
+        final char[] res = new char[size()];
 
         for (int i = fromIndex; i < toIndex; i++) {
-            res.addAll(Arrays.asList(func.apply(elementData[i])));
+            res[i - fromIndex] = func.applyAsChar(elementData[i]);
         }
 
-        return res;
+        return CharList.of(res);
     }
 
-    public <K> Map<K, List<T>> groupBy(final Function<? super T, ? extends K> func) {
-        return groupBy(0, size(), func);
+    public ByteList mapToByte(final ToByteFunction<? super T> func) {
+        return mapToByte(0, size(), func);
     }
 
-    public <K> Map<K, List<T>> groupBy(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
-        return groupBy(List.class, fromIndex, toIndex, func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Function<? super T, ? extends K> func) {
-        return groupBy(HashMap.class, collClass, 0, size(), func);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> func) {
-        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
-    }
-
-    public <K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final Function<? super T, ? extends K> func) {
-
-        return groupBy(outputClass, collClass, 0, size(), func);
-    }
-
-    public <K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+    public ByteList mapToByte(final int fromIndex, final int toIndex, final ToByteFunction<? super T> func) {
         checkIndex(fromIndex, toIndex);
 
-        final M outputResult = N.newInstance(outputClass);
-
-        K key = null;
-        V values = null;
+        final byte[] res = new byte[size()];
 
         for (int i = fromIndex; i < toIndex; i++) {
-            key = func.apply(elementData[i]);
-            values = outputResult.get(key);
-
-            if (values == null) {
-                values = N.newInstance(collClass);
-                outputResult.put(key, values);
-            }
-
-            values.add(elementData[i]);
+            res[i - fromIndex] = func.applyAsByte(elementData[i]);
         }
 
-        return outputResult;
+        return ByteList.of(res);
     }
 
-    public OptionalNullable<T> reduce(final BinaryOperator<T> accumulator) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(reduce(null, accumulator));
+    public ShortList mapToShort(final ToShortFunction<? super T> func) {
+        return mapToShort(0, size(), func);
     }
 
-    public OptionalNullable<T> reduce(final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
+    public ShortList mapToShort(final int fromIndex, final int toIndex, final ToShortFunction<? super T> func) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(reduce(fromIndex, toIndex, null, accumulator));
-    }
-
-    public T reduce(final T identity, final BinaryOperator<T> accumulator) {
-        return reduce(0, size(), identity, accumulator);
-    }
-
-    public T reduce(final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
-        checkIndex(fromIndex, toIndex);
-
-        T result = identity;
+        final short[] res = new short[size()];
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, elementData[i]);
+            res[i - fromIndex] = func.applyAsShort(elementData[i]);
         }
 
-        return result;
+        return ShortList.of(res);
     }
+
+    public IntList mapToInt(final ToIntFunction<? super T> func) {
+        return mapToInt(0, size(), func);
+    }
+
+    public IntList mapToInt(final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final int[] res = new int[size()];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res[i - fromIndex] = func.applyAsInt(elementData[i]);
+        }
+
+        return IntList.of(res);
+    }
+
+    public LongList mapToLong(final ToLongFunction<? super T> func) {
+        return mapToLong(0, size(), func);
+    }
+
+    public LongList mapToLong(final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final long[] res = new long[size()];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res[i - fromIndex] = func.applyAsLong(elementData[i]);
+        }
+
+        return LongList.of(res);
+    }
+
+    public FloatList mapToFloat(final ToFloatFunction<? super T> func) {
+        return mapToFloat(0, size(), func);
+    }
+
+    public FloatList mapToFloat(final int fromIndex, final int toIndex, final ToFloatFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final float[] res = new float[size()];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res[i - fromIndex] = func.applyAsFloat(elementData[i]);
+        }
+
+        return FloatList.of(res);
+    }
+
+    public DoubleList mapToDouble(final ToDoubleFunction<? super T> func) {
+        return mapToDouble(0, size(), func);
+    }
+
+    public DoubleList mapToDouble(final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex);
+
+        final double[] res = new double[size()];
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            res[i - fromIndex] = func.applyAsDouble(elementData[i]);
+        }
+
+        return DoubleList.of(res);
+    }
+
+    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
+
+    //    public <R> List<R> map(final Function<? super T, ? extends R> func) {
+    //        return map(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> map(final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+    //        return map(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final Function<? super T, ? extends R> func) {
+    //        return map(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends R> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.add(func.apply(elementData[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> flatMap(final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        return flatMap(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends Collection<? extends R>> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(func.apply(elementData[i]));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> flatMap2(final Function<? super T, R[]> func) {
+    //        return flatMap2(0, size(), func);
+    //    }
+    //
+    //    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final Function<? super T, R[]> func) {
+    //        return flatMap2(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final Function<? super T, R[]> func) {
+    //        return flatMap2(collClass, 0, size(), func);
+    //    }
+    //
+    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
+    //            final Function<? super T, R[]> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final V res = N.newInstance(collClass);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            res.addAll(Arrays.asList(func.apply(elementData[i])));
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <K> Map<K, List<T>> groupBy(final Function<? super T, ? extends K> func) {
+    //        return groupBy(0, size(), func);
+    //    }
+    //
+    //    public <K> Map<K, List<T>> groupBy(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+    //        return groupBy(List.class, fromIndex, toIndex, func);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final Function<? super T, ? extends K> func) {
+    //        return groupBy(HashMap.class, collClass, 0, size(), func);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <K, V extends Collection<T>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends K> func) {
+    //        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
+    //    }
+    //
+    //    public <K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final Function<? super T, ? extends K> func) {
+    //
+    //        return groupBy(outputClass, collClass, 0, size(), func);
+    //    }
+    //
+    //    public <K, V extends Collection<T>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
+    //            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> func) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final M outputResult = N.newInstance(outputClass);
+    //
+    //        K key = null;
+    //        V values = null;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            key = func.apply(elementData[i]);
+    //            values = outputResult.get(key);
+    //
+    //            if (values == null) {
+    //                values = N.newInstance(collClass);
+    //                outputResult.put(key, values);
+    //            }
+    //
+    //            values.add(elementData[i]);
+    //        }
+    //
+    //        return outputResult;
+    //    }
+    //
+    //    public OptionalNullable<T> reduce(final BinaryOperator<T> accumulator) {
+    //        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(reduce(null, accumulator));
+    //    }
+    //
+    //    public OptionalNullable<T> reduce(final int fromIndex, final int toIndex, final BinaryOperator<T> accumulator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(reduce(fromIndex, toIndex, null, accumulator));
+    //    }
+    //
+    //    public T reduce(final T identity, final BinaryOperator<T> accumulator) {
+    //        return reduce(0, size(), identity, accumulator);
+    //    }
+    //
+    //    public T reduce(final int fromIndex, final int toIndex, final T identity, final BinaryOperator<T> accumulator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        T result = identity;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            result = accumulator.apply(result, elementData[i]);
+    //        }
+    //
+    //        return result;
+    //    }
 
     @Override
     public ObjectList<T> distinct(final int fromIndex, final int toIndex) {
@@ -871,6 +1103,20 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
 
         if (toIndex - fromIndex > 1) {
             return of(N.distinct(elementData, fromIndex, toIndex, comparator).toArray((T[]) N.newArray(elementData.getClass().getComponentType(), 0)));
+        } else {
+            return of(N.copyOfRange(elementData, fromIndex, toIndex));
+        }
+    }
+
+    public ObjectList<T> distinct(final Function<? super T, ?> keyMapper) {
+        return distinct(0, size(), keyMapper);
+    }
+
+    public ObjectList<T> distinct(final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
+        checkIndex(fromIndex, toIndex);
+
+        if (toIndex - fromIndex > 1) {
+            return of(N.distinct(elementData, fromIndex, toIndex, keyMapper).toArray((T[]) N.newArray(elementData.getClass().getComponentType(), 0)));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
@@ -1017,51 +1263,67 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
     }
 
     @Override
-    public void toList(List<T> list, final int fromIndex, final int toIndex) {
+    public List<T> toList(final int fromIndex, final int toIndex, final IntFunction<List<T>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final List<T> list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
         }
+
+        return list;
     }
 
     @Override
-    public void toSet(Set<T> set, final int fromIndex, final int toIndex) {
+    public Set<T> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<T>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final Set<T> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
         }
+
+        return set;
     }
 
     @Override
-    public void toMultiset(Multiset<T> multiset, final int fromIndex, final int toIndex) {
+    public Multiset<T> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<T>> supplier) {
         checkIndex(fromIndex, toIndex);
+
+        final Multiset<T> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multiset.add(elementData[i]);
         }
+
+        return multiset;
     }
 
     public <K, U> Map<K, U> toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMap(HashMap.class, keyMapper, valueMapper);
+        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+
+        return toMap(keyMapper, valueMapper, supplier);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMap(outputClass, 0, size(), keyMapper, valueMapper);
+    public <K, U, M extends Map<K, U>> M toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            final IntFunction<M> supplier) {
+        return toMap(0, size(), keyMapper, valueMapper, supplier);
     }
 
     public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMap(HashMap.class, fromIndex, toIndex, keyMapper, valueMapper);
+        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+
+        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(final Class<? extends M> outputClass, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper, final IntFunction<M> supplier) {
         checkIndex(fromIndex, toIndex);
 
-        final Map<K, U> map = N.newInstance(outputClass);
+        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
@@ -1071,26 +1333,29 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<T>, Predicate<? s
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, keyMapper, valueMapper);
+        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+
+        return toMultimap(keyMapper, valueMapper, supplier);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(outputClass, collClass, 0, size(), keyMapper, valueMapper);
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
     }
 
     public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(HashMap.class, List.class, fromIndex, toIndex, keyMapper, valueMapper);
+        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+
+        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Class<? extends Map> outputClass, final Class<? extends Collection> collClass,
-            final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            final IntFunction<Multimap<K, U, V>> supplier) {
         checkIndex(fromIndex, toIndex);
 
-        final Multimap<K, U, V> multimap = new Multimap(outputClass, collClass);
+        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
