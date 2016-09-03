@@ -308,7 +308,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return valueMap.remove(key);
     }
 
-    public void removeAll(final Object key, final Collection<? extends E> c) {
+    public void removeAll(final Object key, final Collection<?> c) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -324,7 +324,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         }
     }
 
-    public void removeAll(final Map<? extends K, ? extends E> m) {
+    public void removeAll(final Map<?, ?> m) {
         if (N.isNullOrEmpty(m)) {
             return;
         }
@@ -346,7 +346,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         }
     }
 
-    public void removeAll(final Multimap<? extends K, ? extends E, ? extends Collection<? extends E>> m) {
+    public void removeAll(final Multimap<?, ?, ?> m) {
         if (N.isNullOrEmpty(m)) {
             return;
         }
@@ -436,7 +436,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return false;
     }
 
-    public boolean containsAll(final Object key, final Collection<? extends E> c) {
+    public boolean containsAll(final Object key, final Collection<?> c) {
         final V val = valueMap.get(key);
 
         return val == null ? false : (N.isNullOrEmpty(c) ? true : val.containsAll(c));
