@@ -1009,6 +1009,17 @@ final class IteratorIntStream extends IntStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            accumulator.accept(result, elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
     public Long sum() {
         long result = 0;
 

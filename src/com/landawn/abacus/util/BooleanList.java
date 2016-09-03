@@ -314,12 +314,10 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         elementData[--size] = false; // clear to let GC do its work
     }
 
-    @Override
     public boolean removeAll(BooleanList c) {
         return batchRemove(c, false) > 0;
     }
 
-    @Override
     public boolean retainAll(BooleanList c) {
         return batchRemove(c, true) > 0;
     }
@@ -365,7 +363,6 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         return indexOf(e) >= 0;
     }
 
-    @Override
     public boolean containsAll(BooleanList c) {
         final boolean[] srcElementData = c.array();
 
@@ -384,6 +381,68 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         checkIndex(fromIndex, toIndex);
 
         return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public BooleanList except(BooleanList b) {
+        final Multiset<Boolean> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final BooleanList c = new BooleanList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public BooleanList intersect(BooleanList b) {
+        final Multiset<Boolean> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final BooleanList c = new BooleanList(N.min(9, size(), b.size()));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.except(b).addAll(b.except(this))
+     * @see IntList#xor(IntList)
+     */
+    public BooleanList xor(BooleanList b) {
+        final BooleanList result = this.except(b);
+
+        result.addAll(b.except(this));
+
+        return result;
     }
 
     public int indexOf(boolean e) {

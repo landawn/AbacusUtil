@@ -526,6 +526,15 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
+     * Sequential only
+     * 
+     * @param supplier
+     * @param accumulator
+     * @return
+     */
+    public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator);
+
+    /**
      * Returns the sum of elements in this stream.
      *
      * Summation is a special case of a <a

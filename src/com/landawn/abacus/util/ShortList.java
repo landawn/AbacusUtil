@@ -366,12 +366,10 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         elementData[--size] = 0; // clear to let GC do its work
     }
 
-    @Override
     public boolean removeAll(ShortList c) {
         return batchRemove(c, false) > 0;
     }
 
-    @Override
     public boolean retainAll(ShortList c) {
         return batchRemove(c, true) > 0;
     }
@@ -417,7 +415,6 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return indexOf(e) >= 0;
     }
 
-    @Override
     public boolean containsAll(ShortList c) {
         final short[] srcElementData = c.array();
 
@@ -436,6 +433,68 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         checkIndex(fromIndex, toIndex);
 
         return new ShortList(N.copyOfRange(elementData, fromIndex, toIndex));
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public ShortList except(ShortList b) {
+        final Multiset<Short> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final ShortList c = new ShortList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public ShortList intersect(ShortList b) {
+        final Multiset<Short> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final ShortList c = new ShortList(N.min(9, size(), b.size()));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.except(b).addAll(b.except(this))
+     * @see IntList#xor(IntList)
+     */
+    public ShortList xor(ShortList b) {
+        final ShortList result = this.except(b);
+
+        result.addAll(b.except(this));
+
+        return result;
     }
 
     public int indexOf(short e) {

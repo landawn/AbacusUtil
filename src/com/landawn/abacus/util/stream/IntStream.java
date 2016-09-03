@@ -537,6 +537,15 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
+     * Sequential only
+     * 
+     * @param supplier
+     * @param accumulator
+     * @return
+     */
+    public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator);
+
+    /**
      * Returns the sum of elements in this stream.  This is a special case
      * of a <a href="package-summary.html#Reduction">reduction</a>
      * and is equivalent to:

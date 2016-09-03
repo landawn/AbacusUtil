@@ -366,12 +366,10 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         elementData[--size] = 0; // clear to let GC do its work
     }
 
-    @Override
     public boolean removeAll(ByteList c) {
         return batchRemove(c, false) > 0;
     }
 
-    @Override
     public boolean retainAll(ByteList c) {
         return batchRemove(c, true) > 0;
     }
@@ -417,7 +415,6 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return indexOf(e) >= 0;
     }
 
-    @Override
     public boolean containsAll(ByteList c) {
         final byte[] srcElementData = c.array();
 
@@ -436,6 +433,68 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         checkIndex(fromIndex, toIndex);
 
         return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public ByteList except(ByteList b) {
+        final Multiset<Byte> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final ByteList c = new ByteList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public ByteList intersect(ByteList b) {
+        final Multiset<Byte> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final ByteList c = new ByteList(N.min(9, size(), b.size()));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.except(b).addAll(b.except(this))
+     * @see IntList#xor(IntList)
+     */
+    public ByteList xor(ByteList b) {
+        final ByteList result = this.except(b);
+
+        result.addAll(b.except(this));
+
+        return result;
     }
 
     public int indexOf(byte e) {

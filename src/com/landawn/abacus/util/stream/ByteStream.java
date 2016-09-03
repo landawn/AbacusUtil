@@ -482,6 +482,15 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
+     * Sequential only
+     * 
+     * @param supplier
+     * @param accumulator
+     * @return
+     */
+    public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator);
+
+    /**
      * 
      * @return Long
      */

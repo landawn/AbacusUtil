@@ -525,6 +525,15 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
+     * Sequential only
+     * 
+     * @param supplier
+     * @param accumulator
+     * @return
+     */
+    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator);
+
+    /**
      * Returns the sum of elements in this stream.
      *
      * Summation is a special case of a <a

@@ -236,7 +236,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
      * @param e
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(T e) {
+    public boolean remove(Object e) {
         for (int i = 0; i < size; i++) {
             if (N.equals(elementData[i], e)) {
 
@@ -255,7 +255,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
      * @param removeAllOccurrences
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean removeAllOccurrences(T e) {
+    public boolean removeAllOccurrences(Object e) {
         int w = 0;
 
         for (int i = 0; i < size; i++) {
@@ -285,17 +285,15 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         elementData[--size] = null; // clear to let GC do its work
     }
 
-    @Override
-    public boolean removeAll(ObjectList<T> c) {
+    public boolean removeAll(ObjectList<?> c) {
         return batchRemove(c, false) > 0;
     }
 
-    @Override
-    public boolean retainAll(ObjectList<T> c) {
+    public boolean retainAll(ObjectList<?> c) {
         return batchRemove(c, true) > 0;
     }
 
-    private int batchRemove(ObjectList<T> c, boolean complement) {
+    private int batchRemove(ObjectList<?> c, boolean complement) {
         final T[] elementData = this.elementData;
 
         int w = 0;
@@ -332,13 +330,12 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         return oldValue;
     }
 
-    public boolean contains(T e) {
+    public boolean contains(Object e) {
         return indexOf(e) >= 0;
     }
 
-    @Override
-    public boolean containsAll(ObjectList<T> c) {
-        final T[] srcElementData = c.array();
+    public boolean containsAll(ObjectList<?> c) {
+        final Object[] srcElementData = c.array();
 
         for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
 
@@ -357,11 +354,73 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         return new ObjectList<T>(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
-    public int indexOf(T e) {
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public ObjectList<T> except(ObjectList<?> b) {
+        final Multiset<Object> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(elementData.getClass().getComponentType(), N.min(size(), N.max(9, size() - b.size()))));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public ObjectList<T> intersect(ObjectList<?> b) {
+        final Multiset<Object> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(elementData.getClass().getComponentType(), N.min(9, size(), b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.except(b).addAll(b.except(this))
+     * @see IntList#xor(IntList)
+     */
+    public ObjectList<T> xor(ObjectList<T> b) {
+        final ObjectList<T> result = this.except(b);
+
+        result.addAll(b.except(this));
+
+        return result;
+    }
+
+    public int indexOf(Object e) {
         return indexOf(0, e);
     }
 
-    public int indexOf(final int fromIndex, T e) {
+    public int indexOf(final int fromIndex, Object e) {
         checkIndex(fromIndex, size);
 
         for (int i = fromIndex; i < size; i++) {
@@ -373,7 +432,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         return -1;
     }
 
-    public int lastIndexOf(T e) {
+    public int lastIndexOf(Object e) {
         return lastIndexOf(size, e);
     }
 
@@ -383,7 +442,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
      * @param e
      * @return
      */
-    public int lastIndexOf(final int fromIndex, T e) {
+    public int lastIndexOf(final int fromIndex, Object e) {
         checkIndex(0, fromIndex);
 
         for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {

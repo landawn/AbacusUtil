@@ -590,6 +590,17 @@ final class ArrayFloatStream extends FloatStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            accumulator.accept(result, elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public OptionalFloat min() {
         if (count() == 0) {
             return OptionalFloat.empty();

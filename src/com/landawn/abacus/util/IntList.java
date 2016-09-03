@@ -453,12 +453,10 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         elementData[--size] = 0; // clear to let GC do its work
     }
 
-    @Override
     public boolean removeAll(IntList c) {
         return batchRemove(c, false) > 0;
     }
 
-    @Override
     public boolean retainAll(IntList c) {
         return batchRemove(c, true) > 0;
     }
@@ -504,7 +502,6 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return indexOf(e) >= 0;
     }
 
-    @Override
     public boolean containsAll(IntList c) {
         final int[] srcElementData = c.array();
 
@@ -523,6 +520,93 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         checkIndex(fromIndex, toIndex);
 
         return new IntList(N.copyOfRange(elementData, fromIndex, toIndex));
+    }
+
+    /**
+     * Returns a new list with all the elements in <code>b</code> removed by occurrences.
+     * 
+     * <pre>
+     * IntList a = IntList.of(0, 1, 2, 2, 3);
+     * IntList b = IntList.of(2, 5, 1);
+     * a.removeAll(b); // The elements remained in a will be: [0, 3].
+     * 
+     * IntList a = IntList.of(0, 1, 2, 2, 3);
+     * IntList b = IntList.of(2, 5, 1);
+     * IntList c = a.except(b); // The elements c in a will be: [0, 2, 3].
+     * </pre>
+     * 
+     * @param b
+     * @return
+     */
+    public IntList except(IntList b) {
+        final Multiset<Integer> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final IntList c = new IntList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * Returns a new list with all the elements occurred in both <code>a</code> and <code>b</code> by occurrences.
+     * 
+     * <pre>
+     * IntList a = IntList.of(0, 1, 2, 2, 3);
+     * IntList b = IntList.of(2, 5, 1);
+     * a.retainAll(b); // The elements remained in a will be: [1, 2, 2].
+     * 
+     * IntList a = IntList.of(0, 1, 2, 2, 3);
+     * IntList b = IntList.of(2, 5, 1);
+     * IntList c = a.intersect(b); // The elements c in a will be: [1, 2].
+     * </pre>
+     * 
+     * @param b
+     * @return
+     */
+    public IntList intersect(IntList b) {
+        final Multiset<Integer> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final IntList c = new IntList(N.min(9, size(), b.size()));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * <pre>
+     * IntList a = IntList.of(0, 1, 2, 2, 3);
+     * IntList b = IntList.of(2, 5, 1);
+     * IntList c = a.xor(b); // The elements c in a will be: [0, 2, 3, 5].
+     * </pre>
+     * 
+     * @param b
+     * @return this.except(b).addAll(b.except(this))
+     * @see IntList#except(IntList)
+     */
+    public IntList xor(IntList b) {
+        final IntList result = this.except(b);
+
+        result.addAll(b.except(this));
+
+        return result;
     }
 
     public int indexOf(int e) {

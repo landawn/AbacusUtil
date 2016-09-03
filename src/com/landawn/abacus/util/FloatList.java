@@ -398,12 +398,10 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         elementData[--size] = 0; // clear to let GC do its work
     }
 
-    @Override
     public boolean removeAll(FloatList c) {
         return batchRemove(c, false) > 0;
     }
 
-    @Override
     public boolean retainAll(FloatList c) {
         return batchRemove(c, true) > 0;
     }
@@ -449,7 +447,6 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return indexOf(e) >= 0;
     }
 
-    @Override
     public boolean containsAll(FloatList c) {
         final float[] srcElementData = c.array();
 
@@ -468,6 +465,68 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         checkIndex(fromIndex, toIndex);
 
         return new FloatList(N.copyOfRange(elementData, fromIndex, toIndex));
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public FloatList except(FloatList b) {
+        final Multiset<Float> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final FloatList c = new FloatList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public FloatList intersect(FloatList b) {
+        final Multiset<Float> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final FloatList c = new FloatList(N.min(9, size(), b.size()));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.except(b).addAll(b.except(this))
+     * @see IntList#xor(IntList)
+     */
+    public FloatList xor(FloatList b) {
+        final FloatList result = this.except(b);
+
+        result.addAll(b.except(this));
+
+        return result;
     }
 
     public int indexOf(float e) {

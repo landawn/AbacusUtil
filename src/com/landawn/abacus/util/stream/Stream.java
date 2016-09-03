@@ -911,6 +911,15 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
 
     /**
+     * Sequential only
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator);
+
+    /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable
      * reduction</a> operation on the elements of this stream.  A mutable
      * reduction is one in which the reduced value is a mutable result container,
@@ -962,6 +971,15 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return the result of the reduction
      */
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner);
+
+    /**
+     * Sequential only
+     * 
+     * @param supplier
+     * @param accumulator
+     * @return
+     */
+    public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator);
 
     /**
      * Performs a <a href="package-summary.html#MutableReduction">mutable

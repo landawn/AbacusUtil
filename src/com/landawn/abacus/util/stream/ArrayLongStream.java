@@ -591,6 +591,17 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            accumulator.accept(result, elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public Long sum() {
         return N.sum(elements, fromIndex, toIndex);
     }

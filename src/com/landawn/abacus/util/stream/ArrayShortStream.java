@@ -468,6 +468,17 @@ final class ArrayShortStream extends ShortStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            accumulator.accept(result, elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public Long sum() {
         return N.sum(elements, fromIndex, toIndex);
     }

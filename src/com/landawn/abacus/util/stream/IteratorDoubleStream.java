@@ -857,6 +857,17 @@ final class IteratorDoubleStream extends DoubleStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            accumulator.accept(result, elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
     public OptionalDouble min() {
         if (count() == 0) {
             return OptionalDouble.empty();

@@ -590,6 +590,17 @@ final class ArrayDoubleStream extends DoubleStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            accumulator.accept(result, elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public OptionalDouble min() {
         if (count() == 0) {
             return OptionalDouble.empty();

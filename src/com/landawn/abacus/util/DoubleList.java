@@ -368,12 +368,10 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         elementData[--size] = 0; // clear to let GC do its work
     }
 
-    @Override
     public boolean removeAll(DoubleList c) {
         return batchRemove(c, false) > 0;
     }
 
-    @Override
     public boolean retainAll(DoubleList c) {
         return batchRemove(c, true) > 0;
     }
@@ -419,7 +417,6 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return indexOf(e) >= 0;
     }
 
-    @Override
     public boolean containsAll(DoubleList c) {
         final double[] srcElementData = c.array();
 
@@ -438,6 +435,68 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         checkIndex(fromIndex, toIndex);
 
         return new DoubleList(N.copyOfRange(elementData, fromIndex, toIndex));
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public DoubleList except(DoubleList b) {
+        final Multiset<Double> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final DoubleList c = new DoubleList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public DoubleList intersect(DoubleList b) {
+        final Multiset<Double> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final DoubleList c = new DoubleList(N.min(9, size(), b.size()));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.except(b).addAll(b.except(this))
+     * @see IntList#xor(IntList)
+     */
+    public DoubleList xor(DoubleList b) {
+        final DoubleList result = this.except(b);
+
+        result.addAll(b.except(this));
+
+        return result;
     }
 
     public int indexOf(double e) {

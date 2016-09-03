@@ -32,6 +32,7 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -145,6 +146,16 @@ public final class Multiset<E> implements Iterable<E> {
 
         if (count == null) {
             return 0;
+        } else {
+            return count.intValue();
+        }
+    }
+
+    public long getOrDefault(final Object e, int defaultValue) {
+        MutableInt count = valueMap.get(e);
+
+        if (count == null) {
+            return defaultValue;
         } else {
             return count.intValue();
         }
@@ -357,6 +368,20 @@ public final class Multiset<E> implements Iterable<E> {
         }
 
         return count.intValue();
+    }
+
+    public int addIfAbsent(final E e) throws IllegalArgumentException {
+        return addIfAbsent(e, 1);
+    }
+
+    public int addIfAbsent(final E e, final int occurrences) throws IllegalArgumentException {
+        final int oldValue = get(e);
+
+        if (oldValue == 0) {
+            return add(e, occurrences);
+        }
+
+        return oldValue;
     }
 
     public int addAndGet(final E e) {
@@ -688,6 +713,171 @@ public final class Multiset<E> implements Iterable<E> {
         }
 
         return true;
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multiset:
+     * 
+     * <pre>
+     * final int oldValue = get(e);
+     * 
+     * if (oldValue == 0) {
+     *     final int newValue = mappingFunction.apply(e);
+     * 
+     *     if (newValue != 0) {
+     *         set(e, newValue);
+     *         return newValue;
+     *     }
+     * }
+     * 
+     * return oldValue;
+     * </pre>
+     * 
+     * @param e
+     * @param mappingFunction
+     * @return
+     */
+    public int computeIfAbsent(E e, Function<? super E, Integer> mappingFunction) {
+        N.requireNonNull(mappingFunction);
+        final int oldValue = get(e);
+
+        if (oldValue == 0) {
+            final int newValue = mappingFunction.apply(e);
+
+            if (newValue != 0) {
+                set(e, newValue);
+                return newValue;
+            }
+        }
+
+        return oldValue;
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multiset:
+     * 
+     * <pre> 
+     * final int oldValue = get(e);
+     * 
+     * if (oldValue == 0) {
+     *     return 0;
+     * }
+     * 
+     * final int newValue = remappingFunction.apply(e, oldValue);
+     * 
+     * if (newValue == 0) {
+     *     remove(e);
+     *     return 0;
+     * } else {
+     *     set(e, newValue);
+     *     return newValue;
+     * }
+     * </pre>
+     * 
+     * @param e
+     * @param remappingFunction
+     * @return
+     */
+    public int computeIfPresent(E e, BiFunction<? super E, Integer, Integer> remappingFunction) {
+        N.requireNonNull(remappingFunction);
+
+        final int oldValue = get(e);
+
+        if (oldValue == 0) {
+            return 0;
+        }
+
+        final int newValue = remappingFunction.apply(e, oldValue);
+
+        if (newValue == 0) {
+            remove(e);
+            return 0;
+        } else {
+            set(e, newValue);
+            return newValue;
+        }
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multiset:
+     * 
+     * <pre>
+     * final int oldValue = get(key);
+     * final int newValue = remappingFunction.apply(key, oldValue);
+     * 
+     * if (newValue == 0) {
+     *     if (oldValue != 0) {
+     *         remove(key);
+     *     }
+     * 
+     *     return 0;
+     * } else {
+     *     set(key, newValue);
+     *     return newValue;
+     * }
+     * </pre>
+     * 
+     * @param key
+     * @param remappingFunction
+     * @return
+     */
+    public int compute(E key, BiFunction<? super E, Integer, Integer> remappingFunction) {
+        N.requireNonNull(remappingFunction);
+
+        final int oldValue = get(key);
+        final int newValue = remappingFunction.apply(key, oldValue);
+
+        if (newValue == 0) {
+            if (oldValue != 0) {
+                remove(key);
+            }
+
+            return 0;
+        } else {
+            set(key, newValue);
+            return newValue;
+        }
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multiset:
+     * 
+     * <pre>
+     * int oldValue = get(key);
+     * int newValue = (oldValue == 0) ? value : remappingFunction.apply(oldValue, value);
+     * 
+     * if (newValue == 0) {
+     * if (oldValue != 0) {
+     *         remove(key);
+     *     }
+     * } else {
+     *     set(key, newValue);
+     * }
+     * 
+     * return newValue;
+     * </pre>
+     * 
+     * @param key
+     * @param value
+     * @param remappingFunction
+     * @return
+     */
+    public int merge(E key, int value, BiFunction<Integer, Integer, Integer> remappingFunction) {
+        N.requireNonNull(remappingFunction);
+        N.requireNonNull(value);
+
+        int oldValue = get(key);
+        int newValue = (oldValue == 0) ? value : remappingFunction.apply(oldValue, value);
+
+        if (newValue == 0) {
+            if (oldValue != 0) {
+                remove(key);
+            }
+        } else {
+            set(key, newValue);
+        }
+
+        return newValue;
     }
 
     public Stream<Map.Entry<E, MutableInt>> stream() {

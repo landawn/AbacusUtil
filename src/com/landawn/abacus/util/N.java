@@ -21962,13 +21962,13 @@ public final class N {
         if (N.isNullOrEmpty(a)) {
             return true;
         }
-    
+
         for (int i = 0, len = a.length; i < len; i++) {
             if (action.apply(a[i]).booleanValue() == false) {
                 return false;
             }
         }
-    
+
         return true;
     }
 
@@ -21987,17 +21987,17 @@ public final class N {
      */
     public static <T> boolean forEach2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    
+
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return true;
         }
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             if (action.apply(a[i]).booleanValue() == false) {
                 return false;
             }
         }
-    
+
         return true;
     }
 
@@ -22016,13 +22016,13 @@ public final class N {
         if (N.isNullOrEmpty(c)) {
             return true;
         }
-    
+
         for (T e : c) {
             if (action.apply(e).booleanValue() == false) {
                 return false;
             }
         }
-    
+
         return true;
     }
 
@@ -22041,14 +22041,14 @@ public final class N {
      */
     public static <T> boolean forEach2(final Collection<T> c, final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-    
+
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
             return true;
         }
-    
+
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
-    
+
             for (int i = fromIndex; i < toIndex; i++) {
                 if (action.apply(list.get(i)).booleanValue() == false) {
                     return false;
@@ -22056,22 +22056,22 @@ public final class N {
             }
         } else {
             int idx = 0;
-    
+
             for (T e : c) {
                 if (idx++ < fromIndex) {
                     continue;
                 }
-    
+
                 if (action.apply(e).booleanValue() == false) {
                     return false;
                 }
-    
+
                 if (idx >= toIndex) {
                     break;
                 }
             }
         }
-    
+
         return true;
     }
 
@@ -25736,31 +25736,31 @@ public final class N {
      * @param size
      * @return
      */
-    public static <E, T extends Collection<E>> List<T> split(final T c, final int size) {
+    public static <T> List<List<T>> split(final Collection<? extends T> c, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(c)) {
-            return new ArrayList<T>();
+            return new ArrayList<>();
         }
 
         final int len = c.size();
-        final List<T> res = new ArrayList<T>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<List<T>> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         if (c instanceof List) {
-            final List<E> list = (List<E>) c;
+            final List<T> list = (List<T>) c;
 
-            for (int from = 0, toIndex = c.size(); from < toIndex; from += size) {
-                res.add((T) list.subList(from, from <= toIndex - size ? from + size : toIndex));
+            for (int i = 0, toIndex = c.size(); i < toIndex; i += size) {
+                res.add(list.subList(i, i <= toIndex - size ? i + size : toIndex));
             }
         } else {
-            final Iterator<E> iter = c.iterator();
+            final Iterator<? extends T> iter = c.iterator();
 
-            for (int from = 0, toIndex = c.size(); from < toIndex; from += size) {
-                final T subList = (T) N.newInstance(c.getClass());
+            for (int i = 0, toIndex = c.size(); i < toIndex; i += size) {
+                final List<T> subList = new ArrayList<>(N.min(size, toIndex - i));
 
-                for (int i = from, to = from <= toIndex - size ? from + size : toIndex; i < to; i++) {
+                for (int j = i, to = i <= toIndex - size ? i + size : toIndex; j < to; j++) {
                     subList.add(iter.next());
                 }
 
@@ -25781,7 +25781,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static <E, T extends Collection<E>> List<T> split(final T c, final int fromIndex, final int toIndex, final int size) {
+    public static <T> List<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (size < 1) {
@@ -25789,31 +25789,31 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(c)) {
-            return new ArrayList<T>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<T> res = new ArrayList<T>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<List<T>> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         if (c instanceof List) {
-            final List<E> list = (List<E>) c;
+            final List<T> list = (List<T>) c;
 
-            for (int from = fromIndex; from < toIndex; from += size) {
-                res.add((T) list.subList(from, from <= toIndex - size ? from + size : toIndex));
+            for (int i = fromIndex; i < toIndex; i += size) {
+                res.add(list.subList(i, i <= toIndex - size ? i + size : toIndex));
             }
         } else {
-            final Iterator<E> iter = c.iterator();
+            final Iterator<? extends T> iter = c.iterator();
 
-            for (int from = 0; from < toIndex; from += size) {
-                if (from < fromIndex) {
+            for (int i = 0; i < toIndex; i += size) {
+                if (i < fromIndex) {
                     iter.next();
-                    from++;
+                    i++;
                     continue;
                 }
 
-                final T subList = (T) N.newInstance(c.getClass());
+                final List<T> subList = new ArrayList<>(N.min(size, toIndex - i));
 
-                for (int i = from, to = from <= toIndex - size ? from + size : toIndex; i < to; i++) {
+                for (int j = i, to = i <= toIndex - size ? i + size : toIndex; j < to; j++) {
                     subList.add(iter.next());
                 }
 
@@ -25850,6 +25850,542 @@ public final class N {
         }
 
         return res;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static boolean[] except(final boolean[] a, final boolean[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return BooleanList.of(a).except(BooleanList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static char[] except(final char[] a, final char[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_CHAR_ARRAY;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return CharList.of(a).except(CharList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static byte[] except(final byte[] a, final byte[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BYTE_ARRAY;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return ByteList.of(a).except(ByteList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static short[] except(final short[] a, final short[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_SHORT_ARRAY;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return ShortList.of(a).except(ShortList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with all the elements in <code>b</code> removed by occurrences.
+     * 
+     * <pre>
+     * int[] a = {0, 1, 2, 2, 3};
+     * int[] b = {2, 5, 1};
+     * int[] c = removeAll(a, b); // The elements c in a will b: [0, 3].
+     * 
+     * int[] a = {0, 1, 2, 2, 3};
+     * int[] b = {2, 5, 1};
+     * int[] c = except(a, b); // The elements c in a will b: [0, 2, 3].
+     * </pre>
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public static int[] except(final int[] a, final int[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_INT_ARRAY;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return IntList.of(a).except(IntList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static long[] except(final long[] a, final long[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_LONG_ARRAY;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return LongList.of(a).except(LongList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static float[] except(final float[] a, final float[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return FloatList.of(a).except(FloatList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static double[] except(final double[] a, final double[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return DoubleList.of(a).except(DoubleList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static <T> T[] except(final T[] a, final Object[] b) {
+        N.requireNonNull(a);
+
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        return ObjectList.of(a).except(ObjectList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#except(int[], int[])
+     */
+    public static <T> List<T> except(final Collection<? extends T> a, final Collection<?> b) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        final Multiset<Object> bOccurrences = new Multiset<>();
+
+        for (Object e : b) {
+            bOccurrences.add(e);
+        }
+
+        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
+
+        for (T e : a) {
+            if (bOccurrences.getAndRemove(e) < 1) {
+                result.add(e);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static boolean[] intersect(final boolean[] a, final boolean[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        }
+
+        return BooleanList.of(a).intersect(BooleanList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static char[] intersect(final char[] a, final char[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
+        return CharList.of(a).intersect(CharList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static byte[] intersect(final byte[] a, final byte[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
+        return ByteList.of(a).intersect(ByteList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static short[] intersect(final short[] a, final short[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_SHORT_ARRAY;
+        }
+
+        return ShortList.of(a).intersect(ShortList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with all the elements in <code>b</code> removed by occurrences.
+     * 
+     * <pre>
+     * int[] a = {0, 1, 2, 2, 3};
+     * int[] b = {2, 5, 1};
+     * int[] c = retainAll(a, b); // The elements c in a will b: [1, 2, 2].
+     * 
+     * int[] a = {0, 1, 2, 2, 3};
+     * int[] b = {2, 5, 1};
+     * int[] c = intersect(a, b); // The elements c in a will b: [1, 2].
+     * </pre>
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public static int[] intersect(final int[] a, final int[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_INT_ARRAY;
+        }
+
+        return IntList.of(a).intersect(IntList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static long[] intersect(final long[] a, final long[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_LONG_ARRAY;
+        }
+
+        return LongList.of(a).intersect(LongList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static float[] intersect(final float[] a, final float[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+
+        return FloatList.of(a).intersect(FloatList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static double[] intersect(final double[] a, final double[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+
+        return DoubleList.of(a).intersect(DoubleList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static <T> T[] intersect(final T[] a, final Object[] b) {
+        N.requireNonNull(a);
+
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return (T[]) N.newArray(a.getClass().getComponentType(), 0);
+        }
+
+        return ObjectList.of(a).intersect(ObjectList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#intersect(int[], int[])
+     */
+    public static <T> List<T> intersect(final Collection<? extends T> a, final Collection<?> b) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        final Multiset<Object> bOccurrences = new Multiset<>();
+
+        for (Object e : b) {
+            bOccurrences.add(e);
+        }
+
+        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
+
+        for (T e : a) {
+            if (bOccurrences.getAndRemove(e) > 0) {
+                result.add(e);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static boolean[] xor(final boolean[] a, final boolean[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        }
+
+        return BooleanList.of(a).xor(BooleanList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static char[] xor(final char[] a, final char[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
+        return CharList.of(a).xor(CharList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static byte[] xor(final byte[] a, final byte[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
+        return ByteList.of(a).xor(ByteList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static short[] xor(final short[] a, final short[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_SHORT_ARRAY;
+        }
+
+        return ShortList.of(a).xor(ShortList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * <pre>
+     * int[] a = {0, 1, 2, 2, 3};
+     * int[] b = {2, 5, 1};
+     * int[] c = xor(a, b); // The elements c in a will b: [0, 2, 3, 5].
+     * </pre>
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#xor(IntList)
+     * @see N#except(int[], int[])
+     */
+    public static int[] xor(final int[] a, final int[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_INT_ARRAY;
+        }
+
+        return IntList.of(a).xor(IntList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static long[] xor(final long[] a, final long[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_LONG_ARRAY;
+        }
+
+        return LongList.of(a).xor(LongList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static float[] xor(final float[] a, final float[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+
+        return FloatList.of(a).xor(FloatList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static double[] xor(final double[] a, final double[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+
+        return DoubleList.of(a).xor(DoubleList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static <T> T[] xor(final T[] a, final T[] b) {
+        N.requireNonNull(a);
+
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return (T[]) N.newArray(a.getClass().getComponentType(), 0);
+        }
+
+        return ObjectList.of(a).xor(ObjectList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see N#xor(int[], int[])
+     */
+    public static <T> List<T> xor(final Collection<T> a, final Collection<T> b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<T>(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<T>(a);
+        }
+
+        final List<T> result = except(a, b);
+
+        result.addAll(except(b, a));
+
+        return result;
     }
 
     /**
@@ -26563,12 +27099,6 @@ public final class N {
         return newArray;
     }
 
-    public static <T> boolean addAll(final Collection<? super T> c, final T... elements) {
-        N.requireNonNull(c);
-
-        return Collections.addAll(c, elements);
-    }
-
     /**
      * <p>
      * Inserts the specified element at the specified position in the array.
@@ -27170,24 +27700,6 @@ public final class N {
         }
 
         return newArray;
-    }
-
-    /**
-     * 
-     * @param list
-     * @param index
-     * @param b
-     * @return <tt>true</tt> if this list changed as a result of the call
-     */
-    public static <T> boolean insertAll(final List<? super T> list, final int index, final T... b) {
-        if (N.isNullOrEmpty(b)) {
-            return false;
-        } else if (b.length == 1) {
-            list.add(index, b[0]);
-            return true;
-        } else {
-            return list.addAll(index, Arrays.asList(b));
-        }
     }
 
     /**
@@ -28493,679 +29005,6 @@ public final class N {
     }
 
     /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], true, false)                 = []
-     * N.removeAll([true], false, false)            = [true]
-     * N.removeAll([true, false], true, true)       = [false]
-     * N.removeAll([true, false, true], true)       = [false, true]
-     * N.removeAll([true, false, true], true, true) = [false]
-     * </pre>
-     *
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     *
-     */
-    public static boolean[] removeAll(final boolean[] a, final boolean... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Boolean, MutableInt> occurrences = new HashMap<Boolean, MutableInt>(2); // only
-        // two
-        // possible
-        // values
-        // here
-        for (final boolean v : elements) {
-            final Boolean boxed = Boolean.valueOf(v);
-            final MutableInt count = occurrences.get(boxed);
-
-            if (count == null) {
-                occurrences.put(boxed, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Boolean, MutableInt> e : occurrences.entrySet()) {
-            final Boolean v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], 1, 2)        = []
-     * N.removeAll([1], 2, 3)       = [1]
-     * N.removeAll([1, 3], 1, 2)    = [3]
-     * N.removeAll([1, 3, 1], 1)    = [3, 1]
-     * N.removeAll([1, 3, 1], 1, 1) = [3]
-     * </pre>
-     *
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     *
-     */
-    public static char[] removeAll(final char[] a, final char... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Character, MutableInt> occurrences = new HashMap<Character, MutableInt>(elements.length);
-        for (final char v : elements) {
-            final Character boxed = Character.valueOf(v);
-            final MutableInt count = occurrences.get(boxed);
-            if (count == null) {
-                occurrences.put(boxed, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Character, MutableInt> e : occurrences.entrySet()) {
-            final Character v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], 1, 2)        = []
-     * N.removeAll([1], 2, 3)       = [1]
-     * N.removeAll([1, 3], 1, 2)    = [3]
-     * N.removeAll([1, 3, 1], 1)    = [3, 1]
-     * N.removeAll([1, 3, 1], 1, 1) = [3]
-     * </pre>
-     *
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     *
-     */
-    public static byte[] removeAll(final byte[] a, final byte... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Byte, MutableInt> occurrences = new HashMap<Byte, MutableInt>(elements.length);
-        for (final byte v : elements) {
-            final Byte boxed = Byte.valueOf(v);
-            final MutableInt count = occurrences.get(boxed);
-            if (count == null) {
-                occurrences.put(boxed, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Byte, MutableInt> e : occurrences.entrySet()) {
-            final Byte v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], 1, 2)        = []
-     * N.removeAll([1], 2, 3)       = [1]
-     * N.removeAll([1, 3], 1, 2)    = [3]
-     * N.removeAll([1, 3, 1], 1)    = [3, 1]
-     * N.removeAll([1, 3, 1], 1, 1) = [3]
-     * </pre>
-     *
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     *
-     */
-    public static short[] removeAll(final short[] a, final short... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Short, MutableInt> occurrences = new HashMap<Short, MutableInt>(elements.length);
-        for (final short v : elements) {
-            final Short boxed = Short.valueOf(v);
-            final MutableInt count = occurrences.get(boxed);
-            if (count == null) {
-                occurrences.put(boxed, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Short, MutableInt> e : occurrences.entrySet()) {
-            final Short v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], 1, 2)        = []
-     * N.removeAll([1], 2, 3)       = [1]
-     * N.removeAll([1, 3], 1, 2)    = [3]
-     * N.removeAll([1, 3, 1], 1)    = [3, 1]
-     * N.removeAll([1, 3, 1], 1, 1) = [3]
-     * </pre>
-     *
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     *
-     */
-    public static int[] removeAll(final int[] a, final int... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Integer, MutableInt> occurrences = new HashMap<Integer, MutableInt>(elements.length);
-        for (final int v : elements) {
-            final Integer boxed = Integer.valueOf(v);
-            final MutableInt count = occurrences.get(boxed);
-            if (count == null) {
-                occurrences.put(boxed, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Integer, MutableInt> e : occurrences.entrySet()) {
-            final Integer v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], 1, 2)        = []
-     * N.removeAll([1], 2, 3)       = [1]
-     * N.removeAll([1, 3], 1, 2)    = [3]
-     * N.removeAll([1, 3, 1], 1)    = [3, 1]
-     * N.removeAll([1, 3, 1], 1, 1) = [3]
-     * </pre>
-     *
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     *
-     */
-    public static long[] removeAll(final long[] a, final long... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Long, MutableInt> occurrences = new HashMap<Long, MutableInt>(elements.length);
-        for (final long v : elements) {
-            final Long boxed = Long.valueOf(v);
-            final MutableInt count = occurrences.get(boxed);
-            if (count == null) {
-                occurrences.put(boxed, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Long, MutableInt> e : occurrences.entrySet()) {
-            final Long v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], 1, 2)        = []
-     * N.removeAll([1], 2, 3)       = [1]
-     * N.removeAll([1, 3], 1, 2)    = [3]
-     * N.removeAll([1, 3, 1], 1)    = [3, 1]
-     * N.removeAll([1, 3, 1], 1, 1) = [3]
-     * </pre>
-     *
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     */
-    public static float[] removeAll(final float[] a, final float... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Float, MutableInt> occurrences = new HashMap<Float, MutableInt>(elements.length);
-        for (final float v : elements) {
-            final Float boxed = Float.valueOf(v);
-            final MutableInt count = occurrences.get(boxed);
-            if (count == null) {
-                occurrences.put(boxed, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Float, MutableInt> e : occurrences.entrySet()) {
-            final Float v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], 1, 2)        = []
-     * N.removeAll([1], 2, 3)       = [1]
-     * N.removeAll([1, 3], 1, 2)    = [3]
-     * N.removeAll([1, 3, 1], 1)    = [3, 1]
-     * N.removeAll([1, 3, 1], 1, 1) = [3]
-     * </pre>
-     *
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     */
-    public static double[] removeAll(final double[] a, final double... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Double, MutableInt> occurrences = new HashMap<Double, MutableInt>(elements.length);
-        for (final double v : elements) {
-            final Double boxed = Double.valueOf(v);
-            final MutableInt count = occurrences.get(boxed);
-
-            if (count == null) {
-                occurrences.put(boxed, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Double, MutableInt> e : occurrences.entrySet()) {
-            final Double v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    /**
-     * <p>
-     * Removes occurrences of specified elements, in specified quantities, from
-     * the specified array. All subsequent elements are shifted left. For any
-     * element-to-be-removed specified in greater quantities than contained in
-     * the original array, no change occurs beyond the removal of the existing
-     * matching items.
-     * </p>
-     *
-     * <p>
-     * This method returns a new array with the same elements of the input array
-     * except for the earliest-encountered occurrences of the specified
-     * elements. The component type of the returned array is always the same as
-     * that of the input array.
-     * </p>
-     *
-     * <pre>
-     * N.removeAll([], "a", "b")              = []
-     * N.removeAll(["a"], "b", "c")           = ["a"]
-     * N.removeAll(["a", "b"], "a", "c")      = ["b"]
-     * N.removeAll(["a", "b", "a"], "a")      = ["b", "a"]
-     * N.removeAll(["a", "b", "a"], "a", "a") = ["b"]
-     * </pre>
-     *
-     * @param <T>
-     *            the component type of the array
-     * @param a
-     * @param elements
-     *            the elements to be removed
-     * @return A new array containing the existing elements except the
-     *         earliest-encountered occurrences of the specified elements.
-     *
-     * @throws NullPointerException if the specified array <code>a</code> is null.
-     *
-     */
-    public static <T> T[] removeAll(final T[] a, final Object... elements) {
-        if (N.isNullOrEmpty(elements)) {
-            return a.clone();
-        } else if (elements.length == 1) {
-            return remove(a, elements[0]);
-        }
-
-        final Map<Object, MutableInt> occurrences = new HashMap<Object, MutableInt>(elements.length);
-
-        for (final Object v : elements) {
-            final MutableInt count = occurrences.get(v);
-            if (count == null) {
-                occurrences.put(v, new MutableInt(1));
-            } else {
-                count.increment();
-            }
-        }
-
-        final IntList indices = new IntList(elements.length);
-        for (final Map.Entry<Object, MutableInt> e : occurrences.entrySet()) {
-            final Object v = e.getKey();
-            int found = 0;
-
-            for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                found = indexOf(a, found, v);
-
-                if (found < 0) {
-                    break;
-                }
-
-                indices.add(found++);
-            }
-        }
-
-        return deleteAll(a, indices.trimToSize().array());
-    }
-
-    public static boolean removeAll(final Collection<?> c, final Object... elements) {
-        N.requireNonNull(c);
-
-        if (N.isNullOrEmpty(elements)) {
-            return false;
-        } else if (elements.length == 1) {
-            return c.remove(elements[0]);
-        }
-
-        if (c instanceof List) {
-            final List<?> list = (List<?>) c;
-            final Map<Object, MutableInt> occurrences = new HashMap<Object, MutableInt>(elements.length);
-
-            for (final Object v : elements) {
-                final MutableInt count = occurrences.get(v);
-                if (count == null) {
-                    occurrences.put(v, new MutableInt(1));
-                } else {
-                    count.increment();
-                }
-            }
-
-            final IntList indices = new IntList(elements.length);
-
-            for (final Map.Entry<Object, MutableInt> e : occurrences.entrySet()) {
-                final Object v = e.getKey();
-                int found = 0;
-
-                for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
-                    found = indexOf(list, found, v);
-
-                    if (found < 0) {
-                        break;
-                    }
-
-                    indices.add(found++);
-                }
-            }
-
-            deleteAll(list, indices.trimToSize().array());
-
-            return indices.size() > 0;
-        } else {
-            final int size = c.size();
-
-            for (Object element : elements) {
-                c.remove(element);
-            }
-
-            return c.size() != size;
-        }
-    }
-
-    /**
      * Removes all the occurrences of the specified element from the specified
      * array. All subsequent elements are shifted to the left (subtracts one
      * from their indices). If the array doesn't contains such an element, no
@@ -29416,7 +29255,7 @@ public final class N {
      * @return A new array containing the existing elements except the
      *         occurrences of the specified element.
      */
-    public static <T> T[] removeAllOccurrences(final T[] a, final T element) {
+    public static <T> T[] removeAllOccurrences(final T[] a, final Object element) {
         if (N.isNullOrEmpty(a)) {
             return a.clone();
         }
@@ -29436,20 +29275,203 @@ public final class N {
     }
 
     /**
-     * <p>
-     * Removes all the occurrences of the specified element from the specified
-     * collection. If the collection doesn't contains such an element, no
-     * elements are removed from the collection.
-     * </p>
-     *
-     * @param c
-     * @param element
-     * @return <tt>true</tt> if this collection changed as a result of the call
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
      */
-    public static boolean removeAllOccurrences(final Collection<?> c, final Object element) {
-        N.requireNonNull(c);
+    public static boolean[] removeAll(final boolean[] a, final boolean... elements) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
 
-        return c.removeAll(Arrays.asList(element));
+        final BooleanList list = BooleanList.of(a.clone());
+        list.removeAll(BooleanList.of(elements));
+        return list.trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public static char[] removeAll(final char[] a, final char... elements) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_CHAR_ARRAY;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
+
+        final CharList list = CharList.of(a.clone());
+        list.removeAll(CharList.of(elements));
+        return list.trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public static byte[] removeAll(final byte[] a, final byte... elements) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BYTE_ARRAY;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
+
+        final ByteList list = ByteList.of(a.clone());
+        list.removeAll(ByteList.of(elements));
+        return list.trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public static short[] removeAll(final short[] a, final short... elements) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_SHORT_ARRAY;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
+
+        final ShortList list = ShortList.of(a.clone());
+        list.removeAll(ShortList.of(elements));
+        return list.trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public static int[] removeAll(final int[] a, final int... elements) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_INT_ARRAY;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
+
+        final IntList list = IntList.of(a.clone());
+        list.removeAll(IntList.of(elements));
+        return list.trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public static long[] removeAll(final long[] a, final long... elements) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_LONG_ARRAY;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
+
+        final LongList list = LongList.of(a.clone());
+        list.removeAll(LongList.of(elements));
+        return list.trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public static float[] removeAll(final float[] a, final float... elements) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
+
+        final FloatList list = FloatList.of(a.clone());
+        list.removeAll(FloatList.of(elements));
+        return list.trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public static double[] removeAll(final double[] a, final double... elements) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
+
+        final DoubleList list = DoubleList.of(a.clone());
+        list.removeAll(DoubleList.of(elements));
+        return list.trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
+     * 
+     * @param a
+     * @param elements
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public static <T> T[] removeAll(final T[] a, final Object... elements) {
+        N.requireNonNull(a);
+
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        } else if (N.isNullOrEmpty(elements)) {
+            return a.clone();
+        } else if (elements.length == 1) {
+            return removeAllOccurrences(a, elements[0]);
+        }
+
+        final ObjectList<T> list = ObjectList.of(a.clone());
+        list.removeAll(ObjectList.of(elements));
+        return list.trimToSize().array();
     }
 
     public static char[] removeDuplicates(final char[] a) {

@@ -351,12 +351,10 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         elementData[--size] = 0; // clear to let GC do its work
     }
 
-    @Override
     public boolean removeAll(CharList c) {
         return batchRemove(c, false) > 0;
     }
 
-    @Override
     public boolean retainAll(CharList c) {
         return batchRemove(c, true) > 0;
     }
@@ -402,7 +400,6 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return indexOf(e) >= 0;
     }
 
-    @Override
     public boolean containsAll(CharList c) {
         final char[] srcElementData = c.array();
 
@@ -425,6 +422,68 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
 
     public int indexOf(char e) {
         return indexOf(0, e);
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public CharList except(CharList b) {
+        final Multiset<Character> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final CharList c = new CharList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public CharList intersect(CharList b) {
+        final Multiset<Character> bOccurrences = new Multiset<>();
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            bOccurrences.add(b.get(i));
+        }
+
+        final CharList c = new CharList(N.min(9, size(), b.size()));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.except(b).addAll(b.except(this))
+     * @see IntList#xor(IntList)
+     */
+    public CharList xor(CharList b) {
+        final CharList result = this.except(b);
+
+        result.addAll(b.except(this));
+
+        return result;
     }
 
     public int indexOf(final int fromIndex, char e) {

@@ -856,6 +856,17 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            accumulator.accept(result, elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
     public OptionalFloat min() {
         if (count() == 0) {
             return OptionalFloat.empty();

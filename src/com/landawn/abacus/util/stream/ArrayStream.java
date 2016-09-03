@@ -1554,7 +1554,29 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+        U result = identity;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result = accumulator.apply(result, elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
+        final R result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            accumulator.accept(result, elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
         final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {

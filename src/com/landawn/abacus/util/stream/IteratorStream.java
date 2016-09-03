@@ -1895,7 +1895,29 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+        U result = identity;
+
+        while (elements.hasNext()) {
+            result = accumulator.apply(result, elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            accumulator.accept(result, elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
         final R result = supplier.get();
 
         while (elements.hasNext()) {

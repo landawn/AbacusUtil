@@ -485,6 +485,15 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
+    /**
+     * Sequential only
+     * 
+     * @param supplier
+     * @param accumulator
+     * @return
+     */
+    public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator);
+
     public abstract Long sum();
 
     /**

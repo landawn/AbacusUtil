@@ -662,6 +662,17 @@ final class IteratorCharStream extends CharStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            accumulator.accept(result, elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
     public OptionalChar min() {
         if (count() == 0) {
             return OptionalChar.empty();

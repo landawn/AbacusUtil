@@ -31,6 +31,7 @@ import java.util.Set;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -190,6 +191,16 @@ public final class Multimap<K, E, V extends Collection<E>> {
 
     public V get(final Object key) {
         return valueMap.get(key);
+    }
+
+    public V getOrDefault(final Object key, V defaultValue) {
+        final V value = valueMap.get(key);
+
+        if (value == null) {
+            return defaultValue;
+        }
+
+        return value;
     }
 
     public boolean put(final K key, final E e) {
@@ -462,6 +473,225 @@ public final class Multimap<K, E, V extends Collection<E>> {
         }
 
         return true;
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multimap:
+     * 
+     * <pre>
+     * final V oldValue = get(key);
+     * 
+     * if (N.isNullOrEmpty(oldValue)) {
+     *     final V newValue = mappingFunction.apply(key);
+     * 
+     *     if (N.notNullOrEmpty(newValue)) {
+     *         valueMap.put(key, newValue);
+     *         return newValue;
+     *     }
+     * }
+     * 
+     * return oldValue;
+     * </pre>
+     * 
+     * @param key
+     * @param mappingFunction
+     * @return
+     */
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        N.requireNonNull(mappingFunction);
+
+        final V oldValue = get(key);
+
+        if (N.isNullOrEmpty(oldValue)) {
+            final V newValue = mappingFunction.apply(key);
+
+            if (N.notNullOrEmpty(newValue)) {
+                valueMap.put(key, newValue);
+                return newValue;
+            }
+        }
+
+        return oldValue;
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multimap:
+     * 
+     * <pre>
+     * final V oldValue = get(key);
+     * 
+     * if (N.isNullOrEmpty(oldValue)) {
+     *     return oldValue;
+     * }
+     * 
+     * final V newValue = remappingFunction.apply(key, oldValue);
+     * 
+     * if (N.isNullOrEmpty(newValue)) {
+     *     valueMap.remove(key);
+     *     return newValue;
+     * } else {
+     *     valueMap.put(key, newValue);
+     *     return newValue;
+     * }
+     * </pre>
+     * 
+     * @param key
+     * @param remappingFunction
+     * @return
+     */
+    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        N.requireNonNull(remappingFunction);
+
+        final V oldValue = get(key);
+
+        if (N.isNullOrEmpty(oldValue)) {
+            return oldValue;
+        }
+
+        final V newValue = remappingFunction.apply(key, oldValue);
+
+        if (N.isNullOrEmpty(newValue)) {
+            valueMap.remove(key);
+            return newValue;
+        } else {
+            valueMap.put(key, newValue);
+            return newValue;
+        }
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multimap:
+     * 
+     * <pre>
+     * final V oldValue = get(key);
+     * final V newValue = remappingFunction.apply(key, oldValue);
+     * 
+     * if (N.isNullOrEmpty(newValue)) {
+     *     if (oldValue != null || containsKey(key)) {
+     *         valueMap.remove(key);
+     *     }
+     * 
+     *     return newValue;
+     * } else {
+     *     valueMap.put(key, newValue);
+     *     return newValue;
+     * }
+     * </pre>
+     * 
+     * @param key
+     * @param remappingFunction
+     * @return
+     */
+    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        N.requireNonNull(remappingFunction);
+
+        final V oldValue = get(key);
+        final V newValue = remappingFunction.apply(key, oldValue);
+
+        if (N.isNullOrEmpty(newValue)) {
+            if (oldValue != null || containsKey(key)) {
+                valueMap.remove(key);
+            }
+
+            return newValue;
+        } else {
+            valueMap.put(key, newValue);
+            return newValue;
+        }
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multimap:
+     * 
+     * <pre>
+     * final V oldValue = get(key);
+     * final V newValue = (N.isNullOrEmpty(oldValue)) ? value : remappingFunction.apply(oldValue, value);
+     *     
+     * if (N.isNullOrEmpty(newValue)) {
+     *     if (oldValue != null || containsKey(key)) {
+     *         valueMap.remove(key);
+     *     }
+     * } else {
+     *     valueMap.put(key, newValue);
+     * }
+     * 
+     * return newValue;
+     * </pre>
+     * 
+     * @param key
+     * @param value
+     * @param remappingFunction
+     * @return
+     */
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+        N.requireNonNull(remappingFunction);
+        N.requireNonNull(value);
+
+        final V oldValue = get(key);
+        final V newValue = (N.isNullOrEmpty(oldValue)) ? value : remappingFunction.apply(oldValue, value);
+
+        if (N.isNullOrEmpty(newValue)) {
+            if (oldValue != null || containsKey(key)) {
+                valueMap.remove(key);
+            }
+        } else {
+            valueMap.put(key, newValue);
+        }
+
+        return newValue;
+    }
+
+    /**
+     * The implementation is equivalent to performing the following steps for this Multimap:
+     * 
+     * <pre>
+     * final V oldValue = get(key);
+     * 
+     * if (N.isNullOrEmpty(oldValue)) {
+     *     put(key, e);
+     *     return get(key);
+     * }
+     * 
+     * final V newValue = remappingFunction.apply(oldValue, e);
+     * 
+     * if (N.isNullOrEmpty(newValue)) {
+     *     if (oldValue != null || containsKey(key)) {
+     *         valueMap.remove(key);
+     *     }
+     * } else {
+     *     valueMap.put(key, newValue);
+     * }
+     * 
+     * return newValue;
+     * </pre>
+     * 
+     * @param key
+     * @param e
+     * @param remappingFunction
+     * @return
+     */
+    public V merge(K key, E e, BiFunction<? super V, ? super E, ? extends V> remappingFunction) {
+        N.requireNonNull(remappingFunction);
+        N.requireNonNull(e);
+
+        final V oldValue = get(key);
+
+        if (N.isNullOrEmpty(oldValue)) {
+            put(key, e);
+            return get(key);
+        }
+
+        final V newValue = remappingFunction.apply(oldValue, e);
+
+        if (N.isNullOrEmpty(newValue)) {
+            if (oldValue != null || containsKey(key)) {
+                valueMap.remove(key);
+            }
+        } else {
+            valueMap.put(key, newValue);
+        }
+
+        return newValue;
     }
 
     public Stream<Map.Entry<K, V>> stream() {

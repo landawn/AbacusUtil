@@ -654,6 +654,17 @@ final class IteratorShortStream extends ShortStream {
     }
 
     @Override
+    public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
+        final R result = supplier.get();
+
+        while (elements.hasNext()) {
+            accumulator.accept(result, elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
     public Long sum() {
         long result = 0;
 

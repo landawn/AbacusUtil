@@ -481,6 +481,15 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
+     * Sequential only
+     * 
+     * @param supplier
+     * @param accumulator
+     * @return
+     */
+    public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator);
+
+    /**
      * Returns an {@code OptionalChar} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>
