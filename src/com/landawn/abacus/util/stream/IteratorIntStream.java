@@ -1210,6 +1210,11 @@ final class IteratorIntStream extends IntStream {
     }
 
     @Override
+    public IntStream append(IntStream stream) {
+        return IntStream.concat(this, stream);
+    }
+
+    @Override
     public LongStream asLongStream() {
         return new IteratorLongStream(new ImmutableLongIterator() {
             @Override

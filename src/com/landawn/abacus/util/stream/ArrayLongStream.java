@@ -729,6 +729,11 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
+    public LongStream append(LongStream stream) {
+        return LongStream.concat(this, stream);
+    }
+
+    @Override
     public FloatStream asFloatStream() {
         final float[] a = new float[toIndex - fromIndex];
 

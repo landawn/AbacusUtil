@@ -3,6 +3,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
@@ -1709,6 +1711,52 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         return (Optional<T>) Optional.empty();
+    }
+
+    @Override
+    public Stream<T> removeAll(Collection<?> c) {
+        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return !set.contains(value);
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> except(Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> intersect(Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> append(Stream<? extends T> stream) {
+        return Stream.concat(this, stream);
+    }
+
+    @Override
+    public Stream<T> append(Iterator<? extends T> iterator) {
+        return Stream.concat(this, Stream.of(iterator));
     }
 
     @Override

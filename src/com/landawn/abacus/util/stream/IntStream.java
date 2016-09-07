@@ -736,6 +736,13 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract OptionalInt findAny(IntPredicate predicate);
 
     /**
+     * Append the specified stream to the tail of this stream.
+     * @param stream
+     * @return
+     */
+    public abstract IntStream append(IntStream stream);
+
+    /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
      *
@@ -799,16 +806,50 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         return new ArrayIntStream(a, startIndex, endIndex);
     }
 
-    static IntStream from(final char... a) {
-        return Stream.from(IntList.from(a).trimToSize().array());
+    public static IntStream from(final byte... a) {
+        return Stream.from(a).asIntStream();
     }
 
-    static IntStream from(final byte... a) {
-        return Stream.from(IntList.from(a).trimToSize().array());
+    public static IntStream from(final byte[] a, final int startIndex, final int endIndex) {
+        return Stream.from(a, startIndex, endIndex).asIntStream();
     }
 
-    static IntStream from(final short... a) {
-        return Stream.from(IntList.from(a).trimToSize().array());
+    public static IntStream from(final short... a) {
+        return Stream.from(a).asIntStream();
+    }
+
+    public static IntStream from(final short[] a, final int startIndex, final int endIndex) {
+        return Stream.from(a, startIndex, endIndex).asIntStream();
+    }
+
+    public static IntStream from(final char... a) {
+        return Stream.from(a).asIntStream();
+    }
+
+    public static IntStream from(final char[] a, final int startIndex, final int endIndex) {
+        return Stream.from(a, startIndex, endIndex).asIntStream();
+    }
+
+    /**
+     * Takes the chars in the specified String as the elements of the Stream
+     * 
+     * @param str
+     * @return
+     */
+    public static IntStream from(final String str) {
+        return CharStream.from(str).asIntStream();
+    }
+
+    /**
+     * Takes the chars in the specified String as the elements of the Stream
+     * 
+     * @param str
+     * @param startIndex
+     * @param endIndex
+     * @return
+     */
+    public static IntStream from(final String str, final int startIndex, final int endIndex) {
+        return CharStream.from(str, startIndex, endIndex).asIntStream();
     }
 
     public static IntStream range(final int startInclusive, final int endExclusive) {
@@ -864,6 +905,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         });
     }
 
+    @SuppressWarnings("resource")
     public static IntStream concat(final IntStream... a) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private final Iterator<IntStream> iter = N.asList(a).iterator();
@@ -885,6 +927,27 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
                 }
 
                 return cur.next();
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }

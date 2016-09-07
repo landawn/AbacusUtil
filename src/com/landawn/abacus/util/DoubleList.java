@@ -30,7 +30,6 @@ import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.IndexedDoubleConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -1067,7 +1066,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     public DoubleStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return DoubleStream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

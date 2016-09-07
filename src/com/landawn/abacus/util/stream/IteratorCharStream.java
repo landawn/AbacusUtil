@@ -835,6 +835,11 @@ final class IteratorCharStream extends CharStream {
     }
 
     @Override
+    public CharStream append(CharStream stream) {
+        return CharStream.concat(this, stream);
+    }
+
+    @Override
     public IntStream asIntStream() {
         return new IteratorIntStream(new ImmutableIntIterator() {
             @Override

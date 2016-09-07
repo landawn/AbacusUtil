@@ -660,6 +660,13 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract OptionalShort findAny(ShortPredicate predicate);
 
     /**
+     * Append the specified stream to the tail of this stream.
+     * @param stream
+     * @return
+     */
+    public abstract ShortStream append(ShortStream stream);
+
+    /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
      *
@@ -699,8 +706,12 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
         return new ArrayShortStream(a, startIndex, endIndex);
     }
 
-    static ShortStream from(final int... a) {
+    public static ShortStream from(final int... a) {
         return Stream.from(ShortList.from(a).trimToSize().array());
+    }
+
+    public static ShortStream from(final int[] a, final int startIndex, final int endIndex) {
+        return Stream.from(ShortList.from(a, startIndex, endIndex).trimToSize().array());
     }
 
     public static ShortStream range(final short startInclusive, final short endExclusive) {
@@ -756,6 +767,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
         });
     }
 
+    @SuppressWarnings("resource")
     public static ShortStream concat(final ShortStream... a) {
         return new IteratorShortStream(new ImmutableShortIterator() {
             private final Iterator<ShortStream> iter = N.asList(a).iterator();
@@ -777,6 +789,27 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
                 }
 
                 return cur.next();
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }

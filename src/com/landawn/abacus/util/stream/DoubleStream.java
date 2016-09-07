@@ -773,6 +773,13 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract OptionalDouble findAny(DoublePredicate predicate);
 
     /**
+     * Append the specified stream to the tail of this stream.
+     * @param stream
+     * @return
+     */
+    public abstract DoubleStream append(DoubleStream stream);
+
+    /**
      * Returns a {@code Stream} consisting of the elements of this stream,
      * boxed to {@code Double}.
      *
@@ -845,6 +852,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
         });
     }
 
+    @SuppressWarnings("resource")
     public static DoubleStream concat(final DoubleStream... a) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private final Iterator<DoubleStream> iter = N.asList(a).iterator();
@@ -866,6 +874,27 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
                 }
 
                 return cur.next();
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (DoubleStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }

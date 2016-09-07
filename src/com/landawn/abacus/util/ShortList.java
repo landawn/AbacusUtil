@@ -30,7 +30,6 @@ import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.stream.ShortStream;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -117,13 +116,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         final short[] elementData = new short[endIndex - startIndex];
 
         for (int i = startIndex; i < endIndex; i++) {
-            double val = N.asDouble(a[i]);
-
-            if (N.compare(val, Short.MIN_VALUE) < 0 || N.compare(val, Short.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (short) val;
+            elementData[i - startIndex] = N.asShort(a[i]);
         }
 
         return of(elementData);
@@ -1059,7 +1052,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     public ShortStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return ShortStream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

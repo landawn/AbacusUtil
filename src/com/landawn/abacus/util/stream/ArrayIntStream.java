@@ -897,6 +897,11 @@ final class ArrayIntStream extends IntStream {
     }
 
     @Override
+    public IntStream append(IntStream stream) {
+        return IntStream.concat(this, stream);
+    }
+
+    @Override
     public LongStream asLongStream() {
         final long[] a = new long[toIndex - fromIndex];
 

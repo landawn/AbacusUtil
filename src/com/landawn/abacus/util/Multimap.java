@@ -481,16 +481,17 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * <pre>
      * final V oldValue = get(key);
      * 
-     * if (N.isNullOrEmpty(oldValue)) {
-     *     final V newValue = mappingFunction.apply(key);
-     * 
-     *     if (N.notNullOrEmpty(newValue)) {
-     *         valueMap.put(key, newValue);
-     *         return newValue;
-     *     }
+     * if (N.notNullOrEmpty(oldValue)) {
+     *     return oldValue;
      * }
      * 
-     * return oldValue;
+     * final V newValue = mappingFunction.apply(key);
+     * 
+     * if (N.notNullOrEmpty(newValue)) {
+     *     valueMap.put(key, newValue);
+     * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param key
@@ -502,16 +503,17 @@ public final class Multimap<K, E, V extends Collection<E>> {
 
         final V oldValue = get(key);
 
-        if (N.isNullOrEmpty(oldValue)) {
-            final V newValue = mappingFunction.apply(key);
-
-            if (N.notNullOrEmpty(newValue)) {
-                valueMap.put(key, newValue);
-                return newValue;
-            }
+        if (N.notNullOrEmpty(oldValue)) {
+            return oldValue;
         }
 
-        return oldValue;
+        final V newValue = mappingFunction.apply(key);
+
+        if (N.notNullOrEmpty(newValue)) {
+            valueMap.put(key, newValue);
+        }
+
+        return newValue;
     }
 
     /**
@@ -526,13 +528,13 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * 
      * final V newValue = remappingFunction.apply(key, oldValue);
      * 
-     * if (N.isNullOrEmpty(newValue)) {
-     *     valueMap.remove(key);
-     *     return newValue;
-     * } else {
+     * if (N.notNullOrEmpty(newValue)) {
      *     valueMap.put(key, newValue);
-     *     return newValue;
+     * } else {
+     *     valueMap.remove(key);
      * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param key
@@ -550,13 +552,13 @@ public final class Multimap<K, E, V extends Collection<E>> {
 
         final V newValue = remappingFunction.apply(key, oldValue);
 
-        if (N.isNullOrEmpty(newValue)) {
-            valueMap.remove(key);
-            return newValue;
-        } else {
+        if (N.notNullOrEmpty(newValue)) {
             valueMap.put(key, newValue);
-            return newValue;
+        } else {
+            valueMap.remove(key);
         }
+
+        return newValue;
     }
 
     /**
@@ -566,16 +568,15 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * final V oldValue = get(key);
      * final V newValue = remappingFunction.apply(key, oldValue);
      * 
-     * if (N.isNullOrEmpty(newValue)) {
+     * if (N.notNullOrEmpty(newValue)) {
+     *     valueMap.put(key, newValue);
+     * } else {
      *     if (oldValue != null || containsKey(key)) {
      *         valueMap.remove(key);
      *     }
-     * 
-     *     return newValue;
-     * } else {
-     *     valueMap.put(key, newValue);
-     *     return newValue;
      * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param key
@@ -588,16 +589,15 @@ public final class Multimap<K, E, V extends Collection<E>> {
         final V oldValue = get(key);
         final V newValue = remappingFunction.apply(key, oldValue);
 
-        if (N.isNullOrEmpty(newValue)) {
+        if (N.notNullOrEmpty(newValue)) {
+            valueMap.put(key, newValue);
+        } else {
             if (oldValue != null || containsKey(key)) {
                 valueMap.remove(key);
             }
-
-            return newValue;
-        } else {
-            valueMap.put(key, newValue);
-            return newValue;
         }
+
+        return newValue;
     }
 
     /**
@@ -605,14 +605,14 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * 
      * <pre>
      * final V oldValue = get(key);
-     * final V newValue = (N.isNullOrEmpty(oldValue)) ? value : remappingFunction.apply(oldValue, value);
-     *     
-     * if (N.isNullOrEmpty(newValue)) {
+     * final V newValue = oldValue == null ? value : remappingFunction.apply(oldValue, value);
+     * 
+     * if (N.notNullOrEmpty(newValue)) {
+     *     valueMap.put(key, newValue);
+     * } else {
      *     if (oldValue != null || containsKey(key)) {
      *         valueMap.remove(key);
      *     }
-     * } else {
-     *     valueMap.put(key, newValue);
      * }
      * 
      * return newValue;
@@ -628,14 +628,14 @@ public final class Multimap<K, E, V extends Collection<E>> {
         N.requireNonNull(value);
 
         final V oldValue = get(key);
-        final V newValue = (N.isNullOrEmpty(oldValue)) ? value : remappingFunction.apply(oldValue, value);
+        final V newValue = oldValue == null ? value : remappingFunction.apply(oldValue, value);
 
-        if (N.isNullOrEmpty(newValue)) {
+        if (N.notNullOrEmpty(newValue)) {
+            valueMap.put(key, newValue);
+        } else {
             if (oldValue != null || containsKey(key)) {
                 valueMap.remove(key);
             }
-        } else {
-            valueMap.put(key, newValue);
         }
 
         return newValue;
@@ -654,12 +654,12 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * 
      * final V newValue = remappingFunction.apply(oldValue, e);
      * 
-     * if (N.isNullOrEmpty(newValue)) {
+     * if (N.notNullOrEmpty(newValue)) {
+     *     valueMap.put(key, newValue);
+     * } else {
      *     if (oldValue != null || containsKey(key)) {
      *         valueMap.remove(key);
      *     }
-     * } else {
-     *     valueMap.put(key, newValue);
      * }
      * 
      * return newValue;
@@ -683,12 +683,12 @@ public final class Multimap<K, E, V extends Collection<E>> {
 
         final V newValue = remappingFunction.apply(oldValue, e);
 
-        if (N.isNullOrEmpty(newValue)) {
+        if (N.notNullOrEmpty(newValue)) {
+            valueMap.put(key, newValue);
+        } else {
             if (oldValue != null || containsKey(key)) {
                 valueMap.remove(key);
             }
-        } else {
-            valueMap.put(key, newValue);
         }
 
         return newValue;

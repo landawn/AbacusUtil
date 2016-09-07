@@ -570,6 +570,11 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
+    public CharStream append(CharStream stream) {
+        return CharStream.concat(this, stream);
+    }
+
+    @Override
     public IntStream asIntStream() {
         final int[] a = new int[toIndex - fromIndex];
 

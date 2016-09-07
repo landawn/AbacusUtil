@@ -585,6 +585,11 @@ final class ArrayByteStream extends ByteStream {
     }
 
     @Override
+    public ByteStream append(ByteStream stream) {
+        return ByteStream.concat(this, stream);
+    }
+
+    @Override
     public IntStream asIntStream() {
         final int[] a = new int[toIndex - fromIndex];
 

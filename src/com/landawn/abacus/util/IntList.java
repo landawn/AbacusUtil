@@ -29,7 +29,6 @@ import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.stream.IntStream;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -204,13 +203,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         final int[] elementData = new int[endIndex - startIndex];
 
         for (int i = startIndex; i < endIndex; i++) {
-            double val = N.asDouble(a[i]);
-
-            if (N.compare(val, Integer.MIN_VALUE) < 0 || N.compare(val, Integer.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (int) val;
+            elementData[i - startIndex] = N.asInt(a[i]);
         }
 
         return of(elementData);
@@ -1176,7 +1169,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     public IntStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return IntStream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

@@ -786,6 +786,11 @@ final class ArrayFloatStream extends FloatStream {
     }
 
     @Override
+    public FloatStream append(FloatStream stream) {
+        return FloatStream.concat(this, stream);
+    }
+
+    @Override
     public DoubleStream asDoubleStream() {
         final double[] a = new double[toIndex - fromIndex];
 

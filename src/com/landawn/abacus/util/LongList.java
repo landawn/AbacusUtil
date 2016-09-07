@@ -30,7 +30,6 @@ import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.stream.LongStream;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -153,13 +152,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         final long[] elementData = new long[endIndex - startIndex];
 
         for (int i = startIndex; i < endIndex; i++) {
-            double val = N.asDouble(a[i]);
-
-            if (N.compare(val, Long.MIN_VALUE) < 0 || N.compare(val, Long.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (long) val;
+            elementData[i - startIndex] = N.asLong(a[i]);
         }
 
         return of(elementData);
@@ -1101,7 +1094,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     public LongStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return LongStream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

@@ -30,7 +30,6 @@ import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.IndexedFloatConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.FloatStream;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -149,13 +148,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         final float[] elementData = new float[endIndex - startIndex];
 
         for (int i = startIndex; i < endIndex; i++) {
-            double val = N.asDouble(a[i]);
-
-            if (N.compare(val, Float.MIN_VALUE) < 0 || N.compare(val, Float.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (float) val;
+            elementData[i - startIndex] = N.asFloat(a[i]);
         }
 
         return of(elementData);
@@ -1097,7 +1090,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     public FloatStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return FloatStream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

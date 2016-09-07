@@ -1115,6 +1115,11 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     @Override
+    public FloatStream append(FloatStream stream) {
+        return FloatStream.concat(this, stream);
+    }
+
+    @Override
     public DoubleStream asDoubleStream() {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             @Override

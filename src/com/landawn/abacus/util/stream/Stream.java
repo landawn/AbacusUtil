@@ -53,6 +53,7 @@ import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
+import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
@@ -1199,6 +1200,41 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract Optional<T> findAny(Predicate<? super T> predicate);
 
+    /**
+     * Append the specified stream to the tail of this stream.
+     * @param stream
+     * @return
+     */
+    public abstract Stream<T> append(Stream<? extends T> stream);
+
+    /**
+     * @param c
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public abstract Stream<T> removeAll(Collection<?> c);
+
+    /**
+     * @param c
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public abstract Stream<T> except(Collection<?> c);
+
+    /**
+     * @param c
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public abstract Stream<T> intersect(Collection<?> c);
+
+    /**
+     * Append the specified stream to the tail of this stream.
+     * @param stream
+     * @return
+     */
+    public abstract Stream<T> append(Iterator<? extends T> stream);
+
     // Static factories
 
     // Static factories
@@ -1424,6 +1460,42 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     }
 
     /**
+     * 
+     * @param seed
+     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param f
+     * @return
+     */
+    public static <T> Stream<T> iterate(final T seed, final Predicate<T> hasNext, final UnaryOperator<T> f) {
+        return of(new ImmutableIterator<T>() {
+            private T t = (T) Stream.NONE;
+            private T cur = (T) Stream.NONE;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false && cur == Stream.NONE) {
+                    hasNextVal = hasNext.test((cur = (t == Stream.NONE ? seed : f.apply(t))));
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public T next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                t = cur;
+                cur = (T) Stream.NONE;
+                hasNextVal = false;
+                return t;
+            }
+        });
+    }
+
+    /**
      * Returns a sequential, stateful and immutable <code>CharStream</code>.
      *
      * @param e
@@ -1439,7 +1511,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static CharStream from(final char[] a) {
+    static CharStream from(final char[] a) {
         return from(a, 0, a.length);
     }
 
@@ -1451,7 +1523,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static CharStream from(final char[] a, final int startIndex, final int endIndex) {
+    static CharStream from(final char[] a, final int startIndex, final int endIndex) {
         //        final int[] values = new int[endIndex - startIndex];
         //
         //        for (int i = 0, j = startIndex; j < endIndex; i++, j++) {
@@ -1479,7 +1551,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static ByteStream from(final byte[] a) {
+    static ByteStream from(final byte[] a) {
         return from(a, 0, a.length);
     }
 
@@ -1491,7 +1563,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static ByteStream from(final byte[] a, final int startIndex, final int endIndex) {
+    static ByteStream from(final byte[] a, final int startIndex, final int endIndex) {
         //        final int[] values = new int[endIndex - startIndex];
         //
         //        for (int i = 0, j = startIndex; j < endIndex; i++, j++) {
@@ -1519,7 +1591,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static ShortStream from(final short[] a) {
+    static ShortStream from(final short[] a) {
         return from(a, 0, a.length);
     }
 
@@ -1531,7 +1603,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static ShortStream from(final short[] a, final int startIndex, final int endIndex) {
+    static ShortStream from(final short[] a, final int startIndex, final int endIndex) {
         //        final int[] values = new int[endIndex - startIndex];
         //
         //        for (int i = 0, j = startIndex; j < endIndex; i++, j++) {
@@ -1559,7 +1631,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static IntStream from(final int[] a) {
+    static IntStream from(final int[] a) {
         return from(a, 0, a.length);
     }
 
@@ -1571,7 +1643,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static IntStream from(final int[] a, final int startIndex, final int endIndex) {
+    static IntStream from(final int[] a, final int startIndex, final int endIndex) {
         return new ArrayIntStream(a, startIndex, endIndex);
     }
 
@@ -1591,7 +1663,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static LongStream from(final long[] a) {
+    static LongStream from(final long[] a) {
         return from(a, 0, a.length);
     }
 
@@ -1603,7 +1675,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static LongStream from(final long[] a, final int startIndex, final int endIndex) {
+    static LongStream from(final long[] a, final int startIndex, final int endIndex) {
         return new ArrayLongStream(a, startIndex, endIndex);
     }
 
@@ -1623,7 +1695,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static FloatStream from(final float[] a) {
+    static FloatStream from(final float[] a) {
         return from(a, 0, a.length);
     }
 
@@ -1635,7 +1707,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static FloatStream from(final float[] a, final int startIndex, final int endIndex) {
+    static FloatStream from(final float[] a, final int startIndex, final int endIndex) {
         //        final double[] values = new double[endIndex - startIndex];
         //
         //        for (int i = 0, j = startIndex; j < endIndex; i++, j++) {
@@ -1663,7 +1735,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static DoubleStream from(final double[] a) {
+    static DoubleStream from(final double[] a) {
         return from(a, 0, a.length);
     }
 
@@ -1675,52 +1747,71 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param endIndex
      * @return
      */
-    public static DoubleStream from(final double[] a, final int startIndex, final int endIndex) {
+    static DoubleStream from(final double[] a, final int startIndex, final int endIndex) {
         return new ArrayDoubleStream(a, startIndex, endIndex);
     }
 
-    public static CharStream range(final char startInclusive, final char endExclusive) {
+    static CharStream range(final char startInclusive, final char endExclusive) {
         return from(Array.range(startInclusive, endExclusive));
     }
 
-    public static ByteStream range(final byte startInclusive, final byte endExclusive) {
+    static ByteStream range(final byte startInclusive, final byte endExclusive) {
         return from(Array.range(startInclusive, endExclusive));
     }
 
-    public static ShortStream range(final short startInclusive, final short endExclusive) {
+    static ShortStream range(final short startInclusive, final short endExclusive) {
         return from(Array.range(startInclusive, endExclusive));
     }
 
-    public static IntStream range(final int startInclusive, final int endExclusive) {
+    static IntStream range(final int startInclusive, final int endExclusive) {
         return from(Array.range(startInclusive, endExclusive));
     }
 
-    public static LongStream range(final long startInclusive, final long endExclusive) {
+    static LongStream range(final long startInclusive, final long endExclusive) {
         return from(Array.range(startInclusive, endExclusive));
     }
 
-    public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
+    static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
         return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive) {
+    static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive) {
         return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static ShortStream rangeClosed(final short startInclusive, final short endInclusive) {
+    static ShortStream rangeClosed(final short startInclusive, final short endInclusive) {
         return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
+    static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
         return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
+    static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
         return from(Array.rangeClosed(startInclusive, endInclusive));
     }
 
     public static <T> Stream<T> repeat(T element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static <T> Stream<T> queued(Stream<? extends T> stream) {
+        return queued(stream, 128);
+    }
+
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
+     * 
+     * @param stream
+     * @param queueSize Default value is 128
+     * @return
+     */
+    public static <T> Stream<T> queued(Stream<? extends T> stream, int queueSize) {
+        if (stream.iterator() instanceof QueuedImmutableIterator && ((QueuedImmutableIterator<? extends T>) stream.iterator()).max() >= queueSize) {
+            return (Stream<T>) stream;
+        } else {
+            return parallelConcat(N.asArray(stream), 1, queueSize);
+        }
     }
 
     public static <T> Stream<T> queued(Iterator<? extends T> iterator) {
@@ -1738,7 +1829,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         if (iterator instanceof QueuedImmutableIterator && ((QueuedImmutableIterator<? extends T>) iterator).max() >= queueSize) {
             return of(iterator);
         } else {
-            return parallelConcat(N.asList(iterator), 1, queueSize);
+            return parallelConcat(N.asArray(iterator), 1, queueSize);
         }
     }
 
@@ -1762,14 +1853,35 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     //        return concat(iterators);
     //    }
 
-    public static <T> Stream<T> concat(Stream<? extends T>... a) {
+    public static <T> Stream<T> concat(final Stream<? extends T>... a) {
         final Iterator<? extends T>[] iter = new Iterator[a.length];
 
         for (int i = 0, len = a.length; i < len; i++) {
             iter[i] = a[i].iterator();
         }
 
-        return concat(iter);
+        return concat(iter).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<? extends T> stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
     }
 
     public static <T> Stream<T> concat(final Iterator<? extends T>... a) {
@@ -1805,7 +1917,70 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelConcat(iter1, iter2...)) {
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Stream<? extends T>... a) {
+        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, N.min(1024, N.max(128, a.length * 32)));
+    }
+
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
+     * 
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, a.length)
+     * @param queueSize Default value is N.min(1024, N.max(128, a.length * 32))
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Stream<? extends T>[] a, final int iteratorReadThreadNum, final int queueSize) {
+        final Iterator<? extends T>[] iter = new Iterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iter[i] = a[i].iterator();
+        }
+
+        return parallelConcat(N.asList(iter), iteratorReadThreadNum, queueSize).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<? extends T> stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -1823,7 +1998,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelConcat(iter1, iter2...)) {
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -1841,7 +2016,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelConcat(iter1, iter2...)) {
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -1859,7 +2034,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelConcat(iter1, iter2...)) {
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -1980,7 +2155,32 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner) {
-        return zip(a.iterator(), b.iterator(), combiner);
+        return zip(a.iterator(), b.iterator(), combiner).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                try {
+                    a.close();
+                } catch (Throwable throwable) {
+                    runtimeException = N.toRuntimeException(throwable);
+                }
+
+                try {
+                    b.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
     }
 
     /**
@@ -1993,7 +2193,42 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
             final TriFunction<A, B, C, R> combiner) {
-        return zip(a.iterator(), b.iterator(), c.iterator(), combiner);
+        return zip(a.iterator(), b.iterator(), c.iterator(), combiner).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                try {
+                    a.close();
+                } catch (Throwable throwable) {
+                    runtimeException = N.toRuntimeException(throwable);
+                }
+
+                try {
+                    b.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                try {
+                    c.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
     }
 
     /**
@@ -2079,6 +2314,100 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                 }
 
                 return combiner.apply(args);
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @return
+     */
+    public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner, final A valueForNoneA,
+            final B valueForNoneB) {
+        return zip(a.iterator(), b.iterator(), combiner, valueForNoneA, valueForNoneB).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                try {
+                    a.close();
+                } catch (Throwable throwable) {
+                    runtimeException = N.toRuntimeException(throwable);
+                }
+
+                try {
+                    b.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param combiner
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
+            final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+        return zip(a.iterator(), b.iterator(), c.iterator(), combiner, valueForNoneA, valueForNoneB, valueForNoneC).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                try {
+                    a.close();
+                } catch (Throwable throwable) {
+                    runtimeException = N.toRuntimeException(throwable);
+                }
+
+                try {
+                    b.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                try {
+                    c.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -2206,7 +2535,131 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner) {
+        return parallelZip(a, b, combiner, 32);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @param queueSize for each iterator. Default value is 32
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner,
+            final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), combiner, queueSize).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                try {
+                    a.close();
+                } catch (Throwable throwable) {
+                    runtimeException = N.toRuntimeException(throwable);
+                }
+
+                try {
+                    b.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    public static <A, B, C, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
+            final TriFunction<A, B, C, R> combiner) {
+        return parallelZip(a, b, c, combiner, 32);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param combiner
+     * @param queueSize for each iterator. Default value is 32
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
+            final TriFunction<A, B, C, R> combiner, final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), combiner, queueSize).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                try {
+                    a.close();
+                } catch (Throwable throwable) {
+                    runtimeException = N.toRuntimeException(throwable);
+                }
+
+                try {
+                    b.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                try {
+                    c.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2224,7 +2677,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2322,7 +2775,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2430,7 +2883,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2447,7 +2900,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2555,7 +3008,157 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner,
+            final A valueForNoneA, final B valueForNoneB) {
+        return parallelZip(a, b, combiner, 32, valueForNoneA, valueForNoneB);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param combiner
+     * @param queueSize for each iterator. Default value is 32
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner,
+            final int queueSize, final A valueForNoneA, final B valueForNoneB) {
+        return parallelZip(a.iterator(), b.iterator(), combiner, valueForNoneA, valueForNoneB).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                try {
+                    a.close();
+                } catch (Throwable throwable) {
+                    runtimeException = N.toRuntimeException(throwable);
+                }
+
+                try {
+                    b.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param combiner
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param valueForNoneC
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
+            final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+        return parallelZip(a, b, c, combiner, 32, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param combiner
+     * @param queueSize for each iterator. Default value is 32
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param valueForNoneC
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
+            final TriFunction<A, B, C, R> combiner, final int queueSize, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), combiner, valueForNoneA, valueForNoneB, valueForNoneC).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                try {
+                    a.close();
+                } catch (Throwable throwable) {
+                    runtimeException = N.toRuntimeException(throwable);
+                }
+
+                try {
+                    b.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                try {
+                    c.close();
+                } catch (Throwable throwable) {
+                    if (runtimeException == null) {
+                        runtimeException = N.toRuntimeException(throwable);
+                    } else {
+                        runtimeException.addSuppressed(throwable);
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2576,7 +3179,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2666,7 +3269,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2689,7 +3292,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2791,7 +3394,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>
@@ -2809,7 +3412,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * Put the stream in try-catch to stop the back-end reading thread if error happens
      * <br />
      * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(iterA, iterB, combiner)) {
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, combiner)) {
      *            stream.forEach(N::println);
      *        }
      * </code>

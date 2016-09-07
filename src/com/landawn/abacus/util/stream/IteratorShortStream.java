@@ -855,6 +855,11 @@ final class IteratorShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream append(ShortStream stream) {
+        return ShortStream.concat(this, stream);
+    }
+
+    @Override
     public IntStream asIntStream() {
         return new IteratorIntStream(new ImmutableIntIterator() {
             @Override

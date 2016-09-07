@@ -721,6 +721,13 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract OptionalLong findAny(LongPredicate predicate);
 
     /**
+     * Append the specified stream to the tail of this stream.
+     * @param stream
+     * @return
+     */
+    public abstract LongStream append(LongStream stream);
+
+    /**
      * Returns a {@code FloatStream} consisting of the elements of this stream,
      * converted to {@code double}.
      *
@@ -825,6 +832,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
         });
     }
 
+    @SuppressWarnings("resource")
     public static LongStream concat(final LongStream... a) {
         return new IteratorLongStream(new ImmutableLongIterator() {
             private final Iterator<LongStream> iter = N.asList(a).iterator();
@@ -846,6 +854,27 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
                 }
 
                 return cur.next();
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }

@@ -91,7 +91,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public static <T> LongMultiset<T> of(final T... a) {
-        final LongMultiset<T> multiset = new LongMultiset<T>(new HashMap<T, MutableLong>(N.initHashCapacity(a.length)));
+        final LongMultiset<T> multiset = new LongMultiset<>(new HashMap<T, MutableLong>(N.initHashCapacity(a.length)));
 
         for (T e : a) {
             multiset.add(e);
@@ -125,12 +125,40 @@ public final class LongMultiset<E> implements Iterable<E> {
     //    }
 
     public static <T> LongMultiset<T> from(final Map<? extends T, Long> m) {
-        final LongMultiset<T> multiset = new LongMultiset<T>(N.initHashCapacity(m.size()));
+        final LongMultiset<T> multiset = new LongMultiset<>(N.initHashCapacity(m.size()));
 
         multiset.setAll(m);
 
         return multiset;
     }
+
+    //    public static <T> LongMultiset<T> from(final Multiset<? extends T> multiset) {
+    //        final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(multiset.size()));
+    //
+    //        for (Map.Entry<? extends T, MutableInt> entry : multiset.entrySet()) {
+    //            result.set(entry.getKey(), entry.getValue().intValue());
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    public static LongMultiset<Character> from(CharSequence str) {
+    //        final LongMultiset<Character> result = new LongMultiset<>(N.initHashCapacity(str.length()));
+    //
+    //        if (N.notNullOrEmpty(str)) {
+    //            if (str instanceof String) {
+    //                for (char ch : N.getCharsForReadOnly((String) str)) {
+    //                    result.add(ch);
+    //                }
+    //            } else {
+    //                for (int i = 0, len = str.length(); i < len; i++) {
+    //                    result.add(str.charAt(i));
+    //                }
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
 
     //    @SuppressWarnings("rawtypes")
     //    public static <T> Multiset<T> from(final Class<? extends Map> valueMapType, final Map<? extends T, Long> m) {
@@ -378,9 +406,9 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public long addAndGet(final E e) {
-        add(e);
+        final long result = add(e);
 
-        return get(e);
+        return result > 0 ? result : 0;
     }
 
     public long getAndAdd(final E e) {
@@ -394,9 +422,10 @@ public final class LongMultiset<E> implements Iterable<E> {
     public long addAndGet(final E e, final long occurrences) {
         checkOccurrences(occurrences);
 
-        add(e, occurrences);
+        final long result = add(e, occurrences);
 
-        return get(e);
+        return result > 0 ? result : 0;
+
     }
 
     public long getAndAdd(final E e, final long occurrences) {
@@ -514,13 +543,17 @@ public final class LongMultiset<E> implements Iterable<E> {
     public long removeAndGet(final Object e) {
         remove(e);
 
-        return get(e);
+        long result = remove(e);
+
+        return result > 0 ? result : 0;
     }
 
     public long getAndRemove(final Object e) {
         final long result = get(e);
 
-        remove(e);
+        if (result > 0) {
+            remove(e);
+        }
 
         return result;
     }
@@ -528,9 +561,9 @@ public final class LongMultiset<E> implements Iterable<E> {
     public long removeAndGet(final Object e, final long occurrences) {
         checkOccurrences(occurrences);
 
-        remove(e, occurrences);
+        long result = remove(e, occurrences);
 
-        return get(e);
+        return result > 0 ? result : 0;
     }
 
     public long getAndRemove(final Object e, final long occurrences) {
@@ -538,7 +571,9 @@ public final class LongMultiset<E> implements Iterable<E> {
 
         final long result = get(e);
 
-        remove(e, occurrences);
+        if (result > 0) {
+            remove(e);
+        }
 
         return result;
     }
@@ -730,16 +765,17 @@ public final class LongMultiset<E> implements Iterable<E> {
      * <pre>
      * final long oldValue = get(e);
      * 
-     * if (oldValue == 0) {
-     *     final long newValue = mappingFunction.apply(e);
-     * 
-     *     if (newValue != 0) {
-     *         set(e, newValue);
-     *         return newValue;
-     *     }
+     * if (oldValue > 0) {
+     *     return oldValue;
      * }
      * 
-     * return oldValue;
+     * final long newValue = mappingFunction.apply(e);
+     * 
+     * if (newValue > 0) {
+     *     set(e, newValue);
+     * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param e
@@ -748,18 +784,20 @@ public final class LongMultiset<E> implements Iterable<E> {
      */
     public long computeIfAbsent(E e, Function<? super E, Long> mappingFunction) {
         N.requireNonNull(mappingFunction);
+
         final long oldValue = get(e);
 
-        if (oldValue == 0) {
-            final long newValue = mappingFunction.apply(e);
-
-            if (newValue != 0) {
-                set(e, newValue);
-                return newValue;
-            }
+        if (oldValue > 0) {
+            return oldValue;
         }
 
-        return oldValue;
+        final long newValue = mappingFunction.apply(e);
+
+        if (newValue > 0) {
+            set(e, newValue);
+        }
+
+        return newValue;
     }
 
     /**
@@ -769,18 +807,18 @@ public final class LongMultiset<E> implements Iterable<E> {
      * final long oldValue = get(e);
      * 
      * if (oldValue == 0) {
-     *     return 0;
+     *     return oldValue;
      * }
      * 
      * final long newValue = remappingFunction.apply(e, oldValue);
      * 
-     * if (newValue == 0) {
-     *     remove(e);
-     *     return 0;
-     * } else {
+     * if (newValue > 0) {
      *     set(e, newValue);
-     *     return newValue;
+     * } else {
+     *     remove(e);
      * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param e
@@ -793,18 +831,18 @@ public final class LongMultiset<E> implements Iterable<E> {
         final long oldValue = get(e);
 
         if (oldValue == 0) {
-            return 0;
+            return oldValue;
         }
 
         final long newValue = remappingFunction.apply(e, oldValue);
 
-        if (newValue == 0) {
-            remove(e);
-            return 0;
-        } else {
+        if (newValue > 0) {
             set(e, newValue);
-            return newValue;
+        } else {
+            remove(e);
         }
+
+        return newValue;
     }
 
     /**
@@ -814,16 +852,15 @@ public final class LongMultiset<E> implements Iterable<E> {
      * final long oldValue = get(key);
      * final long newValue = remappingFunction.apply(key, oldValue);
      * 
-     * if (newValue == 0) {
-     *     if (oldValue != 0) {
+     * if (newValue > 0) {
+     *     set(key, newValue);
+     * } else {
+     *     if (oldValue > 0) {
      *         remove(key);
      *     }
-     * 
-     *     return 0;
-     * } else {
-     *     set(key, newValue);
-     *     return newValue;
      * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param key
@@ -836,16 +873,15 @@ public final class LongMultiset<E> implements Iterable<E> {
         final long oldValue = get(key);
         final long newValue = remappingFunction.apply(key, oldValue);
 
-        if (newValue == 0) {
-            if (oldValue != 0) {
+        if (newValue > 0) {
+            set(key, newValue);
+        } else {
+            if (oldValue > 0) {
                 remove(key);
             }
-
-            return 0;
-        } else {
-            set(key, newValue);
-            return newValue;
         }
+
+        return newValue;
     }
 
     /**
@@ -855,12 +891,12 @@ public final class LongMultiset<E> implements Iterable<E> {
      * long oldValue = get(key);
      * long newValue = (oldValue == 0) ? value : remappingFunction.apply(oldValue, value);
      * 
-     * if (newValue == 0) {
-     * if (oldValue != 0) {
+     * if (newValue > 0) {
+     *     set(key, newValue);
+     * } else {
+     *     if (oldValue > 0) {
      *         remove(key);
      *     }
-     * } else {
-     *     set(key, newValue);
      * }
      * 
      * return newValue;
@@ -878,12 +914,12 @@ public final class LongMultiset<E> implements Iterable<E> {
         long oldValue = get(key);
         long newValue = (oldValue == 0) ? value : remappingFunction.apply(oldValue, value);
 
-        if (newValue == 0) {
-            if (oldValue != 0) {
+        if (newValue > 0) {
+            set(key, newValue);
+        } else {
+            if (oldValue > 0) {
                 remove(key);
             }
-        } else {
-            set(key, newValue);
         }
 
         return newValue;

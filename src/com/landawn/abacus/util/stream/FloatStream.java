@@ -774,6 +774,13 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     public abstract OptionalFloat findAny(FloatPredicate predicate);
 
     /**
+     * Append the specified stream to the tail of this stream.
+     * @param stream
+     * @return
+     */
+    public abstract FloatStream append(FloatStream stream);
+
+    /**
      * Returns a {@code DoubleStream} consisting of the elements of this stream,
      * converted to {@code double}.
      *
@@ -858,6 +865,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
         });
     }
 
+    @SuppressWarnings("resource")
     public static FloatStream concat(final FloatStream... a) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private final Iterator<FloatStream> iter = N.asList(a).iterator();
@@ -879,6 +887,27 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
                 }
 
                 return cur.next();
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (FloatStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }

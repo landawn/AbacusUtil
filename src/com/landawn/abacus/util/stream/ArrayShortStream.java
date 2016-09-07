@@ -606,6 +606,11 @@ final class ArrayShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream append(ShortStream stream) {
+        return ShortStream.concat(this, stream);
+    }
+
+    @Override
     public IntStream asIntStream() {
         final int[] a = new int[toIndex - fromIndex];
 

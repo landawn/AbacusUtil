@@ -810,6 +810,11 @@ final class ArrayDoubleStream extends DoubleStream {
     }
 
     @Override
+    public DoubleStream append(DoubleStream stream) {
+        return DoubleStream.concat(this, stream);
+    }
+
+    @Override
     public Stream<Double> boxed() {
         return new ArrayStream<Double>(Array.box(elements, fromIndex, toIndex), closeHandlers);
     }

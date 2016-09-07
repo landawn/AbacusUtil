@@ -1057,6 +1057,11 @@ final class IteratorLongStream extends LongStream {
     }
 
     @Override
+    public LongStream append(LongStream stream) {
+        return LongStream.concat(this, stream);
+    }
+
+    @Override
     public FloatStream asFloatStream() {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             @Override

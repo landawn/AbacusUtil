@@ -1116,6 +1116,11 @@ final class IteratorDoubleStream extends DoubleStream {
     }
 
     @Override
+    public DoubleStream append(DoubleStream stream) {
+        return DoubleStream.concat(this, stream);
+    }
+
+    @Override
     public Stream<Double> boxed() {
         return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? DOUBLE_COMPARATOR : null);
     }

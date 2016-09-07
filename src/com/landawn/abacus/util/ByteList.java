@@ -29,7 +29,6 @@ import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.IndexedByteConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.ByteStream;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -116,13 +115,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         final byte[] elementData = new byte[endIndex - startIndex];
 
         for (int i = startIndex; i < endIndex; i++) {
-            double val = N.asDouble(a[i]);
-
-            if (N.compare(val, Byte.MIN_VALUE) < 0 || N.compare(val, Byte.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (byte) val;
+            elementData[i - startIndex] = N.asByte(a[i]);
         }
 
         return of(elementData);
@@ -1039,7 +1032,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     public ByteStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return ByteStream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

@@ -16,6 +16,6 @@
 	<classpathentry kind="lib" path="lib/android-support-v4.jar"/>
 	<classpathentry kind="lib" path="lib/android-support-v7-appcompat.jar"/>
 	<classpathentry kind="lib" path="lib/cassandra-driver-core-3.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/abacus-util-0.9.6.jar"/>
+	<classpathentry kind="lib" path="lib/abacus-util-0.9.7.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

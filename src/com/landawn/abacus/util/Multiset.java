@@ -119,12 +119,44 @@ public final class Multiset<E> implements Iterable<E> {
     //    }
 
     public static <T> Multiset<T> from(final Map<? extends T, Integer> m) {
-        final Multiset<T> multiset = new Multiset<T>(N.initHashCapacity(m.size()));
+        final Multiset<T> multiset = new Multiset<>(N.initHashCapacity(m.size()));
 
         multiset.setAll(m);
 
         return multiset;
     }
+
+    //    public static <T> Multiset<T> from(final LongMultiset<? extends T> multiset) {
+    //        final Multiset<T> result = new Multiset<>(N.initHashCapacity(multiset.size()));
+    //
+    //        for (Map.Entry<? extends T, MutableLong> entry : multiset.entrySet()) {
+    //            if (entry.getValue().longValue() < 0 || entry.getValue().longValue() > Integer.MAX_VALUE) {
+    //                throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0 or bigger than Integer.MAX_VALUE");
+    //            }
+    //
+    //            result.set(entry.getKey(), entry.getValue().intValue());
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    public static Multiset<Character> from(CharSequence str) {
+    //        final Multiset<Character> result = new Multiset<>(N.initHashCapacity(str.length()));
+    //
+    //        if (N.notNullOrEmpty(str)) {
+    //            if (str instanceof String) {
+    //                for (char ch : N.getCharsForReadOnly((String) str)) {
+    //                    result.add(ch);
+    //                }
+    //            } else {
+    //                for (int i = 0, len = str.length(); i < len; i++) {
+    //                    result.add(str.charAt(i));
+    //                }
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
 
     //    @SuppressWarnings("rawtypes")
     //    public static <T> Multiset<T> from(final Class<? extends Map> valueMapType, final Map<? extends T, Integer> m) {
@@ -372,9 +404,9 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     public int addAndGet(final E e) {
-        add(e);
+        final int result = add(e);
 
-        return get(e);
+        return result > 0 ? result : 0;
     }
 
     public int getAndAdd(final E e) {
@@ -388,9 +420,9 @@ public final class Multiset<E> implements Iterable<E> {
     public int addAndGet(final E e, final int occurrences) {
         checkOccurrences(occurrences);
 
-        add(e, occurrences);
+        final int result = add(e, occurrences);
 
-        return get(e);
+        return result > 0 ? result : 0;
     }
 
     public int getAndAdd(final E e, final int occurrences) {
@@ -506,15 +538,17 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     public int removeAndGet(final Object e) {
-        remove(e);
+        int result = remove(e);
 
-        return get(e);
+        return result > 0 ? result : 0;
     }
 
     public int getAndRemove(final Object e) {
         final int result = get(e);
 
-        remove(e);
+        if (result > 0) {
+            remove(e);
+        }
 
         return result;
     }
@@ -522,9 +556,9 @@ public final class Multiset<E> implements Iterable<E> {
     public int removeAndGet(final Object e, final int occurrences) {
         checkOccurrences(occurrences);
 
-        remove(e, occurrences);
+        int result = remove(e, occurrences);
 
-        return get(e);
+        return result > 0 ? result : 0;
     }
 
     public int getAndRemove(final Object e, final int occurrences) {
@@ -532,7 +566,9 @@ public final class Multiset<E> implements Iterable<E> {
 
         final int result = get(e);
 
-        remove(e, occurrences);
+        if (result > 0) {
+            remove(e);
+        }
 
         return result;
     }
@@ -724,16 +760,17 @@ public final class Multiset<E> implements Iterable<E> {
      * <pre>
      * final int oldValue = get(e);
      * 
-     * if (oldValue == 0) {
-     *     final int newValue = mappingFunction.apply(e);
-     * 
-     *     if (newValue != 0) {
-     *         set(e, newValue);
-     *         return newValue;
-     *     }
+     * if (oldValue > 0) {
+     *     return oldValue;
      * }
      * 
-     * return oldValue;
+     * final int newValue = mappingFunction.apply(e);
+     * 
+     * if (newValue > 0) {
+     *     set(e, newValue);
+     * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param e
@@ -742,18 +779,20 @@ public final class Multiset<E> implements Iterable<E> {
      */
     public int computeIfAbsent(E e, Function<? super E, Integer> mappingFunction) {
         N.requireNonNull(mappingFunction);
+
         final int oldValue = get(e);
 
-        if (oldValue == 0) {
-            final int newValue = mappingFunction.apply(e);
-
-            if (newValue != 0) {
-                set(e, newValue);
-                return newValue;
-            }
+        if (oldValue > 0) {
+            return oldValue;
         }
 
-        return oldValue;
+        final int newValue = mappingFunction.apply(e);
+
+        if (newValue > 0) {
+            set(e, newValue);
+        }
+
+        return newValue;
     }
 
     /**
@@ -763,18 +802,18 @@ public final class Multiset<E> implements Iterable<E> {
      * final int oldValue = get(e);
      * 
      * if (oldValue == 0) {
-     *     return 0;
+     *     return oldValue;
      * }
      * 
      * final int newValue = remappingFunction.apply(e, oldValue);
      * 
-     * if (newValue == 0) {
-     *     remove(e);
-     *     return 0;
-     * } else {
+     * if (newValue > 0) {
      *     set(e, newValue);
-     *     return newValue;
+     * } else {
+     *     remove(e);
      * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param e
@@ -787,18 +826,18 @@ public final class Multiset<E> implements Iterable<E> {
         final int oldValue = get(e);
 
         if (oldValue == 0) {
-            return 0;
+            return oldValue;
         }
 
         final int newValue = remappingFunction.apply(e, oldValue);
 
-        if (newValue == 0) {
-            remove(e);
-            return 0;
-        } else {
+        if (newValue > 0) {
             set(e, newValue);
-            return newValue;
+        } else {
+            remove(e);
         }
+
+        return newValue;
     }
 
     /**
@@ -808,16 +847,15 @@ public final class Multiset<E> implements Iterable<E> {
      * final int oldValue = get(key);
      * final int newValue = remappingFunction.apply(key, oldValue);
      * 
-     * if (newValue == 0) {
-     *     if (oldValue != 0) {
+     * if (newValue > 0) {
+     *     set(key, newValue);
+     * } else {
+     *     if (oldValue > 0) {
      *         remove(key);
      *     }
-     * 
-     *     return 0;
-     * } else {
-     *     set(key, newValue);
-     *     return newValue;
      * }
+     * 
+     * return newValue;
      * </pre>
      * 
      * @param key
@@ -830,16 +868,15 @@ public final class Multiset<E> implements Iterable<E> {
         final int oldValue = get(key);
         final int newValue = remappingFunction.apply(key, oldValue);
 
-        if (newValue == 0) {
-            if (oldValue != 0) {
+        if (newValue > 0) {
+            set(key, newValue);
+        } else {
+            if (oldValue > 0) {
                 remove(key);
             }
-
-            return 0;
-        } else {
-            set(key, newValue);
-            return newValue;
         }
+
+        return newValue;
     }
 
     /**
@@ -849,12 +886,12 @@ public final class Multiset<E> implements Iterable<E> {
      * int oldValue = get(key);
      * int newValue = (oldValue == 0) ? value : remappingFunction.apply(oldValue, value);
      * 
-     * if (newValue == 0) {
-     * if (oldValue != 0) {
+     * if (newValue > 0) {
+     *     set(key, newValue);
+     * } else {
+     *     if (oldValue > 0) {
      *         remove(key);
      *     }
-     * } else {
-     *     set(key, newValue);
      * }
      * 
      * return newValue;
@@ -872,12 +909,12 @@ public final class Multiset<E> implements Iterable<E> {
         int oldValue = get(key);
         int newValue = (oldValue == 0) ? value : remappingFunction.apply(oldValue, value);
 
-        if (newValue == 0) {
-            if (oldValue != 0) {
+        if (newValue > 0) {
+            set(key, newValue);
+        } else {
+            if (oldValue > 0) {
                 remove(key);
             }
-        } else {
-            set(key, newValue);
         }
 
         return newValue;

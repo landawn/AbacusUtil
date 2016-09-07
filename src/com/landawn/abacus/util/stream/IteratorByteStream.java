@@ -864,6 +864,11 @@ final class IteratorByteStream extends ByteStream {
     }
 
     @Override
+    public ByteStream append(ByteStream stream) {
+        return ByteStream.concat(this, stream);
+    }
+
+    @Override
     public IntStream asIntStream() {
         return new IteratorIntStream(new ImmutableIntIterator() {
             @Override

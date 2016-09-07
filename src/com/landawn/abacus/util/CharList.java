@@ -29,7 +29,6 @@ import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.IndexedCharConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.CharStream;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -1008,7 +1007,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     public CharStream stream(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return CharStream.of(elementData, fromIndex, toIndex);
     }
 
     @Override

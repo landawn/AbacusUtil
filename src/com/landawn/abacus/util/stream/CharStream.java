@@ -651,6 +651,13 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     public abstract OptionalChar findAny(CharPredicate predicate);
 
     /**
+     * Append the specified stream to the tail of this stream.
+     * @param stream
+     * @return
+     */
+    public abstract CharStream append(CharStream stream);
+
+    /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
      *
@@ -690,15 +697,33 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
         return new ArrayCharStream(a, startIndex, endIndex);
     }
 
-    static CharStream from(final int... a) {
+    public static CharStream from(final int... a) {
         return Stream.from(CharList.from(a).trimToSize().array());
     }
 
-    public static CharStream of(final String str) {
-        return of(str, 0, str.length());
+    public static CharStream from(final int[] a, final int startIndex, final int endIndex) {
+        return Stream.from(CharList.from(a, startIndex, endIndex).trimToSize().array());
     }
 
-    public static CharStream of(final String str, final int startIndex, final int endIndex) {
+    /**
+     * Takes the chars in the specified String as the elements of the Stream
+     * 
+     * @param str
+     * @return
+     */
+    public static CharStream from(final String str) {
+        return from(str, 0, str.length());
+    }
+
+    /**
+     * Takes the chars in the specified String as the elements of the Stream
+     * 
+     * @param str
+     * @param startIndex
+     * @param endIndex
+     * @return
+     */
+    public static CharStream from(final String str, final int startIndex, final int endIndex) {
         return of(N.getCharsForReadOnly(str), startIndex, endIndex);
     }
 
@@ -755,6 +780,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
         });
     }
 
+    @SuppressWarnings("resource")
     public static CharStream concat(final CharStream... a) {
         return new IteratorCharStream(new ImmutableCharIterator() {
             private final Iterator<CharStream> iter = N.asList(a).iterator();
@@ -776,6 +802,27 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
                 }
 
                 return cur.next();
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (CharStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }

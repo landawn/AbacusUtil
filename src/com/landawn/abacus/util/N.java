@@ -25857,7 +25857,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static boolean[] except(final boolean[] a, final boolean[] b) {
         if (N.isNullOrEmpty(a)) {
@@ -25874,7 +25874,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static char[] except(final char[] a, final char[] b) {
         if (N.isNullOrEmpty(a)) {
@@ -25891,7 +25891,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static byte[] except(final byte[] a, final byte[] b) {
         if (N.isNullOrEmpty(a)) {
@@ -25908,7 +25908,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static short[] except(final short[] a, final short[] b) {
         if (N.isNullOrEmpty(a)) {
@@ -25953,7 +25953,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static long[] except(final long[] a, final long[] b) {
         if (N.isNullOrEmpty(a)) {
@@ -25970,7 +25970,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static float[] except(final float[] a, final float[] b) {
         if (N.isNullOrEmpty(a)) {
@@ -25987,7 +25987,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static double[] except(final double[] a, final double[] b) {
         if (N.isNullOrEmpty(a)) {
@@ -26004,7 +26004,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static <T> T[] except(final T[] a, final Object[] b) {
         N.requireNonNull(a);
@@ -26023,7 +26023,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#except(int[], int[])
+     * @see IntList#except(IntList)
      */
     public static <T> List<T> except(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a)) {
@@ -26052,7 +26052,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static boolean[] intersect(final boolean[] a, final boolean[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26067,7 +26067,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static char[] intersect(final char[] a, final char[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26082,7 +26082,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static byte[] intersect(final byte[] a, final byte[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26097,7 +26097,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static short[] intersect(final short[] a, final short[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26138,7 +26138,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static long[] intersect(final long[] a, final long[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26153,7 +26153,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static float[] intersect(final float[] a, final float[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26168,7 +26168,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static double[] intersect(final double[] a, final double[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26183,7 +26183,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static <T> T[] intersect(final T[] a, final Object[] b) {
         N.requireNonNull(a);
@@ -26200,7 +26200,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#intersect(int[], int[])
+     * @see IntList#intersect(IntList)
      */
     public static <T> List<T> intersect(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a)) {
@@ -26229,7 +26229,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static boolean[] xor(final boolean[] a, final boolean[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26244,7 +26244,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static char[] xor(final char[] a, final char[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26259,7 +26259,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static byte[] xor(final byte[] a, final byte[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26274,7 +26274,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static short[] xor(final short[] a, final short[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26310,7 +26310,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static long[] xor(final long[] a, final long[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26325,7 +26325,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static float[] xor(final float[] a, final float[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26340,7 +26340,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static double[] xor(final double[] a, final double[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
@@ -26355,7 +26355,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static <T> T[] xor(final T[] a, final T[] b) {
         N.requireNonNull(a);
@@ -26372,7 +26372,7 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see N#xor(int[], int[])
+     * @see IntList#xor(IntList)
      */
     public static <T> List<T> xor(final Collection<T> a, final Collection<T> b) {
         if (N.isNullOrEmpty(a)) {
