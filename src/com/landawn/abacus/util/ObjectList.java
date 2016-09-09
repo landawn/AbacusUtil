@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiFunction;
@@ -58,12 +57,20 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
     public ObjectList(T[] a) {
         super();
 
+        if (a == null) {
+            throw new IllegalArgumentException("The specified array can't be null");
+        }
+
         elementData = a;
         size = a.length;
     }
 
     public ObjectList(T[] a, int size) {
         super();
+
+        if (a == null) {
+            throw new IllegalArgumentException("The specified array can't be null");
+        }
 
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
@@ -82,10 +89,18 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
     }
 
     static <T> ObjectList<T> from(Class<T> cls, Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return of((T[]) N.newArray(cls, 0));
+        }
+
         return of(c.toArray((T[]) N.newArray(cls, c.size())));
     }
 
     static <T> ObjectList<T> from(Class<T> cls, Collection<? extends T> c, T defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return of((T[]) N.newArray(cls, 0));
+        }
+
         final T[] a = c.toArray((T[]) N.newArray(cls, c.size()));
 
         for (int i = 0, len = a.length; i < len; i++) {
@@ -1360,68 +1375,68 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-
-        return toMap(keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
-            final IntFunction<M> supplier) {
-        return toMap(0, size(), keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-
-        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper, final IntFunction<M> supplier) {
-        checkIndex(fromIndex, toIndex);
-
-        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-        }
-
-        return (M) map;
-    }
-
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-
-        return toMultimap(keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-
-        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
-            final IntFunction<Multimap<K, U, V>> supplier) {
-        checkIndex(fromIndex, toIndex);
-
-        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-        }
-
-        return multimap;
-    }
+    //    public <K, U> Map<K, U> toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    //
+    //        return toMap(keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, M extends Map<K, U>> M toMap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+    //            final IntFunction<M> supplier) {
+    //        return toMap(0, size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper) {
+    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    //
+    //        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper, final IntFunction<M> supplier) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+    //        }
+    //
+    //        return (M) map;
+    //    }
+    //
+    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+    //
+    //        return toMultimap(keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+    //        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper) {
+    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+    //
+    //        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+    //            final IntFunction<Multimap<K, U, V>> supplier) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+    //        }
+    //
+    //        return multimap;
+    //    }
 
     public Stream<T> stream() {
         return stream(0, size());

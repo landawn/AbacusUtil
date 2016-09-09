@@ -24,16 +24,24 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
@@ -78,13 +86,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class IntStream implements BaseStream<Integer, IntStream> {
-    static final Comparator<Integer> INT_COMPARATOR = new Comparator<Integer>() {
-        @Override
-        public int compare(Integer o1, Integer o2) {
-            return Integer.compare(o1, o2);
-        }
-    };
-
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -395,6 +396,13 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract void forEach(IntConsumer action);
 
     /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public abstract boolean forEach2(IntFunction<Boolean> action);
+
+    /**
      * Returns an array containing the elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -405,6 +413,120 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract int[] toArray();
 
     public abstract IntList toIntList();
+
+    public abstract List<Integer> toList();
+
+    public abstract List<Integer> toList(Supplier<? extends List<Integer>> supplier);
+
+    public abstract Set<Integer> toSet();
+
+    public abstract Set<Integer> toSet(Supplier<? extends Set<Integer>> supplier);
+
+    public abstract Multiset<Integer> toMultiset();
+
+    public abstract Multiset<Integer> toMultiset(Supplier<? extends Multiset<Integer>> supplier);
+
+    public abstract LongMultiset<Integer> toLongMultiset();
+
+    public abstract LongMultiset<Integer> toLongMultiset(Supplier<? extends LongMultiset<Integer>> supplier);
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public abstract <K> Map<K, List<Integer>> toMap(IntFunction<? extends K> classifier);
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public abstract <K, M extends Map<K, List<Integer>>> M toMap(final IntFunction<? extends K> classifier, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, D, A, M extends Map<K, D>> M toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream,
+            final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public abstract <K, U> Map<K, U> toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
+    public abstract <K, U> Map<K, U> toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -546,21 +668,6 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator);
 
     /**
-     * Returns the sum of elements in this stream.  This is a special case
-     * of a <a href="package-summary.html#Reduction">reduction</a>
-     * and is equivalent to:
-     * <pre>{@code
-     *     return reduce(0, Integer::sum);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return the sum of elements in this stream
-     */
-    public abstract Long sum();
-
-    /**
      * Returns an {@code OptionalInt} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>
@@ -601,18 +708,19 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract OptionalInt kthLargest(int k);
 
     /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
-     * equivalent to:
+     * Returns the sum of elements in this stream.  This is a special case
+     * of a <a href="package-summary.html#Reduction">reduction</a>
+     * and is equivalent to:
      * <pre>{@code
-     *     return mapToLong(e -> 1L).sum();
+     *     return reduce(0, Integer::sum);
      * }</pre>
      *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
+     * <p>This is a <a href="package-summary.html#StreamOps">terminal
+     * operation</a>.
      *
-     * @return the count of elements in this stream
+     * @return the sum of elements in this stream
      */
-    public abstract long count();
+    public abstract Long sum();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic mean of elements of
@@ -627,6 +735,20 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * stream, or an empty optional if the stream is empty
      */
     public abstract OptionalDouble average();
+
+    /**
+     * Returns the count of elements in this stream.  This is a special case of
+     * a <a href="package-summary.html#Reduction">reduction</a> and is
+     * equivalent to:
+     * <pre>{@code
+     *     return mapToLong(e -> 1L).sum();
+     * }</pre>
+     *
+     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
+     *
+     * @return the count of elements in this stream
+     */
+    public abstract long count();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -799,35 +921,35 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     }
 
     public static IntStream of(final int... a) {
-        return Stream.from(a);
+        return N.isNullOrEmpty(a) ? empty() : new ArrayIntStream(a);
     }
 
     public static IntStream of(final int[] a, final int startIndex, final int endIndex) {
-        return new ArrayIntStream(a, startIndex, endIndex);
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayIntStream(a, startIndex, endIndex);
     }
 
     public static IntStream from(final byte... a) {
-        return Stream.from(a).asIntStream();
+        return N.isNullOrEmpty(a) ? empty() : ArrayByteStream.of(a).asIntStream();
     }
 
     public static IntStream from(final byte[] a, final int startIndex, final int endIndex) {
-        return Stream.from(a, startIndex, endIndex).asIntStream();
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : ArrayByteStream.of(a, startIndex, endIndex).asIntStream();
     }
 
     public static IntStream from(final short... a) {
-        return Stream.from(a).asIntStream();
+        return N.isNullOrEmpty(a) ? empty() : ArrayShortStream.of(a).asIntStream();
     }
 
     public static IntStream from(final short[] a, final int startIndex, final int endIndex) {
-        return Stream.from(a, startIndex, endIndex).asIntStream();
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : ArrayShortStream.of(a, startIndex, endIndex).asIntStream();
     }
 
     public static IntStream from(final char... a) {
-        return Stream.from(a).asIntStream();
+        return N.isNullOrEmpty(a) ? empty() : ArrayCharStream.of(a).asIntStream();
     }
 
     public static IntStream from(final char[] a, final int startIndex, final int endIndex) {
-        return Stream.from(a, startIndex, endIndex).asIntStream();
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : ArrayCharStream.of(a, startIndex, endIndex).asIntStream();
     }
 
     /**
@@ -837,7 +959,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return
      */
     public static IntStream from(final String str) {
-        return CharStream.from(str).asIntStream();
+        return N.isNullOrEmpty(str) ? empty() : CharStream.from(str).asIntStream();
     }
 
     /**
@@ -849,15 +971,15 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return
      */
     public static IntStream from(final String str, final int startIndex, final int endIndex) {
-        return CharStream.from(str, startIndex, endIndex).asIntStream();
+        return N.isNullOrEmpty(str) && (startIndex == 0 && endIndex == 0) ? empty() : CharStream.from(str, startIndex, endIndex).asIntStream();
     }
 
     public static IntStream range(final int startInclusive, final int endExclusive) {
-        return Stream.from(Array.range(startInclusive, endExclusive));
+        return of(Array.range(startInclusive, endExclusive));
     }
 
     public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
-        return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+        return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
     public static IntStream repeat(int element, int n) {
@@ -865,7 +987,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     }
 
     public static IntStream concat(final int[]... a) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new ImmutableIntIterator() {
             private final Iterator<int[]> iter = N.asList(a).iterator();
             private ImmutableIntIterator cur;
 
@@ -905,9 +1027,8 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         });
     }
 
-    @SuppressWarnings("resource")
     public static IntStream concat(final IntStream... a) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new ImmutableIntIterator() {
             private final Iterator<IntStream> iter = N.asList(a).iterator();
             private ImmutableIntIterator cur;
 

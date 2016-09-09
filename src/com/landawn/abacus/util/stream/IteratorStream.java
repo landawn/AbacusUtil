@@ -3,6 +3,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -16,6 +17,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
@@ -317,7 +320,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -342,7 +345,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -367,7 +370,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -392,7 +395,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, closeHandlers);
     }
 
     @Override
@@ -417,7 +420,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -442,7 +445,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -467,7 +470,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -626,7 +629,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return flatMapToChar(new Function<T, CharStream>() {
             @Override
             public CharStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return CharStream.of(mapper.apply(t));
             }
         });
     }
@@ -676,7 +679,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return flatMapToByte(new Function<T, ByteStream>() {
             @Override
             public ByteStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return ByteStream.of(mapper.apply(t));
             }
         });
     }
@@ -726,7 +729,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return flatMapToShort(new Function<T, ShortStream>() {
             @Override
             public ShortStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return ShortStream.of(mapper.apply(t));
             }
         });
     }
@@ -776,7 +779,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return flatMapToInt(new Function<T, IntStream>() {
             @Override
             public IntStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return IntStream.of(mapper.apply(t));
             }
         });
     }
@@ -826,7 +829,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return flatMapToLong(new Function<T, LongStream>() {
             @Override
             public LongStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return LongStream.of(mapper.apply(t));
             }
         });
     }
@@ -876,7 +879,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return flatMapToFloat(new Function<T, FloatStream>() {
             @Override
             public FloatStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return FloatStream.of(mapper.apply(t));
             }
         });
     }
@@ -926,7 +929,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         return flatMapToDouble(new Function<T, DoubleStream>() {
             @Override
             public DoubleStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return DoubleStream.of(mapper.apply(t));
             }
         });
     }
@@ -1009,7 +1012,6 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     @Override
     public Stream<Stream<T>> split(final int size) {
         return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1037,7 +1039,6 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     @Override
     public Stream<List<T>> splitIntoList(final int size) {
         return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
-
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1054,6 +1055,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
                 while (cnt < size && elements.hasNext()) {
                     list.add(elements.next());
+                    cnt++;
                 }
 
                 return list;
@@ -1065,7 +1067,6 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     @Override
     public Stream<Set<T>> splitIntoSet(final int size) {
         return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
-
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1082,6 +1083,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
                 while (cnt < size && elements.hasNext()) {
                     list.add(elements.next());
+                    cnt++;
                 }
 
                 return list;
@@ -1159,13 +1161,18 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             }
 
             private void getResult() {
-                final Set<T> set = new LinkedHashSet<T>();
+                final Set<T> set = new HashSet<T>();
+                final List<T> list = new ArrayList<T>();
+                T element = null;
 
                 while (elements.hasNext()) {
-                    set.add(elements.next());
+                    element = elements.next();
+                    if (set.add(element)) {
+                        list.add(element);
+                    }
                 }
 
-                a = (T[]) set.toArray();
+                a = (T[]) list.toArray();
                 toIndex = a.length;
             }
         }, closeHandlers, sorted, cmp);
@@ -1245,15 +1252,20 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
             private void getResult() {
                 final Set<T> set = new TreeSet<T>(comparator);
+                final List<T> list = new ArrayList<T>();
+                T element = null;
 
                 while (elements.hasNext()) {
-                    set.add(elements.next());
+                    element = elements.next();
+                    if (set.add(element)) {
+                        list.add(element);
+                    }
                 }
 
-                a = (T[]) set.toArray();
+                a = (T[]) list.toArray();
                 toIndex = a.length;
             }
-        }, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1317,24 +1329,21 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             }
 
             private void getResult() {
-                final List<T> list = new ArrayList<>();
-                final Set<Object> keySet = new HashSet<>();
-
-                Object key = null;
-                T e = null;
+                final Set<Object> set = new HashSet<>();
+                final List<T> list = new ArrayList<T>();
+                T element = null;
 
                 while (elements.hasNext()) {
-                    key = keyMapper.apply(e);
-
-                    if (keySet.add(key)) {
-                        list.add(e);
+                    element = elements.next();
+                    if (set.add(keyMapper.apply(element))) {
+                        list.add(element);
                     }
                 }
 
                 a = (T[]) list.toArray();
                 toIndex = a.length;
             }
-        }, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1410,7 +1419,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
                 final Comparator<Pair<T, Long>> pairCmp = new Comparator<Pair<T, Long>>() {
                     @Override
                     public int compare(final Pair<T, Long> o1, final Pair<T, Long> o2) {
-                        return N.compare(o1.left, o2.left, cmp);
+                        return N.compare(o1.left, o2.left, comparator);
                     }
                 };
 
@@ -1448,7 +1457,7 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
                 toIndex = a.length;
             }
 
-        }, closeHandlers);
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1458,8 +1467,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Stream<T> sorted(final Comparator<? super T> comparator) {
-        if (sorted && this.cmp == comparator) {
-            return new IteratorStream<T>(elements, closeHandlers, sorted, cmp);
+        if (sorted && isSameComparator(comparator, cmp)) {
+            return new IteratorStream<T>(elements, closeHandlers, sorted, comparator);
         }
 
         //        final Object[] a = toArray();
@@ -1558,8 +1567,8 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
 
     @Override
     public Stream<T> parallelSorted(final Comparator<? super T> comparator) {
-        if (sorted && this.cmp == comparator) {
-            return new IteratorStream<T>(elements, closeHandlers, sorted, cmp);
+        if (sorted && isSameComparator(comparator, cmp)) {
+            return new IteratorStream<T>(elements, closeHandlers, sorted, comparator);
         }
 
         //        final Object[] a = toArray();
@@ -1800,13 +1809,13 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
             }
 
             @Override
-            public void skip(long n) {
+            public void skip(long n2) {
                 if (skipped == false) {
                     elements.skip(n);
                     skipped = true;
                 }
 
-                elements.skip(n);
+                elements.skip(n2);
             }
 
             @Override
@@ -1856,6 +1865,223 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     @Override
     public <A> ObjectList<A> toObjectList(Class<A> cls) {
         return ObjectList.of(toArray((A[]) N.newArray(cls, 0)));
+    }
+
+    @Override
+    public List<T> toList() {
+        final List<T> result = new ArrayList<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<T> toList(Supplier<? extends List<T>> supplier) {
+        final List<T> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<T> toSet() {
+        final Set<T> result = new HashSet<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<T> toSet(Supplier<? extends Set<T>> supplier) {
+        final Set<T> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<T> toMultiset() {
+        final Multiset<T> result = new Multiset<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier) {
+        final Multiset<T> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<T> toLongMultiset() {
+        final LongMultiset<T> result = new LongMultiset<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier) {
+        final LongMultiset<T> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K> Map<K, List<T>> toMap(Function<? super T, ? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<T>>>() {
+            @Override
+            public Map<K, List<T>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<T>>> M toMap(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, D, A, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+        T element = null;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+
+            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, element);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        T element = null;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
+            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier) {
+        final Multimap<K, U, V> result = mapSupplier.get();
+
+        T element = null;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+            result.put(keyMapper.apply(element), valueMapper.apply(element));
+        }
+
+        return result;
     }
 
     @Override

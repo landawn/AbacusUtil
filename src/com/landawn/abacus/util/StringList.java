@@ -38,18 +38,22 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> of(String... a) {
-        return new ObjectList<String>(a);
+        return a == null ? empty() : new ObjectList<String>(a);
     }
 
     public static ObjectList<String> of(String[] a, int size) {
-        return new ObjectList<String>(a, size);
+        return a == null && size == 0 ? empty() : new ObjectList<String>(a, size);
     }
 
     public static ObjectList<String> from(boolean... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(boolean[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -62,10 +66,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(char... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(char[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -78,10 +86,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(byte... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(byte[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -94,10 +106,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(short... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(short[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -110,10 +126,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(int... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(int[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -126,10 +146,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(long... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(long[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -142,10 +166,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(float... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(float[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -158,10 +186,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(double... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(double[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -174,10 +206,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(BigInteger... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(BigInteger[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -190,10 +226,14 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     public static ObjectList<String> from(BigDecimal... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static ObjectList<String> from(BigDecimal[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
@@ -206,10 +246,18 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     static ObjectList<String> from(List<? extends Number> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         return from(c, null);
     }
 
     static ObjectList<String> from(List<? extends Number> c, String defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         final String[] a = new String[c.size()];
         int idx = 0;
 
@@ -221,10 +269,18 @@ public abstract class StringList extends ObjectList<String> {
     }
 
     static ObjectList<String> from(Collection<String> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         return from(c, null);
     }
 
     static ObjectList<String> from(Collection<String> c, String defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         final String[] a = new String[c.size()];
         int idx = 0;
 

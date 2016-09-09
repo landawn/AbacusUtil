@@ -24,16 +24,24 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -75,13 +83,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class FloatStream implements BaseStream<Float, FloatStream> {
-    static final Comparator<Float> FLOAT_COMPARATOR = new Comparator<Float>() {
-        @Override
-        public int compare(Float o1, Float o2) {
-            return Float.compare(o1, o2);
-        }
-    };
-
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -383,6 +384,13 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     public abstract void forEach(FloatConsumer action);
 
     /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public abstract boolean forEach2(FloatFunction<Boolean> action);
+
+    /**
      * Returns an array containing the elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -393,6 +401,120 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     public abstract float[] toArray();
 
     public abstract FloatList toFloatList();
+
+    public abstract List<Float> toList();
+
+    public abstract List<Float> toList(Supplier<? extends List<Float>> supplier);
+
+    public abstract Set<Float> toSet();
+
+    public abstract Set<Float> toSet(Supplier<? extends Set<Float>> supplier);
+
+    public abstract Multiset<Float> toMultiset();
+
+    public abstract Multiset<Float> toMultiset(Supplier<? extends Multiset<Float>> supplier);
+
+    public abstract LongMultiset<Float> toLongMultiset();
+
+    public abstract LongMultiset<Float> toLongMultiset(Supplier<? extends LongMultiset<Float>> supplier);
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public abstract <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier);
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public abstract <K, M extends Map<K, List<Float>>> M toMap(final FloatFunction<? extends K> classifier, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, D, A, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
+            final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public abstract <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
+    public abstract <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -535,47 +657,6 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator);
 
     /**
-     * Returns the sum of elements in this stream.
-     *
-     * Summation is a special case of a <a
-     * href="package-summary.html#Reduction">reduction</a>. If
-     * floating-point summation were exact, this method would be
-     * equivalent to:
-     *
-     * <pre>{@code
-     *     return reduce(0, Float::sum);
-     * }</pre>
-     *
-     * However, since floating-point summation is not exact, the above
-     * code is not necessarily equivalent to the summation computation
-     * done by this method.
-     *
-     * <p>If any stream element is a NaN or the sum is at any point a NaN
-     * then the sum will be NaN.
-     *
-     * The value of a floating-point sum is a function both
-     * of the input values as well as the order of addition
-     * operations. The order of addition operations of this method is
-     * intentionally not defined to allow for implementation
-     * flexibility to improve the speed and accuracy of the computed
-     * result.
-     *
-     * In particular, this method may be implemented using compensated
-     * summation or other technique to reduce the error bound in the
-     * numerical sum compared to a simple summation of {@code float}
-     * values.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @apiNote Elements sorted by increasing absolute magnitude tend
-     * to yield more accurate results.
-     *
-     * @return the sum of elements in this stream
-     */
-    public abstract Double sum();
-
-    /**
      * Returns an {@code OptionalFloat} describing the minimum element of this
      * stream, or an empty OptionalFloat if this stream is empty.  The minimum
      * element will be {@code Float.NaN} if any stream element was NaN. Unlike
@@ -624,18 +705,45 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     public abstract OptionalFloat kthLargest(int k);
 
     /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
+     * Returns the sum of elements in this stream.
+     *
+     * Summation is a special case of a <a
+     * href="package-summary.html#Reduction">reduction</a>. If
+     * floating-point summation were exact, this method would be
      * equivalent to:
+     *
      * <pre>{@code
-     *     return mapToLong(e -> 1L).sum();
+     *     return reduce(0, Float::sum);
      * }</pre>
      *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
+     * However, since floating-point summation is not exact, the above
+     * code is not necessarily equivalent to the summation computation
+     * done by this method.
      *
-     * @return the count of elements in this stream
+     * <p>If any stream element is a NaN or the sum is at any point a NaN
+     * then the sum will be NaN.
+     *
+     * The value of a floating-point sum is a function both
+     * of the input values as well as the order of addition
+     * operations. The order of addition operations of this method is
+     * intentionally not defined to allow for implementation
+     * flexibility to improve the speed and accuracy of the computed
+     * result.
+     *
+     * In particular, this method may be implemented using compensated
+     * summation or other technique to reduce the error bound in the
+     * numerical sum compared to a simple summation of {@code float}
+     * values.
+     *
+     * <p>This is a <a href="package-summary.html#StreamOps">terminal
+     * operation</a>.
+     *
+     * @apiNote Elements sorted by increasing absolute magnitude tend
+     * to yield more accurate results.
+     *
+     * @return the sum of elements in this stream
      */
-    public abstract long count();
+    public abstract Double sum();
 
     /**
      * Returns an {@code OptionalFloat} describing the arithmetic
@@ -665,6 +773,20 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * stream, or an empty optional if the stream is empty
      */
     public abstract OptionalDouble average();
+
+    /**
+     * Returns the count of elements in this stream.  This is a special case of
+     * a <a href="package-summary.html#Reduction">reduction</a> and is
+     * equivalent to:
+     * <pre>{@code
+     *     return mapToLong(e -> 1L).sum();
+     * }</pre>
+     *
+     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
+     *
+     * @return the count of elements in this stream
+     */
+    public abstract long count();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -813,11 +935,11 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     }
 
     public static FloatStream of(final float... a) {
-        return Stream.from(a);
+        return N.isNullOrEmpty(a) ? empty() : new ArrayFloatStream(a);
     }
 
     public static FloatStream of(final float[] a, final int startIndex, final int endIndex) {
-        return new ArrayFloatStream(a, startIndex, endIndex);
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayFloatStream(a, startIndex, endIndex);
     }
 
     public static FloatStream repeat(float element, int n) {
@@ -825,7 +947,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     }
 
     public static FloatStream concat(final float[]... a) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorFloatStream(new ImmutableFloatIterator() {
             private final Iterator<float[]> iter = N.asList(a).iterator();
             private ImmutableFloatIterator cur;
 
@@ -865,9 +987,8 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
         });
     }
 
-    @SuppressWarnings("resource")
     public static FloatStream concat(final FloatStream... a) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorFloatStream(new ImmutableFloatIterator() {
             private final Iterator<FloatStream> iter = N.asList(a).iterator();
             private ImmutableFloatIterator cur;
 

@@ -24,16 +24,24 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
@@ -73,13 +81,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class ShortStream implements BaseStream<Short, ShortStream> {
-    static final Comparator<Short> SHORT_COMPARATOR = new Comparator<Short>() {
-        @Override
-        public int compare(Short o1, Short o2) {
-            return Short.compare(o1, o2);
-        }
-    };
-
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -344,6 +345,13 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract void forEach(ShortConsumer action);
 
     /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public abstract boolean forEach2(ShortFunction<Boolean> action);
+
+    /**
      * Returns an array containing the elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -354,6 +362,120 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract short[] toArray();
 
     public abstract ShortList toShortList();
+
+    public abstract List<Short> toList();
+
+    public abstract List<Short> toList(Supplier<? extends List<Short>> supplier);
+
+    public abstract Set<Short> toSet();
+
+    public abstract Set<Short> toSet(Supplier<? extends Set<Short>> supplier);
+
+    public abstract Multiset<Short> toMultiset();
+
+    public abstract Multiset<Short> toMultiset(Supplier<? extends Multiset<Short>> supplier);
+
+    public abstract LongMultiset<Short> toLongMultiset();
+
+    public abstract LongMultiset<Short> toLongMultiset(Supplier<? extends LongMultiset<Short>> supplier);
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public abstract <K> Map<K, List<Short>> toMap(ShortFunction<? extends K> classifier);
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public abstract <K, M extends Map<K, List<Short>>> M toMap(final ShortFunction<? extends K> classifier, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, D, A, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
+            final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public abstract <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
+    public abstract <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -494,8 +616,6 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator);
 
-    public abstract Long sum();
-
     /**
      * Returns an {@code OptionalShort} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
@@ -536,6 +656,10 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract OptionalShort kthLargest(int k);
 
+    public abstract Long sum();
+
+    public abstract OptionalDouble average();
+
     /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is
@@ -549,8 +673,6 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return the count of elements in this stream
      */
     public abstract long count();
-
-    public abstract OptionalDouble average();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -699,27 +821,27 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     }
 
     public static ShortStream of(final short... a) {
-        return Stream.from(a);
+        return N.isNullOrEmpty(a) ? empty() : new ArrayShortStream(a);
     }
 
     public static ShortStream of(final short[] a, final int startIndex, final int endIndex) {
-        return new ArrayShortStream(a, startIndex, endIndex);
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayShortStream(a, startIndex, endIndex);
     }
 
     public static ShortStream from(final int... a) {
-        return Stream.from(ShortList.from(a).trimToSize().array());
+        return N.isNullOrEmpty(a) ? empty() : of(ShortList.from(a).trimToSize().array());
     }
 
     public static ShortStream from(final int[] a, final int startIndex, final int endIndex) {
-        return Stream.from(ShortList.from(a, startIndex, endIndex).trimToSize().array());
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : of(ShortList.from(a, startIndex, endIndex).trimToSize().array());
     }
 
     public static ShortStream range(final short startInclusive, final short endExclusive) {
-        return Stream.from(Array.range(startInclusive, endExclusive));
+        return of(Array.range(startInclusive, endExclusive));
     }
 
     public static ShortStream rangeClosed(final short startInclusive, final short endInclusive) {
-        return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+        return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
     public static ShortStream repeat(short element, int n) {
@@ -727,7 +849,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     }
 
     public static ShortStream concat(final short[]... a) {
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ImmutableShortIterator() {
             private final Iterator<short[]> iter = N.asList(a).iterator();
             private ImmutableShortIterator cur;
 
@@ -767,9 +889,8 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
         });
     }
 
-    @SuppressWarnings("resource")
     public static ShortStream concat(final ShortStream... a) {
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ImmutableShortIterator() {
             private final Iterator<ShortStream> iter = N.asList(a).iterator();
             private ImmutableShortIterator cur;
 

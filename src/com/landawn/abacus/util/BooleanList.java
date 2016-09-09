@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
@@ -74,18 +74,22 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     public static BooleanList of(boolean... a) {
-        return new BooleanList(a);
+        return a == null ? empty() : new BooleanList(a);
     }
 
     public static BooleanList of(boolean[] a, int size) {
-        return new BooleanList(a, size);
+        return a == null && size == 0 ? empty() : new BooleanList(a, size);
     }
 
     public static BooleanList from(String... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static BooleanList from(String[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final boolean[] elementData = new boolean[endIndex - startIndex];
@@ -98,10 +102,18 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     static BooleanList from(List<String> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         return from(c, false);
     }
 
     static BooleanList from(List<String> c, boolean defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         final boolean[] a = new boolean[c.size()];
         int idx = 0;
 
@@ -113,10 +125,18 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
     }
 
     static BooleanList from(Collection<Boolean> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         return from(c, false);
     }
 
     static BooleanList from(Collection<Boolean> c, boolean defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         final boolean[] a = new boolean[c.size()];
         int idx = 0;
 
@@ -508,6 +528,48 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         }
     }
 
+    public boolean forEach2(final BooleanFunction<Boolean> action) {
+        return forEach2(0, size(), action);
+    }
+
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(final int fromIndex, final int toIndex, final BooleanFunction<Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(elementData[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean forEach2(final BiFunction<Integer, Boolean, Boolean> action) {
+        return forEach2(0, size(), action);
+    }
+
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false. The first parameter is the index.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(final int fromIndex, final int toIndex, final BiFunction<Integer, Boolean, Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(i, elementData[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
@@ -887,67 +949,67 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
-        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-
-        return toMap(keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper,
-            final IntFunction<M> supplier) {
-        return toMap(0, size(), keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
-            final BooleanFunction<? extends U> valueMapper) {
-        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-
-        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
-            final BooleanFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
-        checkIndex(fromIndex, toIndex);
-
-        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-        }
-
-        return (M) map;
-    }
-
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
-        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-
-        return toMultimap(keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final BooleanFunction<? extends K> keyMapper,
-            final BooleanFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
-            final BooleanFunction<? extends U> valueMapper) {
-        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-
-        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
-            final BooleanFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-        checkIndex(fromIndex, toIndex);
-
-        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-        }
-
-        return multimap;
-    }
+    //    public <K, U> Map<K, U> toMap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
+    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    //
+    //        return toMap(keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, M extends Map<K, U>> M toMap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper,
+    //            final IntFunction<M> supplier) {
+    //        return toMap(0, size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
+    //            final BooleanFunction<? extends U> valueMapper) {
+    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    //
+    //        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
+    //            final BooleanFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+    //        }
+    //
+    //        return (M) map;
+    //    }
+    //
+    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
+    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+    //
+    //        return toMultimap(keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final BooleanFunction<? extends K> keyMapper,
+    //            final BooleanFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+    //        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
+    //            final BooleanFunction<? extends U> valueMapper) {
+    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+    //
+    //        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
+    //            final BooleanFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+    //        }
+    //
+    //        return multimap;
+    //    }
 
     @Override
     public int hashCode() {

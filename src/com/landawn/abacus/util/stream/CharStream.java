@@ -24,15 +24,22 @@
  */
 package com.landawn.abacus.util.stream;
 
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -72,13 +79,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class CharStream implements BaseStream<Character, CharStream> {
-    static final Comparator<Character> CHAR_COMPARATOR = new Comparator<Character>() {
-        @Override
-        public int compare(Character o1, Character o2) {
-            return Character.compare(o1, o2);
-        }
-    };
-
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -339,6 +339,13 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     public abstract void forEach(CharConsumer action);
 
     /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public abstract boolean forEach2(CharFunction<Boolean> action);
+
+    /**
      * Returns an array containing the elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -349,6 +356,120 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     public abstract char[] toArray();
 
     public abstract CharList toCharList();
+
+    public abstract List<Character> toList();
+
+    public abstract List<Character> toList(Supplier<? extends List<Character>> supplier);
+
+    public abstract Set<Character> toSet();
+
+    public abstract Set<Character> toSet(Supplier<? extends Set<Character>> supplier);
+
+    public abstract Multiset<Character> toMultiset();
+
+    public abstract Multiset<Character> toMultiset(Supplier<? extends Multiset<Character>> supplier);
+
+    public abstract LongMultiset<Character> toLongMultiset();
+
+    public abstract LongMultiset<Character> toLongMultiset(Supplier<? extends LongMultiset<Character>> supplier);
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public abstract <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier);
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public abstract <K, M extends Map<K, List<Character>>> M toMap(final CharFunction<? extends K> classifier, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
+            final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public abstract <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
+    public abstract <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -690,19 +811,19 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     }
 
     public static CharStream of(final char... a) {
-        return Stream.from(a);
+        return N.isNullOrEmpty(a) ? empty() : new ArrayCharStream(a);
     }
 
     public static CharStream of(final char[] a, final int startIndex, final int endIndex) {
-        return new ArrayCharStream(a, startIndex, endIndex);
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayCharStream(a, startIndex, endIndex);
     }
 
     public static CharStream from(final int... a) {
-        return Stream.from(CharList.from(a).trimToSize().array());
+        return N.isNullOrEmpty(a) ? empty() : of(CharList.from(a).trimToSize().array());
     }
 
     public static CharStream from(final int[] a, final int startIndex, final int endIndex) {
-        return Stream.from(CharList.from(a, startIndex, endIndex).trimToSize().array());
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : of(CharList.from(a, startIndex, endIndex).trimToSize().array());
     }
 
     /**
@@ -712,7 +833,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return
      */
     public static CharStream from(final String str) {
-        return from(str, 0, str.length());
+        return N.isNullOrEmpty(str) ? empty() : from(str, 0, str.length());
     }
 
     /**
@@ -724,15 +845,15 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return
      */
     public static CharStream from(final String str, final int startIndex, final int endIndex) {
-        return of(N.getCharsForReadOnly(str), startIndex, endIndex);
+        return N.isNullOrEmpty(str) && (startIndex == 0 && endIndex == 0) ? empty() : of(N.getCharsForReadOnly(str), startIndex, endIndex);
     }
 
     public static CharStream range(final char startInclusive, final char endExclusive) {
-        return Stream.from(Array.range(startInclusive, endExclusive));
+        return of(Array.range(startInclusive, endExclusive));
     }
 
     public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
-        return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+        return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
     public static CharStream repeat(char element, int n) {
@@ -740,7 +861,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     }
 
     public static CharStream concat(final char[]... a) {
-        return new IteratorCharStream(new ImmutableCharIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new ImmutableCharIterator() {
             private final Iterator<char[]> iter = N.asList(a).iterator();
             private ImmutableCharIterator cur;
 
@@ -780,9 +901,8 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
         });
     }
 
-    @SuppressWarnings("resource")
     public static CharStream concat(final CharStream... a) {
-        return new IteratorCharStream(new ImmutableCharIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new ImmutableCharIterator() {
             private final Iterator<CharStream> iter = N.asList(a).iterator();
             private ImmutableCharIterator cur;
 

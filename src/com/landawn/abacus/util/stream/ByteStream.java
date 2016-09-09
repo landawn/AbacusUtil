@@ -24,16 +24,23 @@
  */
 package com.landawn.abacus.util.stream;
 
-import java.util.Comparator;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
@@ -73,13 +80,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
-    static final Comparator<Byte> BYTE_COMPARATOR = new Comparator<Byte>() {
-        @Override
-        public int compare(Byte o1, Byte o2) {
-            return Byte.compare(o1, o2);
-        }
-    };
-
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -340,6 +340,13 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     public abstract void forEach(ByteConsumer action);
 
     /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public abstract boolean forEach2(ByteFunction<Boolean> action);
+
+    /**
      * Returns an array containing the elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -350,6 +357,120 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     public abstract byte[] toArray();
 
     public abstract ByteList toByteList();
+
+    public abstract List<Byte> toList();
+
+    public abstract List<Byte> toList(Supplier<? extends List<Byte>> supplier);
+
+    public abstract Set<Byte> toSet();
+
+    public abstract Set<Byte> toSet(Supplier<? extends Set<Byte>> supplier);
+
+    public abstract Multiset<Byte> toMultiset();
+
+    public abstract Multiset<Byte> toMultiset(Supplier<? extends Multiset<Byte>> supplier);
+
+    public abstract LongMultiset<Byte> toLongMultiset();
+
+    public abstract LongMultiset<Byte> toLongMultiset(Supplier<? extends LongMultiset<Byte>> supplier);
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public abstract <K> Map<K, List<Byte>> toMap(ByteFunction<? extends K> classifier);
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public abstract <K, M extends Map<K, List<Byte>>> M toMap(final ByteFunction<? extends K> classifier, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, D, A, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
+            final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public abstract <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
+    public abstract <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -491,12 +612,6 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator);
 
     /**
-     * 
-     * @return Long
-     */
-    public abstract Long sum();
-
-    /**
      * Returns an {@code OptionalByte} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>
@@ -537,6 +652,14 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     public abstract OptionalByte kthLargest(int k);
 
     /**
+     * 
+     * @return Long
+     */
+    public abstract Long sum();
+
+    public abstract OptionalDouble average();
+
+    /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is
      * equivalent to:
@@ -549,8 +672,6 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @return the count of elements in this stream
      */
     public abstract long count();
-
-    public abstract OptionalDouble average();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -699,27 +820,27 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     }
 
     public static ByteStream of(final byte... a) {
-        return Stream.from(a);
+        return N.isNullOrEmpty(a) ? empty() : new ArrayByteStream(a);
     }
 
     public static ByteStream of(final byte[] a, final int startIndex, final int endIndex) {
-        return new ArrayByteStream(a, startIndex, endIndex);
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayByteStream(a, startIndex, endIndex);
     }
 
     public static ByteStream from(final int... a) {
-        return Stream.from(ByteList.from(a).trimToSize().array());
+        return N.isNullOrEmpty(a) ? empty() : of(ByteList.from(a).trimToSize().array());
     }
 
     public static ByteStream from(final int[] a, final int startIndex, final int endIndex) {
-        return Stream.from(ByteList.from(a, startIndex, endIndex).trimToSize().array());
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : of(ByteList.from(a, startIndex, endIndex).trimToSize().array());
     }
 
     public static ByteStream range(final byte startInclusive, final byte endExclusive) {
-        return Stream.from(Array.range(startInclusive, endExclusive));
+        return of(Array.range(startInclusive, endExclusive));
     }
 
     public static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive) {
-        return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+        return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
     public static ByteStream repeat(byte element, int n) {
@@ -727,7 +848,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     }
 
     public static ByteStream concat(final byte[]... a) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
             private final Iterator<byte[]> iter = N.asList(a).iterator();
             private ImmutableByteIterator cur;
 
@@ -767,9 +888,8 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
         });
     }
 
-    @SuppressWarnings("resource")
     public static ByteStream concat(final ByteStream... a) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
             private final Iterator<ByteStream> iter = N.asList(a).iterator();
             private ImmutableByteIterator cur;
 

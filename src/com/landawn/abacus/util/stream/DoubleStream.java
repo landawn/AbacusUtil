@@ -24,15 +24,23 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
@@ -74,13 +82,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
-    static final Comparator<Double> DOUBLE_COMPARATOR = new Comparator<Double>() {
-        @Override
-        public int compare(Double o1, Double o2) {
-            return Double.compare(o1, o2);
-        }
-    };
-
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -382,6 +383,13 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract void forEach(DoubleConsumer action);
 
     /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public abstract boolean forEach2(DoubleFunction<Boolean> action);
+
+    /**
      * Returns an array containing the elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -392,6 +400,121 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract double[] toArray();
 
     public abstract DoubleList toDoubleList();
+
+    public abstract List<Double> toList();
+
+    public abstract List<Double> toList(Supplier<? extends List<Double>> supplier);
+
+    public abstract Set<Double> toSet();
+
+    public abstract Set<Double> toSet(Supplier<? extends Set<Double>> supplier);
+
+    public abstract Multiset<Double> toMultiset();
+
+    public abstract Multiset<Double> toMultiset(Supplier<? extends Multiset<Double>> supplier);
+
+    public abstract LongMultiset<Double> toLongMultiset();
+
+    public abstract LongMultiset<Double> toLongMultiset(Supplier<? extends LongMultiset<Double>> supplier);
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public abstract <K> Map<K, List<Double>> toMap(DoubleFunction<? extends K> classifier);
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public abstract <K, M extends Map<K, List<Double>>> M toMap(final DoubleFunction<? extends K> classifier, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, D, A, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
+            final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public abstract <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper,
+            Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
+    public abstract <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -534,47 +657,6 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator);
 
     /**
-     * Returns the sum of elements in this stream.
-     *
-     * Summation is a special case of a <a
-     * href="package-summary.html#Reduction">reduction</a>. If
-     * floating-point summation were exact, this method would be
-     * equivalent to:
-     *
-     * <pre>{@code
-     *     return reduce(0, Double::sum);
-     * }</pre>
-     *
-     * However, since floating-point summation is not exact, the above
-     * code is not necessarily equivalent to the summation computation
-     * done by this method.
-     *
-     * <p>If any stream element is a NaN or the sum is at any point a NaN
-     * then the sum will be NaN.
-     *
-     * The value of a floating-point sum is a function both
-     * of the input values as well as the order of addition
-     * operations. The order of addition operations of this method is
-     * intentionally not defined to allow for implementation
-     * flexibility to improve the speed and accuracy of the computed
-     * result.
-     *
-     * In particular, this method may be implemented using compensated
-     * summation or other technique to reduce the error bound in the
-     * numerical sum compared to a simple summation of {@code double}
-     * values.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @apiNote Elements sorted by increasing absolute magnitude tend
-     * to yield more accurate results.
-     *
-     * @return the sum of elements in this stream
-     */
-    public abstract Double sum();
-
-    /**
      * Returns an {@code OptionalDouble} describing the minimum element of this
      * stream, or an empty OptionalDouble if this stream is empty.  The minimum
      * element will be {@code Double.NaN} if any stream element was NaN. Unlike
@@ -623,18 +705,45 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     public abstract OptionalDouble kthLargest(int k);
 
     /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
+     * Returns the sum of elements in this stream.
+     *
+     * Summation is a special case of a <a
+     * href="package-summary.html#Reduction">reduction</a>. If
+     * floating-point summation were exact, this method would be
      * equivalent to:
+     *
      * <pre>{@code
-     *     return mapToLong(e -> 1L).sum();
+     *     return reduce(0, Double::sum);
      * }</pre>
      *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
+     * However, since floating-point summation is not exact, the above
+     * code is not necessarily equivalent to the summation computation
+     * done by this method.
      *
-     * @return the count of elements in this stream
+     * <p>If any stream element is a NaN or the sum is at any point a NaN
+     * then the sum will be NaN.
+     *
+     * The value of a floating-point sum is a function both
+     * of the input values as well as the order of addition
+     * operations. The order of addition operations of this method is
+     * intentionally not defined to allow for implementation
+     * flexibility to improve the speed and accuracy of the computed
+     * result.
+     *
+     * In particular, this method may be implemented using compensated
+     * summation or other technique to reduce the error bound in the
+     * numerical sum compared to a simple summation of {@code double}
+     * values.
+     *
+     * <p>This is a <a href="package-summary.html#StreamOps">terminal
+     * operation</a>.
+     *
+     * @apiNote Elements sorted by increasing absolute magnitude tend
+     * to yield more accurate results.
+     *
+     * @return the sum of elements in this stream
      */
-    public abstract long count();
+    public abstract Double sum();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic
@@ -664,6 +773,20 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * stream, or an empty optional if the stream is empty
      */
     public abstract OptionalDouble average();
+
+    /**
+     * Returns the count of elements in this stream.  This is a special case of
+     * a <a href="package-summary.html#Reduction">reduction</a> and is
+     * equivalent to:
+     * <pre>{@code
+     *     return mapToLong(e -> 1L).sum();
+     * }</pre>
+     *
+     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
+     *
+     * @return the count of elements in this stream
+     */
+    public abstract long count();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -800,11 +923,11 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     }
 
     public static DoubleStream of(final double... a) {
-        return Stream.from(a);
+        return N.isNullOrEmpty(a) ? empty() : new ArrayDoubleStream(a);
     }
 
     public static DoubleStream of(final double[] a, final int startIndex, final int endIndex) {
-        return new ArrayDoubleStream(a, startIndex, endIndex);
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayDoubleStream(a, startIndex, endIndex);
     }
 
     public static DoubleStream repeat(double element, int n) {
@@ -812,7 +935,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     }
 
     public static DoubleStream concat(final double[]... a) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private final Iterator<double[]> iter = N.asList(a).iterator();
             private ImmutableDoubleIterator cur;
 
@@ -852,9 +975,8 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
         });
     }
 
-    @SuppressWarnings("resource")
     public static DoubleStream concat(final DoubleStream... a) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private final Iterator<DoubleStream> iter = N.asList(a).iterator();
             private ImmutableDoubleIterator cur;
 

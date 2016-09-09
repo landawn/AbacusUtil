@@ -4,18 +4,26 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
@@ -202,7 +210,17 @@ final class IteratorShortStream extends ShortStream {
             public short next() {
                 return mapper.applyAsShort(elements.next());
             }
-        }, closeHandlers, sorted);
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -217,7 +235,17 @@ final class IteratorShortStream extends ShortStream {
             public int next() {
                 return mapper.applyAsInt(elements.next());
             }
-        }, sorted, closeHandlers);
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -231,6 +259,16 @@ final class IteratorShortStream extends ShortStream {
             @Override
             public U next() {
                 return mapper.apply(elements.next());
+            }
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
             }
         }, closeHandlers);
     }
@@ -376,7 +414,7 @@ final class IteratorShortStream extends ShortStream {
 
     @Override
     public ShortStream top(int n) {
-        return top(n, SHORT_COMPARATOR);
+        return top(n, Stream.SHORT_COMPARATOR);
     }
 
     @Override
@@ -578,13 +616,13 @@ final class IteratorShortStream extends ShortStream {
             }
 
             @Override
-            public void skip(long n) {
+            public void skip(long n2) {
                 if (skipped == false) {
                     elements.skip(n);
                     skipped = true;
                 }
 
-                elements.skip(n);
+                elements.skip(n2);
             }
 
             @Override
@@ -607,6 +645,17 @@ final class IteratorShortStream extends ShortStream {
     }
 
     @Override
+    public boolean forEach2(ShortFunction<Boolean> action) {
+        while (elements.hasNext()) {
+            if (action.apply(elements.next()).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public short[] toArray() {
         return elements.toArray();
     }
@@ -614,6 +663,222 @@ final class IteratorShortStream extends ShortStream {
     @Override
     public ShortList toShortList() {
         return ShortList.of(toArray());
+    }
+
+    @Override
+    public List<Short> toList() {
+        final List<Short> result = new ArrayList<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Short> toList(Supplier<? extends List<Short>> supplier) {
+        final List<Short> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Short> toSet() {
+        final Set<Short> result = new HashSet<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Short> toSet(Supplier<? extends Set<Short>> supplier) {
+        final Set<Short> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Short> toMultiset() {
+        final Multiset<Short> result = new Multiset<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Short> toMultiset(Supplier<? extends Multiset<Short>> supplier) {
+        final Multiset<Short> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Short> toLongMultiset() {
+        final LongMultiset<Short> result = new LongMultiset<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Short> toLongMultiset(Supplier<? extends LongMultiset<Short>> supplier) {
+        final LongMultiset<Short> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K> Map<K, List<Short>> toMap(ShortFunction<? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<Short>>>() {
+            @Override
+            public Map<K, List<Short>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<Short>>> M toMap(ShortFunction<? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<Short, ?, List<Short>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, D, A, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, Short> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+        short element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+
+            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, element);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        short element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier) {
+        final Multimap<K, U, V> result = mapSupplier.get();
+
+        short element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+            result.put(keyMapper.apply(element), valueMapper.apply(element));
+        }
+
+        return result;
     }
 
     @Override
@@ -665,17 +930,6 @@ final class IteratorShortStream extends ShortStream {
     }
 
     @Override
-    public Long sum() {
-        long result = 0;
-
-        while (elements.hasNext()) {
-            result += elements.next();
-        }
-
-        return result;
-    }
-
-    @Override
     public OptionalShort min() {
         if (count() == 0) {
             return OptionalShort.empty();
@@ -721,14 +975,20 @@ final class IteratorShortStream extends ShortStream {
             return OptionalShort.empty();
         }
 
-        final Optional<Short> optional = boxed().kthLargest(k, SHORT_COMPARATOR);
+        final Optional<Short> optional = boxed().kthLargest(k, Stream.SHORT_COMPARATOR);
 
         return optional.isPresent() ? OptionalShort.of(optional.get()) : OptionalShort.empty();
     }
 
     @Override
-    public long count() {
-        return elements.count();
+    public Long sum() {
+        long result = 0;
+
+        while (elements.hasNext()) {
+            result += elements.next();
+        }
+
+        return result;
     }
 
     @Override
@@ -746,6 +1006,11 @@ final class IteratorShortStream extends ShortStream {
         }
 
         return OptionalDouble.of(result / count);
+    }
+
+    @Override
+    public long count() {
+        return elements.count();
     }
 
     @Override
@@ -871,12 +1136,22 @@ final class IteratorShortStream extends ShortStream {
             public int next() {
                 return elements.next();
             }
-        }, sorted, closeHandlers);
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
     public Stream<Short> boxed() {
-        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null);
+        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? Stream.SHORT_COMPARATOR : null);
     }
 
     @Override
@@ -890,6 +1165,16 @@ final class IteratorShortStream extends ShortStream {
             @Override
             public Short next() {
                 return elements.next();
+            }
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
             }
         };
     }

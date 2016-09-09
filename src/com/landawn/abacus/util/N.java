@@ -139,35 +139,17 @@ import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
-import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanPredicate;
-import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.BytePredicate;
-import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoublePredicate;
-import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IndexedBooleanConsumer;
-import com.landawn.abacus.util.function.IndexedByteConsumer;
-import com.landawn.abacus.util.function.IndexedCharConsumer;
-import com.landawn.abacus.util.function.IndexedConsumer;
-import com.landawn.abacus.util.function.IndexedDoubleConsumer;
-import com.landawn.abacus.util.function.IndexedFloatConsumer;
-import com.landawn.abacus.util.function.IndexedIntConsumer;
-import com.landawn.abacus.util.function.IndexedLongConsumer;
-import com.landawn.abacus.util.function.IndexedShortConsumer;
-import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
-import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
@@ -21028,1181 +21010,1183 @@ public final class N {
         return count;
     }
 
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final boolean[] a, final BooleanConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final boolean[] a, final int fromIndex, final int toIndex, final BooleanConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final char[] a, final CharConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final char[] a, final int fromIndex, final int toIndex, final CharConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final byte[] a, final ByteConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final byte[] a, final int fromIndex, final int toIndex, final ByteConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final short[] a, final ShortConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final short[] a, final int fromIndex, final int toIndex, final ShortConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final int[] a, final IntConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final int[] a, final int fromIndex, final int toIndex, final IntConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final long[] a, final LongConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final long[] a, final int fromIndex, final int toIndex, final LongConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final float[] a, final FloatConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final float[] a, final int fromIndex, final int toIndex, final FloatConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final double[] a, final DoubleConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final double[] a, final int fromIndex, final int toIndex, final DoubleConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static <T> void forEach(final T[] a, final Consumer<? super T> action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param c
-     * @param action
-     */
-    public static <T> void forEach(final Collection<T> c, final Consumer<? super T> action) {
-        if (N.isNullOrEmpty(c)) {
-            return;
-        }
-
-        for (T e : c) {
-            action.accept(e);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static <T> void forEach(final Collection<T> c, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-            return;
-        }
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(list.get(i));
-            }
-        } else {
-            int idx = 0;
-
-            for (T e : c) {
-                if (idx++ < fromIndex) {
-                    continue;
-                }
-
-                action.accept(e);
-
-                if (idx >= toIndex) {
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final boolean[] a, final IndexedBooleanConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final boolean[] a, final int fromIndex, final int toIndex, final IndexedBooleanConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final char[] a, final IndexedCharConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final char[] a, final int fromIndex, final int toIndex, final IndexedCharConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final byte[] a, final IndexedByteConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final byte[] a, final int fromIndex, final int toIndex, final IndexedByteConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final short[] a, final IndexedShortConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final short[] a, final int fromIndex, final int toIndex, final IndexedShortConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final int[] a, final IndexedIntConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final int[] a, final int fromIndex, final int toIndex, final IndexedIntConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final long[] a, final IndexedLongConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final long[] a, final int fromIndex, final int toIndex, final IndexedLongConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final float[] a, final IndexedFloatConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final float[] a, final int fromIndex, final int toIndex, final IndexedFloatConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static void forEach(final double[] a, final IndexedDoubleConsumer action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static void forEach(final double[] a, final int fromIndex, final int toIndex, final IndexedDoubleConsumer action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action
-     */
-    public static <T> void forEach(final T[] a, final IndexedConsumer<? super T> action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i]);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param c
-     * @param action
-     */
-    public static <T> void forEach(final Collection<T> c, final IndexedConsumer<? super T> action) {
-        if (N.isNullOrEmpty(c)) {
-            return;
-        }
-
-        int idx = 0;
-        for (T e : c) {
-            action.accept(idx++, e);
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public static <T> void forEach(final Collection<T> c, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-            return;
-        }
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, list.get(i));
-            }
-        } else {
-            final Iterator<T> iter = c.iterator();
-            int idx = 0;
-
-            while (idx < fromIndex && iter.hasNext()) {
-                iter.next();
-                idx++;
-            }
-
-            while (iter.hasNext()) {
-                action.accept(idx, iter.next());
-
-                if (++idx >= toIndex) {
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
-     */
-    public static <T> boolean forEach2(final T[] a, final Function<? super T, Boolean> action) {
-        if (N.isNullOrEmpty(a)) {
-            return true;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            if (action.apply(a[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
-     */
-    public static <T> boolean forEach2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return true;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(a[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param c
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
-     */
-    public static <T> boolean forEach2(final Collection<T> c, final Function<? super T, Boolean> action) {
-        if (N.isNullOrEmpty(c)) {
-            return true;
-        }
-
-        for (T e : c) {
-            if (action.apply(e).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
-     */
-    public static <T> boolean forEach2(final Collection<T> c, final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-            return true;
-        }
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (action.apply(list.get(i)).booleanValue() == false) {
-                    return false;
-                }
-            }
-        } else {
-            int idx = 0;
-
-            for (T e : c) {
-                if (idx++ < fromIndex) {
-                    continue;
-                }
-
-                if (action.apply(e).booleanValue() == false) {
-                    return false;
-                }
-
-                if (idx >= toIndex) {
-                    break;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param action break if the action returns false. The first parameter is the index.
-     * @return false if it breaks, otherwise true.
-     */
-    public static <T> boolean forEach2(final T[] a, final BiFunction<Integer, ? super T, Boolean> action) {
-        if (N.isNullOrEmpty(a)) {
-            return true;
-        }
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            if (action.apply(i, a[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false. The first parameter is the index.
-     * @return false if it breaks, otherwise true.
-     */
-    public static <T> boolean forEach2(final T[] a, final int fromIndex, final int toIndex, final BiFunction<Integer, ? super T, Boolean> action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return true;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(i, a[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param c
-     * @param action break if the action returns false. The first parameter is the index.
-     * @return false if it breaks, otherwise true.
-     */
-    public static <T> boolean forEach2(final Collection<T> c, final BiFunction<Integer, ? super T, Boolean> action) {
-        if (N.isNullOrEmpty(c)) {
-            return true;
-        }
-
-        int idx = 0;
-        for (T e : c) {
-            if (action.apply(idx++, e).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     *
-     * Note: This is NOT a replacement of traditional for loop statement. 
-     * The traditional for loop is still recommended in regular programming.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false. The first parameter is the index.
-     * @return false if it breaks, otherwise true.
-     */
-    public static <T> boolean forEach2(final Collection<T> c, final int fromIndex, final int toIndex, final BiFunction<Integer, ? super T, Boolean> action) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-            return true;
-        }
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (action.apply(i, list.get(i)).booleanValue() == false) {
-                    return false;
-                }
-            }
-        } else {
-            int idx = 0;
-
-            for (T e : c) {
-                if (idx++ < fromIndex) {
-                    continue;
-                }
-
-                if (action.apply(idx, e).booleanValue() == false) {
-                    return false;
-                }
-
-                if (idx >= toIndex) {
-                    break;
-                }
-            }
-        }
-
-        return true;
-    }
+    // TODO 1, replace with forEach in ObjectList/IntList/DoubleList.../Stream/IntStream/DoubleStream/...
+
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final boolean[] a, final BooleanConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final boolean[] a, final int fromIndex, final int toIndex, final BooleanConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final char[] a, final CharConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final char[] a, final int fromIndex, final int toIndex, final CharConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final byte[] a, final ByteConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final byte[] a, final int fromIndex, final int toIndex, final ByteConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final short[] a, final ShortConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final short[] a, final int fromIndex, final int toIndex, final ShortConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final int[] a, final IntConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final int[] a, final int fromIndex, final int toIndex, final IntConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final long[] a, final LongConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final long[] a, final int fromIndex, final int toIndex, final LongConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final float[] a, final FloatConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final float[] a, final int fromIndex, final int toIndex, final FloatConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final double[] a, final DoubleConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final double[] a, final int fromIndex, final int toIndex, final DoubleConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static <T> void forEach(final T[] a, final Consumer<? super T> action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param c
+    //     * @param action
+    //     */
+    //    public static <T> void forEach(final Collection<T> c, final Consumer<? super T> action) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return;
+    //        }
+    //
+    //        for (T e : c) {
+    //            action.accept(e);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static <T> void forEach(final Collection<T> c, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+    //            return;
+    //        }
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                action.accept(list.get(i));
+    //            }
+    //        } else {
+    //            int idx = 0;
+    //
+    //            for (T e : c) {
+    //                if (idx++ < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                action.accept(e);
+    //
+    //                if (idx >= toIndex) {
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final boolean[] a, final IndexedBooleanConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final boolean[] a, final int fromIndex, final int toIndex, final IndexedBooleanConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final char[] a, final IndexedCharConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final char[] a, final int fromIndex, final int toIndex, final IndexedCharConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final byte[] a, final IndexedByteConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final byte[] a, final int fromIndex, final int toIndex, final IndexedByteConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final short[] a, final IndexedShortConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final short[] a, final int fromIndex, final int toIndex, final IndexedShortConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final int[] a, final IndexedIntConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final int[] a, final int fromIndex, final int toIndex, final IndexedIntConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final long[] a, final IndexedLongConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final long[] a, final int fromIndex, final int toIndex, final IndexedLongConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final float[] a, final IndexedFloatConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final float[] a, final int fromIndex, final int toIndex, final IndexedFloatConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static void forEach(final double[] a, final IndexedDoubleConsumer action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static void forEach(final double[] a, final int fromIndex, final int toIndex, final IndexedDoubleConsumer action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action
+    //     */
+    //    public static <T> void forEach(final T[] a, final IndexedConsumer<? super T> action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            action.accept(i, a[i]);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param c
+    //     * @param action
+    //     */
+    //    public static <T> void forEach(final Collection<T> c, final IndexedConsumer<? super T> action) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return;
+    //        }
+    //
+    //        int idx = 0;
+    //        for (T e : c) {
+    //            action.accept(idx++, e);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action
+    //     */
+    //    public static <T> void forEach(final Collection<T> c, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+    //            return;
+    //        }
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                action.accept(i, list.get(i));
+    //            }
+    //        } else {
+    //            final Iterator<T> iter = c.iterator();
+    //            int idx = 0;
+    //
+    //            while (idx < fromIndex && iter.hasNext()) {
+    //                iter.next();
+    //                idx++;
+    //            }
+    //
+    //            while (iter.hasNext()) {
+    //                action.accept(idx, iter.next());
+    //
+    //                if (++idx >= toIndex) {
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action break if the action returns false.
+    //     * @return false if it breaks, otherwise true.
+    //     */
+    //    public static <T> boolean forEach2(final T[] a, final Function<? super T, Boolean> action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return true;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            if (action.apply(a[i]).booleanValue() == false) {
+    //                return false;
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action break if the action returns false.
+    //     * @return false if it breaks, otherwise true.
+    //     */
+    //    public static <T> boolean forEach2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return true;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (action.apply(a[i]).booleanValue() == false) {
+    //                return false;
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param c
+    //     * @param action break if the action returns false.
+    //     * @return false if it breaks, otherwise true.
+    //     */
+    //    public static <T> boolean forEach2(final Collection<T> c, final Function<? super T, Boolean> action) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return true;
+    //        }
+    //
+    //        for (T e : c) {
+    //            if (action.apply(e).booleanValue() == false) {
+    //                return false;
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action break if the action returns false.
+    //     * @return false if it breaks, otherwise true.
+    //     */
+    //    public static <T> boolean forEach2(final Collection<T> c, final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+    //            return true;
+    //        }
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                if (action.apply(list.get(i)).booleanValue() == false) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            int idx = 0;
+    //
+    //            for (T e : c) {
+    //                if (idx++ < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                if (action.apply(e).booleanValue() == false) {
+    //                    return false;
+    //                }
+    //
+    //                if (idx >= toIndex) {
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param action break if the action returns false. The first parameter is the index.
+    //     * @return false if it breaks, otherwise true.
+    //     */
+    //    public static <T> boolean forEach2(final T[] a, final BiFunction<Integer, ? super T, Boolean> action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return true;
+    //        }
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            if (action.apply(i, a[i]).booleanValue() == false) {
+    //                return false;
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action break if the action returns false. The first parameter is the index.
+    //     * @return false if it breaks, otherwise true.
+    //     */
+    //    public static <T> boolean forEach2(final T[] a, final int fromIndex, final int toIndex, final BiFunction<Integer, ? super T, Boolean> action) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return true;
+    //        }
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (action.apply(i, a[i]).booleanValue() == false) {
+    //                return false;
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param c
+    //     * @param action break if the action returns false. The first parameter is the index.
+    //     * @return false if it breaks, otherwise true.
+    //     */
+    //    public static <T> boolean forEach2(final Collection<T> c, final BiFunction<Integer, ? super T, Boolean> action) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return true;
+    //        }
+    //
+    //        int idx = 0;
+    //        for (T e : c) {
+    //            if (action.apply(idx++, e).booleanValue() == false) {
+    //                return false;
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     *
+    //     * Note: This is NOT a replacement of traditional for loop statement. 
+    //     * The traditional for loop is still recommended in regular programming.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param action break if the action returns false. The first parameter is the index.
+    //     * @return false if it breaks, otherwise true.
+    //     */
+    //    public static <T> boolean forEach2(final Collection<T> c, final int fromIndex, final int toIndex, final BiFunction<Integer, ? super T, Boolean> action) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+    //            return true;
+    //        }
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                if (action.apply(i, list.get(i)).booleanValue() == false) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            int idx = 0;
+    //
+    //            for (T e : c) {
+    //                if (idx++ < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                if (action.apply(idx, e).booleanValue() == false) {
+    //                    return false;
+    //                }
+    //
+    //                if (idx >= toIndex) {
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
 
     // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
 
@@ -23925,299 +23909,299 @@ public final class N {
     //        return result;
     //    }
 
-    public static <T, K, U> Map<K, U> toMap(final T[] a, final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMap(a, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
-            @Override
-            public Map<K, U> apply(int len) {
-                return new HashMap<>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T, K, U, M extends Map<K, U>> M toMap(final T[] a, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
-        return toMap(a, 0, a.length, keyMapper, valueMapper, supplier);
-    }
-
-    public static <T, K, U> Map<K, U> toMap(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMap(a, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
-            @Override
-            public Map<K, U> apply(int len) {
-                return new HashMap<>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T, K, U, M extends Map<K, U>> M toMap(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final Map<K, U> map = supplier.apply(N.min(128, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            map.put(keyMapper.apply(a[i]), valueMapper.apply(a[i]));
-        }
-
-        return (M) map;
-    }
-
-    public static <T, K, U> Map<K, U> toMap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMap(c, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
-            @Override
-            public Map<K, U> apply(int len) {
-                return new HashMap<>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
-        return toMap(c, 0, c.size(), keyMapper, valueMapper, supplier);
-    }
-
-    public static <T, K, U> Map<K, U> toMap(final Collection<T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMap(c, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
-            @Override
-            public Map<K, U> apply(int len) {
-                return new HashMap<>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T, K, U, M extends Map<K, U>> M toMap(final Collection<T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final Map<K, U> map = supplier.apply(N.min(128, toIndex - fromIndex));
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-            T e = null;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                e = list.get(i);
-
-                map.put(keyMapper.apply(e), valueMapper.apply(e));
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                map.put(keyMapper.apply(e), valueMapper.apply(e));
-            }
-        }
-
-        return (M) map;
-    }
-
-    public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final T[] a, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(a, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> apply(int len) {
-                return new Multimap<>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final T[] a, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-        return toMultimap(a, 0, a.length, keyMapper, valueMapper, supplier);
-    }
-
-    public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(a, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> apply(int len) {
-                return new Multimap<>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final T[] a, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
-            final IntFunction<Multimap<K, U, V>> supplier) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            multimap.put(keyMapper.apply(a[i]), valueMapper.apply(a[i]));
-        }
-
-        return multimap;
-    }
-
-    public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(c, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> apply(int len) {
-                return new Multimap<>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
-            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-        return toMultimap(c, 0, c.size(), keyMapper, valueMapper, supplier);
-    }
-
-    public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final Collection<T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(c, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> apply(int len) {
-                return new Multimap<>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Collection<T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
-            final IntFunction<Multimap<K, U, V>> supplier) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-            T e = null;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                e = list.get(i);
-
-                multimap.put(keyMapper.apply(e), valueMapper.apply(e));
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                multimap.put(keyMapper.apply(e), valueMapper.apply(e));
-            }
-        }
-
-        return multimap;
-    }
-
-    public static <T> Multiset<T> toMultiset(final T[] a) {
-        return toMultiset(a, new IntFunction<Multiset<T>>() {
-            @Override
-            public Multiset<T> apply(int len) {
-                return new Multiset<T>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T> Multiset<T> toMultiset(final T[] a, final IntFunction<Multiset<T>> supplier) {
-        return toMultiset(a, 0, a.length, supplier);
-    }
-
-    public static <T> Multiset<T> toMultiset(final T[] a, final int fromIndex, final int toIndex) {
-        return toMultiset(a, fromIndex, toIndex, new IntFunction<Multiset<T>>() {
-            @Override
-            public Multiset<T> apply(int len) {
-                return new Multiset<T>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    /**
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
-     * @return
-     */
-    public static <T> Multiset<T> toMultiset(final T[] a, final int fromIndex, final int toIndex, final IntFunction<Multiset<T>> supplier) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        final Multiset<T> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            multiset.add(a[i]);
-        }
-
-        return multiset;
-    }
-
-    public static <T> Multiset<T> toMultiset(final Collection<T> c) {
-        return toMultiset(c, new IntFunction<Multiset<T>>() {
-            @Override
-            public Multiset<T> apply(int len) {
-                return new Multiset<T>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    public static <T> Multiset<T> toMultiset(final Collection<T> c, final IntFunction<Multiset<T>> supplier) {
-        return toMultiset(c, 0, c.size(), supplier);
-    }
-
-    public static <T> Multiset<T> toMultiset(final Collection<T> c, final int fromIndex, final int toIndex) {
-        return toMultiset(c, fromIndex, toIndex, new IntFunction<Multiset<T>>() {
-            @Override
-            public Multiset<T> apply(int len) {
-                return new Multiset<T>(N.initHashCapacity(len));
-            }
-        });
-    }
-
-    /**
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
-     * @return
-     */
-    public static <T> Multiset<T> toMultiset(final Collection<T> c, final int fromIndex, final int toIndex, final IntFunction<Multiset<T>> supplier) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        final Multiset<T> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                multiset.add(list.get(i));
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                multiset.add(e);
-            }
-        }
-
-        return multiset;
-    }
+    //    public static <T, K, U> Map<K, U> toMap(final T[] a, final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    //        return toMap(a, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
+    //            @Override
+    //            public Map<K, U> apply(int len) {
+    //                return new HashMap<>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T, K, U, M extends Map<K, U>> M toMap(final T[] a, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
+    //        return toMap(a, 0, a.length, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public static <T, K, U> Map<K, U> toMap(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper) {
+    //        return toMap(a, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
+    //            @Override
+    //            public Map<K, U> apply(int len) {
+    //                return new HashMap<>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T, K, U, M extends Map<K, U>> M toMap(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final Map<K, U> map = supplier.apply(N.min(128, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            map.put(keyMapper.apply(a[i]), valueMapper.apply(a[i]));
+    //        }
+    //
+    //        return (M) map;
+    //    }
+    //
+    //    public static <T, K, U> Map<K, U> toMap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper) {
+    //        return toMap(c, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
+    //            @Override
+    //            public Map<K, U> apply(int len) {
+    //                return new HashMap<>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T, K, U, M extends Map<K, U>> M toMap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
+    //        return toMap(c, 0, c.size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public static <T, K, U> Map<K, U> toMap(final Collection<T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper) {
+    //        return toMap(c, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Map<K, U>>() {
+    //            @Override
+    //            public Map<K, U> apply(int len) {
+    //                return new HashMap<>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T, K, U, M extends Map<K, U>> M toMap(final Collection<T> c, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper, final IntFunction<Map<K, U>> supplier) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        final Map<K, U> map = supplier.apply(N.min(128, toIndex - fromIndex));
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //            T e = null;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                e = list.get(i);
+    //
+    //                map.put(keyMapper.apply(e), valueMapper.apply(e));
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //            T e = null;
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                map.put(keyMapper.apply(e), valueMapper.apply(e));
+    //            }
+    //        }
+    //
+    //        return (M) map;
+    //    }
+    //
+    //    public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final T[] a, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper) {
+    //        return toMultimap(a, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
+    //            @Override
+    //            public Multimap<K, U, List<U>> apply(int len) {
+    //                return new Multimap<>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final T[] a, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+    //        return toMultimap(a, 0, a.length, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final T[] a, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    //        return toMultimap(a, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
+    //            @Override
+    //            public Multimap<K, U, List<U>> apply(int len) {
+    //                return new Multimap<>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final T[] a, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+    //            final IntFunction<Multimap<K, U, V>> supplier) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            multimap.put(keyMapper.apply(a[i]), valueMapper.apply(a[i]));
+    //        }
+    //
+    //        return multimap;
+    //    }
+    //
+    //    public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper) {
+    //        return toMultimap(c, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
+    //            @Override
+    //            public Multimap<K, U, List<U>> apply(int len) {
+    //                return new Multimap<>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Collection<T> c, final Function<? super T, ? extends K> keyMapper,
+    //            final Function<? super T, ? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+    //        return toMultimap(c, 0, c.size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public static <T, K, U> Multimap<K, U, List<U>> toMultimap(final Collection<T> c, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+    //        return toMultimap(c, fromIndex, toIndex, keyMapper, valueMapper, new IntFunction<Multimap<K, U, List<U>>>() {
+    //            @Override
+    //            public Multimap<K, U, List<U>> apply(int len) {
+    //                return new Multimap<>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T, K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final Collection<T> c, final int fromIndex, final int toIndex,
+    //            final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+    //            final IntFunction<Multimap<K, U, V>> supplier) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //            T e = null;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                e = list.get(i);
+    //
+    //                multimap.put(keyMapper.apply(e), valueMapper.apply(e));
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //            T e = null;
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                multimap.put(keyMapper.apply(e), valueMapper.apply(e));
+    //            }
+    //        }
+    //
+    //        return multimap;
+    //    }
+    //
+    //    public static <T> Multiset<T> toMultiset(final T[] a) {
+    //        return toMultiset(a, new IntFunction<Multiset<T>>() {
+    //            @Override
+    //            public Multiset<T> apply(int len) {
+    //                return new Multiset<T>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T> Multiset<T> toMultiset(final T[] a, final IntFunction<Multiset<T>> supplier) {
+    //        return toMultiset(a, 0, a.length, supplier);
+    //    }
+    //
+    //    public static <T> Multiset<T> toMultiset(final T[] a, final int fromIndex, final int toIndex) {
+    //        return toMultiset(a, fromIndex, toIndex, new IntFunction<Multiset<T>>() {
+    //            @Override
+    //            public Multiset<T> apply(int len) {
+    //                return new Multiset<T>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
+    //     * @return
+    //     */
+    //    public static <T> Multiset<T> toMultiset(final T[] a, final int fromIndex, final int toIndex, final IntFunction<Multiset<T>> supplier) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        final Multiset<T> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            multiset.add(a[i]);
+    //        }
+    //
+    //        return multiset;
+    //    }
+    //
+    //    public static <T> Multiset<T> toMultiset(final Collection<T> c) {
+    //        return toMultiset(c, new IntFunction<Multiset<T>>() {
+    //            @Override
+    //            public Multiset<T> apply(int len) {
+    //                return new Multiset<T>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    public static <T> Multiset<T> toMultiset(final Collection<T> c, final IntFunction<Multiset<T>> supplier) {
+    //        return toMultiset(c, 0, c.size(), supplier);
+    //    }
+    //
+    //    public static <T> Multiset<T> toMultiset(final Collection<T> c, final int fromIndex, final int toIndex) {
+    //        return toMultiset(c, fromIndex, toIndex, new IntFunction<Multiset<T>>() {
+    //            @Override
+    //            public Multiset<T> apply(int len) {
+    //                return new Multiset<T>(N.initHashCapacity(len));
+    //            }
+    //        });
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
+    //     * @return
+    //     */
+    //    public static <T> Multiset<T> toMultiset(final Collection<T> c, final int fromIndex, final int toIndex, final IntFunction<Multiset<T>> supplier) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        final Multiset<T> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                multiset.add(list.get(i));
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //            T e = null;
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                multiset.add(e);
+    //            }
+    //        }
+    //
+    //        return multiset;
+    //    }
 
     public static short[] top(final short[] a, final int n) {
         return top(a, n, null);

@@ -1,3 +1,66 @@
+========Changes in 0.9.8=========================================================================
+
+1, Add toList()/toSet()/toMultiset()/toLongMultiset()/toMap/toMultimap to Stream/IntStream/DoubleStream/....
+
+2, Remove toMap/toMultimap/toMultiset from N/ObjectList/IntList/.... It's replaced by the methods in toMap/toMultimap/toMultiset in Stream/IntStream/DoubleStream...
+
+3, Add forEach2 to IntList/DoubleList/... and IntStream/DoubleStream/....
+
+4, Remove forEach/forEach2 from N. it's replaced by the forEach/forEach2 in ObjectList/IntList/DoubleList/.../Stream/IntStream/DoubleStream/...
+
+5, bug fix and improvements.
+
+
+========Changes in 0.9.7=========================================================================
+
+1, Add removeAll/except/intersect/append to Stream/IntStream/....
+
+2, Move from(...) method from Stream to IntStream/CharStream/ByteStream/... to keep consistent with IntList/LongList/DoubleList/...
+
+3, bug fix and improvements.
+
+
+========Changes in 0.9.6=========================================================================
+
+1, getOrDefault/addIfAbsent/computeIfAbsent/computeIfPresent/compute/merge to Multiset/LongMultiset.
+
+2, getOrDefault/addIfAbsent/computeIfAbsent/computeIfPresent/compute/merge to Multimap.
+
+3, Add except(...)/intersect(...)/xor(...) to N/ObjectList/IntList/DoubleList/...
+
+4, change the specification of N.removeAll(...) to keep consistent with Collection.removeAll()/ObjectList/IntList/Double/.../.removeAll();
+
+5, bug fix and improvements.
+
+========Changes in 0.9.5=========================================================================
+
+1, Add mapTo(...) and mapToXXX(...) to ObjectList.
+
+2, Add forEach(IndexedConsumer)/forEach(IndexedXXXConsumer) ObjectList/IntList/DoubleList/...
+
+3, Refactoring accept(T t, int idx) to void accept(int idx, T t) in IndexedConsumer/IndexedDoubleConsumer/IndexedIntConsumer/....  
+
+4, Change the default queue size for methods: parallelConcat(...)/parallelZip(...) in Stream. 
+
+5, Remove map(...)/flatmap(...)/reduce(...)/groupBy(...) from N/ObjectList/IntList/DoubleList/... 
+   to keep the code consistent and simple, both for AbacusUtil and the applications written by AbacusUtil.
+   Stream APIs will the only interfaces to provide these advanced features: map/flatmap/reduce/groupBy.
+   We may add it back to N/ObjectList/IntList/... later if it's really useful/necessary.
+
+6, Refactoring toXXX(Class,...) to toXXX(...,Supplier) in DataSet/N/ObjectList/IntList/DoubleList/.../Collectors/.
+   It's more friendly and beautiful by 'Supplier' for JDK 8 with Lambdas. 
+
+7, add boolean forEach2(Function<? super T, Boolean> action) to Stream/ObjectList/N/DataSet/Multiset/MultiMap/...
+   Below code can be simplified to: return stream.forEach2(e -> action(e));   
+	   for (E e : c) {
+	   		if (action) {
+	   			return false;
+	   		}
+	   }
+	   return true;
+
+8, bug fix and improvements
+
 ========Changes in 0.9.4=========================================================================
 
 1, Add top(...)/parallelSorted(...) to Stream/IntStream/DoubleStream/.../ObjectList/IntList/DoubleList/....

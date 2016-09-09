@@ -3,18 +3,26 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -213,7 +221,7 @@ final class IteratorLongStream extends LongStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -238,7 +246,7 @@ final class IteratorLongStream extends LongStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, closeHandlers);
     }
 
     @Override
@@ -263,7 +271,7 @@ final class IteratorLongStream extends LongStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -288,7 +296,7 @@ final class IteratorLongStream extends LongStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -507,7 +515,7 @@ final class IteratorLongStream extends LongStream {
 
     @Override
     public LongStream top(int n) {
-        return top(n, LONG_COMPARATOR);
+        return top(n, Stream.LONG_COMPARATOR);
     }
 
     @Override
@@ -780,13 +788,13 @@ final class IteratorLongStream extends LongStream {
             }
 
             @Override
-            public void skip(long n) {
+            public void skip(long n2) {
                 if (skipped == false) {
                     elements.skip(n);
                     skipped = true;
                 }
 
-                elements.skip(n);
+                elements.skip(n2);
             }
 
             @Override
@@ -809,6 +817,17 @@ final class IteratorLongStream extends LongStream {
     }
 
     @Override
+    public boolean forEach2(LongFunction<Boolean> action) {
+        while (elements.hasNext()) {
+            if (action.apply(elements.next()).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public long[] toArray() {
         return elements.toArray();
     }
@@ -816,6 +835,222 @@ final class IteratorLongStream extends LongStream {
     @Override
     public LongList toLongList() {
         return LongList.of(toArray());
+    }
+
+    @Override
+    public List<Long> toList() {
+        final List<Long> result = new ArrayList<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Long> toList(Supplier<? extends List<Long>> supplier) {
+        final List<Long> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Long> toSet() {
+        final Set<Long> result = new HashSet<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Long> toSet(Supplier<? extends Set<Long>> supplier) {
+        final Set<Long> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Long> toMultiset() {
+        final Multiset<Long> result = new Multiset<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Long> toMultiset(Supplier<? extends Multiset<Long>> supplier) {
+        final Multiset<Long> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Long> toLongMultiset() {
+        final LongMultiset<Long> result = new LongMultiset<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Long> toLongMultiset(Supplier<? extends LongMultiset<Long>> supplier) {
+        final LongMultiset<Long> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<Long>>>() {
+            @Override
+            public Map<K, List<Long>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<Long>>> M toMap(LongFunction<? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<Long, ?, List<Long>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, D, A, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, Long> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+        long element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+
+            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, element);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        long element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier) {
+        final Multimap<K, U, V> result = mapSupplier.get();
+
+        long element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+            result.put(keyMapper.apply(element), valueMapper.apply(element));
+        }
+
+        return result;
     }
 
     @Override
@@ -867,17 +1102,6 @@ final class IteratorLongStream extends LongStream {
     }
 
     @Override
-    public Long sum() {
-        long result = 0;
-
-        while (elements.hasNext()) {
-            result += elements.next();
-        }
-
-        return result;
-    }
-
-    @Override
     public OptionalLong min() {
         if (count() == 0) {
             return OptionalLong.empty();
@@ -923,14 +1147,20 @@ final class IteratorLongStream extends LongStream {
             return OptionalLong.empty();
         }
 
-        final Optional<Long> optional = boxed().kthLargest(k, LONG_COMPARATOR);
+        final Optional<Long> optional = boxed().kthLargest(k, Stream.LONG_COMPARATOR);
 
         return optional.isPresent() ? OptionalLong.of(optional.get()) : OptionalLong.empty();
     }
 
     @Override
-    public long count() {
-        return elements.count();
+    public Long sum() {
+        long result = 0;
+
+        while (elements.hasNext()) {
+            result += elements.next();
+        }
+
+        return result;
     }
 
     @Override
@@ -948,6 +1178,11 @@ final class IteratorLongStream extends LongStream {
         }
 
         return OptionalDouble.of(result / count);
+    }
+
+    @Override
+    public long count() {
+        return elements.count();
     }
 
     @Override
@@ -1073,6 +1308,16 @@ final class IteratorLongStream extends LongStream {
             public float next() {
                 return elements.next();
             }
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
+            }
         }, closeHandlers, sorted);
     }
 
@@ -1088,12 +1333,22 @@ final class IteratorLongStream extends LongStream {
             public double next() {
                 return elements.next();
             }
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
+            }
         }, closeHandlers, sorted);
     }
 
     @Override
     public Stream<Long> boxed() {
-        return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? LONG_COMPARATOR : null);
+        return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? Stream.LONG_COMPARATOR : null);
     }
 
     @Override
@@ -1107,6 +1362,16 @@ final class IteratorLongStream extends LongStream {
             @Override
             public Long next() {
                 return elements.next();
+            }
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
             }
         };
     }

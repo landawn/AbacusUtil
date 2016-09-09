@@ -21,9 +21,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
@@ -79,18 +79,22 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     public static DoubleList of(double... a) {
-        return new DoubleList(a);
+        return a == null ? empty() : new DoubleList(a);
     }
 
     public static DoubleList of(double[] a, int size) {
-        return new DoubleList(a, size);
+        return a == null && size == 0 ? empty() : new DoubleList(a, size);
     }
 
     public static DoubleList from(int... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static DoubleList from(int[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
@@ -103,10 +107,14 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     public static DoubleList from(long... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static DoubleList from(long[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
@@ -119,10 +127,14 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     public static DoubleList from(float... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static DoubleList from(float[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
@@ -135,10 +147,14 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     public static DoubleList from(String... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static DoubleList from(String[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
@@ -151,10 +167,18 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     static DoubleList from(List<String> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         return from(c, 0d);
     }
 
     static DoubleList from(List<String> c, double defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         final double[] a = new double[c.size()];
         int idx = 0;
 
@@ -166,10 +190,18 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     static DoubleList from(Collection<? extends Number> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         return from(c, 0d);
     }
 
     static DoubleList from(Collection<? extends Number> c, double defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         final double[] a = new double[c.size()];
         int idx = 0;
 
@@ -618,6 +650,48 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         }
     }
 
+    public boolean forEach2(final DoubleFunction<Boolean> action) {
+        return forEach2(0, size(), action);
+    }
+
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(final int fromIndex, final int toIndex, final DoubleFunction<Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(elementData[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean forEach2(final BiFunction<Integer, Double, Boolean> action) {
+        return forEach2(0, size(), action);
+    }
+
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false. The first parameter is the index.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(final int fromIndex, final int toIndex, final BiFunction<Integer, Double, Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(i, elementData[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
         checkIndex(fromIndex, toIndex);
@@ -997,67 +1071,69 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
-        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    // Replaced with Stream.toMap(...)/toMultimap(...).
 
-        return toMap(keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper,
-            final IntFunction<M> supplier) {
-        return toMap(0, size(), keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
-            final DoubleFunction<? extends U> valueMapper) {
-        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-
-        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
-            final DoubleFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
-        checkIndex(fromIndex, toIndex);
-
-        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-        }
-
-        return (M) map;
-    }
-
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
-        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-
-        return toMultimap(keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final DoubleFunction<? extends K> keyMapper,
-            final DoubleFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
-            final DoubleFunction<? extends U> valueMapper) {
-        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-
-        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
-            final DoubleFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-        checkIndex(fromIndex, toIndex);
-
-        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-        }
-
-        return multimap;
-    }
+    //    public <K, U> Map<K, U> toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    //
+    //        return toMap(keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, M extends Map<K, U>> M toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper,
+    //            final IntFunction<M> supplier) {
+    //        return toMap(0, size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
+    //            final DoubleFunction<? extends U> valueMapper) {
+    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    //
+    //        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
+    //            final DoubleFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+    //        }
+    //
+    //        return (M) map;
+    //    }
+    //
+    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper) {
+    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+    //
+    //        return toMultimap(keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final DoubleFunction<? extends K> keyMapper,
+    //            final DoubleFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+    //        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
+    //            final DoubleFunction<? extends U> valueMapper) {
+    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+    //
+    //        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final DoubleFunction<? extends K> keyMapper,
+    //            final DoubleFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+    //        }
+    //
+    //        return multimap;
+    //    }
 
     public DoubleStream stream() {
         return stream(0, size());

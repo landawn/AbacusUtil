@@ -3,17 +3,25 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -209,7 +217,7 @@ final class IteratorCharStream extends CharStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, closeHandlers);
     }
 
     @Override
@@ -234,7 +242,7 @@ final class IteratorCharStream extends CharStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, sorted, closeHandlers);
+        }, closeHandlers);
     }
 
     @Override
@@ -586,13 +594,13 @@ final class IteratorCharStream extends CharStream {
             }
 
             @Override
-            public void skip(long n) {
+            public void skip(long n2) {
                 if (skipped == false) {
                     elements.skip(n);
                     skipped = true;
                 }
 
-                elements.skip(n);
+                elements.skip(n2);
             }
 
             @Override
@@ -615,6 +623,17 @@ final class IteratorCharStream extends CharStream {
     }
 
     @Override
+    public boolean forEach2(CharFunction<Boolean> action) {
+        while (elements.hasNext()) {
+            if (action.apply(elements.next()).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public char[] toArray() {
         return elements.toArray();
     }
@@ -622,6 +641,222 @@ final class IteratorCharStream extends CharStream {
     @Override
     public CharList toCharList() {
         return CharList.of(toArray());
+    }
+
+    @Override
+    public List<Character> toList() {
+        final List<Character> result = new ArrayList<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Character> toList(Supplier<? extends List<Character>> supplier) {
+        final List<Character> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Character> toSet() {
+        final Set<Character> result = new HashSet<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Character> toSet(Supplier<? extends Set<Character>> supplier) {
+        final Set<Character> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Character> toMultiset() {
+        final Multiset<Character> result = new Multiset<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Character> toMultiset(Supplier<? extends Multiset<Character>> supplier) {
+        final Multiset<Character> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Character> toLongMultiset() {
+        final LongMultiset<Character> result = new LongMultiset<>();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Character> toLongMultiset(Supplier<? extends LongMultiset<Character>> supplier) {
+        final LongMultiset<Character> result = supplier.get();
+
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<Character>>>() {
+            @Override
+            public Map<K, List<Character>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<Character>>> M toMap(CharFunction<? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<Character, ?, List<Character>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, Character> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+        char element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+
+            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, element);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        char element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier) {
+        final Multimap<K, U, V> result = mapSupplier.get();
+
+        char element = 0;
+
+        while (elements.hasNext()) {
+            element = elements.next();
+            result.put(keyMapper.apply(element), valueMapper.apply(element));
+        }
+
+        return result;
     }
 
     @Override
@@ -718,7 +953,7 @@ final class IteratorCharStream extends CharStream {
             return OptionalChar.empty();
         }
 
-        final Optional<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
+        final Optional<Character> optional = boxed().kthLargest(k, Stream.CHAR_COMPARATOR);
 
         return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
     }
@@ -851,12 +1086,22 @@ final class IteratorCharStream extends CharStream {
             public int next() {
                 return elements.next();
             }
-        }, sorted, closeHandlers);
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
     public Stream<Character> boxed() {
-        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? CHAR_COMPARATOR : null);
+        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? Stream.CHAR_COMPARATOR : null);
     }
 
     @Override
@@ -870,6 +1115,16 @@ final class IteratorCharStream extends CharStream {
             @Override
             public Character next() {
                 return elements.next();
+            }
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
             }
         };
     }

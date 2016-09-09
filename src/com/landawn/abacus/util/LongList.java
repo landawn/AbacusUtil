@@ -21,9 +21,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.LongConsumer;
@@ -79,18 +79,22 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     public static LongList of(long... a) {
-        return new LongList(a);
+        return a == null ? empty() : new LongList(a);
     }
 
     public static LongList of(long[] a, int size) {
-        return new LongList(a, size);
+        return a == null && size == 0 ? empty() : new LongList(a, size);
     }
 
     public static LongList from(int... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static LongList from(int[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
@@ -103,10 +107,14 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     public static LongList from(float... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static LongList from(float[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
@@ -123,10 +131,14 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     public static LongList from(double... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static LongList from(double[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
@@ -143,10 +155,14 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     public static LongList from(String... a) {
-        return from(a, 0, a.length);
+        return a == null ? empty() : from(a, 0, a.length);
     }
 
     public static LongList from(String[] a, int startIndex, int endIndex) {
+        if (a == null && (startIndex == 0 && endIndex == 0)) {
+            return empty();
+        }
+
         N.checkIndex(startIndex, endIndex, a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
@@ -159,10 +175,18 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     static LongList from(List<String> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         return from(c, 0);
     }
 
     static LongList from(List<String> c, long defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         final long[] a = new long[c.size()];
         int idx = 0;
 
@@ -184,10 +208,18 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     static LongList from(Collection<? extends Number> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         return from(c, 0);
     }
 
     static LongList from(Collection<? extends Number> c, long defaultValueForNull) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
         final long[] a = new long[c.size()];
         int idx = 0;
 
@@ -646,6 +678,48 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         }
     }
 
+    public boolean forEach2(final LongFunction<Boolean> action) {
+        return forEach2(0, size(), action);
+    }
+
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(final int fromIndex, final int toIndex, final LongFunction<Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(elementData[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean forEach2(final BiFunction<Integer, Long, Boolean> action) {
+        return forEach2(0, size(), action);
+    }
+
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param action break if the action returns false. The first parameter is the index.
+     * @return false if it breaks, otherwise true.
+     */
+    public boolean forEach2(final int fromIndex, final int toIndex, final BiFunction<Integer, Long, Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(i, elementData[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, LongPredicate filter) {
         checkIndex(fromIndex, toIndex);
@@ -1025,67 +1099,69 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
-        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    // Replaced with Stream.toMap(...)/toMultimap(...).
 
-        return toMap(keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
-            final IntFunction<M> supplier) {
-        return toMap(0, size(), keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
-            final LongFunction<? extends U> valueMapper) {
-        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-
-        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
-            final LongFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
-        checkIndex(fromIndex, toIndex);
-
-        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-        }
-
-        return (M) map;
-    }
-
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
-        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-
-        return toMultimap(keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
-            final IntFunction<Multimap<K, U, V>> supplier) {
-        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
-            final LongFunction<? extends U> valueMapper) {
-        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-
-        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    }
-
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
-            final LongFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-        checkIndex(fromIndex, toIndex);
-
-        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-        }
-
-        return multimap;
-    }
+    //    public <K, U> Map<K, U> toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
+    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    //
+    //        return toMap(keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, M extends Map<K, U>> M toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
+    //            final IntFunction<M> supplier) {
+    //        return toMap(0, size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
+    //            final LongFunction<? extends U> valueMapper) {
+    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
+    //
+    //        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
+    //            final LongFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+    //        }
+    //
+    //        return (M) map;
+    //    }
+    //
+    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
+    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+    //
+    //        return toMultimap(keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
+    //            final IntFunction<Multimap<K, U, V>> supplier) {
+    //        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
+    //            final LongFunction<? extends U> valueMapper) {
+    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
+    //
+    //        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
+    //    }
+    //
+    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
+    //            final LongFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
+    //        }
+    //
+    //        return multimap;
+    //    }
 
     public LongStream stream() {
         return stream(0, size());

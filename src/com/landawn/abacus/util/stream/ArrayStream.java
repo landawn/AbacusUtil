@@ -3,6 +3,7 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -12,6 +13,8 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
@@ -77,7 +80,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public Stream<T> filter(Predicate<? super T> predicate) {
+    public Stream<T> filter(final Predicate<? super T> predicate) {
         return filter(predicate, Long.MAX_VALUE);
     }
 
@@ -94,6 +97,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         //        }
         //
         //        return new ArrayStream<T>(list.trimToSize().array(), sorted, cmp, closeHandlers);
+
+        // return new IteratorStream<T>(this.iterator(), closeHandlers, sorted, cmp).filter(predicate, max);
 
         return new IteratorStream<T>(new ImmutableIterator<T>() {
             private boolean hasNext = false;
@@ -834,7 +839,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return flatMapToChar(new Function<T, CharStream>() {
             @Override
             public CharStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return CharStream.of(mapper.apply(t));
             }
         });
     }
@@ -903,7 +908,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return flatMapToByte(new Function<T, ByteStream>() {
             @Override
             public ByteStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return ByteStream.of(mapper.apply(t));
             }
         });
     }
@@ -972,7 +977,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return flatMapToShort(new Function<T, ShortStream>() {
             @Override
             public ShortStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return ShortStream.of(mapper.apply(t));
             }
         });
     }
@@ -1041,7 +1046,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return flatMapToInt(new Function<T, IntStream>() {
             @Override
             public IntStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return IntStream.of(mapper.apply(t));
             }
         });
     }
@@ -1110,7 +1115,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return flatMapToLong(new Function<T, LongStream>() {
             @Override
             public LongStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return LongStream.of(mapper.apply(t));
             }
         });
     }
@@ -1179,7 +1184,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return flatMapToFloat(new Function<T, FloatStream>() {
             @Override
             public FloatStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return FloatStream.of(mapper.apply(t));
             }
         });
     }
@@ -1248,7 +1253,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return flatMapToDouble(new Function<T, DoubleStream>() {
             @Override
             public DoubleStream apply(T t) {
-                return Stream.from(mapper.apply(t));
+                return DoubleStream.of(mapper.apply(t));
             }
         });
     }
@@ -1330,57 +1335,90 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Stream<Stream<T>> split(final int size) {
-        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
-        final Stream<T>[] a = new Stream[tmp.size()];
+        //        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        //        final Stream<T>[] a = new Stream[tmp.size()];
+        //
+        //        for (int i = 0, len = a.length; i < len; i++) {
+        //            a[i] = new ArrayStream<T>(tmp.get(i), null, sorted, cmp);
+        //        }
+        //
+        //        return new ArrayStream<Stream<T>>(a, closeHandlers);
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = new ArrayStream<T>(tmp.get(i), null, sorted, cmp);
-        }
+        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            private int cursor = fromIndex;
 
-        return new ArrayStream<Stream<T>>(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return new ArrayStream<T>(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted, cmp);
+            }
+
+        }, closeHandlers);
     }
 
     @Override
     public Stream<List<T>> splitIntoList(final int size) {
-        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
-        final List<T>[] lists = new List[tmp.size()];
+        //        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        //        final List<T>[] lists = new List[tmp.size()];
+        //
+        //        for (int i = 0, len = lists.length; i < len; i++) {
+        //            lists[i] = N.asList(tmp.get(i));
+        //        }
+        //
+        //        return new ArrayStream<List<T>>(lists, closeHandlers);
 
-        for (int i = 0, len = lists.length; i < len; i++) {
-            lists[i] = N.asList(tmp.get(i));
-        }
-
-        return new ArrayStream<List<T>>(lists, closeHandlers);
+        return split(size).map(new Function<Stream<T>, List<T>>() {
+            @Override
+            public List<T> apply(Stream<T> t) {
+                return t.toList();
+            }
+        });
     }
 
     @Override
     public Stream<Set<T>> splitIntoSet(final int size) {
-        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
-        final Set<T>[] sets = new Set[tmp.size()];
+        //        final List<T[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        //        final Set<T>[] sets = new Set[tmp.size()];
+        //
+        //        for (int i = 0, len = sets.length; i < len; i++) {
+        //            sets[i] = N.asLinkedHashSet(tmp.get(i));
+        //        }
+        //
+        //        return new ArrayStream<Set<T>>(sets, closeHandlers);
 
-        for (int i = 0, len = sets.length; i < len; i++) {
-            sets[i] = N.asLinkedHashSet(tmp.get(i));
-        }
-
-        return new ArrayStream<Set<T>>(sets, closeHandlers);
+        return split(size).map(new Function<Stream<T>, Set<T>>() {
+            @Override
+            public Set<T> apply(Stream<T> t) {
+                return t.toSet();
+            }
+        });
     }
 
     @Override
     public Stream<T> distinct() {
-        return new ArrayStream<T>(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted, cmp);
+        return new ArrayStream<T>(N.removeDuplicates(elements, fromIndex, toIndex, sorted && isSameComparator(null, cmp)), closeHandlers, sorted, cmp);
     }
 
     @Override
     public Stream<T> distinct(Comparator<? super T> comparator) {
         final List<T> list = N.distinct(elements, fromIndex, toIndex, comparator);
         final T[] a = list.toArray((T[]) N.newArray(elements.getClass().getComponentType(), list.size()));
-        return new ArrayStream<T>(a, closeHandlers);
+        return new ArrayStream<T>(a, closeHandlers, sorted, cmp);
     }
 
     @Override
     public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
         final List<T> list = N.distinct(elements, fromIndex, toIndex, keyMapper);
         final T[] a = list.toArray((T[]) N.newArray(elements.getClass().getComponentType(), list.size()));
-        return new ArrayStream<T>(a, closeHandlers);
+        return new ArrayStream<T>(a, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1396,10 +1434,10 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && comparator == cmp) {
-            return new ArrayStream<T>(elements, N.max(fromIndex, toIndex - n), toIndex, closeHandlers, sorted, cmp);
+        } else if (sorted && isSameComparator(comparator, cmp)) {
+            return new ArrayStream<T>(elements, toIndex - n, toIndex, closeHandlers, sorted, cmp);
         } else {
-            return new ArrayStream<T>(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers);
+            return new ArrayStream<T>(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted, cmp);
         }
     }
 
@@ -1410,8 +1448,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Stream<T> sorted(Comparator<? super T> comparator) {
-        if (sorted && this.cmp == comparator) {
-            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp);
+        if (sorted && isSameComparator(comparator, cmp)) {
+            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, comparator);
         }
 
         final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -1426,8 +1464,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Stream<T> parallelSorted(Comparator<? super T> comparator) {
-        if (sorted && this.cmp == comparator) {
-            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp);
+        if (sorted && isSameComparator(comparator, cmp)) {
+            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, comparator);
         }
 
         final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -1516,6 +1554,214 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     @Override
     public <A> ObjectList<A> toObjectList(Class<A> cls) {
         return ObjectList.of(toArray((A[]) N.newArray(cls, toIndex - fromIndex)));
+    }
+
+    @Override
+    public List<T> toList() {
+        final List<T> result = new ArrayList<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<T> toList(Supplier<? extends List<T>> supplier) {
+        final List<T> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<T> toSet() {
+        final Set<T> result = new HashSet<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<T> toSet(Supplier<? extends Set<T>> supplier) {
+        final Set<T> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<T> toMultiset() {
+        final Multiset<T> result = new Multiset<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier) {
+        final Multiset<T> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<T> toLongMultiset() {
+        final LongMultiset<T> result = new LongMultiset<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier) {
+        final LongMultiset<T> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K> Map<K, List<T>> toMap(Function<? super T, ? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<T>>>() {
+            @Override
+            public Map<K, List<T>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<T>>> M toMap(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, D, A, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, elements[i]);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
+            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier) {
+        final Multimap<K, U, V> result = mapSupplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.put(keyMapper.apply(elements[i]), valueMapper.apply(elements[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1633,7 +1879,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public boolean anyMatch(Predicate<? super T> predicate) {
+    public boolean anyMatch(final Predicate<? super T> predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -1644,7 +1890,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public boolean allMatch(Predicate<? super T> predicate) {
+    public boolean allMatch(final Predicate<? super T> predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -1655,7 +1901,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public boolean noneMatch(Predicate<? super T> predicate) {
+    public boolean noneMatch(final Predicate<? super T> predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -1671,7 +1917,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     //    }
 
     @Override
-    public Optional<T> findFirst(Predicate<? super T> predicate) {
+    public Optional<T> findFirst(final Predicate<? super T> predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return Optional.of(elements[i]);
@@ -1687,7 +1933,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     //    }
 
     @Override
-    public Optional<T> findLast(Predicate<? super T> predicate) {
+    public Optional<T> findLast(final Predicate<? super T> predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return Optional.of(elements[i]);
@@ -1703,7 +1949,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     //    }
 
     @Override
-    public Optional<T> findAny(Predicate<? super T> predicate) {
+    public Optional<T> findAny(final Predicate<? super T> predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return Optional.of(elements[i]);

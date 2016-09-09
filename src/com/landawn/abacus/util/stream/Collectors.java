@@ -153,7 +153,7 @@ public final class Collectors {
      * @param <T> the type of input arguments to the merge function
      * @return a merge function which always throw {@code IllegalStateException}
      */
-    private static <T> BinaryOperator<T> throwingMerger() {
+    static <T> BinaryOperator<T> throwingMerger() {
         return (u, v) -> {
             throw new IllegalStateException(String.format("Duplicate key %s", u));
         };
@@ -3212,7 +3212,7 @@ public final class Collectors {
         final BiConsumer<Multimap<K, U, V>, T> accumulator = new BiConsumer<Multimap<K, U, V>, T>() {
             @Override
             public void accept(Multimap<K, U, V> map, T element) {
-                merge(map, keyMapper.apply(element), valueMapper.apply(element));
+                map.put(keyMapper.apply(element), valueMapper.apply(element));
             }
         };
 
@@ -3363,7 +3363,7 @@ public final class Collectors {
         return new CollectorImpl<T, DoubleSummaryStatistics, DoubleSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
-    private static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
+    static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
         Objects.requireNonNull(function);
         for (Map.Entry<K, V> entry : map.entrySet()) {
             K k;
@@ -3403,7 +3403,7 @@ public final class Collectors {
         return v;
     }
 
-    private static <K, V> V merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    static <K, V> V merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         Objects.requireNonNull(value);
 
@@ -3416,18 +3416,6 @@ public final class Collectors {
         }
 
         return newValue;
-    }
-
-    private static <K, U, V extends Collection<U>> void merge(Multimap<K, U, V> map, K key, U value) {
-        Objects.requireNonNull(value);
-
-        V oldValue = map.get(key);
-
-        if (oldValue == null) {
-            map.put(key, value);
-        } else {
-            oldValue.add(value);
-        }
     }
 
     /**

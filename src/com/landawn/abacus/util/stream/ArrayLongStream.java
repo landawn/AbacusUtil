@@ -3,18 +3,25 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -68,102 +75,367 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public LongStream filter(LongPredicate predicate) {
+    public LongStream filter(final LongPredicate predicate) {
         return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
     public LongStream filter(final LongPredicate predicate, final long max) {
-        return new ArrayLongStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayLongStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private boolean hasNext = false;
+            private int cursor = fromIndex;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false && cursor < toIndex && cnt < max) {
+                    do {
+                        if (predicate.test(elements[cursor])) {
+                            hasNext = true;
+                            break;
+                        } else {
+                            cursor++;
+                        }
+                    } while (cursor < toIndex);
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public long next() {
+                if (hasNext == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                hasNext = false;
+
+                return elements[cursor++];
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
-    public LongStream takeWhile(LongPredicate predicate) {
+    public LongStream takeWhile(final LongPredicate predicate) {
         return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public LongStream takeWhile(LongPredicate predicate, long max) {
-        final LongList list = LongList.of(new long[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+    public LongStream takeWhile(final LongPredicate predicate, final long max) {
+        //        final LongList list = LongList.of(new long[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //
+        //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+        //            if (predicate.test(elements[i])) {
+        //                list.add(elements[i]);
+        //                cnt++;
+        //            } else {
+        //                break;
+        //            }
+        //        }
+        //
+        //        return new ArrayLongStream(list.trimToSize().array(), closeHandlers, sorted);
 
-        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
-            if (predicate.test(elements[i])) {
-                list.add(elements[i]);
-                cnt++;
-            } else {
-                break;
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private boolean hasNext = false;
+            private int cursor = fromIndex;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false && cursor < toIndex && cnt < max) {
+                    do {
+                        if (predicate.test(elements[cursor])) {
+                            hasNext = true;
+                            break;
+                        } else {
+                            cursor = Integer.MAX_VALUE;
+                        }
+                    } while (cursor < toIndex);
+                }
+
+                return hasNext;
             }
-        }
 
-        return new ArrayLongStream(list.trimToSize().array(), closeHandlers, sorted);
+            @Override
+            public long next() {
+                if (hasNext == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                hasNext = false;
+
+                return elements[cursor++];
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
-    public LongStream dropWhile(LongPredicate predicate) {
+    public LongStream dropWhile(final LongPredicate predicate) {
         return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public LongStream dropWhile(LongPredicate predicate, long max) {
-        int index = fromIndex;
-        while (index < toIndex && predicate.test(elements[index])) {
-            index++;
-        }
+    public LongStream dropWhile(final LongPredicate predicate, final long max) {
+        //        int cursor = fromIndex;
+        //        while (cursor < toIndex && predicate.test(elements[cursor])) {
+        //            cursor++;
+        //        }
+        //
+        //        final LongList list = LongList.of(new long[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        int cnt = 0;
+        //
+        //        while (cursor < toIndex && cnt < max) {
+        //            list.add(elements[cursor]);
+        //            cursor++;
+        //            cnt++;
+        //        }
+        //
+        //        return new ArrayLongStream(list.trimToSize().array(), closeHandlers, sorted);
 
-        final LongList list = LongList.of(new long[N.min(9, Stream.toInt(max), (toIndex - index))], 0);
-        int cnt = 0;
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private boolean hasNext = false;
+            private int cursor = fromIndex;
+            private long cnt = 0;
+            private boolean dropped = false;
 
-        while (index < toIndex && cnt < max) {
-            list.add(elements[index]);
-            index++;
-            cnt++;
-        }
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false && cursor < toIndex && cnt < max) {
+                    if (dropped == false) {
+                        do {
+                            if (predicate.test(elements[cursor]) == false) {
+                                hasNext = true;
+                                break;
+                            } else {
+                                cursor++;
+                            }
+                        } while (cursor < toIndex);
 
-        return new ArrayLongStream(list.trimToSize().array(), closeHandlers, sorted);
+                        dropped = true;
+                    } else {
+                        hasNext = true;
+                    }
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public long next() {
+                if (hasNext == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                hasNext = false;
+
+                return elements[cursor++];
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
-    public LongStream map(LongUnaryOperator mapper) {
-        final long[] a = new long[toIndex - fromIndex];
+    public LongStream map(final LongUnaryOperator mapper) {
+        //        final long[] a = new long[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.applyAsLong(elements[i]);
+        //        }
+        //
+        //        return new ArrayLongStream(a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsLong(elements[i]);
-        }
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            int cursor = fromIndex;
 
-        return new ArrayLongStream(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public long next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return mapper.applyAsLong(elements[cursor++]);
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public long[] toArray() {
+                final long[] a = new long[toIndex - cursor];
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = mapper.applyAsLong(elements[cursor++]);
+                }
+
+                return a;
+            }
+        }, closeHandlers);
     }
 
     @Override
-    public IntStream mapToInt(LongToIntFunction mapper) {
-        final int[] a = new int[toIndex - fromIndex];
+    public IntStream mapToInt(final LongToIntFunction mapper) {
+        //        final int[] a = new int[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.applyAsInt(elements[i]);
+        //        }
+        //
+        //        return new ArrayIntStream(a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsInt(elements[i]);
-        }
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            int cursor = fromIndex;
 
-        return new ArrayIntStream(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return mapper.applyAsInt(elements[cursor++]);
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public int[] toArray() {
+                final int[] a = new int[toIndex - cursor];
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = mapper.applyAsInt(elements[cursor++]);
+                }
+
+                return a;
+            }
+        }, closeHandlers);
     }
 
     @Override
-    public FloatStream mapToFloat(LongToFloatFunction mapper) {
-        final float[] a = new float[toIndex - fromIndex];
+    public FloatStream mapToFloat(final LongToFloatFunction mapper) {
+        //        final float[] a = new float[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.applyAsFloat(elements[i]);
+        //        }
+        //
+        //        return new ArrayFloatStream(a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsFloat(elements[i]);
-        }
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            int cursor = fromIndex;
 
-        return new ArrayFloatStream(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public float next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return mapper.applyAsFloat(elements[cursor++]);
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public float[] toArray() {
+                final float[] a = new float[toIndex - cursor];
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = mapper.applyAsFloat(elements[cursor++]);
+                }
+
+                return a;
+            }
+        }, closeHandlers);
     }
 
     @Override
-    public DoubleStream mapToDouble(LongToDoubleFunction mapper) {
-        final double[] a = new double[toIndex - fromIndex];
+    public DoubleStream mapToDouble(final LongToDoubleFunction mapper) {
+        //        final double[] a = new double[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.applyAsDouble(elements[i]);
+        //        }
+        //
+        //        return new ArrayDoubleStream(a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsDouble(elements[i]);
-        }
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            int cursor = fromIndex;
 
-        return new ArrayDoubleStream(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public double next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return mapper.applyAsDouble(elements[cursor++]);
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public double[] toArray() {
+                final double[] a = new double[toIndex - cursor];
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = mapper.applyAsDouble(elements[cursor++]);
+                }
+
+                return a;
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -438,15 +710,34 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public Stream<LongStream> split(int size) {
-        final List<long[]> tmp = N.split(elements, fromIndex, toIndex, size);
-        final LongStream[] a = new LongStream[tmp.size()];
+    public Stream<LongStream> split(final int size) {
+        //        final List<long[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        //        final LongStream[] a = new LongStream[tmp.size()];
+        //
+        //        for (int i = 0, len = a.length; i < len; i++) {
+        //            a[i] = new ArrayLongStream(tmp.get(i), null, sorted);
+        //        }
+        //
+        //        return new ArrayStream<LongStream>(a, closeHandlers);
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = new ArrayLongStream(tmp.get(i), null, sorted);
-        }
+        return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
+            private int cursor = fromIndex;
 
-        return new ArrayStream<LongStream>(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public LongStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return new ArrayLongStream(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted);
+            }
+
+        }, closeHandlers);
     }
 
     @Override
@@ -456,7 +747,7 @@ final class ArrayLongStream extends LongStream {
 
     @Override
     public LongStream top(int n) {
-        return top(n, LONG_COMPARATOR);
+        return top(n, Stream.LONG_COMPARATOR);
     }
 
     @Override
@@ -467,10 +758,10 @@ final class ArrayLongStream extends LongStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && (comparator == null || comparator == LONG_COMPARATOR)) {
-            return new ArrayLongStream(elements, N.max(fromIndex, toIndex - n), toIndex, closeHandlers, sorted);
+        } else if (sorted && (comparator == null || comparator == Stream.LONG_COMPARATOR)) {
+            return new ArrayLongStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
-            return new ArrayLongStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers);
+            return new ArrayLongStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
         }
     }
 
@@ -544,6 +835,17 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
+    public boolean forEach2(LongFunction<Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(elements[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public long[] toArray() {
         return N.copyOfRange(elements, fromIndex, toIndex);
     }
@@ -551,6 +853,213 @@ final class ArrayLongStream extends LongStream {
     @Override
     public LongList toLongList() {
         return LongList.of(N.copyOfRange(elements, fromIndex, toIndex));
+    }
+
+    @Override
+    public List<Long> toList() {
+        final List<Long> result = new ArrayList<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Long> toList(Supplier<? extends List<Long>> supplier) {
+        final List<Long> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Long> toSet() {
+        final Set<Long> result = new HashSet<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Long> toSet(Supplier<? extends Set<Long>> supplier) {
+        final Set<Long> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Long> toMultiset() {
+        final Multiset<Long> result = new Multiset<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Long> toMultiset(Supplier<? extends Multiset<Long>> supplier) {
+        final Multiset<Long> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Long> toLongMultiset() {
+        final LongMultiset<Long> result = new LongMultiset<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Long> toLongMultiset(Supplier<? extends LongMultiset<Long>> supplier) {
+        final LongMultiset<Long> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<Long>>>() {
+            @Override
+            public Map<K, List<Long>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<Long>>> M toMap(LongFunction<? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<Long, ?, List<Long>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, D, A, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, Long> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, elements[i]);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier) {
+        final Multimap<K, U, V> result = mapSupplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.put(keyMapper.apply(elements[i]), valueMapper.apply(elements[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -602,11 +1111,6 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public Long sum() {
-        return N.sum(elements, fromIndex, toIndex);
-    }
-
-    @Override
     public OptionalLong min() {
         if (count() == 0) {
             return OptionalLong.empty();
@@ -634,8 +1138,8 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public long count() {
-        return toIndex - fromIndex;
+    public Long sum() {
+        return N.sum(elements, fromIndex, toIndex);
     }
 
     @Override
@@ -648,7 +1152,12 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public boolean anyMatch(LongPredicate predicate) {
+    public long count() {
+        return toIndex - fromIndex;
+    }
+
+    @Override
+    public boolean anyMatch(final LongPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -659,7 +1168,7 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public boolean allMatch(LongPredicate predicate) {
+    public boolean allMatch(final LongPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -670,7 +1179,7 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public boolean noneMatch(LongPredicate predicate) {
+    public boolean noneMatch(final LongPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -686,7 +1195,7 @@ final class ArrayLongStream extends LongStream {
     //    }
 
     @Override
-    public OptionalLong findFirst(LongPredicate predicate) {
+    public OptionalLong findFirst(final LongPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalLong.of(elements[i]);
@@ -702,7 +1211,7 @@ final class ArrayLongStream extends LongStream {
     //    }
 
     @Override
-    public OptionalLong findLast(LongPredicate predicate) {
+    public OptionalLong findLast(final LongPredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return OptionalLong.of(elements[i]);
@@ -718,7 +1227,7 @@ final class ArrayLongStream extends LongStream {
     //    }
 
     @Override
-    public OptionalLong findAny(LongPredicate predicate) {
+    public OptionalLong findAny(final LongPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalLong.of(elements[i]);
@@ -735,29 +1244,107 @@ final class ArrayLongStream extends LongStream {
 
     @Override
     public FloatStream asFloatStream() {
-        final float[] a = new float[toIndex - fromIndex];
+        //        final float[] a = new float[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = elements[i];
+        //        }
+        //
+        //        return new ArrayFloatStream(a, closeHandlers, sorted);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = elements[i];
-        }
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private int cursor = fromIndex;
 
-        return new ArrayFloatStream(a, closeHandlers, sorted);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public float next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public float[] toArray() {
+                final float[] a = new float[toIndex - cursor];
+
+                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
+                    a[j] = elements[i];
+                }
+
+                return a;
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
     public DoubleStream asDoubleStream() {
-        final double[] a = new double[toIndex - fromIndex];
+        //        final double[] a = new double[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = elements[i];
+        //        }
+        //
+        //        return new ArrayDoubleStream(a, closeHandlers, sorted);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = elements[i];
-        }
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private int cursor = fromIndex;
 
-        return new ArrayDoubleStream(a, closeHandlers, sorted);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public double next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public double[] toArray() {
+                final double[] a = new double[toIndex - cursor];
+
+                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
+                    a[j] = elements[i];
+                }
+
+                return a;
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
     public Stream<Long> boxed() {
-        return new ArrayStream<Long>(Array.box(elements, fromIndex, toIndex), closeHandlers);
+        return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? Stream.LONG_COMPARATOR : null);
     }
 
     @Override
@@ -777,6 +1364,27 @@ final class ArrayLongStream extends LongStream {
                 }
 
                 return elements[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = (A) Long.valueOf(elements[cursor++]);
+                }
+
+                return a;
             }
         };
     }
@@ -798,6 +1406,16 @@ final class ArrayLongStream extends LongStream {
                 }
 
                 return elements[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
             }
 
             @Override

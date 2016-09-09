@@ -2,17 +2,24 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -64,80 +71,267 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public CharStream filter(CharPredicate predicate) {
+    public CharStream filter(final CharPredicate predicate) {
         return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
     public CharStream filter(final CharPredicate predicate, final long max) {
-        return new ArrayCharStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayCharStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private boolean hasNext = false;
+            private int cursor = fromIndex;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false && cursor < toIndex && cnt < max) {
+                    do {
+                        if (predicate.test(elements[cursor])) {
+                            hasNext = true;
+                            break;
+                        } else {
+                            cursor++;
+                        }
+                    } while (cursor < toIndex);
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public char next() {
+                if (hasNext == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                hasNext = false;
+
+                return elements[cursor++];
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
-    public CharStream takeWhile(CharPredicate predicate) {
+    public CharStream takeWhile(final CharPredicate predicate) {
         return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public CharStream takeWhile(CharPredicate predicate, long max) {
-        final CharList list = CharList.of(new char[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+    public CharStream takeWhile(final CharPredicate predicate, final long max) {
+        //        final CharList list = CharList.of(new char[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //
+        //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+        //            if (predicate.test(elements[i])) {
+        //                list.add(elements[i]);
+        //                cnt++;
+        //            } else {
+        //                break;
+        //            }
+        //        }
+        //
+        //        return new ArrayCharStream(list.trimToSize().array(), closeHandlers, sorted);
 
-        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
-            if (predicate.test(elements[i])) {
-                list.add(elements[i]);
-                cnt++;
-            } else {
-                break;
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private boolean hasNext = false;
+            private int cursor = fromIndex;
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false && cursor < toIndex && cnt < max) {
+                    do {
+                        if (predicate.test(elements[cursor])) {
+                            hasNext = true;
+                            break;
+                        } else {
+                            cursor = Integer.MAX_VALUE;
+                        }
+                    } while (cursor < toIndex);
+                }
+
+                return hasNext;
             }
-        }
 
-        return new ArrayCharStream(list.trimToSize().array(), closeHandlers, sorted);
+            @Override
+            public char next() {
+                if (hasNext == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                hasNext = false;
+
+                return elements[cursor++];
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
-    public CharStream dropWhile(CharPredicate predicate) {
+    public CharStream dropWhile(final CharPredicate predicate) {
         return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
-    public CharStream dropWhile(CharPredicate predicate, long max) {
-        int index = fromIndex;
-        while (index < toIndex && predicate.test(elements[index])) {
-            index++;
-        }
+    public CharStream dropWhile(final CharPredicate predicate, final long max) {
+        //        int cursor = fromIndex;
+        //        while (cursor < toIndex && predicate.test(elements[cursor])) {
+        //            cursor++;
+        //        }
+        //
+        //        final CharList list = CharList.of(new char[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        int cnt = 0;
+        //
+        //        while (cursor < toIndex && cnt < max) {
+        //            list.add(elements[cursor]);
+        //            cursor++;
+        //            cnt++;
+        //        }
+        //
+        //        return new ArrayCharStream(list.trimToSize().array(), closeHandlers, sorted);
 
-        final CharList list = CharList.of(new char[N.min(9, Stream.toInt(max), (toIndex - index))], 0);
-        int cnt = 0;
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private boolean hasNext = false;
+            private int cursor = fromIndex;
+            private long cnt = 0;
+            private boolean dropped = false;
 
-        while (index < toIndex && cnt < max) {
-            list.add(elements[index]);
-            index++;
-            cnt++;
-        }
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false && cursor < toIndex && cnt < max) {
+                    if (dropped == false) {
+                        do {
+                            if (predicate.test(elements[cursor]) == false) {
+                                hasNext = true;
+                                break;
+                            } else {
+                                cursor++;
+                            }
+                        } while (cursor < toIndex);
 
-        return new ArrayCharStream(list.trimToSize().array(), closeHandlers, sorted);
+                        dropped = true;
+                    } else {
+                        hasNext = true;
+                    }
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public char next() {
+                if (hasNext == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                hasNext = false;
+
+                return elements[cursor++];
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
-    public CharStream map(CharUnaryOperator mapper) {
-        final char[] a = new char[toIndex - fromIndex];
+    public CharStream map(final CharUnaryOperator mapper) {
+        //        final char[] a = new char[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.applyAsChar(elements[i]);
+        //        }
+        //
+        //        return new ArrayCharStream(a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsChar(elements[i]);
-        }
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            int cursor = fromIndex;
 
-        return new ArrayCharStream(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public char next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return mapper.applyAsChar(elements[cursor++]);
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public char[] toArray() {
+                final char[] a = new char[toIndex - cursor];
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = mapper.applyAsChar(elements[cursor++]);
+                }
+
+                return a;
+            }
+        }, closeHandlers);
     }
 
     @Override
-    public IntStream mapToInt(CharToIntFunction mapper) {
-        final int[] a = new int[toIndex - fromIndex];
+    public IntStream mapToInt(final CharToIntFunction mapper) {
+        //        final int[] a = new int[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = mapper.applyAsInt(elements[i]);
+        //        }
+        //
+        //        return new ArrayIntStream(a, closeHandlers);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = mapper.applyAsInt(elements[i]);
-        }
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            int cursor = fromIndex;
 
-        return new ArrayIntStream(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return mapper.applyAsInt(elements[cursor++]);
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public int[] toArray() {
+                final int[] a = new int[toIndex - cursor];
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = mapper.applyAsInt(elements[cursor++]);
+                }
+
+                return a;
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -324,15 +518,34 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public Stream<CharStream> split(int size) {
-        final List<char[]> tmp = N.split(elements, fromIndex, toIndex, size);
-        final CharStream[] a = new CharStream[tmp.size()];
+    public Stream<CharStream> split(final int size) {
+        //        final List<char[]> tmp = N.split(elements, fromIndex, toIndex, size);
+        //        final CharStream[] a = new CharStream[tmp.size()];
+        //
+        //        for (int i = 0, len = a.length; i < len; i++) {
+        //            a[i] = new ArrayCharStream(tmp.get(i), null, sorted);
+        //        }
+        //
+        //        return new ArrayStream<CharStream>(a, closeHandlers);
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = new ArrayCharStream(tmp.get(i), null, sorted);
-        }
+        return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
+            private int cursor = fromIndex;
 
-        return new ArrayStream<CharStream>(a, closeHandlers);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public CharStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return new ArrayCharStream(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted);
+            }
+
+        }, closeHandlers);
     }
 
     @Override
@@ -399,6 +612,17 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
+    public boolean forEach2(CharFunction<Boolean> action) {
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (action.apply(elements[i]).booleanValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
     public char[] toArray() {
         return N.copyOfRange(elements, fromIndex, toIndex);
     }
@@ -406,6 +630,213 @@ final class ArrayCharStream extends CharStream {
     @Override
     public CharList toCharList() {
         return CharList.of(N.copyOfRange(elements, fromIndex, toIndex));
+    }
+
+    @Override
+    public List<Character> toList() {
+        final List<Character> result = new ArrayList<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Character> toList(Supplier<? extends List<Character>> supplier) {
+        final List<Character> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Character> toSet() {
+        final Set<Character> result = new HashSet<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<Character> toSet(Supplier<? extends Set<Character>> supplier) {
+        final Set<Character> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Character> toMultiset() {
+        final Multiset<Character> result = new Multiset<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Multiset<Character> toMultiset(Supplier<? extends Multiset<Character>> supplier) {
+        final Multiset<Character> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Character> toLongMultiset() {
+        final LongMultiset<Character> result = new LongMultiset<>();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public LongMultiset<Character> toLongMultiset(Supplier<? extends LongMultiset<Character>> supplier) {
+        final LongMultiset<Character> result = supplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<Character>>>() {
+            @Override
+            public Map<K, List<Character>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<Character>>> M toMap(CharFunction<? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<Character, ?, List<Character>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, Character> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, elements[i]);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Collectors.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapSupplier) {
+        final M result = mapSupplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+        }
+
+        return result;
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier) {
+        final Multimap<K, U, V> result = mapSupplier.get();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.put(keyMapper.apply(elements[i]), valueMapper.apply(elements[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -489,7 +920,7 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public boolean anyMatch(CharPredicate predicate) {
+    public boolean anyMatch(final CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -500,7 +931,7 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public boolean allMatch(CharPredicate predicate) {
+    public boolean allMatch(final CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -511,7 +942,7 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public boolean noneMatch(CharPredicate predicate) {
+    public boolean noneMatch(final CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -527,7 +958,7 @@ final class ArrayCharStream extends CharStream {
     //    }
 
     @Override
-    public OptionalChar findFirst(CharPredicate predicate) {
+    public OptionalChar findFirst(final CharPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalChar.of(elements[i]);
@@ -543,7 +974,7 @@ final class ArrayCharStream extends CharStream {
     //    }
 
     @Override
-    public OptionalChar findLast(CharPredicate predicate) {
+    public OptionalChar findLast(final CharPredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return OptionalChar.of(elements[i]);
@@ -576,18 +1007,57 @@ final class ArrayCharStream extends CharStream {
 
     @Override
     public IntStream asIntStream() {
-        final int[] a = new int[toIndex - fromIndex];
+        //        final int[] a = new int[toIndex - fromIndex];
+        //
+        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
+        //            a[j] = elements[i];
+        //        }
+        //
+        //        return new ArrayIntStream(a, closeHandlers, sorted);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            a[j] = elements[i];
-        }
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int cursor = fromIndex;
 
-        return new ArrayIntStream(a, closeHandlers, sorted);
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public int[] toArray() {
+                final int[] a = new int[toIndex - cursor];
+
+                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
+                    a[j] = elements[i];
+                }
+
+                return a;
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
     public Stream<Character> boxed() {
-        return new ArrayStream<Character>(Array.box(elements, fromIndex, toIndex), closeHandlers);
+        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? Stream.CHAR_COMPARATOR : null);
     }
 
     @Override
@@ -607,6 +1077,27 @@ final class ArrayCharStream extends CharStream {
                 }
 
                 return elements[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = (A) Character.valueOf(elements[cursor++]);
+                }
+
+                return a;
             }
         };
     }
@@ -628,6 +1119,16 @@ final class ArrayCharStream extends CharStream {
                 }
 
                 return elements[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
             }
 
             @Override

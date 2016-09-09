@@ -24,16 +24,24 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
@@ -75,13 +83,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class LongStream implements BaseStream<Long, LongStream> {
-    static final Comparator<Long> LONG_COMPARATOR = new Comparator<Long>() {
-        @Override
-        public int compare(Long o1, Long o2) {
-            return Long.compare(o1, o2);
-        }
-    };
-
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -380,6 +381,13 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract void forEach(LongConsumer action);
 
     /**
+     * 
+     * @param action break if the action returns false.
+     * @return false if it breaks, otherwise true.
+     */
+    public abstract boolean forEach2(LongFunction<Boolean> action);
+
+    /**
      * Returns an array containing the elements of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal
@@ -390,6 +398,120 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract long[] toArray();
 
     public abstract LongList toLongList();
+
+    public abstract List<Long> toList();
+
+    public abstract List<Long> toList(Supplier<? extends List<Long>> supplier);
+
+    public abstract Set<Long> toSet();
+
+    public abstract Set<Long> toSet(Supplier<? extends Set<Long>> supplier);
+
+    public abstract Multiset<Long> toMultiset();
+
+    public abstract Multiset<Long> toMultiset(Supplier<? extends Multiset<Long>> supplier);
+
+    public abstract LongMultiset<Long> toLongMultiset();
+
+    public abstract LongMultiset<Long> toLongMultiset(Supplier<? extends LongMultiset<Long>> supplier);
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public abstract <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier);
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public abstract <K, M extends Map<K, List<Long>>> M toMap(final LongFunction<? extends K> classifier, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, D, A, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+            final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public abstract <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
+    public abstract <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
+            Supplier<Multimap<K, U, V>> mapSupplier);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -531,21 +653,6 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator);
 
     /**
-     * Returns the sum of elements in this stream.  This is a special case
-     * of a <a href="package-summary.html#Reduction">reduction</a>
-     * and is equivalent to:
-     * <pre>{@code
-     *     return reduce(0, Long::sum);
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return the sum of elements in this stream
-     */
-    public abstract Long sum();
-
-    /**
      * Returns an {@code OptionalLong} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>
@@ -586,18 +693,19 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract OptionalLong kthLargest(int k);
 
     /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
-     * equivalent to:
+     * Returns the sum of elements in this stream.  This is a special case
+     * of a <a href="package-summary.html#Reduction">reduction</a>
+     * and is equivalent to:
      * <pre>{@code
-     *     return map(e -> 1L).sum();
+     *     return reduce(0, Long::sum);
      * }</pre>
      *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
+     * <p>This is a <a href="package-summary.html#StreamOps">terminal
+     * operation</a>.
      *
-     * @return the count of elements in this stream
+     * @return the sum of elements in this stream
      */
-    public abstract long count();
+    public abstract Long sum();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic mean of elements of
@@ -612,6 +720,20 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * stream, or an empty optional if the stream is empty
      */
     public abstract OptionalDouble average();
+
+    /**
+     * Returns the count of elements in this stream.  This is a special case of
+     * a <a href="package-summary.html#Reduction">reduction</a> and is
+     * equivalent to:
+     * <pre>{@code
+     *     return map(e -> 1L).sum();
+     * }</pre>
+     *
+     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
+     *
+     * @return the count of elements in this stream
+     */
+    public abstract long count();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -772,19 +894,19 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     }
 
     public static LongStream of(final long... a) {
-        return Stream.from(a);
+        return N.isNullOrEmpty(a) ? empty() : new ArrayLongStream(a);
     }
 
     public static LongStream of(final long[] a, final int startIndex, final int endIndex) {
-        return new ArrayLongStream(a, startIndex, endIndex);
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayLongStream(a, startIndex, endIndex);
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {
-        return Stream.from(Array.range(startInclusive, endExclusive));
+        return of(Array.range(startInclusive, endExclusive));
     }
 
     public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
-        return Stream.from(Array.rangeClosed(startInclusive, endInclusive));
+        return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
     public static LongStream repeat(long element, int n) {
@@ -792,7 +914,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     }
 
     public static LongStream concat(final long[]... a) {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
             private final Iterator<long[]> iter = N.asList(a).iterator();
             private ImmutableLongIterator cur;
 
@@ -832,9 +954,8 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
         });
     }
 
-    @SuppressWarnings("resource")
     public static LongStream concat(final LongStream... a) {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
             private final Iterator<LongStream> iter = N.asList(a).iterator();
             private ImmutableLongIterator cur;
 
