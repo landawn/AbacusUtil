@@ -777,21 +777,21 @@ public final class Array {
     //        return a;
     //    }
 
-    public static char[] rangeClosed(char startInclusive, final char endExclusive, final int by) {
+    public static char[] rangeClosed(char startInclusive, final char endInclusive, final int by) {
         if (by == 0) {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endInclusive == startInclusive) {
             return new char[] { startInclusive };
         }
 
-        if (endExclusive > startInclusive != by > 0) {
+        if (endInclusive > startInclusive != by > 0) {
             throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (endExclusive - startInclusive) / by + 1;
+        final int len = (endInclusive - startInclusive) / by + 1;
         final char[] a = new char[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -801,21 +801,21 @@ public final class Array {
         return a;
     }
 
-    public static byte[] rangeClosed(byte startInclusive, final byte endExclusive, final byte by) {
+    public static byte[] rangeClosed(byte startInclusive, final byte endInclusive, final byte by) {
         if (by == 0) {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endInclusive == startInclusive) {
             return new byte[] { startInclusive };
         }
 
-        if (endExclusive > startInclusive != by > 0) {
+        if (endInclusive > startInclusive != by > 0) {
             throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (endExclusive - startInclusive) / by + 1;
+        final int len = (endInclusive - startInclusive) / by + 1;
         final byte[] a = new byte[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -825,21 +825,21 @@ public final class Array {
         return a;
     }
 
-    public static short[] rangeClosed(short startInclusive, final short endExclusive, final short by) {
+    public static short[] rangeClosed(short startInclusive, final short endInclusive, final short by) {
         if (by == 0) {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endInclusive == startInclusive) {
             return new short[] { startInclusive };
         }
 
-        if (endExclusive > startInclusive != by > 0) {
+        if (endInclusive > startInclusive != by > 0) {
             throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (endExclusive - startInclusive) / by + 1;
+        final int len = (endInclusive - startInclusive) / by + 1;
         final short[] a = new short[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -849,21 +849,21 @@ public final class Array {
         return a;
     }
 
-    public static int[] rangeClosed(int startInclusive, final int endExclusive, final int by) {
+    public static int[] rangeClosed(int startInclusive, final int endInclusive, final int by) {
         if (by == 0) {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endInclusive == startInclusive) {
             return new int[] { startInclusive };
         }
 
-        if (endExclusive > startInclusive != by > 0) {
+        if (endInclusive > startInclusive != by > 0) {
             throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (endExclusive - startInclusive) / by + 1;
+        final int len = (endInclusive - startInclusive) / by + 1;
         final int[] a = new int[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -873,21 +873,21 @@ public final class Array {
         return a;
     }
 
-    public static long[] rangeClosed(long startInclusive, final long endExclusive, final long by) {
+    public static long[] rangeClosed(long startInclusive, final long endInclusive, final long by) {
         if (by == 0) {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endInclusive == startInclusive) {
             return new long[] { startInclusive };
         }
 
-        if (endExclusive > startInclusive != by > 0) {
+        if (endInclusive > startInclusive != by > 0) {
             throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (int) ((endExclusive - startInclusive) / by) + 1;
+        final int len = (int) ((endInclusive - startInclusive) / by) + 1;
         final long[] a = new long[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {

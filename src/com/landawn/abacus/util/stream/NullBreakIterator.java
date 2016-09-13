@@ -68,7 +68,7 @@ public final class NullBreakIterator<T> implements Iterator<T> {
 
     @Override
     public T next() {
-        if (next == NONE && hasNext() == false) {
+        if ((next == NONE || next == null) && hasNext() == false) {
             throw new NoSuchElementException();
         }
 

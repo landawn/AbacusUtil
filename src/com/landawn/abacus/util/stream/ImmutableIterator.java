@@ -104,4 +104,16 @@ public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
 
         return list.array() == a ? a : list.trimToSize().array();
     }
+
+    static abstract class QueuedIterator<T> extends ImmutableIterator<T> {
+        private final int max;
+
+        QueuedIterator(int max) {
+            this.max = max;
+        }
+
+        public int max() {
+            return max;
+        }
+    }
 }

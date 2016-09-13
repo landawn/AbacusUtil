@@ -47,6 +47,7 @@ import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.function.IntSupplier;
 import com.landawn.abacus.util.function.IntToByteFunction;
 import com.landawn.abacus.util.function.IntToCharFunction;
 import com.landawn.abacus.util.function.IntToDoubleFunction;
@@ -978,12 +979,177 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         return of(Array.range(startInclusive, endExclusive));
     }
 
+    public static IntStream range(final int startInclusive, final int endExclusive, final int by) {
+        return of(Array.range(startInclusive, endExclusive, by));
+    }
+
     public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
+    public static IntStream rangeClosed(final int startInclusive, final int endInclusive, final int by) {
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+    }
+
     public static IntStream repeat(int element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static IntStream iterate(final Supplier<Boolean> hasNext, final IntSupplier next) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(next);
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public int next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return next.getAsInt();
+            }
+        });
+    }
+
+    public static IntStream iterate(final int seed, final Supplier<Boolean> hasNext, final IntUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int t = 0;
+            private boolean isFirst = true;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public int next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsInt(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param seed
+     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param f
+     * @return
+     */
+    public static IntStream iterate(final int seed, final IntPredicate hasNext, final IntUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int t = 0;
+            private int cur = 0;
+            private boolean isFirst = true;
+            private boolean noMoreVal = false;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false && noMoreVal == false) {
+                    if (isFirst) {
+                        isFirst = false;
+                        hasNextVal = hasNext.test(cur = seed);
+                    } else {
+                        hasNextVal = hasNext.test(cur = f.applyAsInt(t));
+                    }
+
+                    if (hasNextVal == false) {
+                        noMoreVal = true;
+                    }
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public int next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                t = cur;
+                hasNextVal = false;
+                return t;
+            }
+        });
+    }
+
+    public static IntStream iterate(final int seed, final IntUnaryOperator f) {
+        N.requireNonNull(f);
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int t = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public int next() {
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsInt(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    public static IntStream iterate(final IntSupplier s) {
+        N.requireNonNull(s);
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public int next() {
+                return s.getAsInt();
+            }
+        });
     }
 
     public static IntStream concat(final int[]... a) {

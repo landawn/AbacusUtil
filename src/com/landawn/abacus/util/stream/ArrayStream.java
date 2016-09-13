@@ -1972,6 +1972,18 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public Stream<T> removeAll(final Function<? super T, ?> mapper, final Collection<?> c) {
+        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return !set.contains(mapper.apply(value));
+            }
+        });
+    }
+
+    @Override
     public Stream<T> except(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -1984,6 +1996,18 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
+    public Stream<T> except(final Function<? super T, ?> mapper, final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(mapper.apply(value)) < 1;
+            }
+        });
+    }
+
+    @Override
     public Stream<T> intersect(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -1991,6 +2015,18 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(value) > 0;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> intersect(final Function<? super T, ?> mapper, final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(mapper.apply(value)) > 0;
             }
         });
     }

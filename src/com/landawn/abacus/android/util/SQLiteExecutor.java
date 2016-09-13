@@ -745,7 +745,8 @@ public final class SQLiteExecutor {
      * 
      * @since 0.8.10
      */
-    public <T> long[] insert(T[] entities, boolean withTransaction) {
+    @Deprecated
+    <T> long[] insert(T[] entities, boolean withTransaction) {
         return insert(this.getTableNameByEntity(entities[0]), entities, withTransaction);
     }
 
@@ -757,7 +758,8 @@ public final class SQLiteExecutor {
      * @param withTransaction
      * @return
      */
-    public <T> long[] insert(String table, T[] records, boolean withTransaction) {
+    @Deprecated
+    <T> long[] insert(String table, T[] records, boolean withTransaction) {
         if (N.isNullOrEmpty(records)) {
             return N.EMPTY_LONG_ARRAY;
         }

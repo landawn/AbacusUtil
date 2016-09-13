@@ -82,6 +82,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
+import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -1396,6 +1397,15 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> removeAll(Collection<?> c);
 
     /**
+     * 
+     * @param mapper
+     * @param c
+     * @return
+     * @see Collection#removeAll(Collection)
+     */
+    public abstract Stream<T> removeAll(Function<? super T, ?> mapper, Collection<?> c);
+
+    /**
      * @param c
      * @return
      * @see IntList#except(IntList)
@@ -1403,11 +1413,29 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> except(Collection<?> c);
 
     /**
+     * 
+     * @param mapper
+     * @param c
+     * @return
+     * @see IntList#except(IntList)
+     */
+    public abstract Stream<T> except(Function<? super T, ?> mapper, Collection<?> c);
+
+    /**
      * @param c
      * @return
      * @see IntList#intersect(IntList)
      */
     public abstract Stream<T> intersect(Collection<?> c);
+
+    /**
+     * 
+     * @param mapper
+     * @param c
+     * @return
+     * @see IntList#intersect(IntList)
+     */
+    public abstract Stream<T> intersect(Function<? super T, ?> mapper, Collection<?> c);
 
     /**
      * Append the specified stream to the tail of this stream.
@@ -1560,10 +1588,14 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static Stream<String> of(final Reader reader) {
+        N.requireNonNull(reader);
+
         return of(new LineIterator(reader));
     }
 
     static Stream<String> of(final Reader reader, int startIndex, int endIndex) {
+        N.requireNonNull(reader);
+
         return of(new LineIterator(reader), startIndex, endIndex);
     }
 
@@ -1574,14 +1606,25 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static Stream<Object[]> of(final ResultSet resultSet) {
+        N.requireNonNull(resultSet);
+
         return of(new RowIterator(resultSet));
     }
 
     static Stream<Object[]> of(final ResultSet resultSet, int startIndex, int endIndex) {
+        N.requireNonNull(resultSet);
+
         return of(new RowIterator(resultSet), startIndex, endIndex);
     }
 
+    public static <T> Stream<T> repeat(T element, int n) {
+        return of(Array.repeat(element, n));
+    }
+
     public static <T> Stream<T> iterate(final Supplier<Boolean> hasNext, final Supplier<? extends T> next) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(next);
+
         return of(new ImmutableIterator<T>() {
             private boolean hasNextVal = false;
 
@@ -1623,6 +1666,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> iterate(final T seed, final Supplier<Boolean> hasNext, final UnaryOperator<T> f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
         return of(new ImmutableIterator<T>() {
             private T t = (T) Stream.NONE;
             private boolean hasNextVal = false;
@@ -1656,6 +1702,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> iterate(final T seed, final Predicate<T> hasNext, final UnaryOperator<T> f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
         return of(new ImmutableIterator<T>() {
             private T t = (T) Stream.NONE;
             private T cur = (T) Stream.NONE;
@@ -1684,8 +1733,38 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         });
     }
 
-    public static <T> Stream<T> repeat(T element, int n) {
-        return of(Array.repeat(element, n));
+    public static <T> Stream<T> iterate(final T seed, final UnaryOperator<T> f) {
+        N.requireNonNull(f);
+
+        return of(new ImmutableIterator<T>() {
+            private T t = (T) Stream.NONE;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public T next() {
+                return t = t == Stream.NONE ? seed : f.apply(t);
+            }
+        });
+    }
+
+    public static <T> Stream<T> iterate(final Supplier<T> s) {
+        N.requireNonNull(s);
+
+        return of(new ImmutableIterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public T next() {
+                return s.get();
+            }
+        });
     }
 
     public static <T> Stream<T> queued(Stream<? extends T> stream) {
@@ -1700,7 +1779,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> queued(Stream<? extends T> stream, int queueSize) {
-        if (stream.iterator() instanceof QueuedImmutableIterator && ((QueuedImmutableIterator<? extends T>) stream.iterator()).max() >= queueSize) {
+        if (stream.iterator() instanceof QueuedIterator && ((QueuedIterator<? extends T>) stream.iterator()).max() >= queueSize) {
             return (Stream<T>) stream;
         } else {
             return parallelConcat(N.asArray(stream), 1, queueSize);
@@ -1719,7 +1798,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> queued(Iterator<? extends T> iterator, int queueSize) {
-        if (iterator instanceof QueuedImmutableIterator && ((QueuedImmutableIterator<? extends T>) iterator).max() >= queueSize) {
+        if (iterator instanceof QueuedIterator && ((QueuedIterator<? extends T>) iterator).max() >= queueSize) {
             return of(iterator);
         } else {
             return parallelConcat(N.asArray(iterator), 1, queueSize);
@@ -2001,7 +2080,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             });
         }
 
-        return of(new QueuedImmutableIterator<T>(queueSize) {
+        return of(new QueuedIterator<T>(queueSize) {
             T next = null;
 
             @Override
@@ -2617,7 +2696,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, errorHolder, onGoing);
 
-        return of(new QueuedImmutableIterator<R>(queueSize) {
+        return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
             B nextB = null;
 
@@ -2718,7 +2797,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, errorHolder, onGoing);
 
-        return of(new QueuedImmutableIterator<R>(queueSize) {
+        return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
             B nextB = null;
             C nextC = null;
@@ -2843,7 +2922,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(c, queueSize, asyncExecutor, counters, queues, errorHolder, onGoing);
 
-        return of(new QueuedImmutableIterator<R>(queueSize) {
+        return of(new QueuedIterator<R>(queueSize) {
             Object[] next = null;
 
             @Override
@@ -3121,7 +3200,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, errorHolder, onGoing);
 
-        return of(new QueuedImmutableIterator<R>(queueSize) {
+        return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
             B nextB = null;
 
@@ -3238,7 +3317,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, errorHolder, onGoing);
 
-        return of(new QueuedImmutableIterator<R>(queueSize) {
+        return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
             B nextB = null;
             C nextC = null;
@@ -3359,7 +3438,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
         readToQueue(c, queueSize, asyncExecutor, counters, queues, errorHolder, onGoing);
 
-        return of(new QueuedImmutableIterator<R>(queueSize) {
+        return of(new QueuedIterator<R>(queueSize) {
             Object[] next = null;
 
             @Override

@@ -38,6 +38,9 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2959,6 +2962,53 @@ public final class IOUtil {
         return files;
     }
 
+    /**
+     * 
+     * @param source
+     * @param target
+     * @param options
+     * @return
+     * @see Files#copy(Path, Path, CopyOption...)
+     */
+    public static Path copy(Path source, Path target, CopyOption... options) {
+        try {
+            return Files.copy(source, target, options);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    /**
+     * 
+     * @param in
+     * @param target
+     * @param options
+     * @return
+     * @see Files#copy(InputStream, Path, CopyOption...)
+     */
+    public static long copy(InputStream in, Path target, CopyOption... options) {
+        try {
+            return Files.copy(in, target, options);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    /**
+     * 
+     * @param source
+     * @param out
+     * @return
+     * @see Files#copy(Path, OutputStream)
+     */
+    public static long copy(Path source, OutputStream out) {
+        try {
+            return Files.copy(source, out);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
     //-----------------------------------------------------------------------
     /**
      * Copies bytes from the URL <code>source</code> to a file
@@ -3730,8 +3780,7 @@ public final class IOUtil {
         logger.info("### Start to parse");
 
         try (final Stream<T> stream = ((readThreadNum > 1 || processThreadNumber > 0)
-                ? Stream.parallelConcat(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
-                : Stream.concat(iterators))) {
+                ? Stream.parallelConcat(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize)) : Stream.concat(iterators))) {
 
             final Iterator<? extends T> iteratorII = stream.skip(offset).limit(count).iterator();
 

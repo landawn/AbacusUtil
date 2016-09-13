@@ -46,6 +46,7 @@ import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
+import com.landawn.abacus.util.function.FloatSupplier;
 import com.landawn.abacus.util.function.FloatToDoubleFunction;
 import com.landawn.abacus.util.function.FloatToIntFunction;
 import com.landawn.abacus.util.function.FloatToLongFunction;
@@ -944,6 +945,163 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
 
     public static FloatStream repeat(float element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static FloatStream iterate(final Supplier<Boolean> hasNext, final FloatSupplier next) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(next);
+
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public float next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return next.getAsFloat();
+            }
+        });
+    }
+
+    public static FloatStream iterate(final float seed, final Supplier<Boolean> hasNext, final FloatUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private float t = 0;
+            private boolean isFirst = true;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public float next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsFloat(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param seed
+     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param f
+     * @return
+     */
+    public static FloatStream iterate(final float seed, final FloatPredicate hasNext, final FloatUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private float t = 0;
+            private float cur = 0;
+            private boolean isFirst = true;
+            private boolean noMoreVal = false;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false && noMoreVal == false) {
+                    if (isFirst) {
+                        isFirst = false;
+                        hasNextVal = hasNext.test(cur = seed);
+                    } else {
+                        hasNextVal = hasNext.test(cur = f.applyAsFloat(t));
+                    }
+
+                    if (hasNextVal == false) {
+                        noMoreVal = true;
+                    }
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public float next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                t = cur;
+                hasNextVal = false;
+                return t;
+            }
+        });
+    }
+
+    public static FloatStream iterate(final float seed, final FloatUnaryOperator f) {
+        N.requireNonNull(f);
+
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private float t = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public float next() {
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsFloat(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    public static FloatStream iterate(final FloatSupplier s) {
+        N.requireNonNull(s);
+
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public float next() {
+                return s.getAsFloat();
+            }
+        });
     }
 
     public static FloatStream concat(final float[]... a) {

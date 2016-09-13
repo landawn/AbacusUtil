@@ -47,6 +47,7 @@ import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
+import com.landawn.abacus.util.function.LongSupplier;
 import com.landawn.abacus.util.function.LongToDoubleFunction;
 import com.landawn.abacus.util.function.LongToFloatFunction;
 import com.landawn.abacus.util.function.LongToIntFunction;
@@ -905,12 +906,177 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
         return of(Array.range(startInclusive, endExclusive));
     }
 
+    public static LongStream range(final long startInclusive, final long endExclusive, final long by) {
+        return of(Array.range(startInclusive, endExclusive, by));
+    }
+
     public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
+    public static LongStream rangeClosed(final long startInclusive, final long endInclusive, final long by) {
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+    }
+
     public static LongStream repeat(long element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static LongStream iterate(final Supplier<Boolean> hasNext, final LongSupplier next) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(next);
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public long next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return next.getAsLong();
+            }
+        });
+    }
+
+    public static LongStream iterate(final long seed, final Supplier<Boolean> hasNext, final LongUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long t = 0;
+            private boolean isFirst = true;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public long next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsLong(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param seed
+     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param f
+     * @return
+     */
+    public static LongStream iterate(final long seed, final LongPredicate hasNext, final LongUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long t = 0;
+            private long cur = 0;
+            private boolean isFirst = true;
+            private boolean noMoreVal = false;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false && noMoreVal == false) {
+                    if (isFirst) {
+                        isFirst = false;
+                        hasNextVal = hasNext.test(cur = seed);
+                    } else {
+                        hasNextVal = hasNext.test(cur = f.applyAsLong(t));
+                    }
+
+                    if (hasNextVal == false) {
+                        noMoreVal = true;
+                    }
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public long next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                t = cur;
+                hasNextVal = false;
+                return t;
+            }
+        });
+    }
+
+    public static LongStream iterate(final long seed, final LongUnaryOperator f) {
+        N.requireNonNull(f);
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long t = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public long next() {
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsLong(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    public static LongStream iterate(final LongSupplier s) {
+        N.requireNonNull(s);
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public long next() {
+                return s.getAsLong();
+            }
+        });
     }
 
     public static LongStream concat(final long[]... a) {

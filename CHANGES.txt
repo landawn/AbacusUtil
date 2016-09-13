@@ -1,3 +1,10 @@
+========Changes in 0.9.9=========================================================================
+
+1, Add iterate(...) to Stream/IntStream/DoubleStream/....
+
+2, bug fix and improvements.
+
+
 ========Changes in 0.9.8=========================================================================
 
 1, Add toList()/toSet()/toMultiset()/toLongMultiset()/toMap/toMultimap to Stream/IntStream/DoubleStream/....

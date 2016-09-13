@@ -45,6 +45,7 @@ import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.DoubleSupplier;
 import com.landawn.abacus.util.function.DoubleToFloatFunction;
 import com.landawn.abacus.util.function.DoubleToIntFunction;
 import com.landawn.abacus.util.function.DoubleToLongFunction;
@@ -932,6 +933,163 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
 
     public static DoubleStream repeat(double element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static DoubleStream iterate(final Supplier<Boolean> hasNext, final DoubleSupplier next) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(next);
+
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public double next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return next.getAsDouble();
+            }
+        });
+    }
+
+    public static DoubleStream iterate(final double seed, final Supplier<Boolean> hasNext, final DoubleUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private double t = 0;
+            private boolean isFirst = true;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public double next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsDouble(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param seed
+     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param f
+     * @return
+     */
+    public static DoubleStream iterate(final double seed, final DoublePredicate hasNext, final DoubleUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private double t = 0;
+            private double cur = 0;
+            private boolean isFirst = true;
+            private boolean noMoreVal = false;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false && noMoreVal == false) {
+                    if (isFirst) {
+                        isFirst = false;
+                        hasNextVal = hasNext.test(cur = seed);
+                    } else {
+                        hasNextVal = hasNext.test(cur = f.applyAsDouble(t));
+                    }
+
+                    if (hasNextVal == false) {
+                        noMoreVal = true;
+                    }
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public double next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                t = cur;
+                hasNextVal = false;
+                return t;
+            }
+        });
+    }
+
+    public static DoubleStream iterate(final double seed, final DoubleUnaryOperator f) {
+        N.requireNonNull(f);
+
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private double t = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public double next() {
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsDouble(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    public static DoubleStream iterate(final DoubleSupplier s) {
+        N.requireNonNull(s);
+
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public double next() {
+                return s.getAsDouble();
+            }
+        });
     }
 
     public static DoubleStream concat(final double[]... a) {

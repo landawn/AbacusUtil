@@ -45,6 +45,7 @@ import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
+import com.landawn.abacus.util.function.ByteSupplier;
 import com.landawn.abacus.util.function.ByteToIntFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -839,12 +840,177 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
         return of(Array.range(startInclusive, endExclusive));
     }
 
+    public static ByteStream range(final byte startInclusive, final byte endExclusive, final byte by) {
+        return of(Array.range(startInclusive, endExclusive, by));
+    }
+
     public static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive) {
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
+    public static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive, final byte by) {
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+    }
+
     public static ByteStream repeat(byte element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static ByteStream iterate(final Supplier<Boolean> hasNext, final ByteSupplier next) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(next);
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public byte next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return next.getAsByte();
+            }
+        });
+    }
+
+    public static ByteStream iterate(final byte seed, final Supplier<Boolean> hasNext, final ByteUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private byte t = 0;
+            private boolean isFirst = true;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public byte next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsByte(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param seed
+     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param f
+     * @return
+     */
+    public static ByteStream iterate(final byte seed, final BytePredicate hasNext, final ByteUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private byte t = 0;
+            private byte cur = 0;
+            private boolean isFirst = true;
+            private boolean noMoreVal = false;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false && noMoreVal == false) {
+                    if (isFirst) {
+                        isFirst = false;
+                        hasNextVal = hasNext.test(cur = seed);
+                    } else {
+                        hasNextVal = hasNext.test(cur = f.applyAsByte(t));
+                    }
+
+                    if (hasNextVal == false) {
+                        noMoreVal = true;
+                    }
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public byte next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                t = cur;
+                hasNextVal = false;
+                return t;
+            }
+        });
+    }
+
+    public static ByteStream iterate(final byte seed, final ByteUnaryOperator f) {
+        N.requireNonNull(f);
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private byte t = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public byte next() {
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsByte(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    public static ByteStream iterate(final ByteSupplier s) {
+        N.requireNonNull(s);
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public byte next() {
+                return s.getAsByte();
+            }
+        });
     }
 
     public static ByteStream concat(final byte[]... a) {

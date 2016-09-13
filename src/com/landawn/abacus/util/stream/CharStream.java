@@ -44,6 +44,7 @@ import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
+import com.landawn.abacus.util.function.CharSupplier;
 import com.landawn.abacus.util.function.CharToIntFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -852,12 +853,177 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
         return of(Array.range(startInclusive, endExclusive));
     }
 
+    public static CharStream range(final char startInclusive, final char endExclusive, final char by) {
+        return of(Array.range(startInclusive, endExclusive, by));
+    }
+
     public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
+    public static CharStream rangeClosed(final char startInclusive, final char endInclusive, final char by) {
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+    }
+
     public static CharStream repeat(char element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static CharStream iterate(final Supplier<Boolean> hasNext, final CharSupplier next) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(next);
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public char next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return next.getAsChar();
+            }
+        });
+    }
+
+    public static CharStream iterate(final char seed, final Supplier<Boolean> hasNext, final CharUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private char t = 0;
+            private boolean isFirst = true;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public char next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsChar(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param seed
+     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param f
+     * @return
+     */
+    public static CharStream iterate(final char seed, final CharPredicate hasNext, final CharUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private char t = 0;
+            private char cur = 0;
+            private boolean isFirst = true;
+            private boolean noMoreVal = false;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false && noMoreVal == false) {
+                    if (isFirst) {
+                        isFirst = false;
+                        hasNextVal = hasNext.test(cur = seed);
+                    } else {
+                        hasNextVal = hasNext.test(cur = f.applyAsChar(t));
+                    }
+
+                    if (hasNextVal == false) {
+                        noMoreVal = true;
+                    }
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public char next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                t = cur;
+                hasNextVal = false;
+                return t;
+            }
+        });
+    }
+
+    public static CharStream iterate(final char seed, final CharUnaryOperator f) {
+        N.requireNonNull(f);
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private char t = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public char next() {
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsChar(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    public static CharStream iterate(final CharSupplier s) {
+        N.requireNonNull(s);
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public char next() {
+                return s.getAsChar();
+            }
+        });
     }
 
     public static CharStream concat(final char[]... a) {

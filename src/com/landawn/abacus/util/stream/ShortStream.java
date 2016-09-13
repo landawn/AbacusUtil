@@ -48,6 +48,7 @@ import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
+import com.landawn.abacus.util.function.ShortSupplier;
 import com.landawn.abacus.util.function.ShortToIntFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
@@ -840,12 +841,177 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
         return of(Array.range(startInclusive, endExclusive));
     }
 
+    public static ShortStream range(final short startInclusive, final short endExclusive, final short by) {
+        return of(Array.range(startInclusive, endExclusive, by));
+    }
+
     public static ShortStream rangeClosed(final short startInclusive, final short endInclusive) {
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
+    public static ShortStream rangeClosed(final short startInclusive, final short endInclusive, final short by) {
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+    }
+
     public static ShortStream repeat(short element, int n) {
         return of(Array.repeat(element, n));
+    }
+
+    public static ShortStream iterate(final Supplier<Boolean> hasNext, final ShortSupplier next) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(next);
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public short next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+                return next.getAsShort();
+            }
+        });
+    }
+
+    public static ShortStream iterate(final short seed, final Supplier<Boolean> hasNext, final ShortUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private short t = 0;
+            private boolean isFirst = true;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false) {
+                    hasNextVal = hasNext.get().booleanValue();
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public short next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNextVal = false;
+
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsShort(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param seed
+     * @param hasNext test if has next by hasNext.test(seed) for first time and hasNext.test(f.apply(previous)) for remaining.
+     * @param f
+     * @return
+     */
+    public static ShortStream iterate(final short seed, final ShortPredicate hasNext, final ShortUnaryOperator f) {
+        N.requireNonNull(hasNext);
+        N.requireNonNull(f);
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private short t = 0;
+            private short cur = 0;
+            private boolean isFirst = true;
+            private boolean noMoreVal = false;
+            private boolean hasNextVal = false;
+
+            @Override
+            public boolean hasNext() {
+                if (hasNextVal == false && noMoreVal == false) {
+                    if (isFirst) {
+                        isFirst = false;
+                        hasNextVal = hasNext.test(cur = seed);
+                    } else {
+                        hasNextVal = hasNext.test(cur = f.applyAsShort(t));
+                    }
+
+                    if (hasNextVal == false) {
+                        noMoreVal = true;
+                    }
+                }
+
+                return hasNextVal;
+            }
+
+            @Override
+            public short next() {
+                if (hasNextVal == false && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                t = cur;
+                hasNextVal = false;
+                return t;
+            }
+        });
+    }
+
+    public static ShortStream iterate(final short seed, final ShortUnaryOperator f) {
+        N.requireNonNull(f);
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private short t = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public short next() {
+                if (isFirst) {
+                    isFirst = false;
+                    t = seed;
+                } else {
+                    t = f.applyAsShort(t);
+                }
+
+                return t;
+            }
+        });
+    }
+
+    public static ShortStream iterate(final ShortSupplier s) {
+        N.requireNonNull(s);
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public short next() {
+                return s.getAsShort();
+            }
+        });
     }
 
     public static ShortStream concat(final short[]... a) {
