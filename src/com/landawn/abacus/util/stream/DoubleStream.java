@@ -83,6 +83,9 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
+
+    private static final DoubleStream EMPTY = new ArrayDoubleStream(N.EMPTY_DOUBLE_ARRAY);
+
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -920,7 +923,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
     // Static factories
 
     public static DoubleStream empty() {
-        return of(N.EMPTY_DOUBLE_ARRAY);
+        return EMPTY;
     }
 
     public static DoubleStream of(final double... a) {

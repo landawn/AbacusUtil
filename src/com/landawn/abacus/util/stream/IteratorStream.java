@@ -17,12 +17,16 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -1254,11 +1258,19 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
                 final Set<T> set = new TreeSet<T>(comparator);
                 final List<T> list = new ArrayList<T>();
                 T element = null;
+                boolean hasNull = false;
 
                 while (elements.hasNext()) {
                     element = elements.next();
-                    if (set.add(element)) {
-                        list.add(element);
+                    if (element == null) {
+                        if (hasNull == false) {
+                            hasNull = true;
+                            list.add(element);
+                        }
+                    } else {
+                        if (set.add(element)) {
+                            list.add(element);
+                        }
                     }
                 }
 
@@ -2227,6 +2239,51 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
         }
 
         return queue.size() < k ? (Optional<T>) Optional.empty() : Optional.of(queue.peek());
+    }
+
+    @Override
+    public Long sumInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.summingInt(mapper));
+    }
+
+    @Override
+    public Long sumLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.summingLong(mapper));
+    }
+
+    @Override
+    public Double sumDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.summingDouble(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.averagingInt2(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.averagingLong2(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.averagingDouble2(mapper));
+    }
+
+    @Override
+    public IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.summarizingInt(mapper));
+    }
+
+    @Override
+    public LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.summarizingLong(mapper));
+    }
+
+    @Override
+    public DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.summarizingDouble(mapper));
     }
 
     @Override

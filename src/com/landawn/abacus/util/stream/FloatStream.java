@@ -84,6 +84,9 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class FloatStream implements BaseStream<Float, FloatStream> {
+
+    private static final FloatStream EMPTY = new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY);
+
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -932,7 +935,7 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     // Static factories
 
     public static FloatStream empty() {
-        return of(N.EMPTY_FLOAT_ARRAY);
+        return EMPTY;
     }
 
     public static FloatStream of(final float... a) {

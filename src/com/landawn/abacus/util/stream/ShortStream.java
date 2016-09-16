@@ -82,6 +82,9 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class ShortStream implements BaseStream<Short, ShortStream> {
+
+    private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY);
+
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -818,7 +821,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     // Static factories
 
     public static ShortStream empty() {
-        return of(N.EMPTY_SHORT_ARRAY);
+        return EMPTY;
     }
 
     public static ShortStream of(final short... a) {

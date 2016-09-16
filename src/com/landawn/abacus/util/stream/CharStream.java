@@ -80,6 +80,9 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class CharStream implements BaseStream<Character, CharStream> {
+
+    private static final CharStream EMPTY = new ArrayCharStream(N.EMPTY_CHAR_ARRAY);
+
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -808,7 +811,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     // Static factories
 
     public static CharStream empty() {
-        return of(N.EMPTY_CHAR_ARRAY);
+        return EMPTY;
     }
 
     public static CharStream of(final char... a) {

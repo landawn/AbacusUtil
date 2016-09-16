@@ -81,6 +81,9 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
+
+    private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY);
+
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -817,7 +820,7 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     // Static factories
 
     public static ByteStream empty() {
-        return of(N.EMPTY_BYTE_ARRAY);
+        return EMPTY;
     }
 
     public static ByteStream of(final byte... a) {

@@ -84,6 +84,9 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class LongStream implements BaseStream<Long, LongStream> {
+
+    private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY);
+
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -891,7 +894,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     // Static factories
 
     public static LongStream empty() {
-        return of(N.EMPTY_LONG_ARRAY);
+        return EMPTY;
     }
 
     public static LongStream of(final long... a) {

@@ -52,17 +52,21 @@ import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiMap;
+import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -190,6 +194,10 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
+
+    @SuppressWarnings("rawtypes")
+    private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY);
+
     private static final int DEFAULT_READING_THREAD_NUM = 64;
 
     static final Comparator<Character> CHAR_COMPARATOR = new Comparator<Character>() {
@@ -640,6 +648,12 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract Stream<T> distinct(Comparator<? super T> comparator);
 
+    /**
+     * Distinct by the value mapped from <code>keyMapper</code>
+     * 
+     * @param keyMapper
+     * @return
+     */
     public abstract Stream<T> distinct(Function<? super T, ?> keyMapper);
 
     public abstract Stream<T> top(int n);
@@ -1259,6 +1273,24 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract Optional<T> kthLargest(int k, Comparator<? super T> cmp);
 
+    public abstract Long sumInt(ToIntFunction<? super T> mapper);
+
+    public abstract Long sumLong(ToLongFunction<? super T> mapper);
+
+    public abstract Double sumDouble(ToDoubleFunction<? super T> mapper);
+
+    public abstract OptionalDouble averageInt(ToIntFunction<? super T> mapper);
+
+    public abstract OptionalDouble averageLong(ToLongFunction<? super T> mapper);
+
+    public abstract OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper);
+
+    public abstract IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper);
+
+    public abstract LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper);
+
+    public abstract DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper);
+
     /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is
@@ -1397,6 +1429,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> removeAll(Collection<?> c);
 
     /**
+     * Remove all from the specified Collection by the values mapped by <code>mapper</code>
      * 
      * @param mapper
      * @param c
@@ -1413,6 +1446,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> except(Collection<?> c);
 
     /**
+     * Except with the specified Collection by the values mapped by <code>mapper</code>
      * 
      * @param mapper
      * @param c
@@ -1429,6 +1463,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> intersect(Collection<?> c);
 
     /**
+     * Intersect with the specified Collection by the values mapped by <code>mapper</code>
      * 
      * @param mapper
      * @param c
@@ -1449,7 +1484,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     // Static factories
 
     public static <T> Stream<T> empty() {
-        return of((T[]) N.EMPTY_OBJECT_ARRAY);
+        return EMPTY;
     }
 
     public static <T> Stream<T> of(final T... a) {

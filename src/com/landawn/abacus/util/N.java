@@ -1771,7 +1771,9 @@ public final class N {
                 try {
                     instance = cls.newInstance();
                 } catch (Exception e) {
-                    logger.warn("Failed to new instance of class: " + cls.getCanonicalName() + " to check setter method by getter method");
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("Failed to new instance of class: " + cls.getCanonicalName() + " to check setter method by getter method");
+                    }
                 }
 
                 registeredXMLBindingClassList.put(cls, true);
@@ -25086,6 +25088,8 @@ public final class N {
     }
 
     /**
+     * Distinct by the value mapped from <code>keyMapper</code>.
+     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
@@ -25098,6 +25102,8 @@ public final class N {
     }
 
     /**
+     * Distinct by the value mapped from <code>keyMapper</code>.
+     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
@@ -25126,6 +25132,8 @@ public final class N {
     }
 
     /**
+     * Distinct by the value mapped from <code>keyMapper</code>.
+     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
@@ -25133,11 +25141,13 @@ public final class N {
      * @param func
      * @return
      */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> func) {
-        return distinct(c, 0, c.size(), func);
+    public static <T> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyMapper) {
+        return distinct(c, 0, c.size(), keyMapper);
     }
 
     /**
+     * Distinct by the value mapped from <code>keyMapper</code>.
+     * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
@@ -25147,7 +25157,7 @@ public final class N {
      * @param func
      * @return
      */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> func) {
+    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         final List<T> result = new ArrayList<>();
@@ -25161,7 +25171,7 @@ public final class N {
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                key = func.apply(e);
+                key = keyMapper.apply(e);
 
                 if (keySet.add(key)) {
                     result.add(e);
@@ -25179,7 +25189,7 @@ public final class N {
                     continue;
                 }
 
-                key = func.apply(e);
+                key = keyMapper.apply(e);
 
                 if (keySet.add(key)) {
                     result.add(e);
@@ -33508,7 +33518,9 @@ public final class N {
             try {
                 Thread.sleep(millis);
             } catch (InterruptedException e) {
-                logger.warn("Failed to sleep: " + millis, e);
+                if (logger.isWarnEnabled()) {
+                    logger.warn("Failed to sleep: " + millis, e);
+                }
             }
         }
     }

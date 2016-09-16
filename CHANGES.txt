@@ -1,3 +1,12 @@
+========Changes in 0.9.10=========================================================================
+
+1, Add sumInt/sumLong/sumDouble/averageInt/averageLong/averageDouble/summarizeInt/summarizeLong/summarizeDouble to Stream.
+
+2, Remove distribution from DataSet
+
+3, bug fix and improvements.
+
+
 ========Changes in 0.9.9=========================================================================
 
 1, Add iterate(...) to Stream/IntStream/DoubleStream/....

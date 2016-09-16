@@ -569,7 +569,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
 
         for (int i = fromIndex; i < toIndex; i++) {
             if (elementData[i] != null) {
-                result += ((Number) elementData[i]).longValue();
+                result += ((Number) elementData[i]).intValue();
             }
         }
 
@@ -660,7 +660,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
     public Double sumDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? 0d : Stream.of(elementData, fromIndex, toIndex).mapToDouble(mapper).sum();
+        return fromIndex == toIndex ? 0d : Stream.of(elementData, fromIndex, toIndex).sumDouble(mapper);
     }
 
     public OptionalDouble averageInt() {
@@ -723,7 +723,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
     public OptionalDouble averageDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : Stream.of(elementData, fromIndex, toIndex).mapToDouble(mapper).average();
+        return fromIndex == toIndex ? OptionalDouble.empty() : Stream.of(elementData, fromIndex, toIndex).averageDouble(mapper);
     }
 
     @Override
@@ -1186,6 +1186,14 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         return distinct(0, size(), keyMapper);
     }
 
+    /**
+     * Distinct by the value mapped from <code>keyMapper</code>
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param keyMapper
+     * @return
+     */
     public ObjectList<T> distinct(final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
         checkIndex(fromIndex, toIndex);
 

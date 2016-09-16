@@ -564,7 +564,7 @@ public final class IOUtil {
 
         try {
             while (totalCount < maxLen && EOF != (count = read(is, buf, 0, Math.min(maxLen - totalCount, bufLength)))) {
-                if (count == bufLength) {
+                if (count == bufLength && count < maxLen) {
                     if (os == null) {
                         os = ObjectFactory.createByteArrayOutputStream();
                     }
@@ -652,7 +652,7 @@ public final class IOUtil {
 
         try {
             while (totalCount < maxLen && EOF != (count = read(reader, buf, 0, Math.min(maxLen - totalCount, bufLength)))) {
-                if (count == bufLength) {
+                if (count == bufLength && count < maxLen) {
                     if (sb == null) {
                         sb = ObjectFactory.createStringBuilder();
                     }
@@ -3777,7 +3777,10 @@ public final class IOUtil {
 
     private static <T> void parseII(final Collection<? extends Iterator<? extends T>> iterators, long offset, long count, final int readThreadNum,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
-        logger.info("### Start to parse");
+
+        if (logger.isInfoEnabled()) {
+            logger.info("### Start to parse");
+        }
 
         try (final Stream<T> stream = ((readThreadNum > 1 || processThreadNumber > 0)
                 ? Stream.parallelConcat(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize)) : Stream.concat(iterators))) {
@@ -3846,7 +3849,9 @@ public final class IOUtil {
                 }
             }
         } finally {
-            logger.info("### ### End to parse");
+            if (logger.isInfoEnabled()) {
+                logger.info("### ### End to parse");
+            }
         }
     }
 

@@ -13,12 +13,16 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1871,6 +1875,51 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         }
 
         return Optional.of(N.kthLargest(elements, fromIndex, toIndex, k, cmp));
+    }
+
+    @Override
+    public Long sumInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.summingInt(mapper));
+    }
+
+    @Override
+    public Long sumLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.summingLong(mapper));
+    }
+
+    @Override
+    public Double sumDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.summingDouble(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.averagingInt2(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.averagingLong2(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.averagingDouble2(mapper));
+    }
+
+    @Override
+    public IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.summarizingInt(mapper));
+    }
+
+    @Override
+    public LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.summarizingLong(mapper));
+    }
+
+    @Override
+    public DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.summarizingDouble(mapper));
     }
 
     @Override

@@ -87,6 +87,9 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class IntStream implements BaseStream<Integer, IntStream> {
+
+    private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY);
+
     /**
      * Returns a stream consisting of the elements of this stream that match
      * the given predicate.
@@ -918,7 +921,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     // Static factories
 
     public static IntStream empty() {
-        return of(N.EMPTY_INT_ARRAY);
+        return EMPTY;
     }
 
     public static IntStream of(final int... a) {
