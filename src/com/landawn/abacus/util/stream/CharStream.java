@@ -33,11 +33,14 @@ import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
+import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBinaryOperator;
@@ -654,6 +657,10 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      */
     public abstract OptionalChar kthLargest(int k);
 
+    public abstract Long sum();
+
+    public abstract OptionalDouble average();
+
     /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is
@@ -667,6 +674,10 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return the count of elements in this stream
      */
     public abstract long count();
+
+    public abstract CharSummaryStatistics summarize();
+
+    public abstract Optional<Map<String, Character>> distribution();
 
     /**
      * Returns whether any elements of this stream match the provided

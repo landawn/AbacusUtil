@@ -17,7 +17,10 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
@@ -28,6 +31,7 @@ import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -2272,6 +2276,26 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public long count() {
+        return elements.count();
+    }
+
+    @Override
+    public CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper) {
+        return collect(Collectors.summarizingChar(mapper));
+    }
+
+    @Override
+    public ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper) {
+        return collect(Collectors.summarizingByte(mapper));
+    }
+
+    @Override
+    public ShortSummaryStatistics summarizeShort(ToShortFunction<? super T> mapper) {
+        return collect(Collectors.summarizingShort(mapper));
+    }
+
+    @Override
     public IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper) {
         return collect(Collectors.summarizingInt(mapper));
     }
@@ -2282,13 +2306,35 @@ final class IteratorStream<T> extends Stream<T> implements BaseStream<T, Stream<
     }
 
     @Override
+    public FloatSummaryStatistics summarizeFloat(ToFloatFunction<? super T> mapper) {
+        return collect(Collectors.summarizingFloat(mapper));
+    }
+
+    @Override
     public DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper) {
         return collect(Collectors.summarizingDouble(mapper));
     }
 
     @Override
-    public long count() {
-        return elements.count();
+    public Optional<Map<String, T>> distribution() {
+        final Object[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of((Map<String, T>) N.distribution(a));
+    }
+
+    @Override
+    public Optional<Map<String, T>> distribution(Comparator<? super T> comparator) {
+        final Object[] a = sorted(comparator).toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of((Map<String, T>) N.distribution(a));
     }
 
     @Override

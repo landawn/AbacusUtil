@@ -13,12 +13,14 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
+import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -959,8 +961,58 @@ final class IteratorCharStream extends CharStream {
     }
 
     @Override
+    public Long sum() {
+        long result = 0;
+
+        while (elements.hasNext()) {
+            result += elements.next();
+        }
+
+        return result;
+    }
+
+    @Override
+    public OptionalDouble average() {
+        if (elements.hasNext() == false) {
+            return OptionalDouble.empty();
+        }
+
+        double result = 0d;
+        long count = 0;
+
+        while (elements.hasNext()) {
+            result += elements.next();
+            count++;
+        }
+
+        return OptionalDouble.of(result / count);
+    }
+
+    @Override
     public long count() {
         return elements.count();
+    }
+
+    @Override
+    public CharSummaryStatistics summarize() {
+        final CharSummaryStatistics result = new CharSummaryStatistics();
+
+        while (elements.hasNext()) {
+            result.accept(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Character>> distribution() {
+        final char[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override

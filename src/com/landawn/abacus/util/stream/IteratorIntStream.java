@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -1336,6 +1337,28 @@ final class IteratorIntStream extends IntStream {
     @Override
     public long count() {
         return elements.count();
+    }
+
+    @Override
+    public IntSummaryStatistics summarize() {
+        final IntSummaryStatistics result = new IntSummaryStatistics();
+
+        while (elements.hasNext()) {
+            result.accept(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Integer>> distribution() {
+        final int[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override

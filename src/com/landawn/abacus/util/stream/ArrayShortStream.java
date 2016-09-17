@@ -16,9 +16,11 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -953,6 +955,28 @@ final class ArrayShortStream extends ShortStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public ShortSummaryStatistics summarize() {
+        final ShortSummaryStatistics result = new ShortSummaryStatistics();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.accept(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Short>> distribution() {
+        final short[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override

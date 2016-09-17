@@ -56,7 +56,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
      * 
      * @param a
      */
-    public FloatList(float... a) {
+    public FloatList(float[] a) {
         this();
 
         elementData = a;

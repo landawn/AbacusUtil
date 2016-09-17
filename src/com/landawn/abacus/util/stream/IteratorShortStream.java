@@ -21,6 +21,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1011,6 +1012,28 @@ final class IteratorShortStream extends ShortStream {
     @Override
     public long count() {
         return elements.count();
+    }
+
+    @Override
+    public ShortSummaryStatistics summarize() {
+        final ShortSummaryStatistics result = new ShortSummaryStatistics();
+
+        while (elements.hasNext()) {
+            result.accept(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Short>> distribution() {
+        final short[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override

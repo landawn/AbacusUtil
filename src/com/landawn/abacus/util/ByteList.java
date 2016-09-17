@@ -55,7 +55,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * 
      * @param a
      */
-    public ByteList(byte... a) {
+    public ByteList(byte[] a) {
         this();
 
         elementData = a;

@@ -14,6 +14,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
@@ -1183,6 +1184,28 @@ final class IteratorLongStream extends LongStream {
     @Override
     public long count() {
         return elements.count();
+    }
+
+    @Override
+    public LongSummaryStatistics summarize() {
+        final LongSummaryStatistics result = new LongSummaryStatistics();
+
+        while (elements.hasNext()) {
+            result.accept(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Long>> distribution() {
+        final long[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override

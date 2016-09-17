@@ -55,7 +55,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
      *
      * @param a
      */
-    public IntList(int... a) {
+    public IntList(int[] a) {
         this();
 
         elementData = a;

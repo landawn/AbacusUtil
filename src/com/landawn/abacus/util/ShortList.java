@@ -56,7 +56,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
      * 
      * @param a
      */
-    public ShortList(short... a) {
+    public ShortList(short[] a) {
         this();
 
         elementData = a;

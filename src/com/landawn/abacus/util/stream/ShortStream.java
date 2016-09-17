@@ -37,9 +37,11 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -677,6 +679,10 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return the count of elements in this stream
      */
     public abstract long count();
+
+    public abstract ShortSummaryStatistics summarize();
+
+    public abstract Optional<Map<String, Short>> distribution();
 
     /**
      * Returns whether any elements of this stream match the provided

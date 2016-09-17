@@ -13,10 +13,12 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1439,6 +1441,28 @@ final class ArrayIntStream extends IntStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public IntSummaryStatistics summarize() {
+        final IntSummaryStatistics result = new IntSummaryStatistics();
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.accept(elements[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Integer>> distribution() {
+        final int[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override

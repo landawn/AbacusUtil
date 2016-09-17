@@ -53,10 +53,13 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
 import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongList;
@@ -69,6 +72,7 @@ import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.StringJoiner;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -78,9 +82,13 @@ import com.landawn.abacus.util.function.DoubleSupplier;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -3249,6 +3257,84 @@ public final class Collectors {
     //        return new CollectorImpl<T, List<T>, DataSet>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher);
     //    }
 
+    public static <T> Collector<T, ?, CharSummaryStatistics> summarizingChar(final ToCharFunction<? super T> mapper) {
+        final Supplier<CharSummaryStatistics> supplier = new Supplier<CharSummaryStatistics>() {
+            @Override
+            public CharSummaryStatistics get() {
+                return new CharSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<CharSummaryStatistics, T> accumulator = new BiConsumer<CharSummaryStatistics, T>() {
+            @Override
+            public void accept(CharSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsChar(t));
+            }
+        };
+
+        final BinaryOperator<CharSummaryStatistics> combiner = new BinaryOperator<CharSummaryStatistics>() {
+            @Override
+            public CharSummaryStatistics apply(CharSummaryStatistics a, CharSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, CharSummaryStatistics, CharSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T> Collector<T, ?, ByteSummaryStatistics> summarizingByte(final ToByteFunction<? super T> mapper) {
+        final Supplier<ByteSummaryStatistics> supplier = new Supplier<ByteSummaryStatistics>() {
+            @Override
+            public ByteSummaryStatistics get() {
+                return new ByteSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<ByteSummaryStatistics, T> accumulator = new BiConsumer<ByteSummaryStatistics, T>() {
+            @Override
+            public void accept(ByteSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsByte(t));
+            }
+        };
+
+        final BinaryOperator<ByteSummaryStatistics> combiner = new BinaryOperator<ByteSummaryStatistics>() {
+            @Override
+            public ByteSummaryStatistics apply(ByteSummaryStatistics a, ByteSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, ByteSummaryStatistics, ByteSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T> Collector<T, ?, ShortSummaryStatistics> summarizingShort(final ToShortFunction<? super T> mapper) {
+        final Supplier<ShortSummaryStatistics> supplier = new Supplier<ShortSummaryStatistics>() {
+            @Override
+            public ShortSummaryStatistics get() {
+                return new ShortSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<ShortSummaryStatistics, T> accumulator = new BiConsumer<ShortSummaryStatistics, T>() {
+            @Override
+            public void accept(ShortSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsShort(t));
+            }
+        };
+
+        final BinaryOperator<ShortSummaryStatistics> combiner = new BinaryOperator<ShortSummaryStatistics>() {
+            @Override
+            public ShortSummaryStatistics apply(ShortSummaryStatistics a, ShortSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, ShortSummaryStatistics, ShortSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
     /**
      * Returns a {@code Collector} which applies an {@code int}-producing
      * mapping function to each input element, and returns summary statistics
@@ -3323,6 +3409,32 @@ public final class Collectors {
         };
 
         return new CollectorImpl<T, LongSummaryStatistics, LongSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T> Collector<T, ?, FloatSummaryStatistics> summarizingFloat(final ToFloatFunction<? super T> mapper) {
+        final Supplier<FloatSummaryStatistics> supplier = new Supplier<FloatSummaryStatistics>() {
+            @Override
+            public FloatSummaryStatistics get() {
+                return new FloatSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<FloatSummaryStatistics, T> accumulator = new BiConsumer<FloatSummaryStatistics, T>() {
+            @Override
+            public void accept(FloatSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsFloat(t));
+            }
+        };
+
+        final BinaryOperator<FloatSummaryStatistics> combiner = new BinaryOperator<FloatSummaryStatistics>() {
+            @Override
+            public FloatSummaryStatistics apply(FloatSummaryStatistics a, FloatSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, FloatSummaryStatistics, FloatSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     /**

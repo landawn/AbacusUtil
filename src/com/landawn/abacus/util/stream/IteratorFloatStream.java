@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -1241,6 +1242,28 @@ final class IteratorFloatStream extends FloatStream {
     @Override
     public long count() {
         return elements.count();
+    }
+
+    @Override
+    public FloatSummaryStatistics summarize() {
+        final FloatSummaryStatistics result = new FloatSummaryStatistics();
+
+        while (elements.hasNext()) {
+            result.accept(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Float>> distribution() {
+        final float[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override

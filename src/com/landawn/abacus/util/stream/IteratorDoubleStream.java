@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -1242,6 +1243,28 @@ final class IteratorDoubleStream extends DoubleStream {
     @Override
     public long count() {
         return elements.count();
+    }
+
+    @Override
+    public DoubleSummaryStatistics summarize() {
+        final DoubleSummaryStatistics result = new DoubleSummaryStatistics();
+
+        while (elements.hasNext()) {
+            result.accept(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Double>> distribution() {
+        final double[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override

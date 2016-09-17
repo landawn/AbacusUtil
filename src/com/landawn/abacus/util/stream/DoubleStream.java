@@ -34,10 +34,12 @@ import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -791,6 +793,10 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @return the count of elements in this stream
      */
     public abstract long count();
+
+    public abstract DoubleSummaryStatistics summarize();
+
+    public abstract Optional<Map<String, Double>> distribution();
 
     /**
      * Returns whether any elements of this stream match the provided

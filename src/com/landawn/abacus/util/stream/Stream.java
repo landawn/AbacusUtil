@@ -52,7 +52,10 @@ import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiMap;
+import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IntList;
@@ -68,6 +71,7 @@ import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.RowIterator;
+import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1285,12 +1289,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper);
 
-    public abstract IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper);
-
-    public abstract LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper);
-
-    public abstract DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper);
-
     /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is
@@ -1304,6 +1302,24 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return the count of elements in this stream
      */
     public abstract long count();
+
+    public abstract CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper);
+
+    public abstract ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper);
+
+    public abstract ShortSummaryStatistics summarizeShort(ToShortFunction<? super T> mapper);
+
+    public abstract IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper);
+
+    public abstract LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper);
+
+    public abstract FloatSummaryStatistics summarizeFloat(ToFloatFunction<? super T> mapper);
+
+    public abstract DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper);
+
+    public abstract Optional<Map<String, T>> distribution();
+
+    public abstract Optional<Map<String, T>> distribution(Comparator<? super T> comparator);
 
     /**
      * Returns whether any elements of this stream match the provided

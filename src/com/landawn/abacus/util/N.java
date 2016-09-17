@@ -146,6 +146,7 @@ import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.LongPredicate;
@@ -20043,6 +20044,61 @@ public final class N {
         return Collections.disjoint(c1, c2);
     }
 
+    public static <T> void forEach(final Collection<T> c, final IndexedConsumer<? super T> action) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        int idx = 0;
+        for (T e : c) {
+            action.accept(idx++, e);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static <T> void forEach(final Collection<T> c, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+            return;
+        }
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(i, list.get(i));
+            }
+        } else {
+            final Iterator<T> iter = c.iterator();
+            int idx = 0;
+
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
+
+            while (iter.hasNext()) {
+                action.accept(idx, iter.next());
+
+                if (++idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+    }
+
     public static boolean[] filter(final boolean[] a, final BooleanPredicate filter) {
         return filter(a, 0, a.length, filter);
     }
@@ -30271,6 +30327,39 @@ public final class N {
      * @param a
      * @return a long number
      */
+    public static Long sum(final char... a) {
+        if (N.isNullOrEmpty(a)) {
+            return 0L;
+        }
+
+        return sum(a, 0, a.length);
+    }
+
+    public static Long sum(final char[] a, final int from, final int to) {
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
+            return 0L;
+        }
+
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum;
+    }
+
+    /**
+     *
+     * @param a
+     * @return a long number
+     */
     public static Long sum(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
@@ -30658,6 +30747,33 @@ public final class N {
      * @param a
      * @return a double number
      */
+    public static Double average(final char... a) {
+        if (N.isNullOrEmpty(a)) {
+            return 0d;
+        }
+
+        return average(a, 0, a.length);
+    }
+
+    public static Double average(final char[] a, final int from, final int to) {
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            if (to > 0) {
+                throw new IndexOutOfBoundsException();
+            }
+
+            return 0d;
+        }
+
+        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+    }
+
+    /**
+    *
+    * @param a
+    * @return a double number
+    */
     public static Double average(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;

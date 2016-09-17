@@ -583,6 +583,26 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
         return toIndex - fromIndex < k ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
+    public Long sum() {
+        return sum(0, size());
+    }
+
+    public Long sum(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.sum(elementData, fromIndex, toIndex);
+    }
+
+    public OptionalDouble average() {
+        return average(0, size());
+    }
+
+    public OptionalDouble average(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
+    }
+
     @Override
     public void forEach(final int fromIndex, final int toIndex, CharConsumer action) {
         checkIndex(fromIndex, toIndex);

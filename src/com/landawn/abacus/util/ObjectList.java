@@ -382,7 +382,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
             bOccurrences.add(b.get(i));
         }
 
-        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(elementData.getClass().getComponentType(), N.min(size(), N.max(9, size() - b.size()))));
+        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(getComponentType(), N.min(size(), N.max(9, size() - b.size()))));
 
         for (int i = 0, len = size(); i < len; i++) {
             if (bOccurrences.getAndRemove(elementData[i]) < 1) {
@@ -406,7 +406,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
             bOccurrences.add(b.get(i));
         }
 
-        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(elementData.getClass().getComponentType(), N.min(9, size(), b.size())));
+        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(getComponentType(), N.min(9, size(), b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
             if (bOccurrences.getAndRemove(elementData[i]) > 0) {
@@ -1176,7 +1176,8 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            return of(N.distinct(elementData, fromIndex, toIndex, comparator).toArray((T[]) N.newArray(elementData.getClass().getComponentType(), 0)));
+            final List<T> list = N.distinct(elementData, fromIndex, toIndex, comparator);
+            return of(list.toArray((T[]) N.newArray(getComponentType(), list.size())));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
@@ -1198,7 +1199,8 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            return of(N.distinct(elementData, fromIndex, toIndex, keyMapper).toArray((T[]) N.newArray(elementData.getClass().getComponentType(), 0)));
+            final List<T> list = N.distinct(elementData, fromIndex, toIndex, keyMapper);
+            return of(list.toArray((T[]) N.newArray(getComponentType(), list.size())));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
@@ -1321,7 +1323,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
     public <R extends com.landawn.abacus.util.ArrayList> R unboxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        final Class<?> cls = elementData.getClass().getComponentType();
+        final Class<?> cls = getComponentType();
 
         if (cls.equals(Integer.class)) {
             return (R) IntList.of(Array.unbox((Integer[]) elementData, fromIndex, toIndex, 0));
@@ -1470,6 +1472,10 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
     @Override
     public String toString() {
         return size == 0 ? "[]" : N.toString(elementData, 0, size);
+    }
+
+    private Class<?> getComponentType() {
+        return elementData.getClass().getComponentType();
     }
 
     private void ensureCapacityInternal(int minCapacity) {

@@ -34,10 +34,12 @@ import java.util.Set;
 
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -791,6 +793,10 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * @return the count of elements in this stream
      */
     public abstract long count();
+
+    public abstract FloatSummaryStatistics summarize();
+
+    public abstract Optional<Map<String, Float>> distribution();
 
     /**
      * Returns whether any elements of this stream match the provided

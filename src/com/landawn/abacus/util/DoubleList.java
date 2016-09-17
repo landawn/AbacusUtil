@@ -56,7 +56,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
      * 
      * @param a
      */
-    public DoubleList(double... a) {
+    public DoubleList(double[] a) {
         this();
 
         elementData = a;

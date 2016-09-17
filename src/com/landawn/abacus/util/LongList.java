@@ -56,7 +56,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
      * 
      * @param a
      */
-    public LongList(long... a) {
+    public LongList(long[] a) {
         this();
 
         elementData = a;

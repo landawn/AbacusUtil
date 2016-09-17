@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -990,6 +991,28 @@ final class IteratorByteStream extends ByteStream {
     @Override
     public long count() {
         return elements.count();
+    }
+
+    @Override
+    public ByteSummaryStatistics summarize() {
+        final ByteSummaryStatistics result = new ByteSummaryStatistics();
+
+        while (elements.hasNext()) {
+            result.accept(elements.next());
+        }
+
+        return result;
+    }
+
+    @Override
+    public Optional<Map<String, Byte>> distribution() {
+        final byte[] a = sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(N.distribution(a));
     }
 
     @Override
