@@ -17253,23 +17253,29 @@ public final class N {
         Array.sort(c, fromIndex, toIndex, cmp);
     }
 
-    /*
+    public static void parallelSort(final char[] a) {
+        Array.parallelSort(a);
+    }
+
+    public static void parallelSort(final char[] a, final int fromIndex, final int toIndex) {
+        Array.parallelSort(a, fromIndex, toIndex);
+    }
+
     public static void parallelSort(final byte[] a) {
-        M.parallelSort(a);
+        Array.parallelSort(a);
     }
-    
+
     public static void parallelSort(final byte[] a, final int fromIndex, final int toIndex) {
-        M.parallelSort(a, fromIndex, toIndex);
+        Array.parallelSort(a, fromIndex, toIndex);
     }
-    
+
     public static void parallelSort(final short[] a) {
-        M.parallelSort(a);
+        Array.parallelSort(a);
     }
-    
+
     public static void parallelSort(final short[] a, final int fromIndex, final int toIndex) {
-        M.parallelSort(a, fromIndex, toIndex);
+        Array.parallelSort(a, fromIndex, toIndex);
     }
-    */
 
     public static void parallelSort(final int[] a) {
         Array.parallelSort(a);

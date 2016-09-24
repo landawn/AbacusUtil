@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -21,9 +20,11 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -42,12 +43,11 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class ArrayIntStream extends IntStream {
+final class ArrayIntStream extends AbstractIntStream {
     private final int[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     ArrayIntStream(int[] values) {
         this(values, null);
@@ -70,13 +70,14 @@ final class ArrayIntStream extends IntStream {
     }
 
     ArrayIntStream(int[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -1045,7 +1046,7 @@ final class ArrayIntStream extends IntStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && (comparator == null || comparator == Stream.INT_COMPARATOR)) {
+        } else if (sorted && Stream.isSameComparator(comparator, Stream.INT_COMPARATOR)) {
             return new ArrayIntStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayIntStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -1055,7 +1056,7 @@ final class ArrayIntStream extends IntStream {
     @Override
     public IntStream sorted() {
         if (sorted) {
-            return new ArrayIntStream(elements, fromIndex, toIndex, closeHandlers, sorted);
+            return this;
         }
 
         final int[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -1063,16 +1064,16 @@ final class ArrayIntStream extends IntStream {
         return new ArrayIntStream(a, closeHandlers, true);
     }
 
-    @Override
-    public IntStream parallelSorted() {
-        if (sorted) {
-            return new ArrayIntStream(elements, fromIndex, toIndex, closeHandlers, sorted);
-        }
-
-        final int[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a);
-        return new ArrayIntStream(a, closeHandlers, true);
-    }
+    //    @Override
+    //    public IntStream parallelSorted() {
+    //        if (sorted) {
+    //            return this;
+    //        }
+    //
+    //        final int[] a = N.copyOfRange(elements, fromIndex, toIndex);
+    //        N.parallelSort(a);
+    //        return new ArrayIntStream(a, closeHandlers, true);
+    //    }
 
     @Override
     public IntStream peek(IntConsumer action) {
@@ -1401,6 +1402,8 @@ final class ArrayIntStream extends IntStream {
     public OptionalInt min() {
         if (count() == 0) {
             return OptionalInt.empty();
+        } else if (sorted) {
+            return OptionalInt.of(elements[fromIndex]);
         }
 
         return OptionalInt.of(N.min(elements, fromIndex, toIndex));
@@ -1410,6 +1413,8 @@ final class ArrayIntStream extends IntStream {
     public OptionalInt max() {
         if (count() == 0) {
             return OptionalInt.empty();
+        } else if (sorted) {
+            return OptionalInt.of(elements[toIndex - 1]);
         }
 
         return OptionalInt.of(N.max(elements, fromIndex, toIndex));
@@ -1419,6 +1424,8 @@ final class ArrayIntStream extends IntStream {
     public OptionalInt kthLargest(int k) {
         if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalInt.empty();
+        } else if (sorted) {
+            return OptionalInt.of(elements[toIndex - k]);
         }
 
         return OptionalInt.of(N.kthLargest(elements, fromIndex, toIndex, k));
@@ -1456,11 +1463,11 @@ final class ArrayIntStream extends IntStream {
 
     @Override
     public Optional<Map<String, Integer>> distribution() {
-        final int[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (count() == 0) {
             return Optional.empty();
         }
+
+        final int[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1544,11 +1551,6 @@ final class ArrayIntStream extends IntStream {
         }
 
         return OptionalInt.empty();
-    }
-
-    @Override
-    public IntStream append(IntStream stream) {
-        return IntStream.concat(this, stream);
     }
 
     @Override
@@ -1707,7 +1709,17 @@ final class ArrayIntStream extends IntStream {
     }
 
     @Override
-    public Iterator<Integer> iterator() {
+    public IntStream append(IntStream stream) {
+        return IntStream.concat(this, stream);
+    }
+
+    @Override
+    public IntStream merge(IntStream b, IntBiFunction<Nth> nextSelector) {
+        return IntStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Integer> iterator() {
         return new ImmutableIterator<Integer>() {
             private int cursor = fromIndex;
 
@@ -1749,7 +1761,7 @@ final class ArrayIntStream extends IntStream {
     }
 
     @Override
-    ImmutableIntIterator intIterator() {
+    public ImmutableIntIterator intIterator() {
         return new ImmutableIntIterator() {
             private int cursor = fromIndex;
 
@@ -1785,38 +1797,34 @@ final class ArrayIntStream extends IntStream {
     }
 
     @Override
-    public IntStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new ArrayIntStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public IntStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public IntStream parallel(int maxThreadNum, Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelArrayIntStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public IntStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new ArrayIntStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
     }
 }

@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -20,9 +19,11 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
@@ -38,12 +39,11 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class ArrayDoubleStream extends DoubleStream {
+final class ArrayDoubleStream extends AbstractDoubleStream {
     private final double[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     ArrayDoubleStream(double[] values) {
         this(values, null);
@@ -66,13 +66,14 @@ final class ArrayDoubleStream extends DoubleStream {
     }
 
     ArrayDoubleStream(double[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -759,7 +760,7 @@ final class ArrayDoubleStream extends DoubleStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && (comparator == null || comparator == Stream.DOUBLE_COMPARATOR)) {
+        } else if (sorted && Stream.isSameComparator(comparator, Stream.DOUBLE_COMPARATOR)) {
             return new ArrayDoubleStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayDoubleStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -769,7 +770,7 @@ final class ArrayDoubleStream extends DoubleStream {
     @Override
     public DoubleStream sorted() {
         if (sorted) {
-            return new ArrayDoubleStream(elements, fromIndex, toIndex, closeHandlers, sorted);
+            return this;
         }
 
         final double[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -777,16 +778,16 @@ final class ArrayDoubleStream extends DoubleStream {
         return new ArrayDoubleStream(a, closeHandlers, true);
     }
 
-    @Override
-    public DoubleStream parallelSorted() {
-        if (sorted) {
-            return new ArrayDoubleStream(elements, fromIndex, toIndex, closeHandlers, sorted);
-        }
-
-        final double[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a);
-        return new ArrayDoubleStream(a, closeHandlers, true);
-    }
+    //    @Override
+    //    public DoubleStream parallelSorted() {
+    //        if (sorted) {
+    //            return this;
+    //        }
+    //
+    //        final double[] a = N.copyOfRange(elements, fromIndex, toIndex);
+    //        N.parallelSort(a);
+    //        return new ArrayDoubleStream(a, closeHandlers, true);
+    //    }
 
     @Override
     public DoubleStream peek(DoubleConsumer action) {
@@ -1115,6 +1116,8 @@ final class ArrayDoubleStream extends DoubleStream {
     public OptionalDouble min() {
         if (count() == 0) {
             return OptionalDouble.empty();
+        } else if (sorted) {
+            return OptionalDouble.of(elements[fromIndex]);
         }
 
         return OptionalDouble.of(N.min(elements, fromIndex, toIndex));
@@ -1124,6 +1127,8 @@ final class ArrayDoubleStream extends DoubleStream {
     public OptionalDouble max() {
         if (count() == 0) {
             return OptionalDouble.empty();
+        } else if (sorted) {
+            return OptionalDouble.of(elements[toIndex - 1]);
         }
 
         return OptionalDouble.of(N.max(elements, fromIndex, toIndex));
@@ -1133,6 +1138,8 @@ final class ArrayDoubleStream extends DoubleStream {
     public OptionalDouble kthLargest(int k) {
         if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalDouble.empty();
+        } else if (sorted) {
+            return OptionalDouble.of(elements[toIndex - k]);
         }
 
         return OptionalDouble.of(N.kthLargest(elements, fromIndex, toIndex, k));
@@ -1252,11 +1259,11 @@ final class ArrayDoubleStream extends DoubleStream {
 
     @Override
     public Optional<Map<String, Double>> distribution() {
-        final double[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (count() == 0) {
             return Optional.empty();
         }
+
+        final double[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1343,17 +1350,22 @@ final class ArrayDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream append(DoubleStream stream) {
-        return DoubleStream.concat(this, stream);
-    }
-
-    @Override
     public Stream<Double> boxed() {
         return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? Stream.DOUBLE_COMPARATOR : null);
     }
 
     @Override
-    public Iterator<Double> iterator() {
+    public DoubleStream append(DoubleStream stream) {
+        return DoubleStream.concat(this, stream);
+    }
+
+    @Override
+    public DoubleStream merge(DoubleStream b, DoubleBiFunction<Nth> nextSelector) {
+        return DoubleStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Double> iterator() {
         return new ImmutableIterator<Double>() {
             private int cursor = fromIndex;
 
@@ -1395,7 +1407,7 @@ final class ArrayDoubleStream extends DoubleStream {
     }
 
     @Override
-    ImmutableDoubleIterator doubleIterator() {
+    public ImmutableDoubleIterator doubleIterator() {
         return new ImmutableDoubleIterator() {
             private int cursor = fromIndex;
 
@@ -1431,38 +1443,34 @@ final class ArrayDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new ArrayDoubleStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public DoubleStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public DoubleStream parallel(int maxThreadNum, Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public DoubleStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new ArrayDoubleStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
     }
 }

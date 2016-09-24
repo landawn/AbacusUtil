@@ -24,28 +24,39 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.Set;
 
+import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
+import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjShortConsumer;
+import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -111,7 +122,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract ShortStream filter(final ShortPredicate predicate, final long max);
 
     /**
-     * Keep the elements until the given predicate returns false.
+     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * @param predicate
      * @return
@@ -119,7 +130,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract ShortStream takeWhile(final ShortPredicate predicate);
 
     /**
-     * Keep the elements until the given predicate returns false.
+     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * @param predicate
      * @param max the maximum elements number to the new Stream.
@@ -128,7 +139,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract ShortStream takeWhile(final ShortPredicate predicate, final long max);
 
     /**
-     * Remove the elements until the given predicate returns false.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * 
      * @param predicate
@@ -137,7 +148,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract ShortStream dropWhile(final ShortPredicate predicate);
 
     /**
-     * Remove the elements until the given predicate returns false.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * @param predicate
      * @param max the maximum elements number to the new Stream.
@@ -614,7 +625,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * Sequential only
+     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -796,7 +807,16 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @param stream
      * @return
      */
+    @Override
     public abstract ShortStream append(ShortStream stream);
+
+    /**
+     * 
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public abstract ShortStream merge(final ShortStream b, final ShortBiFunction<Nth> nextSelector);
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -822,7 +842,10 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract Stream<Short> boxed();
 
-    abstract ImmutableShortIterator shortIterator();
+    @Override
+    public abstract ImmutableIterator<Short> iterator();
+
+    public abstract ImmutableShortIterator shortIterator();
 
     // Static factories
 
@@ -836,6 +859,21 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
 
     public static ShortStream of(final short[] a, final int startIndex, final int endIndex) {
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayShortStream(a, startIndex, endIndex);
+    }
+
+    public static ShortStream of(final ShortIterator iterator) {
+        return iterator == null ? empty()
+                : new IteratorShortStream(iterator instanceof ImmutableShortIterator ? (ImmutableShortIterator) iterator : new ImmutableShortIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iterator.hasNext();
+                    }
+
+                    @Override
+                    public short next() {
+                        return iterator.next();
+                    }
+                });
     }
 
     public static ShortStream from(final int... a) {
@@ -1108,5 +1146,470 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
                 }
             }
         });
+    }
+
+    public static ShortStream concat(final ShortIterator... a) {
+        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
+    }
+
+    public static ShortStream concat(final Collection<? extends ShortIterator> c) {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorShortStream(new ImmutableShortIterator() {
+            private final Iterator<? extends ShortIterator> iter = c.iterator();
+            private ShortIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public short next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream merge(final short[] a, final short[] b, final ShortBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return of(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return of(a);
+        }
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private final int lenA = a.length;
+            private final int lenB = b.length;
+            private int cursorA = 0;
+            private int cursorB = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursorA < lenA || cursorB < lenB;
+            }
+
+            @Override
+            public short next() {
+                if (cursorA < lenA) {
+                    if (cursorB < lenB) {
+                        if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
+                            return a[cursorA++];
+                        } else {
+                            return b[cursorB++];
+                        }
+                    } else {
+                        return a[cursorA++];
+                    }
+                } else if (cursorB < lenB) {
+                    return b[cursorB++];
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream merge(final ShortStream a, final ShortStream b, final ShortBiFunction<Nth> nextSelector) {
+        final ShortIterator iterA = a.shortIterator();
+        final ShortIterator iterB = b.shortIterator();
+
+        if (iterA.hasNext() == false) {
+            return b;
+        } else if (iterB.hasNext() == false) {
+            return a;
+        }
+
+        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream merge(final ShortIterator a, final ShortIterator b, final ShortBiFunction<Nth> nextSelector) {
+        if (a.hasNext() == false) {
+            return of(b);
+        } else if (b.hasNext() == false) {
+            return of(a);
+        }
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private short nextA = 0;
+            private short nextB = 0;
+            private boolean hasNextA = false;
+            private boolean hasNextB = false;
+
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || hasNextA || hasNextB;
+            }
+
+            @Override
+            public short next() {
+                if (hasNextA) {
+                    if (b.hasNext()) {
+                        if (nextSelector.apply(nextA, (nextB = b.next())) == Nth.FIRST) {
+                            hasNextA = false;
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            return nextB;
+                        }
+                    } else {
+                        hasNextA = false;
+                        return nextA;
+                    }
+                } else if (hasNextB) {
+                    if (a.hasNext()) {
+                        if (nextSelector.apply((nextA = a.next()), nextB) == Nth.FIRST) {
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            hasNextB = false;
+                            return nextB;
+                        }
+                    } else {
+                        hasNextB = false;
+                        return nextB;
+                    }
+                } else if (a.hasNext()) {
+                    if (b.hasNext()) {
+                        if (nextSelector.apply((nextA = a.next()), (nextB = b.next())) == Nth.FIRST) {
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            return nextB;
+                        }
+                    } else {
+                        return a.next();
+                    }
+                } else if (b.hasNext()) {
+                    return b.next();
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream merge(final ShortStream[] a, final ShortBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return a[0];
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        final ShortIterator[] iters = new ShortIterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].shortIterator();
+        }
+
+        return merge(iters, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream merge(final ShortIterator[] a, final ShortBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        return merge(Arrays.asList(a), nextSelector);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream merge(final Collection<? extends ShortIterator> c, final ShortBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends ShortIterator> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        }
+
+        final Iterator<? extends ShortIterator> iter = c.iterator();
+        ShortStream result = merge(iter.next(), iter.next(), nextSelector);
+
+        while (iter.hasNext()) {
+            result = merge(result.shortIterator(), iter.next(), nextSelector);
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream parallelMerge(final ShortStream[] a, final ShortBiFunction<Nth> nextSelector) {
+        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static ShortStream parallelMerge(final ShortStream[] a, final ShortBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return a[0];
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        final ShortIterator[] iters = new ShortIterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].shortIterator();
+        }
+
+        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream parallelMerge(final ShortIterator[] a, final ShortBiFunction<Nth> nextSelector) {
+        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static ShortStream parallelMerge(final ShortIterator[] a, final ShortBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ShortStream parallelMerge(final Collection<? extends ShortIterator> c, final ShortBiFunction<Nth> nextSelector) {
+        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static ShortStream parallelMerge(final Collection<? extends ShortIterator> c, final ShortBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends ShortIterator> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        } else if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        }
+
+        final Queue<ShortIterator> queue = new LinkedList<>();
+        queue.addAll(c);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final MutableInt cnt = MutableInt.of(c.size());
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
+
+        for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
+            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    ShortIterator a = null;
+                    ShortIterator b = null;
+                    ShortIterator c = null;
+
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (queue) {
+                                if (cnt.intValue() > 2 && queue.size() > 1) {
+                                    a = queue.poll();
+                                    b = queue.poll();
+
+                                    cnt.decrement();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            c = ImmutableShortIterator.of(merge(a, b, nextSelector).toArray());
+
+                            synchronized (queue) {
+                                queue.offer(c);
+                            }
+                        }
+                    } catch (Throwable e) {
+                        Stream.setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        try {
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
+            }
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
+
+        // Should never happen.
+        if (queue.size() != 2) {
+            throw new AbacusException("Unknown error happened.");
+        }
+
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 }

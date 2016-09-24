@@ -1,3 +1,13 @@
+========Changes in 0.9.16=========================================================================
+
+1, Supports Parallel Stream
+
+2, Remove public static <T> Stream<T> queued(...) in Stream and add stream.queued(...)
+
+3, Refacotring: change the order of parameter 'queueSize' in parallelZip(...) in Stream.
+
+4, bug fix and improvements.
+
 ========Changes in 0.9.15=========================================================================
 
 1, Add summarize/distribution to Stream/IntStream/DoubleStream/....

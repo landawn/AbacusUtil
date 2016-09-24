@@ -94,7 +94,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final byte[] elementData = new byte[endIndex - startIndex];
 
@@ -118,7 +118,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final byte[] elementData = new byte[endIndex - startIndex];
 

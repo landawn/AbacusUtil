@@ -24,27 +24,38 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.Set;
 
+import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -116,7 +127,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract IntStream filter(final IntPredicate predicate, final long max);
 
     /**
-     * Keep the elements until the given predicate returns false.
+     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * @param predicate
      * @return
@@ -124,7 +135,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract IntStream takeWhile(final IntPredicate predicate);
 
     /**
-     * Keep the elements until the given predicate returns false.
+     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * @param predicate
      * @param max the maximum elements number to the new Stream.
@@ -133,7 +144,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract IntStream takeWhile(final IntPredicate predicate, final long max);
 
     /**
-     * Remove the elements until the given predicate returns false.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * 
      * @param predicate
@@ -142,7 +153,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract IntStream dropWhile(final IntPredicate predicate);
 
     /**
-     * Remove the elements until the given predicate returns false.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * @param predicate
      * @param max the maximum elements number to the new Stream.
@@ -294,7 +305,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract IntStream sorted();
 
-    public abstract IntStream parallelSorted();
+    // public abstract IntStream parallelSorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -665,7 +676,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * Sequential only
+     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -872,7 +883,16 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @param stream
      * @return
      */
+    @Override
     public abstract IntStream append(IntStream stream);
+
+    /**
+     * 
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public abstract IntStream merge(final IntStream b, final IntBiFunction<Nth> nextSelector);
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -922,7 +942,10 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract Stream<Integer> boxed();
 
-    abstract ImmutableIntIterator intIterator();
+    @Override
+    public abstract ImmutableIterator<Integer> iterator();
+
+    public abstract ImmutableIntIterator intIterator();
 
     // Static factories
 
@@ -936,6 +959,21 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
 
     public static IntStream of(final int[] a, final int startIndex, final int endIndex) {
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayIntStream(a, startIndex, endIndex);
+    }
+
+    public static IntStream of(final IntIterator iterator) {
+        return iterator == null ? empty()
+                : new IteratorIntStream(iterator instanceof ImmutableIntIterator ? (ImmutableIntIterator) iterator : new ImmutableIntIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iterator.hasNext();
+                    }
+
+                    @Override
+                    public int next() {
+                        return iterator.next();
+                    }
+                });
     }
 
     public static IntStream from(final byte... a) {
@@ -962,27 +1000,27 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : ArrayCharStream.of(a, startIndex, endIndex).asIntStream();
     }
 
-    /**
-     * Takes the chars in the specified String as the elements of the Stream
-     * 
-     * @param str
-     * @return
-     */
-    public static IntStream from(final String str) {
-        return N.isNullOrEmpty(str) ? empty() : CharStream.from(str).asIntStream();
-    }
-
-    /**
-     * Takes the chars in the specified String as the elements of the Stream
-     * 
-     * @param str
-     * @param startIndex
-     * @param endIndex
-     * @return
-     */
-    public static IntStream from(final String str, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(str) && (startIndex == 0 && endIndex == 0) ? empty() : CharStream.from(str, startIndex, endIndex).asIntStream();
-    }
+    //    /**
+    //     * Takes the chars in the specified String as the elements of the Stream
+    //     * 
+    //     * @param str
+    //     * @return
+    //     */
+    //    public static IntStream from(final String str) {
+    //        return N.isNullOrEmpty(str) ? empty() : CharStream.from(str).asIntStream();
+    //    }
+    //
+    //    /**
+    //     * Takes the chars in the specified String as the elements of the Stream
+    //     * 
+    //     * @param str
+    //     * @param startIndex
+    //     * @param endIndex
+    //     * @return
+    //     */
+    //    public static IntStream from(final String str, final int startIndex, final int endIndex) {
+    //        return N.isNullOrEmpty(str) && (startIndex == 0 && endIndex == 0) ? empty() : CharStream.from(str, startIndex, endIndex).asIntStream();
+    //    }
 
     public static IntStream range(final int startInclusive, final int endExclusive) {
         return of(Array.range(startInclusive, endExclusive));
@@ -1246,5 +1284,470 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
                 }
             }
         });
+    }
+
+    public static IntStream concat(final IntIterator... a) {
+        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
+    }
+
+    public static IntStream concat(final Collection<? extends IntIterator> c) {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorIntStream(new ImmutableIntIterator() {
+            private final Iterator<? extends IntIterator> iter = c.iterator();
+            private IntIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream merge(final int[] a, final int[] b, final IntBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return of(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return of(a);
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private final int lenA = a.length;
+            private final int lenB = b.length;
+            private int cursorA = 0;
+            private int cursorB = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursorA < lenA || cursorB < lenB;
+            }
+
+            @Override
+            public int next() {
+                if (cursorA < lenA) {
+                    if (cursorB < lenB) {
+                        if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
+                            return a[cursorA++];
+                        } else {
+                            return b[cursorB++];
+                        }
+                    } else {
+                        return a[cursorA++];
+                    }
+                } else if (cursorB < lenB) {
+                    return b[cursorB++];
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream merge(final IntStream a, final IntStream b, final IntBiFunction<Nth> nextSelector) {
+        final IntIterator iterA = a.intIterator();
+        final IntIterator iterB = b.intIterator();
+
+        if (iterA.hasNext() == false) {
+            return b;
+        } else if (iterB.hasNext() == false) {
+            return a;
+        }
+
+        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream merge(final IntIterator a, final IntIterator b, final IntBiFunction<Nth> nextSelector) {
+        if (a.hasNext() == false) {
+            return of(b);
+        } else if (b.hasNext() == false) {
+            return of(a);
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int nextA = 0;
+            private int nextB = 0;
+            private boolean hasNextA = false;
+            private boolean hasNextB = false;
+
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || hasNextA || hasNextB;
+            }
+
+            @Override
+            public int next() {
+                if (hasNextA) {
+                    if (b.hasNext()) {
+                        if (nextSelector.apply(nextA, (nextB = b.next())) == Nth.FIRST) {
+                            hasNextA = false;
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            return nextB;
+                        }
+                    } else {
+                        hasNextA = false;
+                        return nextA;
+                    }
+                } else if (hasNextB) {
+                    if (a.hasNext()) {
+                        if (nextSelector.apply((nextA = a.next()), nextB) == Nth.FIRST) {
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            hasNextB = false;
+                            return nextB;
+                        }
+                    } else {
+                        hasNextB = false;
+                        return nextB;
+                    }
+                } else if (a.hasNext()) {
+                    if (b.hasNext()) {
+                        if (nextSelector.apply((nextA = a.next()), (nextB = b.next())) == Nth.FIRST) {
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            return nextB;
+                        }
+                    } else {
+                        return a.next();
+                    }
+                } else if (b.hasNext()) {
+                    return b.next();
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream merge(final IntStream[] a, final IntBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return a[0];
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        final IntIterator[] iters = new IntIterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].intIterator();
+        }
+
+        return merge(iters, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream merge(final IntIterator[] a, final IntBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        return merge(Arrays.asList(a), nextSelector);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream merge(final Collection<? extends IntIterator> c, final IntBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends IntIterator> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        }
+
+        final Iterator<? extends IntIterator> iter = c.iterator();
+        IntStream result = merge(iter.next(), iter.next(), nextSelector);
+
+        while (iter.hasNext()) {
+            result = merge(result.intIterator(), iter.next(), nextSelector);
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream parallelMerge(final IntStream[] a, final IntBiFunction<Nth> nextSelector) {
+        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static IntStream parallelMerge(final IntStream[] a, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return a[0];
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        final IntIterator[] iters = new IntIterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].intIterator();
+        }
+
+        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream parallelMerge(final IntIterator[] a, final IntBiFunction<Nth> nextSelector) {
+        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static IntStream parallelMerge(final IntIterator[] a, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream parallelMerge(final Collection<? extends IntIterator> c, final IntBiFunction<Nth> nextSelector) {
+        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static IntStream parallelMerge(final Collection<? extends IntIterator> c, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends IntIterator> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        } else if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        }
+
+        final Queue<IntIterator> queue = new LinkedList<>();
+        queue.addAll(c);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final MutableInt cnt = MutableInt.of(c.size());
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
+
+        for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
+            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    IntIterator a = null;
+                    IntIterator b = null;
+                    IntIterator c = null;
+
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (queue) {
+                                if (cnt.intValue() > 2 && queue.size() > 1) {
+                                    a = queue.poll();
+                                    b = queue.poll();
+
+                                    cnt.decrement();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            c = ImmutableIntIterator.of(merge(a, b, nextSelector).toArray());
+
+                            synchronized (queue) {
+                                queue.offer(c);
+                            }
+                        }
+                    } catch (Throwable e) {
+                        Stream.setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        try {
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
+            }
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
+
+        // Should never happen.
+        if (queue.size() != 2) {
+            throw new AbacusException("Unknown error happened.");
+        }
+
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 }

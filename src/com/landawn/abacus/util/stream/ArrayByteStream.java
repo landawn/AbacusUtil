@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -20,9 +19,11 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
@@ -36,12 +37,11 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class ArrayByteStream extends ByteStream {
+final class ArrayByteStream extends AbstractByteStream {
     private final byte[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     ArrayByteStream(byte[] values) {
         this(values, null);
@@ -64,13 +64,14 @@ final class ArrayByteStream extends ByteStream {
     }
 
     ArrayByteStream(byte[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -559,7 +560,7 @@ final class ArrayByteStream extends ByteStream {
     @Override
     public ByteStream sorted() {
         if (sorted) {
-            return new ArrayByteStream(elements, fromIndex, toIndex, closeHandlers, sorted);
+            return this;
         }
 
         final byte[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -894,6 +895,8 @@ final class ArrayByteStream extends ByteStream {
     public OptionalByte min() {
         if (count() == 0) {
             return OptionalByte.empty();
+        } else if (sorted) {
+            return OptionalByte.of(elements[fromIndex]);
         }
 
         return OptionalByte.of(N.min(elements, fromIndex, toIndex));
@@ -903,6 +906,8 @@ final class ArrayByteStream extends ByteStream {
     public OptionalByte max() {
         if (count() == 0) {
             return OptionalByte.empty();
+        } else if (sorted) {
+            return OptionalByte.of(elements[toIndex - 1]);
         }
 
         return OptionalByte.of(N.max(elements, fromIndex, toIndex));
@@ -912,6 +917,8 @@ final class ArrayByteStream extends ByteStream {
     public OptionalByte kthLargest(int k) {
         if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalByte.empty();
+        } else if (sorted) {
+            return OptionalByte.of(elements[toIndex - k]);
         }
 
         return OptionalByte.of(N.kthLargest(elements, fromIndex, toIndex, k));
@@ -949,11 +956,11 @@ final class ArrayByteStream extends ByteStream {
 
     @Override
     public Optional<Map<String, Byte>> distribution() {
-        final byte[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (count() == 0) {
             return Optional.empty();
         }
+
+        final byte[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1040,11 +1047,6 @@ final class ArrayByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream append(ByteStream stream) {
-        return ByteStream.concat(this, stream);
-    }
-
-    @Override
     public IntStream asIntStream() {
         //        final int[] a = new int[toIndex - fromIndex];
         //
@@ -1100,7 +1102,17 @@ final class ArrayByteStream extends ByteStream {
     }
 
     @Override
-    public Iterator<Byte> iterator() {
+    public ByteStream append(ByteStream stream) {
+        return ByteStream.concat(this, stream);
+    }
+
+    @Override
+    public ByteStream merge(ByteStream b, ByteBiFunction<Nth> nextSelector) {
+        return ByteStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Byte> iterator() {
         return new ImmutableIterator<Byte>() {
             private int cursor = fromIndex;
 
@@ -1142,7 +1154,7 @@ final class ArrayByteStream extends ByteStream {
     }
 
     @Override
-    ImmutableByteIterator byteIterator() {
+    public ImmutableByteIterator byteIterator() {
         return new ImmutableByteIterator() {
             private int cursor = fromIndex;
 
@@ -1178,38 +1190,34 @@ final class ArrayByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new ArrayByteStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public ByteStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public ByteStream parallel(int maxThreadNum, Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelArrayByteStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public ByteStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new ArrayByteStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
     }
 }

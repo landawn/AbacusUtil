@@ -35,12 +35,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -48,13 +51,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.AbacusIOException;
+import com.landawn.abacus.logging.Logger;
+import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.ErrorBreakIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
@@ -66,7 +74,10 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
+import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullBreakIterator;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
@@ -90,6 +101,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
+import com.landawn.abacus.util.stream.AbstractStream.LocalLinkedHashSet;
 import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
 
 /**
@@ -198,11 +210,24 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
+    static final Logger logger = LoggerFactory.getLogger(Stream.class);
+
+    static final Object NONE = new Object();
+
+    static final int THREAD_POOL_SIZE = 512;
+
+    static final AsyncExecutor asyncExecutor = new AsyncExecutor(Stream.THREAD_POOL_SIZE, 300L, TimeUnit.SECONDS);
+
+    static final int DEFAULT_MAX_THREAD_NUM = N.CPU_CORES;
+
+    static final int DEFAULT_READING_THREAD_NUM = 8;
+
+    static final int DEFAULT_QUEUE_SIZE = 16;
+
+    static final Splitter DEFAULT_SPILTTER = Splitter.ITERATOR;
 
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY);
-
-    private static final int DEFAULT_READING_THREAD_NUM = 64;
 
     static final Comparator<Character> CHAR_COMPARATOR = new Comparator<Character>() {
         @Override
@@ -273,7 +298,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         defaultComparator.put(Object.class, OBJECT_COMPARATOR);
     }
 
-    static final Object NONE = new Object();
     static final Field listElementDataField;
     static final Field listSizeField;
     static volatile boolean isListElementDataFieldGettable = true;
@@ -333,7 +357,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> filter(final Predicate<? super T> predicate, final long max);
 
     /**
-     * Keep the elements until the given predicate returns false.
+     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * @param predicate
      * @return
@@ -341,7 +365,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> takeWhile(final Predicate<? super T> predicate);
 
     /**
-     * Keep the elements until the given predicate returns false.
+     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * @param predicate
      * @param max the maximum elements number to the new Stream.
@@ -350,7 +374,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> takeWhile(final Predicate<? super T> predicate, final long max);
 
     /**
-     * Remove the elements until the given predicate returns false.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * 
      * @param predicate
@@ -359,7 +383,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> dropWhile(final Predicate<? super T> predicate);
 
     /**
-     * Remove the elements until the given predicate returns false.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * @param predicate
      * @param max the maximum elements number to the new Stream.
@@ -697,9 +721,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract Stream<T> sorted(Comparator<? super T> comparator);
 
-    public abstract Stream<T> parallelSorted();
-
-    public abstract Stream<T> parallelSorted(Comparator<? super T> comparator);
+    //    public abstract Stream<T> parallelSorted();
+    //
+    //    public abstract Stream<T> parallelSorted(Comparator<? super T> comparator);
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -1112,7 +1136,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
 
     /**
-     * Sequential only
+     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param identity
      * @param accumulator
@@ -1174,7 +1198,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * Sequential only
+     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -1272,10 +1296,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     /**
      * 
      * @param k
-     * @param cmp
+     * @param comparator
      * @return Optional.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
-    public abstract Optional<T> kthLargest(int k, Comparator<? super T> cmp);
+    public abstract Optional<T> kthLargest(int k, Comparator<? super T> comparator);
 
     public abstract Long sumInt(ToIntFunction<? super T> mapper);
 
@@ -1431,13 +1455,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Optional<T> findAny(Predicate<? super T> predicate);
 
     /**
-     * Append the specified stream to the tail of this stream.
-     * @param stream
-     * @return
-     */
-    public abstract Stream<T> append(Stream<? extends T> stream);
-
-    /**
      * @param c
      * @return
      * @see Collection#removeAll(Collection)
@@ -1489,11 +1506,66 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract Stream<T> intersect(Function<? super T, ?> mapper, Collection<?> c);
 
     /**
+     * Skip all the <code>null</code> elements in the stream.
+     * 
+     * @return
+     */
+    public abstract Stream<T> skipNull();
+
+    /**
+     * Break the iteration of the Stream if null element occurs
+     *  
+     * @return
+     * @see NullBreakIterator
+     */
+    public abstract Stream<T> breakWhileNull();
+
+    /**
+     * Break the iteration of the Stream if errors occurs
+     * 
+     * @return
+     * @see ErrorBreakIterator
+     */
+    public abstract Stream<T> breakWhileError();
+
+    /**
+     * Break the iteration of the Stream if error still occurs after retry specified <code>maxRetries</code> times.
+     * 
+     * @param maxRetries Default value is 0, no retry.
+     * @param retryInterval
+     * @return
+     * @see ErrorBreakIterator
+     */
+    public abstract Stream<T> breakWhileError(int maxRetries, long retryInterval);
+
+    public abstract Stream<T> queued();
+
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
+     * 
+     * @param queueSize Default value is 8
+     * @return
+     */
+    public abstract Stream<T> queued(int queueSize);
+
+    /**
      * Append the specified stream to the tail of this stream.
      * @param stream
      * @return
      */
-    public abstract Stream<T> append(Iterator<? extends T> stream);
+    @Override
+    public abstract Stream<T> append(final Stream<T> stream);
+
+    /**
+     * 
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public abstract Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector);
+
+    @Override
+    public abstract ImmutableIterator<T> iterator();
 
     // Static factories
 
@@ -1668,6 +1740,62 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         return of(new RowIterator(resultSet), startIndex, endIndex);
     }
 
+    public static Stream<Character> from(char... a) {
+        return CharStream.of(a).boxed();
+    }
+
+    public static Stream<Character> from(char[] a, int fromIndex, int toIndex) {
+        return CharStream.of(a, fromIndex, toIndex).boxed();
+    }
+
+    public static Stream<Byte> from(byte... a) {
+        return ByteStream.of(a).boxed();
+    }
+
+    public static Stream<Byte> from(byte[] a, int fromIndex, int toIndex) {
+        return ByteStream.of(a, fromIndex, toIndex).boxed();
+    }
+
+    public static Stream<Short> from(short... a) {
+        return ShortStream.of(a).boxed();
+    }
+
+    public static Stream<Short> from(short[] a, int fromIndex, int toIndex) {
+        return ShortStream.of(a, fromIndex, toIndex).boxed();
+    }
+
+    public static Stream<Integer> from(int... a) {
+        return IntStream.of(a).boxed();
+    }
+
+    public static Stream<Integer> from(int[] a, int fromIndex, int toIndex) {
+        return IntStream.of(a, fromIndex, toIndex).boxed();
+    }
+
+    public static Stream<Long> from(long... a) {
+        return LongStream.of(a).boxed();
+    }
+
+    public static Stream<Long> from(long[] a, int fromIndex, int toIndex) {
+        return LongStream.of(a, fromIndex, toIndex).boxed();
+    }
+
+    public static Stream<Float> from(float... a) {
+        return FloatStream.of(a).boxed();
+    }
+
+    public static Stream<Float> from(float[] a, int fromIndex, int toIndex) {
+        return FloatStream.of(a, fromIndex, toIndex).boxed();
+    }
+
+    public static Stream<Double> from(double... a) {
+        return DoubleStream.of(a).boxed();
+    }
+
+    public static Stream<Double> from(double[] a, int fromIndex, int toIndex) {
+        return DoubleStream.of(a, fromIndex, toIndex).boxed();
+    }
+
     public static <T> Stream<T> repeat(T element, int n) {
         return of(Array.repeat(element, n));
     }
@@ -1818,43 +1946,43 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         });
     }
 
-    public static <T> Stream<T> queued(Stream<? extends T> stream) {
-        return queued(stream, 128);
-    }
-
-    /**
-     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
-     * 
-     * @param stream
-     * @param queueSize Default value is 128
-     * @return
-     */
-    public static <T> Stream<T> queued(Stream<? extends T> stream, int queueSize) {
-        if (stream.iterator() instanceof QueuedIterator && ((QueuedIterator<? extends T>) stream.iterator()).max() >= queueSize) {
-            return (Stream<T>) stream;
-        } else {
-            return parallelConcat(N.asArray(stream), 1, queueSize);
-        }
-    }
-
-    public static <T> Stream<T> queued(Iterator<? extends T> iterator) {
-        return queued(iterator, 128);
-    }
-
-    /**
-     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
-     * 
-     * @param iterator
-     * @param queueSize Default value is 128
-     * @return
-     */
-    public static <T> Stream<T> queued(Iterator<? extends T> iterator, int queueSize) {
-        if (iterator instanceof QueuedIterator && ((QueuedIterator<? extends T>) iterator).max() >= queueSize) {
-            return of(iterator);
-        } else {
-            return parallelConcat(N.asArray(iterator), 1, queueSize);
-        }
-    }
+    //    public static <T> Stream<T> queued(Stream<? extends T> stream) {
+    //        return queued(stream, DEFAULT_QUEUE_SIZE);
+    //    }
+    //
+    //    /**
+    //     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
+    //     * 
+    //     * @param stream
+    //     * @param queueSize Default value is 8
+    //     * @return
+    //     */
+    //    public static <T> Stream<T> queued(Stream<? extends T> stream, int queueSize) {
+    //        if (stream.iterator() instanceof QueuedIterator && ((QueuedIterator<? extends T>) stream.iterator()).max() >= queueSize) {
+    //            return (Stream<T>) stream;
+    //        } else {
+    //            return parallelConcat(N.asArray(stream), 1, queueSize);
+    //        }
+    //    }
+    //
+    //    public static <T> Stream<T> queued(Iterator<? extends T> iterator) {
+    //        return queued(iterator, DEFAULT_QUEUE_SIZE);
+    //    }
+    //
+    //    /**
+    //     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
+    //     * 
+    //     * @param iterator
+    //     * @param queueSize Default value is 8
+    //     * @return
+    //     */
+    //    public static <T> Stream<T> queued(Iterator<? extends T> iterator, int queueSize) {
+    //        if (iterator instanceof QueuedIterator && ((QueuedIterator<? extends T>) iterator).max() >= queueSize) {
+    //            return of(iterator);
+    //        } else {
+    //            return parallelConcat(N.asArray(iterator), 1, queueSize);
+    //        }
+    //    }
 
     public static <T> Stream<T> concat(final T[]... a) {
         if (N.isNullOrEmpty(a)) {
@@ -1880,7 +2008,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     //        return concat(iterators);
     //    }
 
-    public static <T> Stream<T> concat(final Stream<? extends T>... a) {
+    public static <T> Stream<T> concat(final BaseStream<T, ? extends BaseStream<T, ?>>... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
@@ -1896,7 +2024,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (Stream<? extends T> stream : a) {
+                for (BaseStream<T, ? extends BaseStream<T, ?>> stream : a) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -1964,8 +2092,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @return
      */
-    public static <T> Stream<T> parallelConcat(final Stream<? extends T>... a) {
-        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, N.min(1024, N.max(128, a.length * 32)));
+    public static <T> Stream<T> parallelConcat(final BaseStream<T, ? extends BaseStream<T, ?>>... a) {
+        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, calculateQueueSize(a.length));
     }
 
     /**
@@ -1980,11 +2108,11 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * </code>
      * 
      * @param a
-     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, a.length)
-     * @param queueSize Default value is N.min(1024, N.max(128, a.length * 32))
+     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(8, a.length)
+     * @param queueSize Default value is N.min(128, a.length * 16)
      * @return
      */
-    public static <T> Stream<T> parallelConcat(final Stream<? extends T>[] a, final int iteratorReadThreadNum, final int queueSize) {
+    public static <T> Stream<T> parallelConcat(final BaseStream<T, ? extends BaseStream<T, ?>>[] a, final int iteratorReadThreadNum, final int queueSize) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
@@ -2000,7 +2128,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (Stream<? extends T> stream : a) {
+                for (BaseStream<T, ? extends BaseStream<T, ?>> stream : a) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -2032,7 +2160,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Iterator<? extends T>... a) {
-        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, N.min(1024, N.max(128, a.length * 32)));
+        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, calculateQueueSize(a.length));
     }
 
     /**
@@ -2047,8 +2175,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * </code>
      * 
      * @param a
-     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, a.length)
-     * @param queueSize Default value is N.min(1024, N.max(128, a.length * 32))
+     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(8, a.length)
+     * @param queueSize Default value is N.min(128, a.length * 16)
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Iterator<? extends T>[] a, final int iteratorReadThreadNum, final int queueSize) {
@@ -2072,7 +2200,24 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c) {
-        return parallelConcat(c, DEFAULT_READING_THREAD_NUM, N.min(1024, N.max(128, c.size() * 32)));
+        return parallelConcat(c, DEFAULT_READING_THREAD_NUM);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @param iteratorReadThreadNum
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int iteratorReadThreadNum) {
+        return parallelConcat(c, iteratorReadThreadNum, calculateQueueSize(c.size()));
     }
 
     /**
@@ -2087,8 +2232,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * </code>
      * 
      * @param a
-     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(64, c.size())
-     * @param queueSize Default value is N.min(1024, N.max(128, c.size() * 32))
+     * @param iteratorReadThreadNum - count of threads used to read elements from iterator to queue. Default value is min(8, c.size())
+     * @param queueSize Default value is N.min(128, c.size() * 16)
      * @return
      */
     public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int iteratorReadThreadNum, final int queueSize) {
@@ -2097,8 +2242,17 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         }
 
         final AsyncExecutor asyncExecutor = new AsyncExecutor(N.min(iteratorReadThreadNum, c.size()), 300L, TimeUnit.SECONDS);
+
+        return parallelConcat(c, queueSize, asyncExecutor);
+    }
+
+    static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int queueSize, final AsyncExecutor asyncExecutor) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
+        }
+
         final AtomicInteger threadCounter = new AtomicInteger(c.size());
-        final BlockingQueue<T> queue = new ArrayBlockingQueue<T>(queueSize);
+        final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<T>(queueSize);
         final Holder<Throwable> errorHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
@@ -2118,8 +2272,12 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                                 next = (T) NONE;
                             }
 
-                            while (onGoing.booleanValue() && queue.offer(next, 100, TimeUnit.MILLISECONDS) == false) {
-                                // continue.
+                            if (queue.offer(next) == false) {
+                                while (onGoing.booleanValue()) {
+                                    if (queue.offer(next, 100, TimeUnit.MILLISECONDS)) {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     } catch (Throwable e) {
@@ -2137,8 +2295,12 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             @Override
             public boolean hasNext() {
                 try {
-                    while (next == null && onGoing.booleanValue() && (threadCounter.get() > 0 || queue.size() > 0)) { // (queue.size() > 0 || counter.get() > 0) is wrong. has to check counter first
-                        next = queue.poll(100, TimeUnit.MILLISECONDS);
+                    if (next == null && (next = queue.poll()) == null) {
+                        while (onGoing.booleanValue() && (threadCounter.get() > 0 || queue.size() > 0)) { // (queue.size() > 0 || counter.get() > 0) is wrong. has to check counter first
+                            if ((next = queue.poll(100, TimeUnit.MILLISECONDS)) != null) {
+                                break;
+                            }
+                        }
                     }
                 } catch (Throwable e) {
                     setError(errorHolder, e, onGoing);
@@ -2167,6 +2329,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                 onGoing.setFalse();
             }
         });
+    }
+
+    static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final AsyncExecutor asyncExecutor) {
+        return parallelConcat(c, calculateQueueSize(c.size()), asyncExecutor);
     }
 
     /**
@@ -2201,7 +2367,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @return
      */
-    public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner) {
+    public static <A, B, R> Stream<R> zip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BiFunction<A, B, R> combiner) {
         return zip(a.iterator(), b.iterator(), combiner).onClose(new Runnable() {
             @Override
             public void run() {
@@ -2238,8 +2405,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @return
      */
-    public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
-            final TriFunction<A, B, C, R> combiner) {
+    public static <A, B, C, R> Stream<R> zip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BaseStream<C, ? extends BaseStream<C, ?>> c, final TriFunction<A, B, C, R> combiner) {
         return zip(a.iterator(), b.iterator(), c.iterator(), combiner).onClose(new Runnable() {
             @Override
             public void run() {
@@ -2376,8 +2543,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param valueForNoneB value to fill if "b" runs out of values first.
      * @return
      */
-    public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner, final A valueForNoneA,
-            final B valueForNoneB) {
+    public static <A, B, R> Stream<R> zip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BiFunction<A, B, R> combiner, final A valueForNoneA, final B valueForNoneB) {
         return zip(a.iterator(), b.iterator(), combiner, valueForNoneA, valueForNoneB).onClose(new Runnable() {
             @Override
             public void run() {
@@ -2419,8 +2586,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param valueForNoneC value to fill if "c" runs out of values.
      * @return
      */
-    public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
-            final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+    public static <A, B, C, R> Stream<R> zip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BaseStream<C, ? extends BaseStream<C, ?>> c, final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC) {
         return zip(a.iterator(), b.iterator(), c.iterator(), combiner, valueForNoneA, valueForNoneB, valueForNoneC).onClose(new Runnable() {
             @Override
             public void run() {
@@ -2592,8 +2760,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param combiner
      * @return
      */
-    public static <A, B, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner) {
-        return parallelZip(a, b, combiner, 32);
+    public static <A, B, R> Stream<R> parallelZip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BiFunction<A, B, R> combiner) {
+        return parallelZip(a, b, combiner, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -2608,11 +2777,11 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @param b
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <A, B, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner,
-            final int queueSize) {
+    public static <A, B, R> Stream<R> parallelZip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BiFunction<A, B, R> combiner, final int queueSize) {
         return parallelZip(a.iterator(), b.iterator(), combiner, queueSize).onClose(new Runnable() {
             @Override
             public void run() {
@@ -2641,9 +2810,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         });
     }
 
-    public static <A, B, C, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
-            final TriFunction<A, B, C, R> combiner) {
-        return parallelZip(a, b, c, combiner, 32);
+    public static <A, B, C, R> Stream<R> parallelZip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BaseStream<C, ? extends BaseStream<C, ?>> c, final TriFunction<A, B, C, R> combiner) {
+        return parallelZip(a, b, c, combiner, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -2659,11 +2828,11 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @param c
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <A, B, C, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
-            final TriFunction<A, B, C, R> combiner, final int queueSize) {
+    public static <A, B, C, R> Stream<R> parallelZip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BaseStream<C, ? extends BaseStream<C, ?>> c, final TriFunction<A, B, C, R> combiner, final int queueSize) {
         return parallelZip(a.iterator(), b.iterator(), c.iterator(), combiner, queueSize).onClose(new Runnable() {
             @Override
             public void run() {
@@ -2717,7 +2886,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner) {
-        return parallelZip(a, b, combiner, 32);
+        return parallelZip(a, b, combiner, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -2732,7 +2901,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @param b
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
@@ -2815,7 +2984,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<A, B, C, R> combiner) {
-        return parallelZip(a, b, c, combiner, 32);
+        return parallelZip(a, b, c, combiner, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -2831,7 +3000,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @param c
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
@@ -2940,7 +3109,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner) {
-        return parallelZip(c, combiner, 32);
+        return parallelZip(c, combiner, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -2956,7 +3125,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @param c
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
     public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final int queueSize) {
@@ -3067,9 +3236,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param valueForNoneB
      * @return
      */
-    public static <A, B, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner,
-            final A valueForNoneA, final B valueForNoneB) {
-        return parallelZip(a, b, combiner, 32, valueForNoneA, valueForNoneB);
+    public static <A, B, R> Stream<R> parallelZip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BiFunction<A, B, R> combiner, final A valueForNoneA, final B valueForNoneB) {
+        return parallelZip(a, b, combiner, valueForNoneA, valueForNoneB, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -3084,13 +3253,13 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @param b
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
      * @param valueForNoneA
      * @param valueForNoneB
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <A, B, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<A, B, R> combiner,
-            final int queueSize, final A valueForNoneA, final B valueForNoneB) {
+    public static <A, B, R> Stream<R> parallelZip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BiFunction<A, B, R> combiner, final A valueForNoneA, final B valueForNoneB, final int queueSize) {
         return parallelZip(a.iterator(), b.iterator(), combiner, valueForNoneA, valueForNoneB).onClose(new Runnable() {
             @Override
             public void run() {
@@ -3137,9 +3306,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param valueForNoneC
      * @return
      */
-    public static <A, B, C, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
-            final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
-        return parallelZip(a, b, c, combiner, 32, valueForNoneA, valueForNoneB, valueForNoneC);
+    public static <A, B, C, R> Stream<R> parallelZip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BaseStream<C, ? extends BaseStream<C, ?>> c, final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC) {
+        return parallelZip(a, b, c, combiner, valueForNoneA, valueForNoneB, valueForNoneC, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -3155,14 +3325,15 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @param c
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
      * @param valueForNoneA
      * @param valueForNoneB
      * @param valueForNoneC
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <A, B, C, R> Stream<R> parallelZip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
-            final TriFunction<A, B, C, R> combiner, final int queueSize, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+    public static <A, B, C, R> Stream<R> parallelZip(final BaseStream<A, ? extends BaseStream<A, ?>> a, final BaseStream<B, ? extends BaseStream<B, ?>> b,
+            final BaseStream<C, ? extends BaseStream<C, ?>> c, final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC, final int queueSize) {
         return parallelZip(a.iterator(), b.iterator(), c.iterator(), combiner, valueForNoneA, valueForNoneB, valueForNoneC).onClose(new Runnable() {
             @Override
             public void run() {
@@ -3219,7 +3390,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
             final A valueForNoneA, final B valueForNoneB) {
-        return parallelZip(a, b, combiner, 32, valueForNoneA, valueForNoneB);
+        return parallelZip(a, b, combiner, valueForNoneA, valueForNoneB, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -3234,13 +3405,13 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param a
      * @param b
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
      * @param valueForNoneA
      * @param valueForNoneB
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<A, B, R> combiner,
-            final int queueSize, final A valueForNoneA, final B valueForNoneB) {
+            final A valueForNoneA, final B valueForNoneB, final int queueSize) {
         final AsyncExecutor asyncExecutor = new AsyncExecutor(2, 300L, TimeUnit.SECONDS);
         final AtomicInteger threadCounterA = new AtomicInteger(1);
         final AtomicInteger threadCounterB = new AtomicInteger(1);
@@ -3332,7 +3503,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
-        return parallelZip(a, b, c, combiner, 32, valueForNoneA, valueForNoneB, valueForNoneC);
+        return parallelZip(a, b, c, combiner, valueForNoneA, valueForNoneB, valueForNoneC, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -3348,14 +3519,14 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @param b
      * @param c
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
      * @param valueForNoneA
      * @param valueForNoneB
      * @param valueForNoneC
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
-            final TriFunction<A, B, C, R> combiner, final int queueSize, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC) {
+            final TriFunction<A, B, C, R> combiner, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final int queueSize) {
         final AsyncExecutor asyncExecutor = new AsyncExecutor(3, 300L, TimeUnit.SECONDS);
         final AtomicInteger threadCounterA = new AtomicInteger(1);
         final AtomicInteger threadCounterB = new AtomicInteger(1);
@@ -3452,7 +3623,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final Object[] valuesForNone) {
-        return parallelZip(c, combiner, 32, valuesForNone);
+        return parallelZip(c, combiner, valuesForNone, DEFAULT_QUEUE_SIZE);
     }
 
     /**
@@ -3466,12 +3637,12 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * 
      * @param c
      * @param combiner
-     * @param queueSize for each iterator. Default value is 32
      * @param valuesForNone
+     * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final int queueSize,
-            final Object[] valuesForNone) {
+    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> combiner, final Object[] valuesForNone,
+            final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -3563,6 +3734,444 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
                 onGoing.setFalse();
             }
         });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return of(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return of(a);
+        }
+
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
+            private final int lenA = a.length;
+            private final int lenB = b.length;
+            private int cursorA = 0;
+            private int cursorB = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursorA < lenA || cursorB < lenB;
+            }
+
+            @Override
+            public T next() {
+                if (cursorA < lenA) {
+                    if (cursorB < lenB) {
+                        if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
+                            return a[cursorA++];
+                        } else {
+                            return b[cursorB++];
+                        }
+                    } else {
+                        return a[cursorA++];
+                    }
+                } else if (cursorB < lenB) {
+                    return b[cursorB++];
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        final Iterator<? extends T> iterA = a.iterator();
+        final Iterator<? extends T> iterB = b.iterator();
+
+        if (iterA.hasNext() == false) {
+            return (Stream<T>) b;
+        } else if (iterB.hasNext() == false) {
+            return (Stream<T>) a;
+        }
+
+        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<? extends T> stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        if (a.hasNext() == false) {
+            return of(b);
+        } else if (b.hasNext() == false) {
+            return of(a);
+        }
+
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
+            private T nextA = null;
+            private T nextB = null;
+            private boolean hasNextA = false;
+            private boolean hasNextB = false;
+
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || hasNextA || hasNextB;
+            }
+
+            @Override
+            public T next() {
+                if (hasNextA) {
+                    if (b.hasNext()) {
+                        if (nextSelector.apply(nextA, (nextB = b.next())) == Nth.FIRST) {
+                            hasNextA = false;
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            return nextB;
+                        }
+                    } else {
+                        hasNextA = false;
+                        return nextA;
+                    }
+                } else if (hasNextB) {
+                    if (a.hasNext()) {
+                        if (nextSelector.apply((nextA = a.next()), nextB) == Nth.FIRST) {
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            hasNextB = false;
+                            return nextB;
+                        }
+                    } else {
+                        hasNextB = false;
+                        return nextB;
+                    }
+                } else if (a.hasNext()) {
+                    if (b.hasNext()) {
+                        if (nextSelector.apply((nextA = a.next()), (nextB = b.next())) == Nth.FIRST) {
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            return nextB;
+                        }
+                    } else {
+                        return a.next();
+                    }
+                } else if (b.hasNext()) {
+                    return b.next();
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final Stream<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return (Stream<T>) a[0];
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        final Iterator<? extends T>[] iters = new Iterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].iterator();
+        }
+
+        return merge(iters, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<? extends T> stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final Iterator<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        return merge(Arrays.asList(a), nextSelector);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        }
+
+        final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
+        Stream<T> result = merge(iter.next(), iter.next(), nextSelector);
+
+        while (iter.hasNext()) {
+            result = merge(result.iterator(), iter.next(), nextSelector);
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> parallelMerge(final Stream<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static <T> Stream<T> parallelMerge(final Stream<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return (Stream<T>) a[0];
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        final Iterator<? extends T>[] iters = new Iterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].iterator();
+        }
+
+        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<? extends T> stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> parallelMerge(final Iterator<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static <T> Stream<T> parallelMerge(final Iterator<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector,
+            final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> parallelMerge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static <T> Stream<T> parallelMerge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
+            final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        } else if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        }
+
+        final Queue<Iterator<? extends T>> queue = new LinkedList<>();
+        queue.addAll(c);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final MutableInt cnt = MutableInt.of(c.size());
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
+
+        for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
+            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    Iterator<? extends T> a = null;
+                    Iterator<? extends T> b = null;
+                    Iterator<? extends T> c = null;
+
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (queue) {
+                                if (cnt.intValue() > 2 && queue.size() > 1) {
+                                    a = queue.poll();
+                                    b = queue.poll();
+
+                                    cnt.decrement();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            c = (Iterator<? extends T>) ImmutableIterator.of(merge(a, b, nextSelector).toArray());
+
+                            synchronized (queue) {
+                                queue.offer(c);
+                            }
+                        }
+                    } catch (Throwable e) {
+                        Stream.setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        try {
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
+            }
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
+
+        // Should never happen.
+        if (queue.size() != 2) {
+            throw new AbacusException("Unknown error happened.");
+        }
+
+        return Stream.of(queue.poll());
     }
 
     private static <B, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final AsyncExecutor asyncExecutor,
@@ -3740,7 +4349,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         }
     }
 
-    private static void setError(final Holder<Throwable> errorHolder, Throwable e, final MutableBoolean onGoing) {
+    static void setError(final Holder<Throwable> errorHolder, Throwable e, final MutableBoolean onGoing) {
         onGoing.setFalse();
 
         synchronized (errorHolder) {
@@ -3752,10 +4361,28 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
         }
     }
 
-    private static void throwError(final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
+    static void throwError(final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
         onGoing.setFalse();
 
         throw N.toRuntimeException(errorHolder.value());
+    }
+
+    static void setError(final Holder<Throwable> errorHolder, Throwable e) {
+        synchronized (errorHolder) {
+            if (errorHolder.value() == null) {
+                errorHolder.setValue(e);
+            } else {
+                errorHolder.value().addSuppressed(e);
+            }
+        }
+    }
+
+    static void throwError(final Holder<Throwable> errorHolder) {
+        throw N.toRuntimeException(errorHolder.value());
+    }
+
+    static int calculateQueueSize(int len) {
+        return N.min(128, len * DEFAULT_QUEUE_SIZE);
     }
 
     static boolean isSameComparator(Comparator<?> a, Comparator<?> b) {
@@ -3778,5 +4405,226 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     static int toInt(long max) {
         return max > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) max;
+    }
+
+    static ImmutableCharIterator charIterator(final ImmutableIterator<Character> iter) {
+        final ImmutableCharIterator charIter = new ImmutableCharIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public char next() {
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                return iter.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                iter.skip(n);
+            }
+        };
+
+        return charIter;
+    }
+
+    static ImmutableByteIterator byteIterator(final ImmutableIterator<Byte> iter) {
+        final ImmutableByteIterator byteIter = new ImmutableByteIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public byte next() {
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                return iter.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                iter.skip(n);
+            }
+        };
+
+        return byteIter;
+    }
+
+    static ImmutableShortIterator shortIterator(final ImmutableIterator<Short> iter) {
+        final ImmutableShortIterator shortIter = new ImmutableShortIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public short next() {
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                return iter.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                iter.skip(n);
+            }
+        };
+
+        return shortIter;
+    }
+
+    static ImmutableIntIterator intIterator(final ImmutableIterator<Integer> iter) {
+        final ImmutableIntIterator intIter = new ImmutableIntIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public int next() {
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                return iter.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                iter.skip(n);
+            }
+        };
+
+        return intIter;
+    }
+
+    static ImmutableLongIterator longIterator(final ImmutableIterator<Long> iter) {
+        final ImmutableLongIterator longIter = new ImmutableLongIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public long next() {
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                return iter.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                iter.skip(n);
+            }
+        };
+
+        return longIter;
+    }
+
+    static ImmutableFloatIterator floatIterator(final ImmutableIterator<Float> iter) {
+        final ImmutableFloatIterator floatIter = new ImmutableFloatIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public float next() {
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                return iter.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                iter.skip(n);
+            }
+        };
+
+        return floatIter;
+    }
+
+    static ImmutableDoubleIterator doubleIterator(final ImmutableIterator<Double> iter) {
+        final ImmutableDoubleIterator doubleIter = new ImmutableDoubleIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public double next() {
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                return iter.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                iter.skip(n);
+            }
+        };
+
+        return doubleIter;
+    }
+
+    static void close(Collection<Runnable> closeHandlers) {
+        if (N.notNullOrEmpty(closeHandlers)) {
+            Throwable ex = null;
+
+            for (Runnable closeHandler : closeHandlers) {
+                try {
+                    closeHandler.run();
+                } catch (Throwable e) {
+                    if (ex == null) {
+                        ex = e;
+                    } else {
+                        ex.addSuppressed(e);
+                    }
+                }
+            }
+
+            if (ex != null) {
+                throw N.toRuntimeException(ex);
+            }
+        }
+    }
+
+    static Set<Runnable> mergeCloseHandlers(final BaseStream<?, ?> stream, Set<Runnable> closeHandlers) {
+        final Set<Runnable> newCloseHandlers = new LocalLinkedHashSet<>();
+
+        if (N.notNullOrEmpty(closeHandlers)) {
+            newCloseHandlers.addAll(closeHandlers);
+        }
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                stream.close();
+            }
+        });
+
+        return newCloseHandlers;
     }
 }

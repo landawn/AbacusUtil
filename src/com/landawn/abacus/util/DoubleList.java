@@ -95,7 +95,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 
@@ -115,7 +115,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 
@@ -135,7 +135,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 
@@ -155,7 +155,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 

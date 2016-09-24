@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -20,9 +19,11 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -36,12 +37,11 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class ArrayCharStream extends CharStream {
+final class ArrayCharStream extends AbstractCharStream {
     private final char[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     ArrayCharStream(char[] values) {
         this(values, null);
@@ -64,13 +64,14 @@ final class ArrayCharStream extends CharStream {
     }
 
     ArrayCharStream(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -559,7 +560,7 @@ final class ArrayCharStream extends CharStream {
     @Override
     public CharStream sorted() {
         if (sorted) {
-            return new ArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted);
+            return this;
         }
 
         final char[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -894,6 +895,8 @@ final class ArrayCharStream extends CharStream {
     public OptionalChar min() {
         if (count() == 0) {
             return OptionalChar.empty();
+        } else if (sorted) {
+            return OptionalChar.of(elements[fromIndex]);
         }
 
         return OptionalChar.of(N.min(elements, fromIndex, toIndex));
@@ -903,6 +906,8 @@ final class ArrayCharStream extends CharStream {
     public OptionalChar max() {
         if (count() == 0) {
             return OptionalChar.empty();
+        } else if (sorted) {
+            return OptionalChar.of(elements[toIndex - 1]);
         }
 
         return OptionalChar.of(N.max(elements, fromIndex, toIndex));
@@ -912,6 +917,8 @@ final class ArrayCharStream extends CharStream {
     public OptionalChar kthLargest(int k) {
         if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalChar.empty();
+        } else if (sorted) {
+            return OptionalChar.of(elements[toIndex - k]);
         }
 
         return OptionalChar.of(N.kthLargest(elements, fromIndex, toIndex, k));
@@ -949,11 +956,11 @@ final class ArrayCharStream extends CharStream {
 
     @Override
     public Optional<Map<String, Character>> distribution() {
-        final char[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (count() == 0) {
             return Optional.empty();
         }
+
+        final char[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1040,11 +1047,6 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public CharStream append(CharStream stream) {
-        return CharStream.concat(this, stream);
-    }
-
-    @Override
     public IntStream asIntStream() {
         //        final int[] a = new int[toIndex - fromIndex];
         //
@@ -1100,7 +1102,17 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public Iterator<Character> iterator() {
+    public CharStream append(CharStream stream) {
+        return CharStream.concat(this, stream);
+    }
+
+    @Override
+    public CharStream merge(CharStream b, CharBiFunction<Nth> nextSelector) {
+        return CharStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Character> iterator() {
         return new ImmutableIterator<Character>() {
             private int cursor = fromIndex;
 
@@ -1142,7 +1154,7 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    ImmutableCharIterator charIterator() {
+    public ImmutableCharIterator charIterator() {
         return new ImmutableCharIterator() {
             private int cursor = fromIndex;
 
@@ -1178,38 +1190,34 @@ final class ArrayCharStream extends CharStream {
     }
 
     @Override
-    public CharStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new ArrayCharStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public CharStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public CharStream parallel(int maxThreadNum, com.landawn.abacus.util.stream.BaseStream.Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public CharStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new ArrayCharStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
     }
 }

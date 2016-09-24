@@ -20,9 +20,11 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
@@ -39,10 +41,9 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class IteratorDoubleStream extends DoubleStream {
+final class IteratorDoubleStream extends AbstractDoubleStream {
     private final ImmutableDoubleIterator elements;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     IteratorDoubleStream(ImmutableDoubleIterator values) {
         this(values, null);
@@ -53,9 +54,10 @@ final class IteratorDoubleStream extends DoubleStream {
     }
 
     IteratorDoubleStream(ImmutableDoubleIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         this.elements = values;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -535,7 +537,7 @@ final class IteratorDoubleStream extends DoubleStream {
     @Override
     public DoubleStream sorted() {
         if (sorted) {
-            return new IteratorDoubleStream(elements, closeHandlers, sorted);
+            return this;
         }
 
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
@@ -604,77 +606,77 @@ final class IteratorDoubleStream extends DoubleStream {
         }, closeHandlers, true);
     }
 
-    @Override
-    public DoubleStream parallelSorted() {
-        if (sorted) {
-            return new IteratorDoubleStream(elements, closeHandlers, sorted);
-        }
-
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
-            double[] a = null;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                return cursor < a.length;
-            }
-
-            @Override
-            public double next() {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                if (cursor >= a.length) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                return a.length - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
-            }
-
-            @Override
-            public double[] toArray() {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                if (cursor == 0) {
-                    return a;
-                } else {
-                    return N.copyOfRange(a, cursor, a.length);
-                }
-            }
-
-            private void parallelSort() {
-                a = elements.toArray();
-
-                N.parallelSort(a);
-            }
-
-        }, closeHandlers, true);
-    }
+    //    @Override
+    //    public DoubleStream parallelSorted() {
+    //        if (sorted) {
+    //            return this;
+    //        }
+    //
+    //        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+    //            double[] a = null;
+    //            int cursor = 0;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                return cursor < a.length;
+    //            }
+    //
+    //            @Override
+    //            public double next() {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                if (cursor >= a.length) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                return a[cursor++];
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                return a.length - cursor;
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+    //            }
+    //
+    //            @Override
+    //            public double[] toArray() {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                if (cursor == 0) {
+    //                    return a;
+    //                } else {
+    //                    return N.copyOfRange(a, cursor, a.length);
+    //                }
+    //            }
+    //
+    //            private void parallelSort() {
+    //                a = elements.toArray();
+    //
+    //                N.parallelSort(a);
+    //            }
+    //
+    //        }, closeHandlers, true);
+    //    }
 
     @Override
     public DoubleStream peek(final DoubleConsumer action) {
@@ -1068,7 +1070,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble reduce(DoubleBinaryOperator op) {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalDouble.empty();
         }
 
@@ -1105,7 +1107,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble min() {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalDouble.empty();
         }
 
@@ -1125,7 +1127,7 @@ final class IteratorDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble max() {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalDouble.empty();
         }
 
@@ -1258,11 +1260,11 @@ final class IteratorDoubleStream extends DoubleStream {
 
     @Override
     public Optional<Map<String, Double>> distribution() {
-        final double[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (elements.hasNext() == false) {
             return Optional.empty();
         }
+
+        final double[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1374,17 +1376,22 @@ final class IteratorDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream append(DoubleStream stream) {
-        return DoubleStream.concat(this, stream);
-    }
-
-    @Override
     public Stream<Double> boxed() {
         return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? Stream.DOUBLE_COMPARATOR : null);
     }
 
     @Override
-    public Iterator<Double> iterator() {
+    public DoubleStream append(DoubleStream stream) {
+        return DoubleStream.concat(this, stream);
+    }
+
+    @Override
+    public DoubleStream merge(DoubleStream b, DoubleBiFunction<Nth> nextSelector) {
+        return DoubleStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Double> iterator() {
         return new ImmutableIterator<Double>() {
             @Override
             public boolean hasNext() {
@@ -1409,43 +1416,39 @@ final class IteratorDoubleStream extends DoubleStream {
     }
 
     @Override
-    ImmutableDoubleIterator doubleIterator() {
+    public ImmutableDoubleIterator doubleIterator() {
         return elements;
     }
 
     @Override
-    public DoubleStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new IteratorDoubleStream(elements, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public DoubleStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public DoubleStream parallel(int maxThreadNum, Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelIteratorDoubleStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public DoubleStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new IteratorDoubleStream(elements, newCloseHandlers, sorted);
     }
 }

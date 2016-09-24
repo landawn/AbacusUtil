@@ -1,31 +1,40 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntSummaryStatistics;
+import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullBreakIterator;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -42,19 +51,19 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
  * @param <T>
  */
-final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>> {
+final class ArrayStream<T> extends AbstractStream<T> {
     private final T[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
     private final Comparator<? super T> cmp;
-    private final Set<Runnable> closeHandlers;
 
     ArrayStream(T[] values) {
         this(values, null);
@@ -64,8 +73,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayStream(T[] values, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
-        this(values, 0, values.length, closeHandlers, sorted, cmp);
+    ArrayStream(T[] values, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator) {
+        this(values, 0, values.length, closeHandlers, sorted, comparator);
     }
 
     ArrayStream(T[] values, int fromIndex, int toIndex) {
@@ -76,15 +85,16 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         this(values, fromIndex, toIndex, closeHandlers, false, null);
     }
 
-    ArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
+    ArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator) {
+        super(closeHandlers);
+
         Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.cmp = cmp;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
+        this.cmp = comparator;
     }
 
     @Override
@@ -745,7 +755,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
             @Override
             public R next() {
-                if (cur == null || curIndex >= cur.length) {
+                if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -800,6 +810,47 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public CharStream flatMapToChar(final Function<? super T, ? extends CharStream> mapper) {
+        return flatMapToChar4(new Function<T, CharIterator>() {
+            @Override
+            public CharIterator apply(T t) {
+                return mapper.apply(t).charIterator();
+            }
+        });
+    }
+
+    @Override
+    public CharStream flatMapToChar2(final Function<? super T, char[]> mapper) {
+        return flatMapToChar4(new Function<T, CharIterator>() {
+            @Override
+            public CharIterator apply(T t) {
+                return ImmutableCharIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public CharStream flatMapToChar3(final Function<? super T, ? extends Collection<Character>> mapper) {
+        return flatMapToChar4(new Function<T, CharIterator>() {
+            @Override
+            public CharIterator apply(T t) {
+                final Iterator<Character> iter = mapper.apply(t).iterator();
+
+                return new ImmutableCharIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public char next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    CharStream flatMapToChar4(final Function<? super T, CharIterator> mapper) {
         //        final List<char[]> listOfArray = new ArrayList<char[]>();
         //
         //        int lengthOfAll = 0;
@@ -820,12 +871,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
         return new IteratorCharStream(new ImmutableCharIterator() {
             private int cursor = fromIndex;
-            private ImmutableCharIterator cur = null;
+            private CharIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).charIterator();
+                    cur = mapper.apply(elements[cursor++]);
                 }
 
                 return cur != null && cur.hasNext();
@@ -843,32 +894,48 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public CharStream flatMapToChar2(final Function<? super T, char[]> mapper) {
-        return flatMapToChar(new Function<T, CharStream>() {
-            @Override
-            public CharStream apply(T t) {
-                return CharStream.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
-    public CharStream flatMapToChar3(final Function<? super T, ? extends Collection<Character>> mapper) {
-        return flatMapToChar(new Function<T, CharStream>() {
-            @Override
-            public CharStream apply(T t) {
-                return Stream.of(mapper.apply(t)).mapToChar(new ToCharFunction<Character>() {
-                    @Override
-                    public char applyAsChar(Character value) {
-                        return value == null ? 0 : value.charValue();
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
     public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
+        return flatMapToByte4(new Function<T, ByteIterator>() {
+            @Override
+            public ByteIterator apply(T t) {
+                return mapper.apply(t).byteIterator();
+            }
+        });
+    }
+
+    @Override
+    public ByteStream flatMapToByte2(final Function<? super T, byte[]> mapper) {
+        return flatMapToByte4(new Function<T, ByteIterator>() {
+            @Override
+            public ByteIterator apply(T t) {
+                return ImmutableByteIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public ByteStream flatMapToByte3(final Function<? super T, ? extends Collection<Byte>> mapper) {
+        return flatMapToByte4(new Function<T, ByteIterator>() {
+            @Override
+            public ByteIterator apply(T t) {
+                final Iterator<Byte> iter = mapper.apply(t).iterator();
+
+                return new ImmutableByteIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public byte next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    ByteStream flatMapToByte4(final Function<? super T, ByteIterator> mapper) {
         //        final List<byte[]> listOfArray = new ArrayList<byte[]>();
         //
         //        int lengthOfAll = 0;
@@ -889,12 +956,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
         return new IteratorByteStream(new ImmutableByteIterator() {
             private int cursor = fromIndex;
-            private ImmutableByteIterator cur = null;
+            private ByteIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).byteIterator();
+                    cur = mapper.apply(elements[cursor++]);
                 }
 
                 return cur != null && cur.hasNext();
@@ -912,32 +979,48 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public ByteStream flatMapToByte2(final Function<? super T, byte[]> mapper) {
-        return flatMapToByte(new Function<T, ByteStream>() {
-            @Override
-            public ByteStream apply(T t) {
-                return ByteStream.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
-    public ByteStream flatMapToByte3(final Function<? super T, ? extends Collection<Byte>> mapper) {
-        return flatMapToByte(new Function<T, ByteStream>() {
-            @Override
-            public ByteStream apply(T t) {
-                return Stream.of(mapper.apply(t)).mapToByte(new ToByteFunction<Byte>() {
-                    @Override
-                    public byte applyAsByte(Byte value) {
-                        return value == null ? 0 : value.byteValue();
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
     public ShortStream flatMapToShort(final Function<? super T, ? extends ShortStream> mapper) {
+        return flatMapToShort4(new Function<T, ShortIterator>() {
+            @Override
+            public ShortIterator apply(T t) {
+                return mapper.apply(t).shortIterator();
+            }
+        });
+    }
+
+    @Override
+    public ShortStream flatMapToShort2(final Function<? super T, short[]> mapper) {
+        return flatMapToShort4(new Function<T, ShortIterator>() {
+            @Override
+            public ShortIterator apply(T t) {
+                return ImmutableShortIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public ShortStream flatMapToShort3(final Function<? super T, ? extends Collection<Short>> mapper) {
+        return flatMapToShort4(new Function<T, ShortIterator>() {
+            @Override
+            public ShortIterator apply(T t) {
+                final Iterator<Short> iter = mapper.apply(t).iterator();
+
+                return new ImmutableShortIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public short next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    ShortStream flatMapToShort4(final Function<? super T, ShortIterator> mapper) {
         //        final List<short[]> listOfArray = new ArrayList<short[]>();
         //
         //        int lengthOfAll = 0;
@@ -958,12 +1041,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
         return new IteratorShortStream(new ImmutableShortIterator() {
             private int cursor = fromIndex;
-            private ImmutableShortIterator cur = null;
+            private ShortIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).shortIterator();
+                    cur = mapper.apply(elements[cursor++]);
                 }
 
                 return cur != null && cur.hasNext();
@@ -981,32 +1064,48 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public ShortStream flatMapToShort2(final Function<? super T, short[]> mapper) {
-        return flatMapToShort(new Function<T, ShortStream>() {
-            @Override
-            public ShortStream apply(T t) {
-                return ShortStream.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
-    public ShortStream flatMapToShort3(final Function<? super T, ? extends Collection<Short>> mapper) {
-        return flatMapToShort(new Function<T, ShortStream>() {
-            @Override
-            public ShortStream apply(T t) {
-                return Stream.of(mapper.apply(t)).mapToShort(new ToShortFunction<Short>() {
-                    @Override
-                    public short applyAsShort(Short value) {
-                        return value == null ? 0 : value.shortValue();
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
     public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
+        return flatMapToInt4(new Function<T, IntIterator>() {
+            @Override
+            public IntIterator apply(T t) {
+                return mapper.apply(t).intIterator();
+            }
+        });
+    }
+
+    @Override
+    public IntStream flatMapToInt2(final Function<? super T, int[]> mapper) {
+        return flatMapToInt4(new Function<T, IntIterator>() {
+            @Override
+            public IntIterator apply(T t) {
+                return ImmutableIntIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public IntStream flatMapToInt3(final Function<? super T, ? extends Collection<Integer>> mapper) {
+        return flatMapToInt4(new Function<T, IntIterator>() {
+            @Override
+            public IntIterator apply(T t) {
+                final Iterator<Integer> iter = mapper.apply(t).iterator();
+
+                return new ImmutableIntIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public int next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    IntStream flatMapToInt4(final Function<? super T, IntIterator> mapper) {
         //        final List<int[]> listOfArray = new ArrayList<int[]>();
         //
         //        int lengthOfAll = 0;
@@ -1027,12 +1126,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int cursor = fromIndex;
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).intIterator();
+                    cur = mapper.apply(elements[cursor++]);
                 }
 
                 return cur != null && cur.hasNext();
@@ -1050,32 +1149,48 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public IntStream flatMapToInt2(final Function<? super T, int[]> mapper) {
-        return flatMapToInt(new Function<T, IntStream>() {
-            @Override
-            public IntStream apply(T t) {
-                return IntStream.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
-    public IntStream flatMapToInt3(final Function<? super T, ? extends Collection<Integer>> mapper) {
-        return flatMapToInt(new Function<T, IntStream>() {
-            @Override
-            public IntStream apply(T t) {
-                return Stream.of(mapper.apply(t)).mapToInt(new ToIntFunction<Integer>() {
-                    @Override
-                    public int applyAsInt(Integer value) {
-                        return value == null ? 0 : value.intValue();
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
     public LongStream flatMapToLong(final Function<? super T, ? extends LongStream> mapper) {
+        return flatMapToLong4(new Function<T, LongIterator>() {
+            @Override
+            public LongIterator apply(T t) {
+                return mapper.apply(t).longIterator();
+            }
+        });
+    }
+
+    @Override
+    public LongStream flatMapToLong2(final Function<? super T, long[]> mapper) {
+        return flatMapToLong4(new Function<T, LongIterator>() {
+            @Override
+            public LongIterator apply(T t) {
+                return ImmutableLongIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public LongStream flatMapToLong3(final Function<? super T, ? extends Collection<Long>> mapper) {
+        return flatMapToLong4(new Function<T, LongIterator>() {
+            @Override
+            public LongIterator apply(T t) {
+                final Iterator<Long> iter = mapper.apply(t).iterator();
+
+                return new ImmutableLongIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public long next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    LongStream flatMapToLong4(final Function<? super T, LongIterator> mapper) {
         //        final List<long[]> listOfArray = new ArrayList<long[]>();
         //
         //        int lengthOfAll = 0;
@@ -1096,12 +1211,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
         return new IteratorLongStream(new ImmutableLongIterator() {
             private int cursor = fromIndex;
-            private ImmutableLongIterator cur = null;
+            private LongIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).longIterator();
+                    cur = mapper.apply(elements[cursor++]);
                 }
 
                 return cur != null && cur.hasNext();
@@ -1119,32 +1234,48 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public LongStream flatMapToLong2(final Function<? super T, long[]> mapper) {
-        return flatMapToLong(new Function<T, LongStream>() {
-            @Override
-            public LongStream apply(T t) {
-                return LongStream.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
-    public LongStream flatMapToLong3(final Function<? super T, ? extends Collection<Long>> mapper) {
-        return flatMapToLong(new Function<T, LongStream>() {
-            @Override
-            public LongStream apply(T t) {
-                return Stream.of(mapper.apply(t)).mapToLong(new ToLongFunction<Long>() {
-                    @Override
-                    public long applyAsLong(Long value) {
-                        return value == null ? 0 : value.longValue();
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
     public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
+        return flatMapToFloat4(new Function<T, FloatIterator>() {
+            @Override
+            public FloatIterator apply(T t) {
+                return mapper.apply(t).floatIterator();
+            }
+        });
+    }
+
+    @Override
+    public FloatStream flatMapToFloat2(final Function<? super T, float[]> mapper) {
+        return flatMapToFloat4(new Function<T, FloatIterator>() {
+            @Override
+            public FloatIterator apply(T t) {
+                return ImmutableFloatIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public FloatStream flatMapToFloat3(final Function<? super T, ? extends Collection<Float>> mapper) {
+        return flatMapToFloat4(new Function<T, FloatIterator>() {
+            @Override
+            public FloatIterator apply(T t) {
+                final Iterator<Float> iter = mapper.apply(t).iterator();
+
+                return new ImmutableFloatIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public float next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    FloatStream flatMapToFloat4(final Function<? super T, FloatIterator> mapper) {
         //        final List<float[]> listOfArray = new ArrayList<float[]>();
         //
         //        int lengthOfAll = 0;
@@ -1165,12 +1296,12 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private int cursor = fromIndex;
-            private ImmutableFloatIterator cur = null;
+            private FloatIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).floatIterator();
+                    cur = mapper.apply(elements[cursor++]);
                 }
 
                 return cur != null && cur.hasNext();
@@ -1188,32 +1319,48 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public FloatStream flatMapToFloat2(final Function<? super T, float[]> mapper) {
-        return flatMapToFloat(new Function<T, FloatStream>() {
-            @Override
-            public FloatStream apply(T t) {
-                return FloatStream.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
-    public FloatStream flatMapToFloat3(final Function<? super T, ? extends Collection<Float>> mapper) {
-        return flatMapToFloat(new Function<T, FloatStream>() {
-            @Override
-            public FloatStream apply(T t) {
-                return Stream.of(mapper.apply(t)).mapToFloat(new ToFloatFunction<Float>() {
-                    @Override
-                    public float applyAsFloat(Float value) {
-                        return value == null ? 0 : value.floatValue();
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
     public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
+        return flatMapToDouble4(new Function<T, DoubleIterator>() {
+            @Override
+            public DoubleIterator apply(T t) {
+                return mapper.apply(t).doubleIterator();
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream flatMapToDouble2(final Function<? super T, double[]> mapper) {
+        return flatMapToDouble4(new Function<T, DoubleIterator>() {
+            @Override
+            public DoubleIterator apply(T t) {
+                return ImmutableDoubleIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream flatMapToDouble3(final Function<? super T, ? extends Collection<Double>> mapper) {
+        return flatMapToDouble4(new Function<T, DoubleIterator>() {
+            @Override
+            public DoubleIterator apply(T t) {
+                final Iterator<Double> iter = mapper.apply(t).iterator();
+
+                return new ImmutableDoubleIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public double next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    DoubleStream flatMapToDouble4(final Function<? super T, DoubleIterator> mapper) {
         //        final List<double[]> listOfArray = new ArrayList<double[]>();
         //
         //        int lengthOfAll = 0;
@@ -1230,16 +1377,16 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         //            from += tmp.length;
         //        }
         //
-        //        return new DoubleStreamImpl(arrayOfAll, closeHandlers);
+        //        return new ArrayDoubleStream(arrayOfAll, closeHandlers);
 
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private int cursor = fromIndex;
-            private ImmutableDoubleIterator cur = null;
+            private DoubleIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).doubleIterator();
+                    cur = mapper.apply(elements[cursor++]);
                 }
 
                 return cur != null && cur.hasNext();
@@ -1254,31 +1401,6 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
                 return cur.next();
             }
         }, closeHandlers);
-    }
-
-    @Override
-    public DoubleStream flatMapToDouble2(final Function<? super T, double[]> mapper) {
-        return flatMapToDouble(new Function<T, DoubleStream>() {
-            @Override
-            public DoubleStream apply(T t) {
-                return DoubleStream.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
-    public DoubleStream flatMapToDouble3(final Function<? super T, ? extends Collection<Double>> mapper) {
-        return flatMapToDouble(new Function<T, DoubleStream>() {
-            @Override
-            public DoubleStream apply(T t) {
-                return Stream.of(mapper.apply(t)).mapToDouble(new ToDoubleFunction<Double>() {
-                    @Override
-                    public double applyAsDouble(Double value) {
-                        return value == null ? 0 : value.doubleValue();
-                    }
-                });
-            }
-        });
     }
 
     @Override
@@ -1383,12 +1505,24 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         //
         //        return new ArrayStream<List<T>>(lists, closeHandlers);
 
-        return split(size).map(new Function<Stream<T>, List<T>>() {
+        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+            private int cursor = fromIndex;
+
             @Override
-            public List<T> apply(Stream<T> t) {
-                return t.toList();
+            public boolean hasNext() {
+                return cursor < toIndex;
             }
-        });
+
+            @Override
+            public List<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return Arrays.asList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+            }
+
+        }, closeHandlers);
     }
 
     @Override
@@ -1402,12 +1536,30 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         //
         //        return new ArrayStream<Set<T>>(sets, closeHandlers);
 
-        return split(size).map(new Function<Stream<T>, Set<T>>() {
+        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+            private int cursor = fromIndex;
+
             @Override
-            public Set<T> apply(Stream<T> t) {
-                return t.toSet();
+            public boolean hasNext() {
+                return cursor < toIndex;
             }
-        });
+
+            @Override
+            public Set<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final Set<T> set = new HashSet<>(size);
+
+                for (int i = cursor, to = (cursor = toIndex - cursor > size ? cursor + size : toIndex); i < to; i++) {
+                    set.add(elements[i]);
+                }
+
+                return set;
+            }
+
+        }, closeHandlers);
     }
 
     @Override
@@ -1457,7 +1609,7 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     @Override
     public Stream<T> sorted(Comparator<? super T> comparator) {
         if (sorted && isSameComparator(comparator, cmp)) {
-            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, comparator);
+            return this;
         }
 
         final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -1465,21 +1617,21 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
         return new ArrayStream<T>(a, closeHandlers, true, comparator);
     }
 
-    @Override
-    public Stream<T> parallelSorted() {
-        return parallelSorted(OBJECT_COMPARATOR);
-    }
-
-    @Override
-    public Stream<T> parallelSorted(Comparator<? super T> comparator) {
-        if (sorted && isSameComparator(comparator, cmp)) {
-            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, comparator);
-        }
-
-        final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a, comparator);
-        return new ArrayStream<T>(a, closeHandlers, true, comparator);
-    }
+    //    @Override
+    //    public Stream<T> parallelSorted() {
+    //        return parallelSorted(OBJECT_COMPARATOR);
+    //    }
+    //
+    //    @Override
+    //    public Stream<T> parallelSorted(Comparator<? super T> comparator) {
+    //        if (sorted && isSameComparator(comparator, cmp)) {
+    //            return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, comparator);
+    //        }
+    //
+    //        final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
+    //        N.parallelSort(a, comparator);
+    //        return new ArrayStream<T>(a, closeHandlers, true, comparator);
+    //    }
 
     @Override
     public Stream<T> peek(Consumer<? super T> action) {
@@ -1858,6 +2010,8 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     public Optional<T> min(Comparator<? super T> comparator) {
         if (count() == 0) {
             return Optional.empty();
+        } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
+            return Optional.of(elements[fromIndex]);
         }
 
         return Optional.of(N.min(elements, fromIndex, toIndex, comparator));
@@ -1867,18 +2021,22 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     public Optional<T> max(Comparator<? super T> comparator) {
         if (count() == 0) {
             return Optional.empty();
+        } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
+            return Optional.of(elements[toIndex - 1]);
         }
 
         return Optional.of(N.max(elements, fromIndex, toIndex, comparator));
     }
 
     @Override
-    public Optional<T> kthLargest(int k, Comparator<? super T> cmp) {
+    public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
         if (count() == 0 || k > toIndex - fromIndex) {
             return Optional.empty();
+        } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
+            return Optional.of(elements[toIndex - k]);
         }
 
-        return Optional.of(N.kthLargest(elements, fromIndex, toIndex, k, cmp));
+        return Optional.of(N.kthLargest(elements, fromIndex, toIndex, k, comparator));
     }
 
     @Override
@@ -1953,22 +2111,22 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
 
     @Override
     public Optional<Map<String, T>> distribution() {
-        final Object[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (count() == 0) {
             return Optional.empty();
         }
+
+        final Object[] a = sorted().toArray();
 
         return Optional.of((Map<String, T>) N.distribution(a));
     }
 
     @Override
     public Optional<Map<String, T>> distribution(Comparator<? super T> comparator) {
-        final Object[] a = sorted(comparator).toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (count() == 0) {
             return Optional.empty();
         }
+
+        final Object[] a = sorted(comparator).toArray();
 
         return Optional.of((Map<String, T>) N.distribution(a));
     }
@@ -2127,53 +2285,103 @@ final class ArrayStream<T> extends Stream<T> implements BaseStream<T, Stream<T>>
     }
 
     @Override
-    public Stream<T> append(Stream<? extends T> stream) {
+    public Stream<T> skipNull() {
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return value != null;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> breakWhileNull() {
+        return new IteratorStream<>(NullBreakIterator.of(elements, fromIndex, toIndex), closeHandlers, sorted, cmp);
+    }
+
+    @Override
+    public Stream<T> breakWhileError() {
+        // Never happen
+        // return new IteratorStream<>(ErrorBreakIterator.of(elements, fromIndex, toIndex), closeHandlers, sorted, cmp);
+
+        return this;
+    }
+
+    @Override
+    public Stream<T> breakWhileError(int maxRetries, long retryInterval) {
+        // Never happen
+        // return new IteratorStream<>(ErrorBreakIterator.of(elements, fromIndex, toIndex, maxRetries, retryInterval), closeHandlers, sorted, cmp);
+
+        return this;
+    }
+
+    @Override
+    public Stream<T> queued() {
+        return queued(DEFAULT_QUEUE_SIZE);
+    }
+
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
+     * 
+     * @param stream
+     * @param queueSize Default value is 8
+     * @return
+     */
+    @Override
+    public Stream<T> queued(int queueSize) {
+        final Iterator<T> iter = iterator();
+
+        if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
+            return this;
+        } else {
+            return new IteratorStream<>(Stream.parallelConcat(Arrays.asList(iter), queueSize, asyncExecutor), closeHandlers, sorted, cmp);
+        }
+    }
+
+    @Override
+    public Stream<T> append(final Stream<T> stream) {
         return Stream.concat(this, stream);
     }
 
     @Override
-    public Stream<T> append(Iterator<? extends T> iterator) {
-        return Stream.concat(this, Stream.of(iterator));
+    public Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return Stream.merge(this, b, nextSelector);
     }
 
     @Override
-    public Iterator<T> iterator() {
+    public ImmutableIterator<T> iterator() {
         return ImmutableIterator.of(elements, fromIndex, toIndex);
     }
 
     @Override
-    public Stream<T> onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new ArrayStream<T>(elements, fromIndex, toIndex, closeHandlerList, sorted, cmp);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public Stream<T> sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public Stream<T> parallel(int maxThreadNum, BaseStream.Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitter);
+    }
+
+    @Override
+    public Stream<T> onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new ArrayStream<T>(elements, fromIndex, toIndex, newCloseHandlers, sorted, cmp);
     }
 }

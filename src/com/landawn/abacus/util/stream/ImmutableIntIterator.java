@@ -1,11 +1,58 @@
 package com.landawn.abacus.util.stream;
 
+import java.util.NoSuchElementException;
+
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.N;
 
-abstract class ImmutableIntIterator {
-    public abstract boolean hasNext();
+public abstract class ImmutableIntIterator implements IntIterator {
 
-    public abstract int next();
+    public static ImmutableIntIterator of(final int[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static ImmutableIntIterator of(final int[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a.length);
+
+        return new ImmutableIntIterator() {
+            int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public int[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+        };
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
 
     public long count() {
         long result = 0;

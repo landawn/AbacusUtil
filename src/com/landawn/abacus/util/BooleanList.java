@@ -90,7 +90,7 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final boolean[] elementData = new boolean[endIndex - startIndex];
 

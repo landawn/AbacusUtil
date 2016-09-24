@@ -95,7 +95,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final float[] elementData = new float[endIndex - startIndex];
 
@@ -115,7 +115,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final float[] elementData = new float[endIndex - startIndex];
 
@@ -135,7 +135,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final float[] elementData = new float[endIndex - startIndex];
 
@@ -159,7 +159,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final float[] elementData = new float[endIndex - startIndex];
 

@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -21,9 +20,11 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -39,12 +40,11 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class ArrayLongStream extends LongStream {
+final class ArrayLongStream extends AbstractLongStream {
     private final long[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     ArrayLongStream(long[] values) {
         this(values, null);
@@ -67,13 +67,14 @@ final class ArrayLongStream extends LongStream {
     }
 
     ArrayLongStream(long[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -760,7 +761,7 @@ final class ArrayLongStream extends LongStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && (comparator == null || comparator == Stream.LONG_COMPARATOR)) {
+        } else if (sorted && Stream.isSameComparator(comparator, Stream.LONG_COMPARATOR)) {
             return new ArrayLongStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayLongStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -770,7 +771,7 @@ final class ArrayLongStream extends LongStream {
     @Override
     public LongStream sorted() {
         if (sorted) {
-            return new ArrayLongStream(elements, fromIndex, toIndex, closeHandlers, sorted);
+            return this;
         }
 
         final long[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -778,16 +779,16 @@ final class ArrayLongStream extends LongStream {
         return new ArrayLongStream(a, closeHandlers, true);
     }
 
-    @Override
-    public LongStream parallelSorted() {
-        if (sorted) {
-            return new ArrayLongStream(elements, fromIndex, toIndex, closeHandlers, sorted);
-        }
-
-        final long[] a = N.copyOfRange(elements, fromIndex, toIndex);
-        N.parallelSort(a);
-        return new ArrayLongStream(a, closeHandlers, true);
-    }
+    //    @Override
+    //    public LongStream parallelSorted() {
+    //        if (sorted) {
+    //            return this;
+    //        }
+    //
+    //        final long[] a = N.copyOfRange(elements, fromIndex, toIndex);
+    //        N.parallelSort(a);
+    //        return new ArrayLongStream(a, closeHandlers, true);
+    //    }
 
     @Override
     public LongStream peek(LongConsumer action) {
@@ -1116,6 +1117,8 @@ final class ArrayLongStream extends LongStream {
     public OptionalLong min() {
         if (count() == 0) {
             return OptionalLong.empty();
+        } else if (sorted) {
+            return OptionalLong.of(elements[fromIndex]);
         }
 
         return OptionalLong.of(N.min(elements, fromIndex, toIndex));
@@ -1125,6 +1128,8 @@ final class ArrayLongStream extends LongStream {
     public OptionalLong max() {
         if (count() == 0) {
             return OptionalLong.empty();
+        } else if (sorted) {
+            return OptionalLong.of(elements[toIndex - 1]);
         }
 
         return OptionalLong.of(N.max(elements, fromIndex, toIndex));
@@ -1134,6 +1139,8 @@ final class ArrayLongStream extends LongStream {
     public OptionalLong kthLargest(int k) {
         if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalLong.empty();
+        } else if (sorted) {
+            return OptionalLong.of(elements[toIndex - k]);
         }
 
         return OptionalLong.of(N.kthLargest(elements, fromIndex, toIndex, k));
@@ -1171,11 +1178,11 @@ final class ArrayLongStream extends LongStream {
 
     @Override
     public Optional<Map<String, Long>> distribution() {
-        final long[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (count() == 0) {
             return Optional.empty();
         }
+
+        final long[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1259,11 +1266,6 @@ final class ArrayLongStream extends LongStream {
         }
 
         return OptionalLong.empty();
-    }
-
-    @Override
-    public LongStream append(LongStream stream) {
-        return LongStream.concat(this, stream);
     }
 
     @Override
@@ -1372,7 +1374,17 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public Iterator<Long> iterator() {
+    public LongStream append(LongStream stream) {
+        return LongStream.concat(this, stream);
+    }
+
+    @Override
+    public LongStream merge(LongStream b, LongBiFunction<Nth> nextSelector) {
+        return LongStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Long> iterator() {
         return new ImmutableIterator<Long>() {
             private int cursor = fromIndex;
 
@@ -1414,7 +1426,7 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    ImmutableLongIterator longIterator() {
+    public ImmutableLongIterator longIterator() {
         return new ImmutableLongIterator() {
             private int cursor = fromIndex;
 
@@ -1450,38 +1462,34 @@ final class ArrayLongStream extends LongStream {
     }
 
     @Override
-    public LongStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new ArrayLongStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public LongStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public LongStream parallel(int maxThreadNum, Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelArrayLongStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public LongStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new ArrayLongStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
     }
 }

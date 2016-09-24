@@ -21,9 +21,11 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -37,10 +39,9 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class IteratorCharStream extends CharStream {
+final class IteratorCharStream extends AbstractCharStream {
     private final ImmutableCharIterator elements;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     IteratorCharStream(ImmutableCharIterator values) {
         this(values, null);
@@ -51,9 +52,10 @@ final class IteratorCharStream extends CharStream {
     }
 
     IteratorCharStream(ImmutableCharIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         this.elements = values;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -414,7 +416,7 @@ final class IteratorCharStream extends CharStream {
     @Override
     public CharStream sorted() {
         if (sorted) {
-            return new IteratorCharStream(elements, closeHandlers, sorted);
+            return this;
         }
 
         return new IteratorCharStream(new ImmutableCharIterator() {
@@ -874,7 +876,7 @@ final class IteratorCharStream extends CharStream {
 
     @Override
     public OptionalChar reduce(CharBinaryOperator op) {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalChar.empty();
         }
 
@@ -911,7 +913,7 @@ final class IteratorCharStream extends CharStream {
 
     @Override
     public OptionalChar min() {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalChar.empty();
         }
 
@@ -931,7 +933,7 @@ final class IteratorCharStream extends CharStream {
 
     @Override
     public OptionalChar max() {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalChar.empty();
         }
 
@@ -977,15 +979,15 @@ final class IteratorCharStream extends CharStream {
             return OptionalDouble.empty();
         }
 
-        double result = 0d;
+        long sum = 0;
         long count = 0;
 
         while (elements.hasNext()) {
-            result += elements.next();
+            sum += elements.next();
             count++;
         }
 
-        return OptionalDouble.of(result / count);
+        return OptionalDouble.of(((double) sum) / count);
     }
 
     @Override
@@ -1006,11 +1008,11 @@ final class IteratorCharStream extends CharStream {
 
     @Override
     public Optional<Map<String, Character>> distribution() {
-        final char[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (elements.hasNext() == false) {
             return Optional.empty();
         }
+
+        final char[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1122,11 +1124,6 @@ final class IteratorCharStream extends CharStream {
     }
 
     @Override
-    public CharStream append(CharStream stream) {
-        return CharStream.concat(this, stream);
-    }
-
-    @Override
     public IntStream asIntStream() {
         return new IteratorIntStream(new ImmutableIntIterator() {
             @Override
@@ -1157,7 +1154,17 @@ final class IteratorCharStream extends CharStream {
     }
 
     @Override
-    public Iterator<Character> iterator() {
+    public CharStream append(CharStream stream) {
+        return CharStream.concat(this, stream);
+    }
+
+    @Override
+    public CharStream merge(CharStream b, CharBiFunction<Nth> nextSelector) {
+        return CharStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Character> iterator() {
         return new ImmutableIterator<Character>() {
             @Override
             public boolean hasNext() {
@@ -1182,43 +1189,39 @@ final class IteratorCharStream extends CharStream {
     }
 
     @Override
-    ImmutableCharIterator charIterator() {
+    public ImmutableCharIterator charIterator() {
         return elements;
     }
 
     @Override
-    public CharStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new IteratorCharStream(elements, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public CharStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public CharStream parallel(int maxThreadNum, com.landawn.abacus.util.stream.BaseStream.Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelIteratorCharStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public CharStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new IteratorCharStream(elements, newCloseHandlers, sorted);
     }
 }

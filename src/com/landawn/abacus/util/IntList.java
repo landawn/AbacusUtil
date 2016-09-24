@@ -94,7 +94,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -114,7 +114,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -134,7 +134,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -154,7 +154,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -178,7 +178,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -202,7 +202,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -226,7 +226,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 

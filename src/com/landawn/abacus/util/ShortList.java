@@ -95,7 +95,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final short[] elementData = new short[endIndex - startIndex];
 
@@ -119,7 +119,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final short[] elementData = new short[endIndex - startIndex];
 

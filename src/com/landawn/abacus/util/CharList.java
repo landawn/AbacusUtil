@@ -94,7 +94,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final char[] elementData = new char[endIndex - startIndex];
 
@@ -118,7 +118,7 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final char[] elementData = new char[endIndex - startIndex];
 

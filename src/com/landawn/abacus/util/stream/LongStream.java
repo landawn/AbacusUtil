@@ -24,27 +24,38 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.Set;
 
+import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.Array;
+import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -113,7 +124,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract LongStream filter(final LongPredicate predicate, final long max);
 
     /**
-     * Keep the elements until the given predicate returns false.
+     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * @param predicate
      * @return
@@ -121,7 +132,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract LongStream takeWhile(final LongPredicate predicate);
 
     /**
-     * Keep the elements until the given predicate returns false.
+     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * @param predicate
      * @param max the maximum elements number to the new Stream.
@@ -130,7 +141,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract LongStream takeWhile(final LongPredicate predicate, final long max);
 
     /**
-     * Remove the elements until the given predicate returns false.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * 
      * @param predicate
@@ -139,7 +150,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract LongStream dropWhile(final LongPredicate predicate);
 
     /**
-     * Remove the elements until the given predicate returns false.
+     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * @param predicate
      * @param max the maximum elements number to the new Stream.
@@ -279,7 +290,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      */
     public abstract LongStream sorted();
 
-    public abstract LongStream parallelSorted();
+    // public abstract LongStream parallelSorted();
 
     /**
      * Returns a stream consisting of the elements of this stream, additionally
@@ -650,7 +661,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * Sequential only
+     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -857,7 +868,16 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @param stream
      * @return
      */
+    @Override
     public abstract LongStream append(LongStream stream);
+
+    /**
+     * 
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public abstract LongStream merge(final LongStream b, final LongBiFunction<Nth> nextSelector);
 
     /**
      * Returns a {@code FloatStream} consisting of the elements of this stream,
@@ -895,7 +915,10 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      */
     public abstract Stream<Long> boxed();
 
-    abstract ImmutableLongIterator longIterator();
+    @Override
+    public abstract ImmutableIterator<Long> iterator();
+
+    public abstract ImmutableLongIterator longIterator();
 
     // Static factories
 
@@ -909,6 +932,21 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
 
     public static LongStream of(final long[] a, final int startIndex, final int endIndex) {
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayLongStream(a, startIndex, endIndex);
+    }
+
+    public static LongStream of(final LongIterator iterator) {
+        return iterator == null ? empty()
+                : new IteratorLongStream(iterator instanceof ImmutableLongIterator ? (ImmutableLongIterator) iterator : new ImmutableLongIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iterator.hasNext();
+                    }
+
+                    @Override
+                    public long next() {
+                        return iterator.next();
+                    }
+                });
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {
@@ -1173,5 +1211,470 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
                 }
             }
         });
+    }
+
+    public static LongStream concat(final LongIterator... a) {
+        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
+    }
+
+    public static LongStream concat(final Collection<? extends LongIterator> c) {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
+            private final Iterator<? extends LongIterator> iter = c.iterator();
+            private LongIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public long next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream merge(final long[] a, final long[] b, final LongBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return of(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return of(a);
+        }
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private final int lenA = a.length;
+            private final int lenB = b.length;
+            private int cursorA = 0;
+            private int cursorB = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursorA < lenA || cursorB < lenB;
+            }
+
+            @Override
+            public long next() {
+                if (cursorA < lenA) {
+                    if (cursorB < lenB) {
+                        if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
+                            return a[cursorA++];
+                        } else {
+                            return b[cursorB++];
+                        }
+                    } else {
+                        return a[cursorA++];
+                    }
+                } else if (cursorB < lenB) {
+                    return b[cursorB++];
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream merge(final LongStream a, final LongStream b, final LongBiFunction<Nth> nextSelector) {
+        final LongIterator iterA = a.longIterator();
+        final LongIterator iterB = b.longIterator();
+
+        if (iterA.hasNext() == false) {
+            return b;
+        } else if (iterB.hasNext() == false) {
+            return a;
+        }
+
+        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream merge(final LongIterator a, final LongIterator b, final LongBiFunction<Nth> nextSelector) {
+        if (a.hasNext() == false) {
+            return of(b);
+        } else if (b.hasNext() == false) {
+            return of(a);
+        }
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long nextA = 0;
+            private long nextB = 0;
+            private boolean hasNextA = false;
+            private boolean hasNextB = false;
+
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || hasNextA || hasNextB;
+            }
+
+            @Override
+            public long next() {
+                if (hasNextA) {
+                    if (b.hasNext()) {
+                        if (nextSelector.apply(nextA, (nextB = b.next())) == Nth.FIRST) {
+                            hasNextA = false;
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            return nextB;
+                        }
+                    } else {
+                        hasNextA = false;
+                        return nextA;
+                    }
+                } else if (hasNextB) {
+                    if (a.hasNext()) {
+                        if (nextSelector.apply((nextA = a.next()), nextB) == Nth.FIRST) {
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            hasNextB = false;
+                            return nextB;
+                        }
+                    } else {
+                        hasNextB = false;
+                        return nextB;
+                    }
+                } else if (a.hasNext()) {
+                    if (b.hasNext()) {
+                        if (nextSelector.apply((nextA = a.next()), (nextB = b.next())) == Nth.FIRST) {
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            return nextB;
+                        }
+                    } else {
+                        return a.next();
+                    }
+                } else if (b.hasNext()) {
+                    return b.next();
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream merge(final LongStream[] a, final LongBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return a[0];
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        final LongIterator[] iters = new LongIterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].longIterator();
+        }
+
+        return merge(iters, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream merge(final LongIterator[] a, final LongBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        return merge(Arrays.asList(a), nextSelector);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream merge(final Collection<? extends LongIterator> c, final LongBiFunction<Nth> nextSelector) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends LongIterator> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        }
+
+        final Iterator<? extends LongIterator> iter = c.iterator();
+        LongStream result = merge(iter.next(), iter.next(), nextSelector);
+
+        while (iter.hasNext()) {
+            result = merge(result.longIterator(), iter.next(), nextSelector);
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream parallelMerge(final LongStream[] a, final LongBiFunction<Nth> nextSelector) {
+        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static LongStream parallelMerge(final LongStream[] a, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return a[0];
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        final LongIterator[] iters = new LongIterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].longIterator();
+        }
+
+        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : a) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream parallelMerge(final LongIterator[] a, final LongBiFunction<Nth> nextSelector) {
+        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param a
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static LongStream parallelMerge(final LongIterator[] a, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        } else if (a.length == 1) {
+            return of(a[0]);
+        } else if (a.length == 2) {
+            return merge(a[0], a[1], nextSelector);
+        }
+
+        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream parallelMerge(final Collection<? extends LongIterator> c, final LongBiFunction<Nth> nextSelector) {
+        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+    }
+
+    /**
+     * 
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @param maxThreadNum
+     * @return
+     */
+    public static LongStream parallelMerge(final Collection<? extends LongIterator> c, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        }
+
+        if (N.isNullOrEmpty(c)) {
+            return empty();
+        } else if (c.size() == 1) {
+            return of(c.iterator().next());
+        } else if (c.size() == 2) {
+            final Iterator<? extends LongIterator> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
+        } else if (maxThreadNum <= 1) {
+            return merge(c, nextSelector);
+        }
+
+        final Queue<LongIterator> queue = new LinkedList<>();
+        queue.addAll(c);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final MutableInt cnt = MutableInt.of(c.size());
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
+
+        for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
+            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    LongIterator a = null;
+                    LongIterator b = null;
+                    LongIterator c = null;
+
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (queue) {
+                                if (cnt.intValue() > 2 && queue.size() > 1) {
+                                    a = queue.poll();
+                                    b = queue.poll();
+
+                                    cnt.decrement();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            c = ImmutableLongIterator.of(merge(a, b, nextSelector).toArray());
+
+                            synchronized (queue) {
+                                queue.offer(c);
+                            }
+                        }
+                    } catch (Throwable e) {
+                        Stream.setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        try {
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
+            }
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
+
+        // Should never happen.
+        if (queue.size() != 2) {
+            throw new AbacusException("Unknown error happened.");
+        }
+
+        return merge(queue.poll(), queue.poll(), nextSelector);
     }
 }

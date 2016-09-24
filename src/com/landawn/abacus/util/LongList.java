@@ -95,7 +95,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
 
@@ -115,7 +115,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
 
@@ -139,7 +139,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
 
@@ -163,7 +163,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
 

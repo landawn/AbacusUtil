@@ -1,11 +1,58 @@
 package com.landawn.abacus.util.stream;
 
+import java.util.NoSuchElementException;
+
+import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.N;
 
-abstract class ImmutableDoubleIterator {
-    public abstract boolean hasNext();
+public abstract class ImmutableDoubleIterator implements DoubleIterator {
 
-    public abstract double next();
+    public static ImmutableDoubleIterator of(final double[] a) {
+        return of(a, 0, a.length);
+    }
+
+    public static ImmutableDoubleIterator of(final double[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a.length);
+
+        return new ImmutableDoubleIterator() {
+            int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public double next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+            }
+
+            @Override
+            public double[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+        };
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
 
     public long count() {
         long result = 0;

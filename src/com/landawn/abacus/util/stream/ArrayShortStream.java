@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -21,10 +20,12 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ObjShortConsumer;
+import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -37,12 +38,11 @@ import com.landawn.abacus.util.function.Supplier;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class ArrayShortStream extends ShortStream {
+final class ArrayShortStream extends AbstractShortStream {
     private final short[] elements;
     private final int fromIndex;
     private final int toIndex;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     ArrayShortStream(short[] values) {
         this(values, null);
@@ -65,13 +65,14 @@ final class ArrayShortStream extends ShortStream {
     }
 
     ArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         Stream.checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -570,7 +571,7 @@ final class ArrayShortStream extends ShortStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && (comparator == null || comparator == Stream.SHORT_COMPARATOR)) {
+        } else if (sorted && Stream.isSameComparator(comparator, Stream.SHORT_COMPARATOR)) {
             return new ArrayShortStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayShortStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -580,7 +581,7 @@ final class ArrayShortStream extends ShortStream {
     @Override
     public ShortStream sorted() {
         if (sorted) {
-            return new ArrayShortStream(elements, fromIndex, toIndex, closeHandlers, sorted);
+            return this;
         }
 
         final short[] a = N.copyOfRange(elements, fromIndex, toIndex);
@@ -915,6 +916,8 @@ final class ArrayShortStream extends ShortStream {
     public OptionalShort min() {
         if (count() == 0) {
             return OptionalShort.empty();
+        } else if (sorted) {
+            return OptionalShort.of(elements[fromIndex]);
         }
 
         return OptionalShort.of(N.min(elements, fromIndex, toIndex));
@@ -924,6 +927,8 @@ final class ArrayShortStream extends ShortStream {
     public OptionalShort max() {
         if (count() == 0) {
             return OptionalShort.empty();
+        } else if (sorted) {
+            return OptionalShort.of(elements[toIndex - 1]);
         }
 
         return OptionalShort.of(N.max(elements, fromIndex, toIndex));
@@ -933,6 +938,8 @@ final class ArrayShortStream extends ShortStream {
     public OptionalShort kthLargest(int k) {
         if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalShort.empty();
+        } else if (sorted) {
+            return OptionalShort.of(elements[toIndex - k]);
         }
 
         return OptionalShort.of(N.kthLargest(elements, fromIndex, toIndex, k));
@@ -970,11 +977,11 @@ final class ArrayShortStream extends ShortStream {
 
     @Override
     public Optional<Map<String, Short>> distribution() {
-        final short[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (count() == 0) {
             return Optional.empty();
         }
+
+        final short[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1061,11 +1068,6 @@ final class ArrayShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream append(ShortStream stream) {
-        return ShortStream.concat(this, stream);
-    }
-
-    @Override
     public IntStream asIntStream() {
         //        final int[] a = new int[toIndex - fromIndex];
         //
@@ -1121,7 +1123,17 @@ final class ArrayShortStream extends ShortStream {
     }
 
     @Override
-    public Iterator<Short> iterator() {
+    public ShortStream append(ShortStream stream) {
+        return ShortStream.concat(this, stream);
+    }
+
+    @Override
+    public ShortStream merge(ShortStream b, ShortBiFunction<Nth> nextSelector) {
+        return ShortStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Short> iterator() {
         return new ImmutableIterator<Short>() {
             private int cursor = fromIndex;
 
@@ -1163,7 +1175,7 @@ final class ArrayShortStream extends ShortStream {
     }
 
     @Override
-    ImmutableShortIterator shortIterator() {
+    public ImmutableShortIterator shortIterator() {
         return new ImmutableShortIterator() {
             private int cursor = fromIndex;
 
@@ -1199,38 +1211,34 @@ final class ArrayShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new ArrayShortStream(elements, fromIndex, toIndex, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public ShortStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public ShortStream parallel(int maxThreadNum, Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelArrayShortStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public ShortStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new ArrayShortStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
     }
 }

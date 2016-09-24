@@ -54,7 +54,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -74,7 +74,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -94,7 +94,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -114,7 +114,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -134,7 +134,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -154,7 +154,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -174,7 +174,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -194,7 +194,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -214,7 +214,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 
@@ -234,7 +234,7 @@ public abstract class StringList extends ObjectList<String> {
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a.length);
+        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final String[] elementData = new String[endIndex - startIndex];
 

@@ -21,9 +21,11 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -40,10 +42,9 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
-final class IteratorFloatStream extends FloatStream {
+final class IteratorFloatStream extends AbstractFloatStream {
     private final ImmutableFloatIterator elements;
     private final boolean sorted;
-    private final Set<Runnable> closeHandlers;
 
     IteratorFloatStream(ImmutableFloatIterator values) {
         this(values, null);
@@ -54,9 +55,10 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     IteratorFloatStream(ImmutableFloatIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
+        super(closeHandlers);
+
         this.elements = values;
         this.sorted = sorted;
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null : new LinkedHashSet<>(closeHandlers);
     }
 
     @Override
@@ -536,7 +538,7 @@ final class IteratorFloatStream extends FloatStream {
     @Override
     public FloatStream sorted() {
         if (sorted) {
-            return new IteratorFloatStream(elements, closeHandlers, sorted);
+            return this;
         }
 
         return new IteratorFloatStream(new ImmutableFloatIterator() {
@@ -604,76 +606,76 @@ final class IteratorFloatStream extends FloatStream {
         }, closeHandlers, true);
     }
 
-    @Override
-    public FloatStream parallelSorted() {
-        if (sorted) {
-            return new IteratorFloatStream(elements, closeHandlers, sorted);
-        }
-
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
-            float[] a = null;
-            int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                return cursor < a.length;
-            }
-
-            @Override
-            public float next() {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                if (cursor >= a.length) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                return a.length - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
-            }
-
-            @Override
-            public float[] toArray() {
-                if (a == null) {
-                    parallelSort();
-                }
-
-                if (cursor == 0) {
-                    return a;
-                } else {
-                    return N.copyOfRange(a, cursor, a.length);
-                }
-            }
-
-            private void parallelSort() {
-                a = elements.toArray();
-
-                N.parallelSort(a);
-            }
-        }, closeHandlers, true);
-    }
+    //    @Override
+    //    public FloatStream parallelSorted() {
+    //        if (sorted) {
+    //            return this;
+    //        }
+    //
+    //        return new IteratorFloatStream(new ImmutableFloatIterator() {
+    //            float[] a = null;
+    //            int cursor = 0;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                return cursor < a.length;
+    //            }
+    //
+    //            @Override
+    //            public float next() {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                if (cursor >= a.length) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                return a[cursor++];
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                return a.length - cursor;
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+    //            }
+    //
+    //            @Override
+    //            public float[] toArray() {
+    //                if (a == null) {
+    //                    parallelSort();
+    //                }
+    //
+    //                if (cursor == 0) {
+    //                    return a;
+    //                } else {
+    //                    return N.copyOfRange(a, cursor, a.length);
+    //                }
+    //            }
+    //
+    //            private void parallelSort() {
+    //                a = elements.toArray();
+    //
+    //                N.parallelSort(a);
+    //            }
+    //        }, closeHandlers, true);
+    //    }
 
     @Override
     public FloatStream peek(final FloatConsumer action) {
@@ -1067,7 +1069,7 @@ final class IteratorFloatStream extends FloatStream {
 
     @Override
     public OptionalFloat reduce(FloatBinaryOperator op) {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalFloat.empty();
         }
 
@@ -1104,7 +1106,7 @@ final class IteratorFloatStream extends FloatStream {
 
     @Override
     public OptionalFloat min() {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalFloat.empty();
         }
 
@@ -1124,7 +1126,7 @@ final class IteratorFloatStream extends FloatStream {
 
     @Override
     public OptionalFloat max() {
-        if (count() == 0) {
+        if (elements.hasNext() == false) {
             return OptionalFloat.empty();
         }
 
@@ -1257,11 +1259,11 @@ final class IteratorFloatStream extends FloatStream {
 
     @Override
     public Optional<Map<String, Float>> distribution() {
-        final float[] a = sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
+        if (elements.hasNext() == false) {
             return Optional.empty();
         }
+
+        final float[] a = sorted().toArray();
 
         return Optional.of(N.distribution(a));
     }
@@ -1373,11 +1375,6 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream append(FloatStream stream) {
-        return FloatStream.concat(this, stream);
-    }
-
-    @Override
     public DoubleStream asDoubleStream() {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             @Override
@@ -1408,7 +1405,17 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     @Override
-    public Iterator<Float> iterator() {
+    public FloatStream append(FloatStream stream) {
+        return FloatStream.concat(this, stream);
+    }
+
+    @Override
+    public FloatStream merge(FloatStream b, FloatBiFunction<Nth> nextSelector) {
+        return FloatStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ImmutableIterator<Float> iterator() {
         return new ImmutableIterator<Float>() {
             @Override
             public boolean hasNext() {
@@ -1433,43 +1440,39 @@ final class IteratorFloatStream extends FloatStream {
     }
 
     @Override
-    ImmutableFloatIterator floatIterator() {
+    public ImmutableFloatIterator floatIterator() {
         return elements;
     }
 
     @Override
-    public FloatStream onClose(Runnable closeHandler) {
-        final List<Runnable> closeHandlerList = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
-
-        if (N.notNullOrEmpty(this.closeHandlers)) {
-            closeHandlerList.addAll(this.closeHandlers);
-        }
-
-        closeHandlerList.add(closeHandler);
-
-        return new IteratorFloatStream(elements, closeHandlerList, sorted);
+    public boolean isParallel() {
+        return false;
     }
 
     @Override
-    public void close() {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            RuntimeException ex = null;
+    public FloatStream sequential() {
+        return this;
+    }
 
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (RuntimeException e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw ex;
-            }
+    @Override
+    public FloatStream parallel(int maxThreadNum, Splitter splitter) {
+        if (maxThreadNum < 1) {
+            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
         }
+
+        return new ParallelIteratorFloatStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public FloatStream onClose(Runnable closeHandler) {
+        final List<Runnable> newCloseHandlers = new ArrayList<>(N.isNullOrEmpty(this.closeHandlers) ? 1 : this.closeHandlers.size() + 1);
+
+        if (N.notNullOrEmpty(this.closeHandlers)) {
+            newCloseHandlers.addAll(this.closeHandlers);
+        }
+
+        newCloseHandlers.add(closeHandler);
+
+        return new IteratorFloatStream(elements, newCloseHandlers, sorted);
     }
 }
