@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.AutoRetry;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.Function;
 
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -56,6 +59,11 @@ public class AsyncExecutor {
         return execute(new CompletableFuture<Void>(action, null));
     }
 
+    public static CompletableFuture<Void> execute(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes,
+            final long retryInterval) {
+        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
+    }
+
     @Beta
     static List<CompletableFuture<Void>> execute(final List<? extends Runnable> actions) {
         final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
@@ -75,6 +83,11 @@ public class AsyncExecutor {
      */
     public static <T> CompletableFuture<T> execute(final Callable<T> action) {
         return execute(new CompletableFuture<T>(action));
+    }
+
+    public static <T> CompletableFuture<T> execute(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
+            final long retryInterval) {
+        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
     }
 
     /**
@@ -110,6 +123,11 @@ public class AsyncExecutor {
         return executeInParallel(new CompletableFuture<Void>(action, null));
     }
 
+    public static CompletableFuture<Void> executeInParallel(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes,
+            final long retryInterval) {
+        return executeInParallel(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
+    }
+
     /**
      * The actions will be asynchronously executed with {@code android.io.AsyncTask#THREAD_POOL_EXECUTOR} in background.
      * 
@@ -135,6 +153,11 @@ public class AsyncExecutor {
      */
     public static <T> CompletableFuture<T> executeInParallel(final Callable<T> action) {
         return executeInParallel(new CompletableFuture<T>(action));
+    }
+
+    public static <T> CompletableFuture<T> executeInParallel(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry,
+            final int retryTimes, final long retryInterval) {
+        return executeInParallel(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
     }
 
     /**
@@ -179,6 +202,11 @@ public class AsyncExecutor {
      */
     public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final long delay) {
         return executeOnUiThread(new CompletableFuture<Void>(action, null), delay);
+    }
+
+    public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes,
+            final long retryInterval) {
+        return executeOnUiThread(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
     }
 
     /**
@@ -235,6 +263,11 @@ public class AsyncExecutor {
      */
     public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final long delay) {
         return executeOnUiThread(new CompletableFuture<T>(action), delay);
+    }
+
+    public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry,
+            final int retryTimes, final long retryInterval) {
+        return executeOnUiThread(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
     }
 
     /**

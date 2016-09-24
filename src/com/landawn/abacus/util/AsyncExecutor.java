@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.Function;
 
 /**
  * 
@@ -95,6 +97,10 @@ public class AsyncExecutor {
         return future;
     }
 
+    public CompletableFuture<Void> execute(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
+        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
+    }
+
     public CompletableFuture<Void>[] execute(final Runnable... commands) {
         final CompletableFuture<Void>[] results = new CompletableFuture[commands.length];
 
@@ -128,6 +134,11 @@ public class AsyncExecutor {
         getExecutorService().execute(future);
 
         return future;
+    }
+
+    public <T> CompletableFuture<T> execute(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
+            final long retryInterval) {
+        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
     }
 
     public <T> CompletableFuture<T>[] execute(final Callable<T>... commands) {
