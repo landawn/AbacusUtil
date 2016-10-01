@@ -67,7 +67,7 @@ public final class PropertiesUtil {
 
     private static final ResultSetExtractor<ConfigEntity> CONFIG_ENTITY_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<ConfigEntity>() {
         @Override
-        public ConfigEntity extractData(Class<?> cls, ResultSet rs, NamedSQL namedSQL, JdbcSettings jdbcSettings) throws SQLException {
+        public ConfigEntity extractData(Class<?> cls, NamedSQL namedSQL, ResultSet rs, JdbcSettings jdbcSettings) throws SQLException {
             int offset = jdbcSettings.getOffset();
             int count = jdbcSettings.getCount();
 
@@ -549,7 +549,7 @@ public final class PropertiesUtil {
                 if (N.isNullOrEmpty(typeAttr)) {
                     propValue = Configuration.getTextContent(propNode);
                 } else {
-                    propValue = N.getType(typeAttr).valueOf(Configuration.getTextContent(propNode));
+                    propValue = N.typeOf(typeAttr).valueOf(Configuration.getTextContent(propNode));
                 }
             } else {
                 // TODO it's difficult to support duplicated property and may be misused.
@@ -748,7 +748,7 @@ public final class PropertiesUtil {
 
                             storeToXML((Properties<?, ?>) e, os, elementPropName, ignoreTypeInfo, false);
                         } else {
-                            type = N.getType(e.getClass());
+                            type = N.typeOf(e.getClass());
 
                             if (ignoreTypeInfo) {
                                 bw.write("<" + elementPropName + ">");
@@ -771,7 +771,7 @@ public final class PropertiesUtil {
 
                     storeToXML((Properties<?, ?>) propValue, os, propName.toString(), ignoreTypeInfo, false);
                 } else {
-                    type = N.getType(propValue.getClass());
+                    type = N.typeOf(propValue.getClass());
 
                     if (ignoreTypeInfo) {
                         bw.write("<" + propName + ">");
@@ -953,7 +953,7 @@ public final class PropertiesUtil {
 
                 if (duplicatedPropNameSet.contains(propName)) {
                     String listPropName = propName + "List";
-                    String elementTypeName = N.getType(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.box(N.getType(typeName).getTypeClass()))
+                    String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.box(N.typeOf(typeName).getTypeClass()))
                             : typeName;
 
                     writer.write(spaces + "    " + (isPublicField ? "public " : "private ") + "List<" + elementTypeName + "> " + listPropName
@@ -1074,7 +1074,7 @@ public final class PropertiesUtil {
             attr = XMLUtil.getAttribute(childNode, TYPE);
 
             if (N.notNullOrEmpty(attr)) {
-                type = N.getType(attr);
+                type = N.typeOf(attr);
                 if (type != null) {
                     Class<?> typeClass = type.getTypeClass();
                     if (typeClass.getCanonicalName().startsWith("java.lang") || N.isPrimitive(typeClass)
@@ -1097,7 +1097,7 @@ public final class PropertiesUtil {
 
     private static void writeMethod(Writer writer, String spaces, String propName, String typeName, Set<String> duplicatedPropNameSet) throws IOException {
         String listPropName = propName + "List";
-        String elementTypeName = N.getType(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.box(N.getType(typeName).getTypeClass())) : typeName;
+        String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.box(N.typeOf(typeName).getTypeClass())) : typeName;
 
         writer.write(spaces + "public " + typeName + " get" + N.capitalize(propName) + "() {" + N.LINE_SEPARATOR);
         writer.write(spaces + "    " + "return " + propName + ";" + N.LINE_SEPARATOR);
@@ -1120,7 +1120,7 @@ public final class PropertiesUtil {
 
         writer.write(spaces + "public void remove" + N.capitalize(propName) + "() {" + N.LINE_SEPARATOR);
         writer.write(spaces + "    " + "super.remove(\"" + propName + "\");" + N.LINE_SEPARATOR);
-        writer.write(spaces + "    " + "this." + propName + " = " + N.getType(typeName).defaultValue() + ";" + N.LINE_SEPARATOR);
+        writer.write(spaces + "    " + "this." + propName + " = " + N.typeOf(typeName).defaultValue() + ";" + N.LINE_SEPARATOR);
 
         // TODO it's difficult to support duplicated property and may be misused.
         //        if (duplicatedPropNameSet.contains(propName)) {
@@ -1154,7 +1154,7 @@ public final class PropertiesUtil {
             if (typeAttr.equals("Properties")) {
                 typeName = "Properties<String, Object>";
             } else {
-                Type<?> type = N.getType(typeAttr);
+                Type<?> type = N.typeOf(typeAttr);
                 if (type != null) {
                     typeName = type.getTypeClass().getSimpleName();
                 }

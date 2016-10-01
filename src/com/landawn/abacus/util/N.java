@@ -116,6 +116,7 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.EntityId;
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.core.EntityManagerUtil;
 import com.landawn.abacus.core.MapEntity;
@@ -139,6 +140,7 @@ import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.CharPredicate;
@@ -146,6 +148,7 @@ import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IndexedBiFunction;
 import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
@@ -693,7 +696,7 @@ public final class N {
     };
 
     // ...
-    private static final Map<Class<?>, Object> CLASS_EMPTY_ARRAY = new HashMap<>();
+    static final Map<Class<?>, Object> CLASS_EMPTY_ARRAY = new ConcurrentHashMap<>();
 
     static {
         CLASS_EMPTY_ARRAY.put(boolean.class, N.EMPTY_BOOLEAN_ARRAY);
@@ -1117,14 +1120,14 @@ public final class N {
         }
     }
 
-    static final Type<Boolean> booleanType = N.getType(boolean.class);
-    static final Type<Character> charType = N.getType(char.class);
-    static final Type<Byte> byteType = N.getType(byte.class);
-    static final Type<Short> shortType = N.getType(short.class);
-    static final Type<Integer> intType = N.getType(int.class);
-    static final Type<Long> longType = N.getType(long.class);
-    static final Type<Float> floatType = N.getType(float.class);
-    static final Type<Double> doubleType = N.getType(double.class);
+    static final Type<Boolean> booleanType = N.typeOf(boolean.class);
+    static final Type<Character> charType = N.typeOf(char.class);
+    static final Type<Byte> byteType = N.typeOf(byte.class);
+    static final Type<Short> shortType = N.typeOf(short.class);
+    static final Type<Integer> intType = N.typeOf(int.class);
+    static final Type<Long> longType = N.typeOf(long.class);
+    static final Type<Float> floatType = N.typeOf(float.class);
+    static final Type<Double> doubleType = N.typeOf(double.class);
 
     /**
      * Constructor for
@@ -1338,61 +1341,6 @@ public final class N {
         }
 
         return superTypes;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Type<T> getType(final String typeName) {
-        if (typeName == null) {
-            return null;
-        }
-
-        Type<?> type = nameTypePool.get(typeName);
-
-        if (type == null) {
-            type = TypeFactory.getType(typeName);
-
-            nameTypePool.put(typeName, type);
-        }
-
-        return (Type<T>) type;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Type<T> getType(final Class<?> cls) {
-        if (cls == null) {
-            return null;
-        }
-
-        Type<?> type = clsTypePool.get(cls);
-
-        if (type == null) {
-            type = TypeFactory.getType(cls);
-            clsTypePool.put(cls, type);
-        }
-
-        return (Type<T>) type;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> List<Type<T>> getType(final Class<?>... clazzes) {
-        final List<Type<T>> result = new ArrayList<>(clazzes.length);
-
-        for (int i = 0, len = clazzes.length; i < len; i++) {
-            result.add((Type<T>) getType(clazzes[i]));
-        }
-
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> List<Type<T>> getType(final List<? extends Class<?>> clazzes) {
-        final List<Type<T>> result = new ArrayList<>(clazzes.size());
-
-        for (int i = 0, len = clazzes.size(); i < len; i++) {
-            result.add((Type<T>) getType(clazzes.get(i)));
-        }
-
-        return result;
     }
 
     public static Class<?>[] getTypeArgumentsByMethod(final Method method) {
@@ -2457,7 +2405,62 @@ public final class N {
 
     @SuppressWarnings("unchecked")
     public static <T> T defaultValueOf(final Class<T> cls) {
-        return (T) N.getType(cls).defaultValue();
+        return (T) N.typeOf(cls).defaultValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Type<T> typeOf(final String typeName) {
+        if (typeName == null) {
+            return null;
+        }
+
+        Type<?> type = nameTypePool.get(typeName);
+
+        if (type == null) {
+            type = TypeFactory.getType(typeName);
+
+            nameTypePool.put(typeName, type);
+        }
+
+        return (Type<T>) type;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Type<T> typeOf(final Class<?> cls) {
+        if (cls == null) {
+            return null;
+        }
+
+        Type<?> type = clsTypePool.get(cls);
+
+        if (type == null) {
+            type = TypeFactory.getType(cls);
+            clsTypePool.put(cls, type);
+        }
+
+        return (Type<T>) type;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> List<Type<T>> typeOf(final Class<?>... classes) {
+        final List<Type<T>> result = new ArrayList<>(classes.length);
+
+        for (int i = 0, len = classes.length; i < len; i++) {
+            result.add((Type<T>) typeOf(classes[i]));
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> List<Type<T>> typeOf(final Collection<? extends Class<?>> classes) {
+        final List<Type<T>> result = new ArrayList<>(classes.size());
+
+        for (Class<?> cls : classes) {
+            result.add((Type<T>) typeOf(cls));
+        }
+
+        return result;
     }
 
     public static String stringOf(final boolean val) {
@@ -2518,7 +2521,7 @@ public final class N {
      * @return <code>null</code> if the specified object is null.
      */
     public static String stringOf(final Object obj) {
-        return (obj == null) ? null : N.getType(obj.getClass()).stringOf(obj);
+        return (obj == null) ? null : N.typeOf(obj.getClass()).stringOf(obj);
     }
 
     static byte[] bytesOf(final Object obj) {
@@ -2545,7 +2548,7 @@ public final class N {
      */
     @SuppressWarnings("unchecked")
     public static <T> T valueOf(final Class<T> targetClass, final String str) {
-        return (str == null) ? defaultValueOf(targetClass) : (T) N.getType(targetClass).valueOf(str);
+        return (str == null) ? defaultValueOf(targetClass) : (T) N.typeOf(targetClass).valueOf(str);
     }
 
     //    static <T> T valueOf(final Class<T> targetClass, final byte[] bytes) {
@@ -2921,7 +2924,7 @@ public final class N {
                 valueMap.put(e.name(), e);
             }
 
-            enumMap = N.asImmutableBiMap(new BiMap<E, String>(keyMap, valueMap));
+            enumMap = new BiMap<>(asImmutableMap(keyMap), asImmutableMap(valueMap));
 
             enumMapPool.put(enumClass, enumMap);
         }
@@ -3019,13 +3022,13 @@ public final class N {
      */
     @SuppressWarnings("unchecked")
     public static <T> T newArray(final Class<?> componentType, final int length) {
-        if (length == 0) {
-            final Object result = CLASS_EMPTY_ARRAY.get(componentType);
-
-            if (result != null) {
-                return (T) result;
-            }
-        }
+        //        if (length == 0) {
+        //            final Object result = CLASS_EMPTY_ARRAY.get(componentType);
+        //
+        //            if (result != null) {
+        //                return (T) result;
+        //            }
+        //        }
 
         return (T) Array.newInstance(componentType, length);
     }
@@ -3331,7 +3334,9 @@ public final class N {
     @SuppressWarnings("deprecation")
     public static <T> DataSet newDataSet(List<String> columnNameList, List<T> rowList) {
         if (N.isNullOrEmpty(columnNameList) && N.isNullOrEmpty(rowList)) {
-            throw new IllegalArgumentException("Column name list and row list can't be both null or empty");
+            // throw new IllegalArgumentException("Column name list and row list can't be both null or empty");
+
+            return new RowDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
         }
 
         final int rowSize = rowList.size();
@@ -3350,7 +3355,7 @@ public final class N {
                 }
 
                 cls = e.getClass();
-                type = N.getType(cls);
+                type = N.typeOf(cls);
 
                 if (type.isMap()) {
                     columnNameSet.addAll(((Map<String, Object>) e).keySet());
@@ -3427,7 +3432,7 @@ public final class N {
                 continue;
             }
 
-            type = N.getType(e.getClass());
+            type = N.typeOf(e.getClass());
 
             if (type.isMap()) {
                 Map<String, Object> props = (Map<String, Object>) e;
@@ -3524,6 +3529,30 @@ public final class N {
     }
 
     /**
+     * Wrap the specified map with a unmodifiable BiMap.
+     *
+     * Note: To avoid the side-effects in the initialization of auto-generated interface *PNL/*CNL class,
+     * This method just return null if the specified keyMap has duplicated values, instead of throwing exception.
+     *
+     * @param keyMap
+     * @return null if the specified <code>keyMap</code> has duplicated values
+     */
+    @Internal
+    public static <K, V> BiMap<K, V> newImmutableBiMapForInterface(final Map<? extends K, ? extends V> keyMap) {
+        final Map<V, K> valueMap = new LinkedHashMap<>();
+
+        for (Map.Entry<? extends K, ? extends V> entry : keyMap.entrySet()) {
+            valueMap.put(entry.getValue(), entry.getKey());
+        }
+
+        if (valueMap.size() != keyMap.size()) {
+            return null;
+        }
+
+        return new BiMap<K, V>(asImmutableMap(keyMap), asImmutableMap(valueMap));
+    }
+
+    /**
      * The input array is returned.
      *
      * @param a
@@ -3533,13 +3562,35 @@ public final class N {
         return a;
     }
 
+    /**
+     * Returns an empty array if the specified collection is null or empty.
+     * 
+     * @param c
+     * @return
+     */
     @SuppressWarnings("unchecked")
-    public static Object[] asArray(final Collection<?> c) {
+    public static Object[] toArray(final Collection<?> c) {
         if (N.isNullOrEmpty(c)) {
             return N.EMPTY_OBJECT_ARRAY;
         }
 
         return c.toArray(new Object[c.size()]);
+    }
+
+    public static <T> T[] toArray(final Collection<? extends T> c, final T[] a) {
+        if (N.isNullOrEmpty(c)) {
+            return a;
+        }
+
+        return c.toArray(a);
+    }
+
+    public static <T> T[] toArray(final Class<T[]> targetClass, final Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return N.newArray(targetClass.getComponentType(), 0);
+        }
+
+        return c.toArray((T[]) N.newArray(targetClass.getComponentType(), c.size()));
     }
 
     /**
@@ -4051,8 +4102,19 @@ public final class N {
      * @see java.util.Collections#unmodifiableList(List)
      */
     public static <T> List<T> asImmutableList(final T... a) {
-        return Collections.unmodifiableList(asList(a));
+        return Collections.unmodifiableList(Arrays.asList(a));
     }
+
+    //    /**
+    //     * Wrap the specified array with a unmodifiable list.
+    //     *
+    //     * @param a
+    //     * @return
+    //     * @see java.util.Collections#unmodifiableList(List)
+    //     */
+    //    public static <T> List<T> asImmutableList(final T[] a, int fromIndex, int toIndex) {
+    //        return Collections.unmodifiableList(new ArrayList2<T>(a, fromIndex, toIndex));
+    //    }
 
     /**
      * Wrap the specified list with a unmodifiable list.
@@ -4143,49 +4205,26 @@ public final class N {
         return Collections.unmodifiableSortedMap(m);
     }
 
-    /**
-     * Wrap the specified map with a unmodifiable BiMap.
-     *
-     * @param keyMap
-     * @return
-     * @throws IllegalArgumentException if the specified <code>keyMap</code> has duplicated values
-     */
-    public static <K, V> BiMap<K, V> asImmutableBiMap(final Map<? extends K, ? extends V> keyMap) {
-        final Map<V, K> valueMap = new LinkedHashMap<>();
-
-        for (Map.Entry<? extends K, ? extends V> entry : keyMap.entrySet()) {
-            valueMap.put(entry.getValue(), entry.getKey());
-        }
-
-        if (valueMap.size() != keyMap.size()) {
-            throw new IllegalArgumentException("Duplicated values are included in the specified Map: " + keyMap.toString());
-        }
-
-        return new BiMap<K, V>(asImmutableMap(keyMap), asImmutableMap(valueMap));
-    }
-
-    /**
-     * Wrap the specified map with a unmodifiable BiMap.
-     *
-     * Note: To avoid the side-effects in the initialization of auto-generated interface *PNL/*CNL class,
-     * This method just return null if the specified keyMap has duplicated values, instead of throwing exception.
-     *
-     * @param keyMap
-     * @return null if the specified <code>keyMap</code> has duplicated values
-     */
-    public static <K, V> BiMap<K, V> asImmutableBiMapForInterface(final Map<? extends K, ? extends V> keyMap) {
-        final Map<V, K> valueMap = new LinkedHashMap<>();
-
-        for (Map.Entry<? extends K, ? extends V> entry : keyMap.entrySet()) {
-            valueMap.put(entry.getValue(), entry.getKey());
-        }
-
-        if (valueMap.size() != keyMap.size()) {
-            return null;
-        }
-
-        return new BiMap<K, V>(asImmutableMap(keyMap), asImmutableMap(valueMap));
-    }
+    //    /**
+    //     * Wrap the specified map with a unmodifiable BiMap.
+    //     *
+    //     * @param keyMap
+    //     * @return
+    //     * @throws IllegalArgumentException if the specified <code>keyMap</code> has duplicated values
+    //     */
+    //    public static <K, V> BiMap<K, V> asImmutableBiMap(final Map<? extends K, ? extends V> keyMap) {
+    //        final Map<V, K> valueMap = new LinkedHashMap<>();
+    //
+    //        for (Map.Entry<? extends K, ? extends V> entry : keyMap.entrySet()) {
+    //            valueMap.put(entry.getValue(), entry.getKey());
+    //        }
+    //
+    //        if (valueMap.size() != keyMap.size()) {
+    //            throw new IllegalArgumentException("Duplicated values are included in the specified Map: " + keyMap.toString());
+    //        }
+    //
+    //        return new BiMap<K, V>(asImmutableMap(keyMap), asImmutableMap(valueMap));
+    //    }
 
     /**
      * Wrap the specified list with a synchronized list.
@@ -4382,7 +4421,7 @@ public final class N {
         //
         //        return (T) targetPropType.valueOf(srcPropType.stringOf(obj));
 
-        final Type<T> type = getType(targetClass);
+        final Type<T> type = typeOf(targetClass);
         return as(type, obj);
     }
 
@@ -4398,7 +4437,7 @@ public final class N {
             return (T) obj;
         }
 
-        final Type<Object> srcPropType = getType(srcPropClass);
+        final Type<Object> srcPropType = typeOf(srcPropClass);
 
         if (targetType.isBoolean() && srcPropType.isNumber()) {
             return (T) ((Boolean) (((Number) obj).longValue() > 0));
@@ -7047,6 +7086,14 @@ public final class N {
         }
     }
 
+    public static String repeat(final char ch, final int repeat, final char separator) {
+        if (repeat < 1) {
+            throw new IllegalArgumentException("The specified count must be greater than 0");
+        }
+
+        return repeat(String.valueOf(ch), repeat, String.valueOf(separator));
+    }
+
     /**
      *
      * @param str
@@ -7098,7 +7145,6 @@ public final class N {
         }
 
         return newString(cbuf, true);
-
     }
 
     public static char toLowerCase(final char ch) {
@@ -10136,7 +10182,7 @@ public final class N {
         Boolean b = entityClassPool.get(cls);
 
         if (b == null) {
-            b = getType(cls) instanceof EntityType;
+            b = typeOf(cls) instanceof EntityType;
             entityClassPool.put(cls, b);
         }
 
@@ -10166,21 +10212,21 @@ public final class N {
     }
 
     public static boolean isPrimitive(final Class<?> cls) {
-        return getType(cls).isPrimitiveType();
+        return typeOf(cls).isPrimitiveType();
     }
 
     public static boolean isPrimitiveWapper(final Class<?> cls) {
-        return getType(cls).isPrimitiveWrapper();
+        return typeOf(cls).isPrimitiveWrapper();
     }
 
     public static boolean isPrimitiveOrWapper(final Class<?> cls) {
-        final Type<?> type = getType(cls);
+        final Type<?> type = typeOf(cls);
 
         return type.isPrimitiveType() || type.isPrimitiveWrapper();
     }
 
     public static boolean isPrimitiveArray(final Class<?> cls) {
-        return getType(cls).isPrimitiveArray();
+        return typeOf(cls).isPrimitiveArray();
     }
 
     public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
@@ -10188,7 +10234,7 @@ public final class N {
             return N.newArray(arrayClass.getComponentType(), 0);
         }
 
-        return (T) N.getType(arrayClass).collection2Array(c);
+        return (T) N.typeOf(arrayClass).collection2Array(c);
     }
 
     public static <T> List<T> array2List(final Object a) {
@@ -10198,7 +10244,7 @@ public final class N {
 
         final List<T> c = asList();
 
-        N.getType(a.getClass()).array2Collection(c, a);
+        N.typeOf(a.getClass()).array2Collection(c, a);
 
         return c;
     }
@@ -10210,7 +10256,7 @@ public final class N {
 
         final Set<T> c = asSet();
 
-        N.getType(a.getClass()).array2Collection(c, a);
+        N.typeOf(a.getClass()).array2Collection(c, a);
 
         return c;
     }
@@ -10227,7 +10273,7 @@ public final class N {
             return c;
         }
 
-        N.getType(a.getClass()).array2Collection((Collection<?>) c, a);
+        N.typeOf(a.getClass()).array2Collection((Collection<?>) c, a);
 
         return c;
     }
@@ -10343,7 +10389,7 @@ public final class N {
                 }
             }
         } else {
-            final Type<E> eleType = getType(eleCls);
+            final Type<E> eleType = typeOf(eleCls);
 
             if (trim) {
                 for (int i = 0; i < strs.length; i++) {
@@ -10409,7 +10455,7 @@ public final class N {
 
             return (T) strs;
         } else {
-            final Type<?> eleType = getType(eleCls);
+            final Type<?> eleType = typeOf(eleCls);
             final Object a = N.newArray(eleCls, strs.length);
 
             if (N.isPrimitive(eleCls)) {
@@ -10472,7 +10518,7 @@ public final class N {
 
         for (Object e : c) {
             if (e != null) {
-                type = getType(e.getClass());
+                type = typeOf(e.getClass());
 
                 if (type != null) {
                     break;
@@ -11699,7 +11745,7 @@ public final class N {
             } else {
                 paramClass = propSetMethod.getParameterTypes()[0];
 
-                if (propValue != null && N.getType(propValue.getClass()).isMap() && N.isEntity(paramClass)) {
+                if (propValue != null && N.typeOf(propValue.getClass()).isMap() && N.isEntity(paramClass)) {
                     N.setPropValue(entity, propSetMethod, map2Entity(paramClass, (Map<String, Object>) propValue, ignoreNullProperty, ignoreUnknownProperty));
                 } else {
                     N.setPropValue(entity, propSetMethod, propValue);
@@ -13466,14 +13512,14 @@ public final class N {
         }
 
         if ((a != null) && (b != null)) {
-            final Type<Object> typeA = getType(a.getClass());
+            final Type<Object> typeA = typeOf(a.getClass());
 
             if (typeA.isPrimitiveArray()) {
-                final Type<Object> typeB = getType(b.getClass());
+                final Type<Object> typeB = typeOf(b.getClass());
 
                 return typeA.getTypeClass().equals(typeB.getTypeClass()) && typeA.equals(a, b);
             } else if (typeA.isObjectArray()) {
-                final Type<Object> typeB = getType(b.getClass());
+                final Type<Object> typeB = typeOf(b.getClass());
 
                 return typeB.isObjectArray() && typeA.equals(a, b);
             }
@@ -13496,7 +13542,7 @@ public final class N {
         }
 
         if ((a != null) && (b != null) && a.getClass().isArray() && a.getClass().equals(b.getClass())) {
-            return getType(a.getClass()).deepEquals(a, b);
+            return typeOf(a.getClass()).deepEquals(a, b);
         }
 
         return false;
@@ -13910,7 +13956,7 @@ public final class N {
         }
 
         if (obj.getClass().isArray()) {
-            return getType(obj.getClass()).hashCode(obj);
+            return typeOf(obj.getClass()).hashCode(obj);
         }
 
         return obj.hashCode();
@@ -13928,7 +13974,7 @@ public final class N {
         }
 
         if (obj.getClass().isArray()) {
-            return getType(obj.getClass()).deepHashCode(obj);
+            return typeOf(obj.getClass()).deepHashCode(obj);
         }
 
         return obj.hashCode();
@@ -14257,7 +14303,7 @@ public final class N {
         }
 
         if (obj.getClass().isArray()) {
-            return getType(obj.getClass()).toString(obj);
+            return typeOf(obj.getClass()).toString(obj);
         }
 
         final Integer typeIdx = CLASS_TYPE_ENUM.get(obj.getClass());
@@ -14308,7 +14354,7 @@ public final class N {
         }
 
         if (obj.getClass().isArray()) {
-            return getType(obj.getClass()).deepToString(obj);
+            return typeOf(obj.getClass()).deepToString(obj);
         }
 
         return obj.toString();
@@ -20050,14 +20096,131 @@ public final class N {
         return Collections.disjoint(c1, c2);
     }
 
-    public static <T> void forEach(final Collection<T> c, final IndexedConsumer<? super T> action) {
+    public <T> void forEach(final T[] a, final Consumer<? super T> action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        forEach(a, 0, a.length, action);
+    }
+
+    public <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < a.length)) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(a[i]);
+        }
+    }
+
+    public <T> void forEach(final T[] a, final IndexedConsumer<T, T[]> action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        forEach(a, 0, a.length, action);
+    }
+
+    public <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T, T[]> action) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < a.length)) {
+            return;
+        }
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            action.accept(i, a[i], a);
+        }
+    }
+
+    public <T, R> R forEach(final T[] a, final R identity, final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
+        if (N.isNullOrEmpty(a)) {
+            return identity;
+        }
+
+        return forEach(a, 0, a.length, identity, accumulator, till);
+    }
+
+    /**
+     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param identity
+     * @param accumulator
+     * @param till break if the <code>till</code> returns true.
+     * @return
+     */
+    public <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final BiFunction<R, ? super T, R> accumulator,
+            final Predicate<? super R> till) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < a.length)) {
+            return identity;
+        }
+
+        R result = identity;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result = accumulator.apply(result, a[i]);
+
+            if (till.test(result)) {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
+        if (N.isNullOrEmpty(a)) {
+            return identity;
+        }
+
+        return forEach(a, 0, a.length, identity, accumulator, till);
+    }
+
+    /**
+     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param identity
+     * @param accumulator
+     * @param till break if the <code>till</code> returns true.
+     * @return
+     */
+    public <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final IndexedBiFunction<R, ? super T, T[], R> accumulator,
+            final Predicate<? super R> till) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < a.length)) {
+            return identity;
+        }
+
+        R result = identity;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result = accumulator.apply(result, i, a[i], a);
+
+            if (till.test(result)) {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, A extends Collection<? extends T>> void forEach(final A c, final Consumer<? super T> action) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
 
-        int idx = 0;
         for (T e : c) {
-            action.accept(idx++, e);
+            action.accept(e);
         }
     }
 
@@ -20073,7 +20236,7 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T> void forEach(final Collection<T> c, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
+    public static <T, A extends Collection<? extends T>> void forEach(final A c, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -20084,10 +20247,10 @@ public final class N {
             final List<T> list = (List<T>) c;
 
             for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, list.get(i));
+                action.accept(list.get(i));
             }
         } else {
-            final Iterator<T> iter = c.iterator();
+            final Iterator<? extends T> iter = c.iterator();
             int idx = 0;
 
             while (idx < fromIndex && iter.hasNext()) {
@@ -20096,13 +20259,197 @@ public final class N {
             }
 
             while (iter.hasNext()) {
-                action.accept(idx, iter.next());
+                action.accept(iter.next());
 
                 if (++idx >= toIndex) {
                     break;
                 }
             }
         }
+    }
+
+    public static <T, A extends Collection<? extends T>> void forEach(final A c, final IndexedConsumer<? super T, A> action) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        int idx = 0;
+        for (T e : c) {
+            action.accept(idx++, e, c);
+        }
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     *
+     * Note: This is NOT a replacement of traditional for loop statement. 
+     * The traditional for loop is still recommended in regular programming.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @param action
+     */
+    public static <T, A extends Collection<? extends T>> void forEach(final A c, final int fromIndex, final int toIndex,
+            final IndexedConsumer<? super T, A> action) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+            return;
+        }
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(i, list.get(i), c);
+            }
+        } else {
+            final Iterator<? extends T> iter = c.iterator();
+            int idx = 0;
+
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
+
+            while (iter.hasNext()) {
+                action.accept(idx, iter.next(), c);
+
+                if (++idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+    }
+
+    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final R identity, BiFunction<R, ? super T, R> accumulator,
+            final Predicate<? super R> till) {
+        if (N.isNullOrEmpty(c)) {
+            return identity;
+        }
+
+        return forEach(c, 0, c.size(), identity, accumulator, till);
+    }
+
+    /**
+     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param identity
+     * @param accumulator
+     * @param till break if the <code>till</code> returns true.
+     * @return
+     */
+    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
+            final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+            return identity;
+        }
+
+        R result = identity;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result = accumulator.apply(result, list.get(i));
+
+                if (till.test(result)) {
+                    break;
+                }
+            }
+        } else {
+            final Iterator<? extends T> iter = c.iterator();
+            int idx = 0;
+
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
+
+            while (iter.hasNext()) {
+                result = accumulator.apply(result, iter.next());
+
+                if (till.test(result)) {
+                    break;
+                }
+
+                if (++idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final R identity, final IndexedBiFunction<R, ? super T, A, R> accumulator,
+            final Predicate<? super R> till) {
+        if (N.isNullOrEmpty(c)) {
+            return identity;
+        }
+
+        return forEach(c, 0, c.size(), identity, accumulator, till);
+    }
+
+    /**
+     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param identity
+     * @param accumulator
+     * @param till break if the <code>till</code> returns true.
+     * @return
+     */
+    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
+            final IndexedBiFunction<R, ? super T, A, R> accumulator, final Predicate<? super R> till) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+            return identity;
+        }
+
+        R result = identity;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result = accumulator.apply(result, i, list.get(i), c);
+
+                if (till.test(result)) {
+                    break;
+                }
+            }
+        } else {
+            final Iterator<? extends T> iter = c.iterator();
+            int idx = 0;
+
+            while (idx < fromIndex && iter.hasNext()) {
+                iter.next();
+                idx++;
+            }
+
+            while (iter.hasNext()) {
+                result = accumulator.apply(result, idx, iter.next(), c);
+
+                if (till.test(result)) {
+                    break;
+                }
+
+                if (++idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
     public static boolean[] filter(final boolean[] a, final BooleanPredicate filter) {
@@ -24957,7 +25304,7 @@ public final class N {
      * @param a
      * @return
      */
-    public static <T> List<T> distinct(final T[] a) {
+    public static <T> T[] distinct(final T[] a) {
         return distinct(a, 0, a.length);
     }
 
@@ -24970,7 +25317,7 @@ public final class N {
      * @param toIndex
      * @return
      */
-    public static <T> List<T> distinct(final T[] a, final int fromIndex, final int toIndex) {
+    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         final List<T> result = new ArrayList<>();
@@ -24983,7 +25330,7 @@ public final class N {
             }
         }
 
-        return result;
+        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
     }
 
     /**
@@ -25037,7 +25384,7 @@ public final class N {
      * @param cmp
      * @return
      */
-    public static <T> List<T> distinct(final T[] a, final Comparator<? super T> cmp) {
+    public static <T> T[] distinct(final T[] a, final Comparator<? super T> cmp) {
         return distinct(a, 0, a.length, cmp);
     }
 
@@ -25051,7 +25398,7 @@ public final class N {
      * @param cmp
      * @return
      */
-    public static <T> List<T> distinct(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         final List<T> result = new ArrayList<>();
@@ -25071,7 +25418,7 @@ public final class N {
             }
         }
 
-        return result;
+        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
     }
 
     /**
@@ -25159,7 +25506,7 @@ public final class N {
      * @param keyMapper
      * @return
      */
-    public static <T> List<T> distinct(final T[] a, final Function<? super T, ?> keyMapper) {
+    public static <T> T[] distinct(final T[] a, final Function<? super T, ?> keyMapper) {
         return distinct(a, 0, a.length, keyMapper);
     }
 
@@ -25175,7 +25522,7 @@ public final class N {
      * @param keyMapper
      * @return
      */
-    public static <T> List<T> distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
+    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         final List<T> result = new ArrayList<>();
@@ -25190,7 +25537,7 @@ public final class N {
             }
         }
 
-        return result;
+        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
     }
 
     /**
@@ -33529,11 +33876,20 @@ public final class N {
         return xmlParser.serialize(jsonParser.deserialize(cls, json));
     }
 
+    public static void execute(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
+        AutoRetry.execute(runnable, ifRetry, retryTimes, retryInterval);
+    }
+
+    public static <T> T execute(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
+            final long retryInterval) {
+        return AutoRetry.execute(callable, ifRetry, retryTimes, retryInterval);
+    }
+
     public static CompletableFuture<Void> asyncExecute(final Runnable command) {
         return asyncExecutor.execute(command);
     }
 
-    public static CompletableFuture<Void>[] asyncExecute(final Runnable... commands) {
+    public static List<CompletableFuture<Void>> asyncExecute(final Runnable... commands) {
         return asyncExecutor.execute(commands);
     }
 
@@ -33545,7 +33901,7 @@ public final class N {
         return asyncExecutor.execute(command);
     }
 
-    public static <T> CompletableFuture<T>[] asyncExecute(final Callable<T>... commands) {
+    public static <T> List<CompletableFuture<T>> asyncExecute(final Callable<T>... commands) {
         return asyncExecutor.execute(commands);
     }
 
@@ -33553,13 +33909,13 @@ public final class N {
         return asyncExecutor.execute(commands);
     }
 
-    public static <T> CompletableFuture<T> asyncInvoke(final Method method, final Object... args) {
-        return asyncExecutor.invoke(method, args);
-    }
-
-    public static <T> CompletableFuture<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
-        return asyncExecutor.invoke(instance, method, args);
-    }
+    //    public static <T> CompletableFuture<T> asyncInvoke(final Method method, final Object... args) {
+    //        return asyncExecutor.invoke(method, args);
+    //    }
+    //
+    //    public static <T> CompletableFuture<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
+    //        return asyncExecutor.invoke(instance, method, args);
+    //    }
 
     public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
         IOUtil.parse(iter, elementParser);
@@ -33605,6 +33961,8 @@ public final class N {
     }
 
     @Beta
+    @Internal
+    @Deprecated
     public static char[] getCharsForReadOnly(final String str) {
         if (isStringCharsGettable && strValueField != null) {
             try {
@@ -33647,13 +34005,27 @@ public final class N {
         }
     }
 
-    public static void println(final Object obj) {
-        System.out.println(toString(obj));
+    /**
+     * 
+     * @param obj
+     * @return the input <code>obj</code>
+     */
+    public static <T> T println(final T obj) {
+        final String str = toString(obj);
+        System.out.println(str);
+        return obj;
     }
 
-    public static void fprintln(final String format, final Object... args) {
+    /**
+     * 
+     * @param format
+     * @param args
+     * @return the input <code>args</code>
+     */
+    public static <T> T[] fprintln(final String format, final T... args) {
         System.out.printf(format, args);
         System.out.println();
+        return args;
     }
 
     static void checkIndex(final int fromIndex) {
@@ -33717,4 +34089,84 @@ public final class N {
         static final void methodMask() {
         }
     }
+
+    //    /**
+    //     * @serial include
+    //     */
+    //    private static class ArrayList2<E> extends AbstractList<E> implements RandomAccess, java.io.Serializable {
+    //        private static final long serialVersionUID = -4179822171804625632L;
+    //        private final E[] a;
+    //        private final int fromIndex;
+    //        private final int toIndex;
+    //        private final int size;
+    //
+    //        ArrayList2(final E[] array, final int fromIndex, final int toIndex) {
+    //            if (array == null) {
+    //                throw new NullPointerException();
+    //            }
+    //
+    //            N.checkIndex(fromIndex, toIndex, array.length);
+    //
+    //            this.a = array;
+    //            this.fromIndex = fromIndex;
+    //            this.toIndex = toIndex;
+    //            this.size = toIndex - fromIndex;
+    //        }
+    //
+    //        @Override
+    //        public int size() {
+    //            return size;
+    //        }
+    //
+    //        @Override
+    //        public Object[] toArray() {
+    //            return N.copyOfRange(a, fromIndex, toIndex);
+    //        }
+    //
+    //        @Override
+    //        public <T> T[] toArray(T[] a) {
+    //            if (a.length < size) {
+    //                return Arrays.copyOfRange(this.a, fromIndex, toIndex, (Class<? extends T[]>) a.getClass());
+    //            }
+    //
+    //            System.arraycopy(this.a, fromIndex, a, 0, size);
+    //
+    //            return a;
+    //        }
+    //
+    //        @Override
+    //        public E get(int index) {
+    //            return a[index + fromIndex];
+    //        }
+    //
+    //        @Override
+    //        public E set(int index, E element) {
+    //            E oldValue = a[index + fromIndex];
+    //            a[index] = element;
+    //            return oldValue;
+    //        }
+    //
+    //        @Override
+    //        public int indexOf(Object o) {
+    //            if (o == null) {
+    //                for (int i = fromIndex; i < toIndex; i++) {
+    //                    if (a[i] == null) {
+    //                        return i - fromIndex;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = fromIndex; i < toIndex; i++) {
+    //                    if (o.equals(a[i])) {
+    //                        return i - fromIndex;
+    //                    }
+    //                }
+    //            }
+    //            return -1;
+    //        }
+    //
+    //        @Override
+    //        public boolean contains(Object o) {
+    //            return indexOf(o) != -1;
+    //        }
+    //    }
 }

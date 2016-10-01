@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,13 +54,13 @@ public final class Profiler {
         return run(threadNum, loopNum, roundNum, "run", command);
     }
 
-    public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final String methodName, final Runnable command) {
-        return run(threadNum, 0, loopNum, 0, roundNum, methodName, command);
+    public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final String label, final Runnable command) {
+        return run(threadNum, 0, loopNum, 0, roundNum, label, command);
     }
 
     public static MultiLoopsStatistics run(final int threadNum, final long threadDelay, final int loopNum, final long loopDelay, final int roundNum,
-            final String methodName, final Runnable command) {
-        return run(command, methodName, getMethod(command, "run"), null, null, null, null, null, threadNum, threadDelay, loopNum, loopDelay, roundNum);
+            final String label, final Runnable command) {
+        return run(command, label, getMethod(command, "run"), null, null, null, null, null, threadNum, threadDelay, loopNum, loopDelay, roundNum);
     }
 
     public static MultiLoopsStatistics run(final Object instance, final String method, final int threadNum, final int loopNum, final int roundNum) {
@@ -142,6 +143,9 @@ public final class Profiler {
     static MultiLoopsStatistics run(final Object instance, final String methodName, final Method method, final List<?> args, final Method setUpForMethod,
             final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final long threadDelay,
             final int loopNum, final long loopDelay, final int roundNum) {
+        if (roundNum <= 0) {
+            throw new IllegalArgumentException("roundNum=" + roundNum);
+        }
 
         if (roundNum == 1) {
             return run(instance, methodName, method, args, setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop, threadNum, threadDelay, loopNum,
@@ -194,14 +198,14 @@ public final class Profiler {
         final long startTimeInNano = System.nanoTime();
 
         for (int threadIndex = 0; threadIndex < threadNum; threadIndex++) {
-            final Object threadArg = (N.isNullOrEmpty(args)) ? null : ((args.size() == 1) ? args.get(0) : args.get(threadIndex));
+            final Object arg = (N.isNullOrEmpty(args)) ? null : ((args.size() == 1) ? args.get(0) : args.get(threadIndex));
             threadCounter.incrementAndGet();
 
             asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        runLoops(instance, methodName, method, threadArg, setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop, loopNum, loopDelay,
+                        runLoops(instance, methodName, method, arg, setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop, loopNum, loopDelay,
                                 loopStatisticsList, ps);
                     } finally {
                         threadCounter.decrementAndGet();
@@ -222,7 +226,7 @@ public final class Profiler {
         return new MultiLoopsStatistics(startTimeInMillis, endTimeInMillis, startTimeInNano, endTimeInNano, threadNum, loopStatisticsList);
     }
 
-    private static void runLoops(final Object instance, final String methodName, final Method method, final Object threadArg, final Method setUpForMethod,
+    private static void runLoops(final Object instance, final String methodName, final Method method, final Object arg, final Method setUpForMethod,
             final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int loopNum, final long loopDelay,
             final List<LoopStatistics> loopStatisticsList, final PrintStream ps) {
         for (int loopIndex = 0; loopIndex < loopNum; loopIndex++) {
@@ -239,7 +243,7 @@ public final class Profiler {
             final long startTimeInMillis = System.currentTimeMillis();
             final long startTimeInNano = System.nanoTime();
 
-            List<MethodStatistics> methodStatisticsList = runLoop(instance, methodName, method, threadArg, setUpForMethod, tearDownForMethod, ps);
+            List<MethodStatistics> methodStatisticsList = runLoop(instance, methodName, method, arg, setUpForMethod, tearDownForMethod, ps);
 
             final long endTimeInNano = System.nanoTime();
             final long endTimeInMillis = System.currentTimeMillis();
@@ -254,7 +258,7 @@ public final class Profiler {
                 }
             }
 
-            SingleLoopStatistics loopStatistics = new SingleLoopStatistics(startTimeInMillis, endTimeInMillis, startTimeInNano, endTimeInNano,
+            final SingleLoopStatistics loopStatistics = new SingleLoopStatistics(startTimeInMillis, endTimeInMillis, startTimeInNano, endTimeInNano,
                     methodStatisticsList);
 
             loopStatisticsList.add(loopStatistics);
@@ -263,7 +267,7 @@ public final class Profiler {
         }
     }
 
-    private static List<MethodStatistics> runLoop(final Object instance, final String methodName, final Method method, final Object loopArg,
+    private static List<MethodStatistics> runLoop(final Object instance, final String methodName, final Method method, final Object arg,
             final Method setUpForMethod, final Method tearDownForMethod, final PrintStream ps) {
         List<MethodStatistics> methodStatisticsList = new ArrayList<MethodStatistics>();
 
@@ -285,15 +289,13 @@ public final class Profiler {
             if (method.getParameterTypes().length == 0) {
                 method.invoke(instance);
             } else {
-                method.invoke(instance, loopArg);
+                method.invoke(instance, arg);
             }
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
             e.printStackTrace(ps);
             logger.warn(AbacusException.getErrorMsg(e));
             result = e.getTargetException();
         } catch (Exception e) {
-            e.printStackTrace();
             e.printStackTrace(ps);
             logger.warn(AbacusException.getErrorMsg(e));
             result = e;
@@ -370,9 +372,9 @@ public final class Profiler {
 
         List<String> getMethodNameList();
 
-        MethodStatistics getMinElapsedTimeInMillisMethod();
+        MethodStatistics getMinElapsedTimeMethod();
 
-        MethodStatistics getMaxElapsedTimeInMillisMethod();
+        MethodStatistics getMaxElapsedTimeMethod();
 
         public double getMethodTotalElapsedTimeInMillis(String methodName);
 
@@ -398,11 +400,11 @@ public final class Profiler {
      * @version $Revision: 0.8 $
      */
     static abstract class AbstractStatistics implements Statistics {
-        private Object result;
         private long startTimeInMillis;
         private long endTimeInMillis;
         private long startTimeInNano;
         private long endTimeInNano;
+        private Object result;
 
         public AbstractStatistics() {
             this(0, 0, 0, 0);
@@ -413,16 +415,6 @@ public final class Profiler {
             this.endTimeInMillis = endTimeInMillis;
             this.startTimeInNano = startTimeInNano;
             this.endTimeInNano = endTimeInNano;
-        }
-
-        @Override
-        public Object getResult() {
-            return result;
-        }
-
-        @Override
-        public void setResult(final Object result) {
-            this.result = result;
         }
 
         @Override
@@ -470,8 +462,19 @@ public final class Profiler {
             return (endTimeInNano - startTimeInNano) / 1000000.0d; // convert to milliseconds.
         }
 
+        @Override
+        public Object getResult() {
+            return result;
+        }
+
+        @Override
+        public void setResult(final Object result) {
+            this.result = result;
+        }
+
         protected String time2String(final long timeInMillis) {
-            return N.asTimestamp(timeInMillis).toString();
+            final Timestamp timestamp = N.asTimestamp(timeInMillis);
+            return N.format(timestamp, N.LOCAL_TIMESTAMP_FORMAT); // + " " + N.LOCAL_TIME_ZONE.getID();
         }
     }
 
@@ -582,7 +585,7 @@ public final class Profiler {
         }
 
         @Override
-        public MethodStatistics getMaxElapsedTimeInMillisMethod() {
+        public MethodStatistics getMaxElapsedTimeMethod() {
             MethodStatistics result = null;
 
             if (methodStatisticsList != null) {
@@ -597,7 +600,7 @@ public final class Profiler {
         }
 
         @Override
-        public MethodStatistics getMinElapsedTimeInMillisMethod() {
+        public MethodStatistics getMinElapsedTimeMethod() {
             MethodStatistics result = null;
 
             if (methodStatisticsList != null) {
@@ -803,12 +806,12 @@ public final class Profiler {
         }
 
         @Override
-        public MethodStatistics getMaxElapsedTimeInMillisMethod() {
+        public MethodStatistics getMaxElapsedTimeMethod() {
             MethodStatistics result = null;
 
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
-                    MethodStatistics methodStatistics = loopStatistics.getMaxElapsedTimeInMillisMethod();
+                    MethodStatistics methodStatistics = loopStatistics.getMaxElapsedTimeMethod();
 
                     if ((result == null) || (methodStatistics.getElapsedTimeInMillis() > result.getElapsedTimeInMillis())) {
                         result = methodStatistics;
@@ -820,12 +823,12 @@ public final class Profiler {
         }
 
         @Override
-        public MethodStatistics getMinElapsedTimeInMillisMethod() {
+        public MethodStatistics getMinElapsedTimeMethod() {
             MethodStatistics result = null;
 
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
-                    MethodStatistics methodStatistics = loopStatistics.getMinElapsedTimeInMillisMethod();
+                    MethodStatistics methodStatistics = loopStatistics.getMinElapsedTimeMethod();
 
                     if ((result == null) || (methodStatistics.getElapsedTimeInMillis() < result.getElapsedTimeInMillis())) {
                         result = methodStatistics;

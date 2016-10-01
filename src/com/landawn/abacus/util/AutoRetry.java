@@ -40,9 +40,9 @@ public abstract class AutoRetry {
                     logger.error("AutoRetry", e);
 
                     int retriedTimes = 0;
-                    Throwable exception = e;
+                    Throwable throwable = e;
 
-                    while (retriedTimes++ < retryTimes && ifRetry.apply(exception)) {
+                    while (retriedTimes++ < retryTimes && ifRetry.apply(throwable)) {
                         try {
                             if (retryInterval > 0) {
                                 N.sleep(retryInterval);
@@ -53,11 +53,11 @@ public abstract class AutoRetry {
                         } catch (Throwable e2) {
                             logger.error("AutoRetry", e2);
 
-                            exception = e2;
+                            throwable = e2;
                         }
                     }
 
-                    throw N.toRuntimeException(exception);
+                    throw N.toRuntimeException(throwable);
                 }
             }
 
@@ -105,9 +105,9 @@ public abstract class AutoRetry {
                 } catch (Throwable e) {
                     logger.error("AutoRetry", e);
 
-                    Throwable exception = e;
+                    Throwable throwable = e;
 
-                    while (retriedTimes++ < retryTimes && ifRetry.apply(exception, result)) {
+                    while (retriedTimes++ < retryTimes && ifRetry.apply(throwable, result)) {
                         try {
                             if (retryInterval > 0) {
                                 N.sleep(retryInterval);
@@ -121,14 +121,14 @@ public abstract class AutoRetry {
                         } catch (Throwable e2) {
                             logger.error("AutoRetry", e2);
 
-                            exception = e2;
+                            throwable = e2;
                         }
                     }
 
-                    throw N.toRuntimeException(exception);
+                    throw N.toRuntimeException(throwable);
                 }
 
-                if (ifRetry.apply(null, result)) {
+                if (retryTimes > 0 && ifRetry.apply(null, result)) {
                     throw new RuntimeException("Still failed after retried " + retryTimes + " times for result: " + N.toString(result));
                 }
 
@@ -137,12 +137,11 @@ public abstract class AutoRetry {
         };
     }
 
-    public static void execute(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
+    static void execute(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
         of(runnable, ifRetry, retryTimes, retryInterval).run();
     }
 
-    public static <T> T execute(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
-            final long retryInterval) {
+    static <T> T execute(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
         try {
             return of(callable, ifRetry, retryTimes, retryInterval).call();
         } catch (Exception e) {

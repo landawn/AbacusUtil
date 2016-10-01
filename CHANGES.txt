@@ -1,3 +1,25 @@
+========Changes in 0.9.17=========================================================================
+
+1, Add com.landawn.abacus.util.AutoRetry and integrate it with AsyncExecutor.java and N.java.
+
+2, remove removeAll from Stream, and add except/intersect to IntStream/Long/Stream/DoubleStream/...
+
+3, Remove the batchInsert(...Object[] batchParameters) and batchUpdate(...Object[] batchParameters) from SQLExecutor. 
+
+4, rename N.asArray(Collection<?> c) to N.toArray(Collection<?> c);
+
+5, Refactoring: change SQLiteExecutor.get(long, String ...) to SQLiteExecutor.get(long)
+
+6, Refactoring: DynamoDBExecutor
+
+7, Refactoring: remove forEach2(...) in N/Stream/ObjectList/... and add forEach(final R identity, BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till);
+
+8, Rename N.getType(...) to N.typeOf(...)
+
+9, Support generateEntity(...) in CodeGenerator
+
+10, bug fix and improvements.
+
 ========Changes in 0.9.16=========================================================================
 
 1, Supports Parallel Stream

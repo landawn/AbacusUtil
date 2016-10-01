@@ -26,6 +26,7 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IndexedBiFunction;
 import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
@@ -737,60 +738,79 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         }
     }
 
-    public void forEach(IndexedConsumer<T> action) {
+    public void forEach(IndexedConsumer<T, T[]> action) {
         forEach(0, size(), action);
     }
 
-    public void forEach(final int fromIndex, final int toIndex, IndexedConsumer<? super T> action) {
+    public void forEach(final int fromIndex, final int toIndex, final IndexedConsumer<? super T, T[]> action) {
         checkIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, elementData[i]);
+                action.accept(i, elementData[i], elementData);
             }
         }
     }
 
-    public boolean forEach2(final Function<? super T, Boolean> action) {
-        return forEach2(0, size(), action);
+    public <R> R forEach(final R identity, BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
+        return forEach(0, size(), identity, accumulator, till);
     }
 
     /**
+     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
      * 
      * @param fromIndex
      * @param toIndex
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
+     * @param identity
+     * @param accumulator
+     * @param till break if the <code>till</code> returns true.
+     * @return
      */
-    public boolean forEach2(final int fromIndex, final int toIndex, final Function<? super T, Boolean> action) {
+    public <R> R forEach(final int fromIndex, final int toIndex, final R identity, BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
+        checkIndex(fromIndex, toIndex);
+
+        R result = identity;
+
         for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(elementData[i]).booleanValue() == false) {
-                return false;
+            result = accumulator.apply(result, elementData[i]);
+
+            if (till.test(result)) {
+                break;
             }
         }
 
-        return true;
+        return result;
     }
 
-    public boolean forEach2(final BiFunction<Integer, ? super T, Boolean> action) {
-        return forEach2(0, size(), action);
+    public <R> R forEach(final R identity, IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
+        return forEach(0, size(), identity, accumulator, till);
     }
 
     /**
+     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
      * 
      * @param fromIndex
      * @param toIndex
-     * @param action break if the action returns false. The first parameter is the index.
-     * @return false if it breaks, otherwise true.
+     * @param identity
+     * @param accumulator
+     * @param till break if the <code>till</code> returns true.
+     * @return
      */
-    public boolean forEach2(final int fromIndex, final int toIndex, final BiFunction<Integer, ? super T, Boolean> action) {
+    public <R> R forEach(final int fromIndex, final int toIndex, final R identity, IndexedBiFunction<R, ? super T, T[], R> accumulator,
+            final Predicate<? super R> till) {
+        checkIndex(fromIndex, toIndex);
+
+        R result = identity;
+
         for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(i, elementData[i]).booleanValue() == false) {
-                return false;
+            result = accumulator.apply(result, i, elementData[i], elementData);
+
+            if (till.test(result)) {
+                break;
             }
         }
 
-        return true;
+        return result;
     }
 
     @Override
@@ -1176,8 +1196,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            final List<T> list = N.distinct(elementData, fromIndex, toIndex, comparator);
-            return of(list.toArray((T[]) N.newArray(getComponentType(), list.size())));
+            return of(N.distinct(elementData, fromIndex, toIndex, comparator));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
@@ -1199,8 +1218,7 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            final List<T> list = N.distinct(elementData, fromIndex, toIndex, keyMapper);
-            return of(list.toArray((T[]) N.newArray(getComponentType(), list.size())));
+            return of(N.distinct(elementData, fromIndex, toIndex, keyMapper));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }

@@ -7,13 +7,13 @@ import com.landawn.abacus.util.N;
  */
 public interface IndexedBooleanConsumer {
 
-    void accept(int idx, boolean t);
+    void accept(int idx, boolean t, boolean[] a);
 
     default IndexedBooleanConsumer andThen(IndexedBooleanConsumer after) {
         N.requireNonNull(after);
-        return (int idx, boolean t) -> {
-            accept(idx, t);
-            after.accept(idx, t);
+        return (int idx, boolean t, boolean[] a) -> {
+            accept(idx, t, a);
+            after.accept(idx, t, a);
         };
     }
 }

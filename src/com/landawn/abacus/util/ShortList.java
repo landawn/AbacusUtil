@@ -23,11 +23,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.IndexedShortConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ShortConsumer;
-import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.stream.ShortStream;
 
@@ -629,51 +627,9 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, elementData[i]);
+                action.accept(i, elementData[i], elementData);
             }
         }
-    }
-
-    public boolean forEach2(final ShortFunction<Boolean> action) {
-        return forEach2(0, size(), action);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
-     */
-    public boolean forEach2(final int fromIndex, final int toIndex, final ShortFunction<Boolean> action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(elementData[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public boolean forEach2(final BiFunction<Integer, Short, Boolean> action) {
-        return forEach2(0, size(), action);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false. The first parameter is the index.
-     * @return false if it breaks, otherwise true.
-     */
-    public boolean forEach2(final int fromIndex, final int toIndex, final BiFunction<Integer, Short, Boolean> action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(i, elementData[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     @Override
@@ -942,6 +898,12 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     public void sort() {
         if (size > 1) {
             N.sort(elementData, 0, size);
+        }
+    }
+
+    public void parallelSort() {
+        if (size > 1) {
+            N.parallelSort(elementData, 0, size);
         }
     }
 

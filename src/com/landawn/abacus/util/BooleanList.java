@@ -22,9 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BooleanConsumer;
-import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.IndexedBooleanConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -523,51 +521,9 @@ public final class BooleanList extends AbastractArrayList<BooleanConsumer, Boole
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, elementData[i]);
+                action.accept(i, elementData[i], elementData);
             }
         }
-    }
-
-    public boolean forEach2(final BooleanFunction<Boolean> action) {
-        return forEach2(0, size(), action);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
-     */
-    public boolean forEach2(final int fromIndex, final int toIndex, final BooleanFunction<Boolean> action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(elementData[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public boolean forEach2(final BiFunction<Integer, Boolean, Boolean> action) {
-        return forEach2(0, size(), action);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false. The first parameter is the index.
-     * @return false if it breaks, otherwise true.
-     */
-    public boolean forEach2(final int fromIndex, final int toIndex, final BiFunction<Integer, Boolean, Boolean> action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(i, elementData[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     @Override

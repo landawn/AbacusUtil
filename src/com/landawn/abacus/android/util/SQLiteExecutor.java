@@ -435,8 +435,8 @@ public final class SQLiteExecutor {
         return toContentValues(obj, namingPolicy, false);
     }
 
-    public <T> T get(Class<T> targetClass, long id, String... selectPropNames) {
-        return get(targetClass, id, N.asList(selectPropNames));
+    public <T> T get(Class<T> targetClass, long id) {
+        return get(targetClass, id, null);
     }
 
     /**
@@ -2520,7 +2520,7 @@ public final class SQLiteExecutor {
 
             if (sqliteType == null) {
                 sqliteType = new Type<C>(Cursor.FIELD_TYPE_STRING, typeClass) {
-                    private final com.landawn.abacus.type.Type<Object> ttType = N.getType(typeClass);
+                    private final com.landawn.abacus.type.Type<Object> ttType = N.typeOf(typeClass);
 
                     @Override
                     public C get(Cursor cursor, int columnIndex) {

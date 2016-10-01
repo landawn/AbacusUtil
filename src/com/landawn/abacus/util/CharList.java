@@ -22,9 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.CharConsumer;
-import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.IndexedCharConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -623,51 +621,9 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, elementData[i]);
+                action.accept(i, elementData[i], elementData);
             }
         }
-    }
-
-    public boolean forEach2(final CharFunction<Boolean> action) {
-        return forEach2(0, size(), action);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
-     */
-    public boolean forEach2(final int fromIndex, final int toIndex, final CharFunction<Boolean> action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(elementData[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public boolean forEach2(final BiFunction<Integer, Character, Boolean> action) {
-        return forEach2(0, size(), action);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param action break if the action returns false. The first parameter is the index.
-     * @return false if it breaks, otherwise true.
-     */
-    public boolean forEach2(final int fromIndex, final int toIndex, final BiFunction<Integer, Character, Boolean> action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (action.apply(i, elementData[i]).booleanValue() == false) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     @Override
@@ -916,6 +872,12 @@ public final class CharList extends AbastractArrayList<CharConsumer, CharPredica
     public void sort() {
         if (size > 1) {
             N.sort(elementData, 0, size);
+        }
+    }
+
+    public void parallelSort() {
+        if (size > 1) {
+            N.parallelSort(elementData, 0, size);
         }
     }
 

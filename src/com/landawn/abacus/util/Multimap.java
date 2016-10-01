@@ -32,6 +32,7 @@ import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -461,18 +462,25 @@ public final class Multimap<K, E, V extends Collection<E>> {
     }
 
     /**
+     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
      * 
-     * @param action break if the action returns false.
-     * @return false if it breaks, otherwise true.
+     * @param identity
+     * @param accumulator
+     * @param till break if the <code>till</code> returns true.
+     * @return
      */
-    public boolean forEach2(BiFunction<? super K, ? super V, Boolean> action) {
+    public <R> R forEach(final R identity, BiFunction<R, ? super Map.Entry<K, V>, R> accumulator, final Predicate<? super R> till) {
+        R result = identity;
+
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
-            if (action.apply(entry.getKey(), entry.getValue()).booleanValue() == false) {
-                return false;
+            result = accumulator.apply(result, entry);
+
+            if (till.test(result)) {
+                break;
             }
         }
 
-        return true;
+        return result;
     }
 
     /**

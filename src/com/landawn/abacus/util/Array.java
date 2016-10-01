@@ -75,6 +75,17 @@ public final class Array {
     }
 
     public static <T> T newInstance(final Class<?> componentType, final int length) throws NegativeArraySizeException {
+        if (length == 0) {
+            Object result = N.CLASS_EMPTY_ARRAY.get(componentType);
+
+            if (result == null) {
+                result = java.lang.reflect.Array.newInstance(componentType, length);
+                N.CLASS_EMPTY_ARRAY.put(componentType, result);
+            }
+
+            return (T) result;
+        }
+
         return (T) java.lang.reflect.Array.newInstance(componentType, length);
     }
 

@@ -1165,7 +1165,7 @@ public final class JdbcUtil {
      */
     public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final PreparedStatement stmt,
             final int batchSize, final int batchInterval, final Predicate<Object[]> filter) {
-        final Type<?> objType = N.getType(Object.class);
+        final Type<?> objType = N.typeOf(Object.class);
         final Map<String, Type<?>> columnTypeMap = new HashMap<>();
 
         for (String propName : selectColumnNames) {

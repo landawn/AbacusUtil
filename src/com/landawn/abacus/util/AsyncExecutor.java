@@ -16,7 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -89,6 +88,10 @@ public class AsyncExecutor {
         });
     }
 
+    public CompletableFuture<Void> execute(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
+        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
+    }
+
     public CompletableFuture<Void> execute(final Runnable command) {
         final CompletableFuture<Void> future = new CompletableFuture<Void>(this, command, null);
 
@@ -97,17 +100,14 @@ public class AsyncExecutor {
         return future;
     }
 
-    public CompletableFuture<Void> execute(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
-        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
-    }
-
-    public CompletableFuture<Void>[] execute(final Runnable... commands) {
-        final CompletableFuture<Void>[] results = new CompletableFuture[commands.length];
+    public List<CompletableFuture<Void>> execute(final Runnable... commands) {
+        final List<CompletableFuture<Void>> results = new ArrayList<>(commands.length);
+        CompletableFuture<Void> future = null;
 
         for (int i = 0, len = commands.length; i < len; i++) {
-            results[i] = new CompletableFuture<Void>(this, commands[i], null);
-
-            getExecutorService().execute(results[i]);
+            future = new CompletableFuture<Void>(this, commands[i], null);
+            getExecutorService().execute(future);
+            results.add(future);
         }
 
         return results;
@@ -128,6 +128,11 @@ public class AsyncExecutor {
         return results;
     }
 
+    public <T> CompletableFuture<T> execute(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
+            final long retryInterval) {
+        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
+    }
+
     public <T> CompletableFuture<T> execute(final Callable<T> command) {
         final CompletableFuture<T> future = new CompletableFuture<T>(this, command);
 
@@ -136,18 +141,14 @@ public class AsyncExecutor {
         return future;
     }
 
-    public <T> CompletableFuture<T> execute(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
-            final long retryInterval) {
-        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
-    }
-
-    public <T> CompletableFuture<T>[] execute(final Callable<T>... commands) {
-        final CompletableFuture<T>[] results = new CompletableFuture[commands.length];
+    public <T> List<CompletableFuture<T>> execute(final Callable<T>... commands) {
+        final List<CompletableFuture<T>> results = new ArrayList<>(commands.length);
+        CompletableFuture<T> future = null;
 
         for (int i = 0, len = commands.length; i < len; i++) {
-            results[i] = new CompletableFuture<T>(this, commands[i]);
-
-            getExecutorService().execute(results[i]);
+            future = new CompletableFuture<T>(this, commands[i]);
+            getExecutorService().execute(future);
+            results.add(future);
         }
 
         return results;
@@ -168,23 +169,23 @@ public class AsyncExecutor {
         return results;
     }
 
-    public <T> CompletableFuture<T> invoke(final Method method, final Object... args) {
-        return invoke(null, method, args);
-    }
-
-    public <T> CompletableFuture<T> invoke(final Object instance, final Method method, final Object... args) {
-        final CompletableFuture<T> future = new CompletableFuture<T>(this, new Callable<T>() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public T call() throws Exception {
-                return (T) method.invoke(instance, args);
-            }
-        });
-
-        getExecutorService().execute(future);
-
-        return future;
-    }
+    //    public <T> CompletableFuture<T> invoke(final Method method, final Object... args) {
+    //        return invoke(null, method, args);
+    //    }
+    //
+    //    public <T> CompletableFuture<T> invoke(final Object instance, final Method method, final Object... args) {
+    //        final CompletableFuture<T> future = new CompletableFuture<T>(this, new Callable<T>() {
+    //            @Override
+    //            @SuppressWarnings("unchecked")
+    //            public T call() throws Exception {
+    //                return (T) method.invoke(instance, args);
+    //            }
+    //        });
+    //
+    //        getExecutorService().execute(future);
+    //
+    //        return future;
+    //    }
 
     ExecutorService getExecutorService() {
         if (executorService == null) {

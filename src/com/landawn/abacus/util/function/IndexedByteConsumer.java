@@ -7,13 +7,13 @@ import com.landawn.abacus.util.N;
  */
 public interface IndexedByteConsumer {
 
-    void accept(int idx, byte t);
+    void accept(int idx, byte t, byte[] a);
 
     default IndexedByteConsumer andThen(IndexedByteConsumer after) {
         N.requireNonNull(after);
-        return (int idx, byte t) -> {
-            accept(idx, t);
-            after.accept(idx, t);
+        return (int idx, byte t, byte[] a) -> {
+            accept(idx, t, a);
+            after.accept(idx, t, a);
         };
     }
 }

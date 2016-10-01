@@ -7,13 +7,13 @@ import com.landawn.abacus.util.N;
  */
 public interface IndexedFloatConsumer {
 
-    void accept(int idx, float t);
+    void accept(int idx, float t, float[] a);
 
     default IndexedFloatConsumer andThen(IndexedFloatConsumer after) {
         N.requireNonNull(after);
-        return (int idx, float t) -> {
-            accept(idx, t);
-            after.accept(idx, t);
+        return (int idx, float t, float[] a) -> {
+            accept(idx, t, a);
+            after.accept(idx, t, a);
         };
     }
 }

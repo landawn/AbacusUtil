@@ -7,13 +7,13 @@ import com.landawn.abacus.util.N;
  */
 public interface IndexedCharConsumer {
 
-    void accept(int idx, char t);
+    void accept(int idx, char t, char[] a);
 
     default IndexedCharConsumer andThen(IndexedCharConsumer after) {
         N.requireNonNull(after);
-        return (int idx, char t) -> {
-            accept(idx, t);
-            after.accept(idx, t);
+        return (int idx, char t, char[] a) -> {
+            accept(idx, t, a);
+            after.accept(idx, t, a);
         };
     }
 }

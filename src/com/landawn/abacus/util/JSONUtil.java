@@ -164,7 +164,7 @@ public final class JSONUtil {
      * @return
      */
     public static <T> T unwrap(final Class<?> cls, final JSONArray jsonArray) throws JSONException {
-        return unwrap(N.getType(cls), jsonArray);
+        return unwrap(N.typeOf(cls), jsonArray);
     }
 
     public static <T> T unwrap(final Type<?> type, final JSONArray jsonArray) throws JSONException {

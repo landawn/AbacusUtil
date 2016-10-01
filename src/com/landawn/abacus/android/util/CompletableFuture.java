@@ -82,32 +82,74 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
 
     public T get(final Callback<T> callback) {
         T result = null;
-        RuntimeException runtimeException = null;
+        Throwable throwable = null;
 
         try {
             result = get();
         } catch (Throwable e) {
-            runtimeException = N.toRuntimeException(e);
+            throwable = e;
         }
 
-        callback.on(runtimeException, result);
+        callback.on(throwable, result);
 
         return result;
     }
 
     public T get(long timeout, TimeUnit unit, final Callback<T> callback) {
         T result = null;
-        RuntimeException runtimeException = null;
+        Throwable throwable = null;
 
         try {
             result = get(timeout, unit);
         } catch (Throwable e) {
-            runtimeException = N.toRuntimeException(e);
+            throwable = e;
         }
 
-        callback.on(runtimeException, result);
+        callback.on(throwable, result);
 
         return result;
+    }
+
+    public <R> R get(final Callback2.Action<T, R> action) {
+        try {
+            return action.on(get());
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
+    public <R> R get(long timeout, TimeUnit unit, final Callback2.Action<T, R> action) {
+        try {
+            return action.on(get(timeout, unit));
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
+    public <R> R get(final Callback2<T, R> callback) {
+        T result = null;
+        Throwable throwable = null;
+
+        try {
+            result = get();
+        } catch (Throwable e) {
+            throwable = e;
+        }
+
+        return callback.on(throwable, result);
+    }
+
+    public <R> R get(long timeout, TimeUnit unit, final Callback2<T, R> callback) {
+        T result = null;
+        Throwable throwable = null;
+
+        try {
+            result = get(timeout, unit);
+        } catch (Throwable e) {
+            throwable = e;
+        }
+
+        return callback.on(throwable, result);
     }
 
     @Override
@@ -121,15 +163,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
                         actionExecuted = true;
 
                         T result = null;
-                        RuntimeException runtimeException = null;
+                        Throwable throwable = null;
 
                         try {
                             result = get();
                         } catch (Throwable e) {
-                            runtimeException = N.toRuntimeException(e);
+                            throwable = e;
                         }
 
-                        callback(runtimeException, result);
+                        callback(throwable, result);
                     }
                 }
             }
@@ -211,9 +253,9 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
     private void callback(final Callback.Action<T> action, final ThreadMode threadMode) {
         callback(new Callback<T>() {
             @Override
-            public void on(RuntimeException e, T result) {
+            public void on(Throwable e, T result) {
                 if (e != null) {
-                    throw e;
+                    throw N.toRuntimeException(e);
                 }
 
                 action.on(result);
@@ -230,27 +272,27 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
                 actionExecuted = true;
 
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                callback(runtimeException, result);
+                callback(throwable, result);
             }
         }
     }
 
-    private void callback(final RuntimeException runtimeException, final T result) {
+    private void callback(final Throwable throwable, final T result) {
         if (this.isCancelled()) {
             return;
         }
 
         switch (threadMode) {
             case DEFAULT:
-                callback.on(runtimeException, result);
+                callback.on(throwable, result);
 
                 break;
 
@@ -259,11 +301,11 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
                     AsyncExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
-                            callback.on(runtimeException, result);
+                            callback.on(throwable, result);
                         }
                     });
                 } else {
-                    callback.on(runtimeException, result);
+                    callback.on(throwable, result);
                 }
 
                 break;
@@ -274,23 +316,23 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
 
                         @Override
                         public void run() {
-                            callback.on(runtimeException, result);
+                            callback.on(throwable, result);
                         }
                     });
                 } else {
-                    callback.on(runtimeException, result);
+                    callback.on(throwable, result);
                 }
 
                 break;
 
             case UI_THREAD:
                 if (Util.isUiThread()) {
-                    callback.on(runtimeException, result);
+                    callback.on(throwable, result);
                 } else {
                     AsyncExecutor.executeOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            callback.on(runtimeException, result);
+                            callback.on(throwable, result);
                         }
                     });
                 }
@@ -333,15 +375,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
             @Override
             public void run() {
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                callback.on(runtimeException, result);
+                callback.on(throwable, result);
             }
         });
     }
@@ -376,15 +418,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
             @Override
             public void run() {
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                callback.on(runtimeException, result);
+                callback.on(throwable, result);
             }
         });
     }
@@ -419,15 +461,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
             @Override
             public void run() {
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                callback.on(runtimeException, result);
+                callback.on(throwable, result);
             }
         });
     }
@@ -464,15 +506,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
             @Override
             public void run() {
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                callback.on(runtimeException, result);
+                callback.on(throwable, result);
             }
         }, delay);
     }
@@ -507,15 +549,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
             @Override
             public R call() {
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                return callback.on(runtimeException, result);
+                return callback.on(throwable, result);
             }
         });
     }
@@ -550,15 +592,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
             @Override
             public R call() {
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                return callback.on(runtimeException, result);
+                return callback.on(throwable, result);
             }
         });
     }
@@ -593,15 +635,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
             @Override
             public R call() {
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                return callback.on(runtimeException, result);
+                return callback.on(throwable, result);
             }
         });
     }
@@ -638,15 +680,15 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
             @Override
             public R call() {
                 T result = null;
-                RuntimeException runtimeException = null;
+                Throwable throwable = null;
 
                 try {
                     result = get();
                 } catch (Throwable e) {
-                    runtimeException = N.toRuntimeException(e);
+                    throwable = e;
                 }
 
-                return callback.on(runtimeException, result);
+                return callback.on(throwable, result);
             }
         }, delay);
     }

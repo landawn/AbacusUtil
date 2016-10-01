@@ -1448,6 +1448,7 @@ public final class IOUtil {
         write(out, str, false);
     }
 
+    @SuppressWarnings("deprecation")
     public static void write(final Writer out, final String str, final boolean flush) {
         write(out, str == null ? N.NULL_CHAR_ARRAY : N.getCharsForReadOnly(str), flush);
     }
