@@ -12841,7 +12841,7 @@ public final class N {
     }
 
     @SuppressWarnings("rawtypes")
-    public static boolean isNullOrEmpty(final com.landawn.abacus.util.ArrayList list) {
+    public static boolean isNullOrEmpty(final AbstractList list) {
         return (list == null) || (list.isEmpty());
     }
 
@@ -12932,7 +12932,7 @@ public final class N {
     }
 
     @SuppressWarnings("rawtypes")
-    public static boolean notNullOrEmpty(final com.landawn.abacus.util.ArrayList list) {
+    public static boolean notNullOrEmpty(final AbstractList list) {
         return (list != null) && (list.size() > 0);
     }
 
@@ -13205,7 +13205,7 @@ public final class N {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T extends com.landawn.abacus.util.ArrayList> T checkNullOrEmpty(final T parameter, final String msg) {
+    public static <T extends AbstractList> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
@@ -16015,6 +16015,76 @@ public final class N {
                     itr.set(val);
                 }
             }
+        }
+    }
+
+    /**
+     * Fill the properties of the entity with random values.
+     * 
+     * @param entityClass entity class with getter/setter methods
+     * @return
+     */
+    public static <T> T fill(Class<T> entityClass) {
+        if (N.isEntity(entityClass) == false) {
+            throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
+        }
+
+        final T entity = N.newInstance(entityClass);
+
+        fill(entity);
+
+        return entity;
+    }
+
+    /**
+     * Fill the properties of the entity with random values.
+     * 
+     * @param entity an entity object with getter/setter method
+     */
+    public static void fill(Object entity) {
+        final Class<?> entityClass = entity.getClass();
+
+        if (N.isEntity(entityClass) == false) {
+            throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
+        }
+
+        Type<Object> type = null;
+        Class<?> parameterClass = null;
+        Object propValue = null;
+
+        for (Method method : N.getPropSetMethodList(entityClass).values()) {
+            parameterClass = method.getParameterTypes()[0];
+            type = N.typeOf(parameterClass);
+
+            if (String.class.equals(parameterClass)) {
+                propValue = N.uuid().substring(0, 16);
+            } else if (boolean.class.equals(parameterClass) || Boolean.class.equals(parameterClass)) {
+                propValue = rand.nextInt() % 2 == 0 ? false : true;
+            } else if (char.class.equals(parameterClass) || Character.class.equals(parameterClass)) {
+                propValue = (char) ('a' + rand.nextInt() % 26);
+            } else if (int.class.equals(parameterClass) || Integer.class.equals(parameterClass)) {
+                propValue = type.valueOf(String.valueOf(rand.nextInt()));
+            } else if (long.class.equals(parameterClass) || Long.class.equals(parameterClass)) {
+                propValue = type.valueOf(String.valueOf(rand.nextLong()));
+            } else if (float.class.equals(parameterClass) || Float.class.equals(parameterClass)) {
+                propValue = type.valueOf(String.valueOf(rand.nextFloat()));
+            } else if (double.class.equals(parameterClass) || Double.class.equals(parameterClass)) {
+                propValue = type.valueOf(String.valueOf(rand.nextDouble()));
+            } else if (byte.class.equals(parameterClass) || Byte.class.equals(parameterClass)) {
+                propValue = type.valueOf(String.valueOf(Integer.valueOf(rand.nextInt()).byteValue()));
+            } else if (short.class.equals(parameterClass) || Short.class.equals(parameterClass)) {
+                propValue = type.valueOf(String.valueOf(Integer.valueOf(rand.nextInt()).shortValue()));
+            } else if (Number.class.isAssignableFrom(parameterClass)) {
+                propValue = type.valueOf(String.valueOf(rand.nextInt()));
+            } else if (java.util.Date.class.isAssignableFrom(parameterClass) || Calendar.class.isAssignableFrom(parameterClass)) {
+                propValue = type.valueOf(String.valueOf(N.currentMillis()));
+            } else if (N.isEntity(parameterClass)) {
+                propValue = fill(parameterClass);
+            } else {
+                propValue = type.defaultValue();
+            }
+
+            N.setPropValue(entity, method, propValue);
         }
     }
 

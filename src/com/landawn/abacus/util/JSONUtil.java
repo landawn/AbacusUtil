@@ -96,7 +96,13 @@ public final class JSONUtil {
     }
 
     public static <T> T unwrap(final Class<?> cls, final JSONObject jsonObject) throws JSONException {
-        if (Map.class.isAssignableFrom(cls)) {
+        return unwrap(N.typeOf(cls), jsonObject);
+    }
+
+    public static <T> T unwrap(final Type<?> type, final JSONObject jsonObject) throws JSONException {
+        final Class<?> cls = type.getTypeClass();
+
+        if (type.isMap()) {
             final Map<String, Object> map = (Map<String, Object>) N.newInstance(cls);
             final Iterator<String> iter = jsonObject.keys();
             String key = null;
@@ -110,9 +116,11 @@ public final class JSONUtil {
                     value = null;
                 } else if (value != null) {
                     if (value instanceof JSONObject) {
-                        value = unwrap((JSONObject) value);
+                        value = Object.class.equals(type.getParameterTypes()[0].getTypeClass()) ? unwrap((JSONObject) value)
+                                : unwrap(type.getParameterTypes()[0], (JSONObject) value);
                     } else if (value instanceof JSONArray) {
-                        value = unwrap((JSONArray) value);
+                        value = Object.class.equals(type.getParameterTypes()[1].getTypeClass()) ? unwrap((JSONArray) value)
+                                : unwrap(type.getParameterTypes()[1], (JSONArray) value);
                     }
                 }
 

@@ -128,6 +128,7 @@ public class Properties<K, V> implements Map<K, V> {
 
     public V putIfAbsent(K key, V value) {
         V v = get(key);
+
         if (v == null) {
             v = put(key, value);
         }
@@ -145,11 +146,14 @@ public class Properties<K, V> implements Map<K, V> {
      * mapped to the specified value.
      */
     public boolean remove(Object key, Object value) {
-        Object curValue = get(key);
+        final Object curValue = get(key);
+
         if (!Objects.equals(curValue, value) || (curValue == null && !containsKey(key))) {
             return false;
         }
+
         remove(key);
+
         return true;
     }
 

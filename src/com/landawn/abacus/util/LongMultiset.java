@@ -133,15 +133,29 @@ public final class LongMultiset<E> implements Iterable<E> {
         return multiset;
     }
 
-    //    public static <T> LongMultiset<T> from(final Multiset<? extends T> multiset) {
-    //        final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(multiset.size()));
-    //
-    //        for (Map.Entry<? extends T, MutableInt> entry : multiset.entrySet()) {
-    //            result.set(entry.getKey(), entry.getValue().intValue());
-    //        }
-    //
-    //        return result;
-    //    }
+    public static <T> LongMultiset<T> from2(final Map<? extends T, Integer> m) {
+        final LongMultiset<T> multiset = new LongMultiset<>(N.initHashCapacity(m.size()));
+
+        for (Map.Entry<? extends T, Integer> entry : m.entrySet()) {
+            checkOccurrences(entry.getValue().intValue());
+        }
+
+        for (Map.Entry<? extends T, Integer> entry : m.entrySet()) {
+            multiset.set(entry.getKey(), entry.getValue().intValue());
+        }
+
+        return multiset;
+    }
+
+    public static <T> LongMultiset<T> from(final Multiset<? extends T> multiset) {
+        final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(multiset.size()));
+
+        for (Map.Entry<? extends T, MutableInt> entry : multiset.entrySet()) {
+            result.set(entry.getKey(), entry.getValue().intValue());
+        }
+
+        return result;
+    }
     //
     //    public static LongMultiset<Character> from(CharSequence str) {
     //        final LongMultiset<Character> result = new LongMultiset<>(N.initHashCapacity(str.length()));
@@ -232,7 +246,7 @@ public final class LongMultiset<E> implements Iterable<E> {
      */
     public void setAll(final Map<? extends E, Long> m) throws IllegalArgumentException {
         for (Map.Entry<? extends E, Long> entry : m.entrySet()) {
-            checkOccurrences(entry.getValue().intValue());
+            checkOccurrences(entry.getValue().longValue());
         }
 
         for (Map.Entry<? extends E, Long> entry : m.entrySet()) {
@@ -724,7 +738,12 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @return a list with all elements, each of them is repeated with the occurrences in this <code>Multiset</code>     
      */
     public List<E> flat() {
-        final Object[] a = new Object[sumOfOccurrences().intValue()];
+        final long totalOccurrences = sumOfOccurrences().longValue();
+
+        if (totalOccurrences > Integer.MAX_VALUE) {
+            throw new RuntimeException("The total occurrences is bigger than max value of int: " + totalOccurrences);
+        }
+        final Object[] a = new Object[(int) totalOccurrences];
 
         int fromIndex = 0;
         int toIndex = 0;
@@ -952,7 +971,7 @@ public final class LongMultiset<E> implements Iterable<E> {
         return valueMap.toString();
     }
 
-    private void checkOccurrences(final long occurrences) {
+    private static void checkOccurrences(final long occurrences) {
         if (occurrences < 0) {
             throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0");
         }

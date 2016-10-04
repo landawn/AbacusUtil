@@ -1,3 +1,11 @@
+========Changes in 0.9.18=========================================================================
+
+1, Add N.fill(entity), filling the properties of specified entity with random values. Mostly it's designed for mock test.
+
+2, Refactoring: RemoteExecutor.
+
+3, Improvements and bug fix
+
 ========Changes in 0.9.17=========================================================================
 
 1, Add com.landawn.abacus.util.AutoRetry and integrate it with AsyncExecutor.java and N.java.

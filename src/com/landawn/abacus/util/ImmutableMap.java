@@ -32,7 +32,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
      * @param map the elements in this <code>map</code> are shared by the returned ImmutableMap.
      * @return
      */
-    public static <K, V> ImmutableMap<K, V> from(Map<? extends K, ? extends V> map) {
+    public static <K, V> ImmutableMap<K, V> of(Map<? extends K, ? extends V> map) {
         return new ImmutableMap<K, V>(N.asImmutableMap(map));
     }
 

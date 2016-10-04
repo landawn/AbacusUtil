@@ -34,7 +34,7 @@ import com.landawn.abacus.util.stream.CharStream;
  * 
  * @author Haiyang Li
  */
-public final class CharList extends AbastractArrayList<CharConsumer, CharPredicate, Character, char[], CharList> {
+public final class CharList extends AbstractList<CharConsumer, CharPredicate, Character, char[], CharList> {
     private char[] elementData = N.EMPTY_CHAR_ARRAY;
     private int size = 0;
 

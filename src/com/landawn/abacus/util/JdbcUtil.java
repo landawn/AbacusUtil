@@ -321,6 +321,10 @@ public final class JdbcUtil {
         return new SQLDataSource(newProps);
     }
 
+    public static DataSource createDataSource(final String url, final String user, final String password) {
+        return createDataSource(getDriverClasssByUrl(url), url, user, password);
+    }
+
     public static DataSource createDataSource(final String driver, final String url, final String user, final String password) {
         final Class<? extends Driver> driverClass = N.forClass(driver);
 
@@ -328,40 +332,14 @@ public final class JdbcUtil {
     }
 
     public static DataSource createDataSource(final Class<? extends Driver> driverClass, final String url, final String user, final String password) {
-        return createDataSource(driverClass, url, user, password, null);
-    }
+        final Map<String, Object> props = new HashMap<>();
 
-    public static DataSource createDataSource(final String driver, final String url, final String user, final String password, final Map<String, ?> props) {
-        final Class<? extends Driver> driverClass = N.forClass(driver);
+        props.put(DRIVER, driverClass.getCanonicalName());
+        props.put(URL, url);
+        props.put(USER, user);
+        props.put(PASSWORD, password);
 
-        return createDataSource(driverClass, url, user, password, props);
-    }
-
-    /**
-     * 
-     * @param driverClass
-     * @param url
-     * @param user
-     * @param password
-     * @param props refer to Connection.xsd for the supported properties.
-     * @return
-     */
-    public static DataSource createDataSource(final Class<? extends Driver> driverClass, final String url, final String user, final String password,
-            final Map<String, ?> props) {
-        Map<String, Object> newProps = new HashMap<>();
-
-        if (N.notNullOrEmpty(props)) {
-            for (Map.Entry<String, ?> entry : props.entrySet()) {
-                newProps.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        newProps.put(DRIVER, driverClass.getCanonicalName());
-        newProps.put(URL, url);
-        newProps.put(USER, user);
-        newProps.put(PASSWORD, password);
-
-        return createDataSource(newProps);
+        return createDataSource(props);
     }
 
     /**
@@ -370,7 +348,23 @@ public final class JdbcUtil {
      * @return
      */
     public static DataSource createDataSource(final Map<String, ?> props) {
-        return new SQLDataSource(props);
+        final String driver = (String) props.get(DRIVER);
+
+        if (N.isNullOrEmpty(driver)) {
+            final String url = (String) props.get(URL);
+
+            if (N.isNullOrEmpty(url)) {
+                throw new IllegalArgumentException("Url is not specified");
+            }
+
+            final Map<String, Object> tmp = new HashMap<>(props);
+
+            tmp.put(DRIVER, getDriverClasssByUrl(url).getCanonicalName());
+
+            return new SQLDataSource(tmp);
+        } else {
+            return new SQLDataSource(props);
+        }
     }
 
     public static DataSource wrap(final javax.sql.DataSource sqlDataSource) {
@@ -378,6 +372,10 @@ public final class JdbcUtil {
     }
 
     public static Connection createConnection(final String url, final String user, final String password) {
+        return createConnection(getDriverClasssByUrl(url), url, user, password);
+    }
+
+    private static Class<? extends Driver> getDriverClasssByUrl(final String url) {
         Class<? extends Driver> driverClass = null;
         // jdbc:mysql://localhost:3306/abacustest
         if (url.indexOf("mysql") > 0 || N.indexOfIgnoreCase(url, "mysql") > 0) {
@@ -404,8 +402,7 @@ public final class JdbcUtil {
             throw new AbacusException(
                     "Can not identity the driver class by url: " + url + ". Only mysql, postgresql, hsqldb, sqlserver, oracle and db2 are supported currently");
         }
-
-        return createConnection(driverClass, url, user, password);
+        return driverClass;
     }
 
     public static Connection createConnection(final String driverClass, final String url, final String user, final String password) {

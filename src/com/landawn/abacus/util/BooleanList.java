@@ -33,7 +33,7 @@ import com.landawn.abacus.util.function.IntFunction;
  * 
  * @author Haiyang Li
  */
-public final class BooleanList extends AbastractArrayList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
+public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
     private boolean[] elementData = N.EMPTY_BOOLEAN_ARRAY;
     private int size = 0;
 

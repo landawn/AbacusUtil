@@ -134,8 +134,22 @@ public class EventBus {
      * @param eventId
      * @return
      */
+    public <T> EventBus register(final Subscriber<T> subscriber) {
+        return register(subscriber, (String) null);
+    }
+
+    /**
+     * 
+     * @param subscriber General subscriber (type is {@code Subscriber} and parameter type is Object, mostly created by lambda) only can be registered with event id
+     * @param eventId
+     * @return
+     */
     public <T> EventBus register(final Subscriber<T> subscriber, final String eventId) {
         return register(subscriber, eventId, ThreadMode.DEFAULT);
+    }
+
+    public <T> EventBus register(final Subscriber<T> subscriber, ThreadMode threadMode) {
+        return register(subscriber, (String) null, threadMode);
     }
 
     /**

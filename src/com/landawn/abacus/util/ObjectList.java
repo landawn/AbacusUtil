@@ -46,7 +46,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> {
+public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> {
     private T[] elementData = null;
     private int size = 0;
 
@@ -1333,12 +1333,12 @@ public class ObjectList<T> extends AbastractArrayList<Consumer<? super T>, Predi
     }
 
     @SuppressWarnings("rawtypes")
-    public <R extends com.landawn.abacus.util.ArrayList> R unboxed() {
+    public <R extends com.landawn.abacus.util.AbstractList> R unboxed() {
         return unboxed(0, size);
     }
 
     @SuppressWarnings("rawtypes")
-    public <R extends com.landawn.abacus.util.ArrayList> R unboxed(int fromIndex, int toIndex) {
+    public <R extends com.landawn.abacus.util.AbstractList> R unboxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Class<?> cls = getComponentType();

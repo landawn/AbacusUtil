@@ -15,7 +15,6 @@ import com.landawn.abacus.parser.XMLParser;
 import com.landawn.abacus.test.entity.Account;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.TestUtil;
 
 /**
  * Refer to HelloAbacusUtil for more tests: http://landawn.com/download.html
@@ -66,7 +65,7 @@ public class HelloAbacusUtil {
 
     @Test
     public void test_parser() {
-        Account account = TestUtil.createEntity(Account.class);
+        Account account = N.fill(Account.class);
         String xml = xmlParser.serialize(account);
         N.println(xml);
 
@@ -82,7 +81,7 @@ public class HelloAbacusUtil {
 
     @Test
     public void test_lambda() {
-        Account[] accounts = N.asArray(TestUtil.createEntity(Account.class), TestUtil.createEntity(Account.class));
+        Account[] accounts = N.asArray(N.fill(Account.class), N.fill(Account.class));
         Account[] accounts2 = N.filter(accounts, e -> e.getFirstName().equals(accounts[1].getFirstName()));
         assertEquals(accounts[1], accounts2[0]);
     }
