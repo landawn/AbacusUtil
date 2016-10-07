@@ -27,6 +27,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1156,7 +1157,7 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
             return OptionalFloat.empty();
         }
 
-        final Optional<Float> optional = boxed().kthLargest(k, Stream.FLOAT_COMPARATOR);
+        final OptionalNullable<Float> optional = boxed().kthLargest(k, Stream.FLOAT_COMPARATOR);
 
         return optional.isPresent() ? OptionalFloat.of(optional.get()) : OptionalFloat.empty();
     }

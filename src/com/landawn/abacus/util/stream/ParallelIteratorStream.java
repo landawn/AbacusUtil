@@ -35,6 +35,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -2739,7 +2740,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Optional<T> reduce(final BinaryOperator<T> accumulator) {
+    public OptionalNullable<T> reduce(final BinaryOperator<T> accumulator) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(accumulator);
         }
@@ -2797,7 +2798,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result == Stream.NONE ? (Optional<T>) Optional.empty() : Optional.of(result);
+        return result == Stream.NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(result);
     }
 
     @Override
@@ -3004,28 +3005,34 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Optional<T> min(Comparator<? super T> comparator) {
+    public OptionalNullable<T> min(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         }
+
+        comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
 
         return collect(Collectors.minBy(comparator));
     }
 
     @Override
-    public Optional<T> max(Comparator<? super T> comparator) {
+    public OptionalNullable<T> max(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         }
+
+        comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
 
         return collect(Collectors.maxBy(comparator));
     }
 
     @Override
-    public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
+    public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         }
+
+        comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
 
         return sequential().kthLargest(k, comparator);
     }
@@ -3282,7 +3289,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Optional<T> findFirst(final Predicate<? super T> predicate) {
+    public OptionalNullable<T> findFirst(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
@@ -3344,11 +3351,11 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return resultHolder.value() == null ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value().right);
     }
 
     @Override
-    public Optional<T> findLast(final Predicate<? super T> predicate) {
+    public OptionalNullable<T> findLast(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
@@ -3408,11 +3415,11 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return resultHolder.value() == null ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value().right);
     }
 
     @Override
-    public Optional<T> findAny(final Predicate<? super T> predicate) {
+    public OptionalNullable<T> findAny(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
@@ -3472,7 +3479,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return resultHolder.value() == Stream.NONE ? (Optional<T>) Optional.empty() : Optional.of(resultHolder.value());
+        return resultHolder.value() == Stream.NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value());
     }
 
     @Override

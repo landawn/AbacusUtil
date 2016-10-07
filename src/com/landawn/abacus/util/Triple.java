@@ -48,25 +48,48 @@ public final class Triple<L, M, R> {
         return left;
     }
 
-    public void setLeft(final L left) {
+    public Triple<L, M, R> setLeft(final L left) {
         this.left = left;
+
+        return this;
     }
 
     public M getMiddle() {
         return middle;
     }
 
-    public void setMiddle(final M middle) {
+    public Triple<L, M, R> setMiddle(final M middle) {
         this.middle = middle;
+
+        return this;
     }
 
     public R getRight() {
         return right;
     }
 
-    public void setRight(final R right) {
+    public Triple<L, M, R> setRight(final R right) {
         this.right = right;
+
+        return this;
     }
+
+    public Triple<L, M, R> set(final L left, final M middle, final R right) {
+        this.left = left;
+        this.middle = middle;
+        this.right = right;
+
+        return this;
+    }
+
+    //    /**
+    //     * Swap the left and right value. they must be same type.
+    //     */
+    //    public void reverse() {
+    //        Object tmp = left;
+    //        this.left = (L) right;
+    //        this.right = (R) tmp;
+    //    }
 
     @Override
     public int hashCode() {

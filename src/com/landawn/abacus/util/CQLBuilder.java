@@ -1093,8 +1093,8 @@ public abstract class CQLBuilder<T> {
      *  
      * @return the pair of cql and parameters.
      */
-    public Pair pair() {
-        return Pair.of(cql(), parameters);
+    public Pair3 pair() {
+        return Pair3.of(cql(), parameters);
     }
 
     /**
@@ -1690,7 +1690,6 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li 
      *
      */
-    @Deprecated
     public static final class E<T> extends CQLBuilder<T> {
         E() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.CQL);
@@ -2584,7 +2583,6 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    @Deprecated
     public static final class E2<T> extends CQLBuilder<T> {
         E2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.CQL);
@@ -3479,7 +3477,6 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    @Deprecated
     public static final class E3<T> extends CQLBuilder<T> {
         E3() {
             super(NamingPolicy.CAMEL_CASE, CQLPolicy.CQL);
@@ -4368,17 +4365,17 @@ public abstract class CQLBuilder<T> {
         }
     }
 
-    public static final class Pair {
+    public static final class Pair3 {
         public final String cql;
         public final List<Object> parameters;
 
-        Pair(final String cql, final List<Object> parameters) {
+        Pair3(final String cql, final List<Object> parameters) {
             this.cql = cql;
             this.parameters = parameters;
         }
 
-        public static Pair of(final String cql, final List<Object> parameters) {
-            return new Pair(cql, parameters);
+        public static Pair3 of(final String cql, final List<Object> parameters) {
+            return new Pair3(cql, parameters);
         }
 
         @Override
@@ -4392,8 +4389,8 @@ public abstract class CQLBuilder<T> {
                 return true;
             }
 
-            if (obj instanceof Pair) {
-                Pair other = (Pair) obj;
+            if (obj instanceof Pair3) {
+                Pair3 other = (Pair3) obj;
 
                 return N.equals(other.cql, cql) && N.equals(other.parameters, parameters);
             }

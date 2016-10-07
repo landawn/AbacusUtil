@@ -24,6 +24,7 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortList;
@@ -1088,7 +1089,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
             return OptionalShort.empty();
         }
 
-        final Optional<Short> optional = boxed().kthLargest(k, Stream.SHORT_COMPARATOR);
+        final OptionalNullable<Short> optional = boxed().kthLargest(k, Stream.SHORT_COMPARATOR);
 
         return optional.isPresent() ? OptionalShort.of(optional.get()) : OptionalShort.empty();
     }

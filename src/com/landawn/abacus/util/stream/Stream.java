@@ -79,6 +79,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -280,7 +281,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     static final Comparator OBJECT_COMPARATOR = new Comparator<Comparable>() {
         @Override
         public int compare(final Comparable a, final Comparable b) {
-            return N.compare(a, b);
+            return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
         }
     };
 
@@ -1079,7 +1080,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      *         else
      *             result = accumulator.apply(result, element);
      *     }
-     *     return foundAny ? Optional.of(result) : Optional.empty();
+     *     return foundAny ? OptionalNullable.of(result) : OptionalNullable.empty();
      * }</pre>
      *
      * but is not constrained to execute sequentially.
@@ -1100,7 +1101,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @see #min(Comparator)
      * @see #max(Comparator)
      */
-    public abstract Optional<T> reduce(BinaryOperator<T> accumulator);
+    public abstract OptionalNullable<T> reduce(BinaryOperator<T> accumulator);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -1290,7 +1291,7 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * or an empty {@code Optional} if the stream is empty
      * @throws NullPointerException if the minimum element is null
      */
-    public abstract Optional<T> min(Comparator<? super T> comparator);
+    public abstract OptionalNullable<T> min(Comparator<? super T> comparator);
 
     /**
      * Returns the maximum element of this stream according to the provided
@@ -1307,15 +1308,15 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * or an empty {@code Optional} if the stream is empty
      * @throws NullPointerException if the maximum element is null
      */
-    public abstract Optional<T> max(Comparator<? super T> comparator);
+    public abstract OptionalNullable<T> max(Comparator<? super T> comparator);
 
     /**
      * 
      * @param k
      * @param comparator
-     * @return Optional.empty() if there is no element or count less than k, otherwise the kth largest element.
+     * @return OptionalNullable.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
-    public abstract Optional<T> kthLargest(int k, Comparator<? super T> comparator);
+    public abstract OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator);
 
     public abstract Long sumInt(ToIntFunction<? super T> mapper);
 
@@ -1440,13 +1441,13 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * or an empty {@code Optional} if the stream is empty
      * @throws NullPointerException if the element selected is null
      */
-    // public abstract Optional<T> findFirst();
+    // public abstract OptionalNullable<T> findFirst();
 
-    public abstract Optional<T> findFirst(Predicate<? super T> predicate);
+    public abstract OptionalNullable<T> findFirst(Predicate<? super T> predicate);
 
-    // public abstract Optional<T> findLast();
+    // public abstract OptionalNullable<T> findLast();
 
-    public abstract Optional<T> findLast(Predicate<? super T> predicate);
+    public abstract OptionalNullable<T> findLast(Predicate<? super T> predicate);
 
     /**
      * Returns an {@link Optional} describing some element of the stream, or an
@@ -1466,9 +1467,9 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @throws NullPointerException if the element selected is null
      * @see #findFirst()
      */
-    // public abstract Optional<T> findAny();
+    // public abstract OptionalNullable<T> findAny();
 
-    public abstract Optional<T> findAny(Predicate<? super T> predicate);
+    public abstract OptionalNullable<T> findAny(Predicate<? super T> predicate);
 
     /**
      * @param c

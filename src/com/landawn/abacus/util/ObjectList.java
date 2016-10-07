@@ -113,6 +113,70 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return of(a);
     }
 
+    public static ObjectList<Boolean> from(boolean... a) {
+        return of(Array.box(a));
+    }
+
+    public static ObjectList<Boolean> from(boolean[] a, int fromIndex, int toIndex) {
+        return of(Array.box(a, fromIndex, toIndex));
+    }
+
+    public static ObjectList<Character> from(char... a) {
+        return of(Array.box(a));
+    }
+
+    public static ObjectList<Character> from(char[] a, int fromIndex, int toIndex) {
+        return of(Array.box(a, fromIndex, toIndex));
+    }
+
+    public static ObjectList<Byte> from(byte... a) {
+        return of(Array.box(a));
+    }
+
+    public static ObjectList<Byte> from(byte[] a, int fromIndex, int toIndex) {
+        return of(Array.box(a, fromIndex, toIndex));
+    }
+
+    public static ObjectList<Short> from(short... a) {
+        return of(Array.box(a));
+    }
+
+    public static ObjectList<Short> from(short[] a, int fromIndex, int toIndex) {
+        return of(Array.box(a, fromIndex, toIndex));
+    }
+
+    public static ObjectList<Integer> from(int... a) {
+        return of(Array.box(a));
+    }
+
+    public static ObjectList<Integer> from(int[] a, int fromIndex, int toIndex) {
+        return of(Array.box(a, fromIndex, toIndex));
+    }
+
+    public static ObjectList<Long> from(long... a) {
+        return of(Array.box(a));
+    }
+
+    public static ObjectList<Long> from(long[] a, int fromIndex, int toIndex) {
+        return of(Array.box(a, fromIndex, toIndex));
+    }
+
+    public static ObjectList<Float> from(float... a) {
+        return of(Array.box(a));
+    }
+
+    public static ObjectList<Float> from(float[] a, int fromIndex, int toIndex) {
+        return of(Array.box(a, fromIndex, toIndex));
+    }
+
+    public static ObjectList<Double> from(double... a) {
+        return DoubleList.of(a).boxed();
+    }
+
+    public static ObjectList<Double> from(double[] a, int fromIndex, int toIndex) {
+        return of(Array.box(a, fromIndex, toIndex));
+    }
+
     /**
      * Returns the original element array without copying.
      * 
@@ -729,11 +793,21 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, Consumer<? super T> action) {
-        checkIndex(fromIndex, toIndex);
+        if (fromIndex <= toIndex) {
+            checkIndex(fromIndex, toIndex);
+        } else {
+            checkIndex(toIndex, fromIndex);
+        }
 
         if (size > 0) {
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(elementData[i]);
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    action.accept(elementData[i]);
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    action.accept(elementData[i]);
+                }
             }
         }
     }
@@ -743,11 +817,21 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     public void forEach(final int fromIndex, final int toIndex, final IndexedConsumer<? super T, T[]> action) {
-        checkIndex(fromIndex, toIndex);
+        if (fromIndex <= toIndex) {
+            checkIndex(fromIndex, toIndex);
+        } else {
+            checkIndex(toIndex, fromIndex);
+        }
 
         if (size > 0) {
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, elementData[i], elementData);
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    action.accept(i, elementData[i], elementData);
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    action.accept(i, elementData[i], elementData);
+                }
             }
         }
     }
@@ -767,15 +851,31 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return
      */
     public <R> R forEach(final int fromIndex, final int toIndex, final R identity, BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
-        checkIndex(fromIndex, toIndex);
+        if (fromIndex <= toIndex) {
+            checkIndex(fromIndex, toIndex);
+        } else {
+            checkIndex(toIndex, fromIndex);
+        }
 
         R result = identity;
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, elementData[i]);
+        if (size > 0) {
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    result = accumulator.apply(result, elementData[i]);
 
-            if (till.test(result)) {
-                break;
+                    if (till.test(result)) {
+                        break;
+                    }
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    result = accumulator.apply(result, elementData[i]);
+
+                    if (till.test(result)) {
+                        break;
+                    }
+                }
             }
         }
 
@@ -798,19 +898,36 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      */
     public <R> R forEach(final int fromIndex, final int toIndex, final R identity, IndexedBiFunction<R, ? super T, T[], R> accumulator,
             final Predicate<? super R> till) {
-        checkIndex(fromIndex, toIndex);
+        if (fromIndex <= toIndex) {
+            checkIndex(fromIndex, toIndex);
+        } else {
+            checkIndex(toIndex, fromIndex);
+        }
 
         R result = identity;
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, i, elementData[i], elementData);
+        if (size > 0) {
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    result = accumulator.apply(result, i, elementData[i], elementData);
 
-            if (till.test(result)) {
-                break;
+                    if (till.test(result)) {
+                        break;
+                    }
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    result = accumulator.apply(result, i, elementData[i], elementData);
+
+                    if (till.test(result)) {
+                        break;
+                    }
+                }
             }
         }
 
         return result;
+
     }
 
     @Override

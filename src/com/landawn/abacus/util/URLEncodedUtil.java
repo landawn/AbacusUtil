@@ -26,7 +26,6 @@
  */
 package com.landawn.abacus.util;
 
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -35,7 +34,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.parser.ParserUtil.PropInfo;
@@ -235,53 +233,39 @@ public final class URLEncodedUtil {
         scanner.useDelimiter(QP_SEP_PATTERN);
 
         Type<?> propType = null;
-        Method getMethod = null;
-        Method setMethod = null;
         Object propValue = null;
         String name = null;
         String value = null;
 
         final EntityInfo entityInfo = ParserUtil.getEntityInfo(targetClass);
 
-        while (scanner.hasNext()) {
-            final String token = scanner.next();
-            final int i = token.indexOf(NAME_VALUE_SEPARATOR);
+        try {
+            while (scanner.hasNext()) {
+                final String token = scanner.next();
+                final int i = token.indexOf(NAME_VALUE_SEPARATOR);
 
-            if (i != -1) {
-                name = decodeFormFields(token.substring(0, i).trim(), charset);
-                value = decodeFormFields(token.substring(i + 1).trim(), charset);
-            } else {
-                name = decodeFormFields(token.trim(), charset);
-                value = null;
-            }
-
-            setMethod = N.getPropSetMethod(targetClass, name);
-
-            if (setMethod == null) {
-                getMethod = N.getPropGetMethod(targetClass, name);
-
-                if (getMethod == null) {
-                    scanner.close();
-                    throw new AbacusException("Can't set property value for parameter: " + name);
+                if (i != -1) {
+                    name = decodeFormFields(token.substring(0, i).trim(), charset);
+                    value = decodeFormFields(token.substring(i + 1).trim(), charset);
+                } else {
+                    name = decodeFormFields(token.trim(), charset);
+                    value = null;
                 }
+
+                propType = entityInfo.getPropInfo(name).type;
+
+                if (value == null) {
+                    propValue = propType.defaultValue();
+                } else {
+                    propValue = propType.valueOf(value);
+                }
+
+                N.setPropValue(result, name, propValue);
             }
 
-            propType = entityInfo.getPropInfo(name).type;
-
-            if (value == null) {
-                propValue = propType.defaultValue();
-            } else {
-                propValue = propType.valueOf(value);
-            }
-
-            if (setMethod == null) {
-                N.setPropValueByGet(result, getMethod, propValue);
-            } else {
-                N.setPropValue(result, setMethod, propValue);
-            }
+        } finally {
+            scanner.close();
         }
-
-        scanner.close();
 
         return result;
     }

@@ -653,11 +653,21 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, LongConsumer action) {
-        checkIndex(fromIndex, toIndex);
+        if (fromIndex <= toIndex) {
+            checkIndex(fromIndex, toIndex);
+        } else {
+            checkIndex(toIndex, fromIndex);
+        }
 
         if (size > 0) {
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(elementData[i]);
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    action.accept(elementData[i]);
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    action.accept(elementData[i]);
+                }
             }
         }
     }
@@ -667,11 +677,21 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     public void forEach(final int fromIndex, final int toIndex, IndexedLongConsumer action) {
-        checkIndex(fromIndex, toIndex);
+        if (fromIndex <= toIndex) {
+            checkIndex(fromIndex, toIndex);
+        } else {
+            checkIndex(toIndex, fromIndex);
+        }
 
         if (size > 0) {
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, elementData[i], elementData);
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    action.accept(i, elementData[i], elementData);
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    action.accept(i, elementData[i], elementData);
+                }
             }
         }
     }

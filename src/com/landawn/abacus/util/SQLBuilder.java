@@ -1531,8 +1531,8 @@ public abstract class SQLBuilder<T> {
      *  
      * @return the pair of sql and parameters.
      */
-    public Pair pair() {
-        return Pair.of(sql(), parameters);
+    public Pair2 pair() {
+        return Pair2.of(sql(), parameters);
     }
 
     /**
@@ -2168,7 +2168,6 @@ public abstract class SQLBuilder<T> {
      * @author haiyang li 
      *
      */
-    @Deprecated
     public static final class E<T> extends SQLBuilder<T> {
         E() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, SQLPolicy.SQL);
@@ -3004,7 +3003,6 @@ public abstract class SQLBuilder<T> {
      * @author haiyang li
      *
      */
-    @Deprecated
     public static final class E2<T> extends SQLBuilder<T> {
         E2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, SQLPolicy.SQL);
@@ -3841,7 +3839,6 @@ public abstract class SQLBuilder<T> {
      * @author haiyang li
      *
      */
-    @Deprecated
     public static final class E3<T> extends SQLBuilder<T> {
         E3() {
             super(NamingPolicy.CAMEL_CASE, SQLPolicy.SQL);
@@ -4672,17 +4669,17 @@ public abstract class SQLBuilder<T> {
         }
     }
 
-    public static final class Pair {
+    public static final class Pair2 {
         public final String sql;
         public final List<Object> parameters;
 
-        Pair(final String sql, final List<Object> parameters) {
+        Pair2(final String sql, final List<Object> parameters) {
             this.sql = sql;
             this.parameters = parameters;
         }
 
-        public static Pair of(final String sql, final List<Object> parameters) {
-            return new Pair(sql, parameters);
+        public static Pair2 of(final String sql, final List<Object> parameters) {
+            return new Pair2(sql, parameters);
         }
 
         @Override
@@ -4696,8 +4693,8 @@ public abstract class SQLBuilder<T> {
                 return true;
             }
 
-            if (obj instanceof Pair) {
-                Pair other = (Pair) obj;
+            if (obj instanceof Pair2) {
+                Pair2 other = (Pair2) obj;
 
                 return N.equals(other.sql, sql) && N.equals(other.parameters, parameters);
             }

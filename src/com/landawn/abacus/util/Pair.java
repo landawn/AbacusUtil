@@ -45,17 +45,38 @@ public final class Pair<L, R> {
         return left;
     }
 
-    public void setLeft(final L left) {
+    public Pair<L, R> setLeft(final L left) {
         this.left = left;
+
+        return this;
     }
 
     public R getRight() {
         return right;
     }
 
-    public void setRight(final R right) {
+    public Pair<L, R> setRight(final R right) {
         this.right = right;
+
+        return this;
     }
+
+    public Pair<L, R> set(final L left, final R right) {
+        this.left = left;
+        this.right = right;
+
+        return this;
+    }
+
+    //    /**
+    //     * Swap the left and right value. they must be same type.
+    //     * 
+    //     */
+    //    public void reverse() {
+    //        Object tmp = left;
+    //        this.left = (L) right;
+    //        this.right = (R) tmp;
+    //    }
 
     @Override
     public int hashCode() {

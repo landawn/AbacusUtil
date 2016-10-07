@@ -2055,7 +2055,7 @@ public final class Array {
     }
 
     static void sort(final Object[] a, final int fromIndex, final int toIndex) {
-        sort(a, fromIndex, toIndex, null);
+        sort(a, fromIndex, toIndex, N.OBJECT_COMPARATOR);
     }
 
     static <T> void sort(final T[] a, final Comparator<? super T> cmp) {
@@ -2085,7 +2085,7 @@ public final class Array {
     }
 
     static <T extends Comparable<? super T>> void sort(final List<? extends T> c, final int fromIndex, final int toIndex) {
-        sort(c, fromIndex, toIndex, null);
+        sort(c, fromIndex, toIndex, N.OBJECT_COMPARATOR);
     }
 
     static <T> void sort(final List<? extends T> list, final Comparator<? super T> cmp) {
@@ -3304,7 +3304,7 @@ public final class Array {
     }
 
     static <T extends Comparable<? super T>> void parallelSort(final List<? extends T> c, final int fromIndex, final int toIndex) {
-        parallelSort(c, fromIndex, toIndex, null);
+        parallelSort(c, fromIndex, toIndex, N.OBJECT_COMPARATOR);
     }
 
     static <T> void parallelSort(final List<? extends T> list, final Comparator<? super T> cmp) {
@@ -4549,12 +4549,7 @@ public final class Array {
     }
 
     static <T extends Comparable<T>> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k) {
-        return kthLargest(a, fromIndex, toIndex, k, new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                return N.compare(o1, o2);
-            }
-        });
+        return (T) kthLargest(a, fromIndex, toIndex, k, N.OBJECT_COMPARATOR);
     }
 
     static <T> T kthLargest(final T[] a, int k, final Comparator<? super T> cmp) {
@@ -4622,12 +4617,7 @@ public final class Array {
     }
 
     static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int fromIndex, final int toIndex, int k) {
-        return kthLargest(c, fromIndex, toIndex, k, new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                return N.compare(o1, o2);
-            }
-        });
+        return (T) kthLargest(c, fromIndex, toIndex, k, N.OBJECT_COMPARATOR);
     }
 
     static <T> T kthLargest(final Collection<T> c, int k, final Comparator<? super T> cmp) {
@@ -4641,12 +4631,13 @@ public final class Array {
             throw new IllegalArgumentException("Collection is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
         }
 
+        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
         final int len = toIndex - fromIndex;
 
         if (k == 1) {
-            return N.max(c, fromIndex, toIndex, cmp);
+            return N.max(c, fromIndex, toIndex, comparator);
         } else if (k == len) {
-            return N.min(c, fromIndex, toIndex, cmp);
+            return N.min(c, fromIndex, toIndex, comparator);
         }
 
         final Iterator<T> iter = c.iterator();
@@ -4668,7 +4659,7 @@ public final class Array {
                 if (queue.size() < k) {
                     queue.add(e);
                 } else {
-                    if (N.compare(e, queue.peek(), cmp) > 0) {
+                    if (N.compare(e, queue.peek(), comparator) > 0) {
                         queue.remove();
                         queue.add(e);
                     }
@@ -4682,7 +4673,7 @@ public final class Array {
             queue = new PriorityQueue<T>(k, new Comparator<T>() {
                 @Override
                 public int compare(final T o1, final T o2) {
-                    return cmp.compare(o2, o1);
+                    return comparator.compare(o2, o1);
                 }
             });
 
@@ -4700,7 +4691,7 @@ public final class Array {
                 if (queue.size() < k) {
                     queue.add(e);
                 } else {
-                    if (N.compare(e, queue.peek(), cmp) < 0) {
+                    if (N.compare(e, queue.peek(), comparator) < 0) {
                         queue.remove();
                         queue.add(e);
                     }

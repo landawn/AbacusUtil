@@ -603,11 +603,21 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, CharConsumer action) {
-        checkIndex(fromIndex, toIndex);
+        if (fromIndex <= toIndex) {
+            checkIndex(fromIndex, toIndex);
+        } else {
+            checkIndex(toIndex, fromIndex);
+        }
 
         if (size > 0) {
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(elementData[i]);
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    action.accept(elementData[i]);
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    action.accept(elementData[i]);
+                }
             }
         }
     }
@@ -617,11 +627,21 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public void forEach(final int fromIndex, final int toIndex, IndexedCharConsumer action) {
-        checkIndex(fromIndex, toIndex);
+        if (fromIndex <= toIndex) {
+            checkIndex(fromIndex, toIndex);
+        } else {
+            checkIndex(toIndex, fromIndex);
+        }
 
         if (size > 0) {
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, elementData[i], elementData);
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    action.accept(i, elementData[i], elementData);
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    action.accept(i, elementData[i], elementData);
+                }
             }
         }
     }

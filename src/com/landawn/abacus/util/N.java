@@ -273,8 +273,13 @@ public final class N {
 
     // ... it has to be big enough to make it's safety to add element to
     // ArrayBlockingQueue.
-    private static final int POOL_SIZE = 1000;
-    private static final int CLS_POOL_SIZE = 2000;
+    private static final int POOL_SIZE;
+
+    static {
+        int multi = (int) (Runtime.getRuntime().maxMemory() / (N.ONE_MB * 256));
+
+        POOL_SIZE = N.max(1000, N.min(1000 * multi, 8192));
+    }
 
     public static final long ONE_SECOND = 1 * 1000L;
     public static final long TWO_SECONDS = 2 * 1000L;
@@ -688,12 +693,23 @@ public final class N {
     static final Random rand = new SecureRandom();
 
     @SuppressWarnings("rawtypes")
-    static final Comparator OBJECT_COMPARATOR = new Comparator<Comparable>() {
+    static final Comparator NULL_MIN_COMPARATOR = new Comparator<Comparable>() {
         @Override
         public int compare(final Comparable a, final Comparable b) {
             return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
         }
     };
+
+    @SuppressWarnings("rawtypes")
+    static final Comparator NULL_MAX_COMPARATOR = new Comparator<Comparable>() {
+        @Override
+        public int compare(final Comparable a, final Comparable b) {
+            return a == null ? (b == null ? 0 : 1) : (b == null ? -1 : a.compareTo(b));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    static final Comparator OBJECT_COMPARATOR = NULL_MIN_COMPARATOR;
 
     // ...
     static final Map<Class<?>, Object> CLASS_EMPTY_ARRAY = new ConcurrentHashMap<>();
@@ -776,9 +792,9 @@ public final class N {
             POOL_SIZE);
 
     // ...
-    private static final Map<String, String> formalizedPropNamePool = new ObjectPool<String, String>(CLS_POOL_SIZE * 2);
-    private static final Map<Method, String> methodPropNamePool = new ObjectPool<Method, String>(CLS_POOL_SIZE * 2);
-    private static final Map<Method, Class<?>[]> methodTypeArgumentsPool = new ObjectPool<Method, Class<?>[]>(CLS_POOL_SIZE * 2);
+    private static final Map<String, String> formalizedPropNamePool = new ObjectPool<String, String>(POOL_SIZE * 2);
+    private static final Map<Method, String> methodPropNamePool = new ObjectPool<Method, String>(POOL_SIZE * 2);
+    private static final Map<Method, Class<?>[]> methodTypeArgumentsPool = new ObjectPool<Method, Class<?>[]>(POOL_SIZE * 2);
 
     private static final Map<String, String> lowerCaseWithUnderscorePropNamePool = new ObjectPool<String, String>(POOL_SIZE * 2);
     private static final Map<String, String> upperCaseWithUnderscorePropNamePool = new ObjectPool<String, String>(POOL_SIZE * 2);
@@ -798,7 +814,7 @@ public final class N {
     }
 
     // formalized property name list.
-    private static final Map<String, Class<?>> BUILT_IN_TYPE = new ObjectPool<String, Class<?>>(CLS_POOL_SIZE * 2); // new LinkedHashMap<>();
+    private static final Map<String, Class<?>> BUILT_IN_TYPE = new ObjectPool<String, Class<?>>(POOL_SIZE); // new LinkedHashMap<>();
 
     static {
         BUILT_IN_TYPE.put(boolean.class.getCanonicalName(), boolean.class);
@@ -894,9 +910,6 @@ public final class N {
         BUILT_IN_TYPE.put(LongList.class.getCanonicalName(), LongList.class);
         BUILT_IN_TYPE.put(FloatList.class.getCanonicalName(), FloatList.class);
         BUILT_IN_TYPE.put(DoubleList.class.getCanonicalName(), DoubleList.class);
-        BUILT_IN_TYPE.put(StringList.class.getCanonicalName(), StringList.class);
-        BUILT_IN_TYPE.put(BigIntegerList.class.getCanonicalName(), BigIntegerList.class);
-        BUILT_IN_TYPE.put(BigDecimalList.class.getCanonicalName(), BigDecimalList.class);
         BUILT_IN_TYPE.put(ObjectList.class.getCanonicalName(), ObjectList.class);
 
         BUILT_IN_TYPE.put(MutableBoolean.class.getCanonicalName(), MutableBoolean.class);
@@ -982,30 +995,30 @@ public final class N {
 
     // ...
     private static final Map<Class<? extends Enum<?>>, List<? extends Enum<?>>> enumListPool = new ObjectPool<Class<? extends Enum<?>>, List<? extends Enum<?>>>(
-            CLS_POOL_SIZE);
+            POOL_SIZE);
     private static final Map<Class<? extends Enum<?>>, Set<? extends Enum<?>>> enumSetPool = new ObjectPool<Class<? extends Enum<?>>, Set<? extends Enum<?>>>(
-            CLS_POOL_SIZE);
+            POOL_SIZE);
     private static final Map<Class<? extends Enum<?>>, BiMap<? extends Enum<?>, String>> enumMapPool = new ObjectPool<Class<? extends Enum<?>>, BiMap<? extends Enum<?>, String>>(
-            CLS_POOL_SIZE);
-    private static final Map<Class<?>, Package> packagePool = new ObjectPool<Class<?>, Package>(CLS_POOL_SIZE);
-    private static final Map<Class<?>, String> packageNamePool = new ObjectPool<Class<?>, String>(CLS_POOL_SIZE);
-    private static final Map<String, Type<?>> nameTypePool = new ObjectPool<String, Type<?>>(CLS_POOL_SIZE);
-    private static final Map<Class<?>, Type<?>> clsTypePool = new ObjectPool<Class<?>, Type<?>>(CLS_POOL_SIZE);
-    private static final Map<String, Class<?>> clsNamePool = new ObjectPool<String, Class<?>>(CLS_POOL_SIZE);
-    private static final Map<Class<?>, String> simpleClassNamePool = new ObjectPool<Class<?>, String>(CLS_POOL_SIZE);
-    private static final Map<Class<?>, String> nameClassPool = new ObjectPool<Class<?>, String>(CLS_POOL_SIZE);
-    private static final Map<Class<?>, String> canonicalClassNamePool = new ObjectPool<Class<?>, String>(CLS_POOL_SIZE);
-    private static final Map<Class<?>, Class<?>> enclosingClassPool = new ObjectPool<Class<?>, Class<?>>(CLS_POOL_SIZE);
+            POOL_SIZE);
+    private static final Map<Class<?>, Package> packagePool = new ObjectPool<Class<?>, Package>(POOL_SIZE);
+    private static final Map<Class<?>, String> packageNamePool = new ObjectPool<Class<?>, String>(POOL_SIZE);
+    private static final Map<String, Type<?>> nameTypePool = new ObjectPool<String, Type<?>>(POOL_SIZE);
+    private static final Map<Class<?>, Type<?>> clsTypePool = new ObjectPool<Class<?>, Type<?>>(POOL_SIZE);
+    private static final Map<String, Class<?>> clsNamePool = new ObjectPool<String, Class<?>>(POOL_SIZE);
+    private static final Map<Class<?>, String> simpleClassNamePool = new ObjectPool<Class<?>, String>(POOL_SIZE);
+    private static final Map<Class<?>, String> nameClassPool = new ObjectPool<Class<?>, String>(POOL_SIZE);
+    private static final Map<Class<?>, String> canonicalClassNamePool = new ObjectPool<Class<?>, String>(POOL_SIZE);
+    private static final Map<Class<?>, Class<?>> enclosingClassPool = new ObjectPool<Class<?>, Class<?>>(POOL_SIZE);
 
     private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<Class<?>, Map<Class<?>[], Constructor<?>>>(
-            CLS_POOL_SIZE);
+            POOL_SIZE);
     private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<Class<?>, Map<String, Map<Class<?>[], Method>>>(
-            CLS_POOL_SIZE);
+            POOL_SIZE);
 
     // ...
-    private static final Map<Class<?>, Boolean> entityClassPool = new ObjectPool<Class<?>, Boolean>(CLS_POOL_SIZE);
-    private static final Map<Class<?>, Boolean> dirtyMarkerClassPool = new ObjectPool<Class<?>, Boolean>(CLS_POOL_SIZE);
-    private static final Map<Class<?>, Boolean> dirtyMarkerEntityClassPool = new ObjectPool<Class<?>, Boolean>(CLS_POOL_SIZE);
+    private static final Map<Class<?>, Boolean> entityClassPool = new ObjectPool<Class<?>, Boolean>(POOL_SIZE);
+    private static final Map<Class<?>, Boolean> dirtyMarkerClassPool = new ObjectPool<Class<?>, Boolean>(POOL_SIZE);
+    private static final Map<Class<?>, Boolean> dirtyMarkerEntityClassPool = new ObjectPool<Class<?>, Boolean>(POOL_SIZE);
 
     private static final JSONParser jsonParser = ParserFactory.createJSONParser();
     private static final XMLParser abacusXMLParser = ParserFactory.isAbacusXMLAvailable() ? ParserFactory.createAbacusXMLParser() : null;
@@ -2150,6 +2163,18 @@ public final class N {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getPropValue(final Object entity, final String propName) {
+        return getPropValue(entity, propName, false);
+    }
+
+    /**
+     * 
+     * @param entity
+     * @param propName
+     * @param ignoreUnknownProperty
+     * @return the property value or null if the property doesn't belong to specified entity.
+     * @throws AbacusException if the specified property can't be gotten and ignoreUnknownProperty is false.
+     */
+    public static <T> T getPropValue(final Object entity, final String propName, final boolean ignoreUnknownProperty) {
         Method getMethod = getPropGetMethod(entity.getClass(), propName);
 
         if (getMethod == null) {
@@ -2191,7 +2216,11 @@ public final class N {
             }
 
             if (inlinePropGetMethodQueue.size() == 0) {
-                throw new AbacusException("No property method found with property name: " + propName + " in class " + N.getCanonicalClassName(cls));
+                if (ignoreUnknownProperty) {
+                    return null;
+                } else {
+                    throw new AbacusException("No property method found with property name: " + propName + " in class " + N.getCanonicalClassName(cls));
+                }
             } else {
                 Object propEntity = entity;
 
@@ -2222,7 +2251,16 @@ public final class N {
         setPropValue(entity, propName, propValue, false);
     }
 
-    static void setPropValue(final Object entity, final String propName, final Object propValue, final boolean ignoreUnknownProperty) {
+    /**
+     * 
+     * @param entity
+     * @param propName
+     * @param propValue
+     * @param ignoreUnknownProperty
+     * @return true if the property value has been set.
+     * @throws AbacusException if the specified property can't be set and ignoreUnknownProperty is false.
+     */
+    public static boolean setPropValue(final Object entity, final String propName, final Object propValue, final boolean ignoreUnknownProperty) {
         Method setMethod = getPropSetMethod(entity.getClass(), propName);
 
         if (setMethod == null) {
@@ -2286,7 +2324,7 @@ public final class N {
 
                 if (inlinePropSetMethodQueue.size() == 0) {
                     if (ignoreUnknownProperty) {
-                        return;
+                        return false;
                     } else {
                         throw new AbacusException("No property method found with property name: " + propName + " in class " + cls.getCanonicalName());
                     }
@@ -2321,6 +2359,8 @@ public final class N {
         } else {
             setPropValue(entity, setMethod, propValue);
         }
+
+        return true;
     }
 
     public static String getPropNameByMethod(final Method getSetMethod) {
@@ -3472,7 +3512,8 @@ public final class N {
                     columnList.get(i).add(it.next());
                 }
             } else {
-                throw new IllegalArgumentException("Unsupported row type: " + N.getCanonicalClassName(e.getClass()));
+                throw new IllegalArgumentException(
+                        "Unsupported row type: " + N.getCanonicalClassName(e.getClass()) + ". Only array, collection, map and entity are supported");
             }
         }
 
@@ -6756,6 +6797,14 @@ public final class N {
         }
 
         return res;
+    }
+
+    public static <T> Comparator<T> nullMinComparator() {
+        return NULL_MIN_COMPARATOR;
+    }
+
+    public static <T> Comparator<T> nullMaxComparator() {
+        return NULL_MAX_COMPARATOR;
     }
 
     public static int compare(final boolean a, final boolean b) {
@@ -20171,19 +20220,15 @@ public final class N {
             return;
         }
 
-        forEach(a, 0, a.length, action);
+        ObjectList.of(a).forEach(action);
     }
 
     public <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < a.length)) {
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return;
         }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(a[i]);
-        }
+        ObjectList.of(a).forEach(fromIndex, toIndex, action);
     }
 
     public <T> void forEach(final T[] a, final IndexedConsumer<T, T[]> action) {
@@ -20191,19 +20236,15 @@ public final class N {
             return;
         }
 
-        forEach(a, 0, a.length, action);
+        ObjectList.of(a).forEach(action);
     }
 
     public <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T, T[]> action) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < a.length)) {
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return;
         }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(i, a[i], a);
-        }
+        ObjectList.of(a).forEach(fromIndex, toIndex, action);
     }
 
     public <T, R> R forEach(final T[] a, final R identity, final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
@@ -20211,7 +20252,7 @@ public final class N {
             return identity;
         }
 
-        return forEach(a, 0, a.length, identity, accumulator, till);
+        return ObjectList.of(a).forEach(identity, accumulator, till);
     }
 
     /**
@@ -20226,23 +20267,11 @@ public final class N {
      */
     public <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final BiFunction<R, ? super T, R> accumulator,
             final Predicate<? super R> till) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < a.length)) {
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return identity;
         }
 
-        R result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, a[i]);
-
-            if (till.test(result)) {
-                break;
-            }
-        }
-
-        return result;
+        return ObjectList.of(a).forEach(identity, accumulator, till);
     }
 
     public <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
@@ -20250,7 +20279,7 @@ public final class N {
             return identity;
         }
 
-        return forEach(a, 0, a.length, identity, accumulator, till);
+        return ObjectList.of(a).forEach(identity, accumulator, till);
     }
 
     /**
@@ -20265,23 +20294,11 @@ public final class N {
      */
     public <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final IndexedBiFunction<R, ? super T, T[], R> accumulator,
             final Predicate<? super R> till) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < a.length)) {
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return identity;
         }
 
-        R result = identity;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, i, a[i], a);
-
-            if (till.test(result)) {
-                break;
-            }
-        }
-
-        return result;
+        return ObjectList.of(a).forEach(identity, accumulator, till);
     }
 
     public static <T, A extends Collection<? extends T>> void forEach(final A c, final Consumer<? super T> action) {
@@ -20307,32 +20324,63 @@ public final class N {
      * @param action
      */
     public static <T, A extends Collection<? extends T>> void forEach(final A c, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        if (fromIndex <= toIndex) {
+            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        } else {
+            N.checkIndex(toIndex, fromIndex, c == null ? 0 : c.size());
+        }
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return;
         }
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
 
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(list.get(i));
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    action.accept(list.get(i));
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    action.accept(list.get(i));
+                }
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
             int idx = 0;
 
-            while (idx < fromIndex && iter.hasNext()) {
-                iter.next();
-                idx++;
-            }
+            if (fromIndex <= toIndex) {
+                while (idx < fromIndex && iter.hasNext()) {
+                    iter.next();
+                    idx++;
+                }
 
-            while (iter.hasNext()) {
-                action.accept(iter.next());
+                while (iter.hasNext()) {
+                    action.accept(iter.next());
 
-                if (++idx >= toIndex) {
-                    break;
+                    if (++idx >= toIndex) {
+                        break;
+                    }
+                }
+            } else {
+                while (idx < toIndex && iter.hasNext()) {
+                    iter.next();
+                    idx++;
+                }
+
+                final T[] a = (T[]) new Object[fromIndex - toIndex];
+
+                while (iter.hasNext()) {
+                    a[idx - toIndex] = iter.next();
+
+                    if (++idx >= fromIndex) {
+                        break;
+                    }
+                }
+
+                for (int i = a.length - 1; i >= 0; i--) {
+                    action.accept(a[i]);
                 }
             }
         }
@@ -20363,32 +20411,63 @@ public final class N {
      */
     public static <T, A extends Collection<? extends T>> void forEach(final A c, final int fromIndex, final int toIndex,
             final IndexedConsumer<? super T, A> action) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        if (fromIndex <= toIndex) {
+            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        } else {
+            N.checkIndex(toIndex, fromIndex, c == null ? 0 : c.size());
+        }
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return;
         }
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
 
-            for (int i = fromIndex; i < toIndex; i++) {
-                action.accept(i, list.get(i), c);
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    action.accept(i, list.get(i), c);
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    action.accept(i, list.get(i), c);
+                }
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
             int idx = 0;
 
-            while (idx < fromIndex && iter.hasNext()) {
-                iter.next();
-                idx++;
-            }
+            if (fromIndex < toIndex) {
+                while (idx < fromIndex && iter.hasNext()) {
+                    iter.next();
+                    idx++;
+                }
 
-            while (iter.hasNext()) {
-                action.accept(idx, iter.next(), c);
+                while (iter.hasNext()) {
+                    action.accept(idx, iter.next(), c);
 
-                if (++idx >= toIndex) {
-                    break;
+                    if (++idx >= toIndex) {
+                        break;
+                    }
+                }
+            } else {
+                while (idx < toIndex && iter.hasNext()) {
+                    iter.next();
+                    idx++;
+                }
+
+                final T[] a = (T[]) new Object[fromIndex - toIndex];
+
+                while (iter.hasNext()) {
+                    a[idx - toIndex] = iter.next();
+
+                    if (++idx >= fromIndex) {
+                        break;
+                    }
+                }
+
+                for (int i = a.length - 1; i >= 0; i--) {
+                    action.accept(i + toIndex, a[i], c);
                 }
             }
         }
@@ -20415,9 +20494,13 @@ public final class N {
      */
     public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
             final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        if (fromIndex <= toIndex) {
+            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        } else {
+            N.checkIndex(toIndex, fromIndex, c == null ? 0 : c.size());
+        }
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return identity;
         }
 
@@ -20426,31 +20509,66 @@ public final class N {
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
 
-            for (int i = fromIndex; i < toIndex; i++) {
-                result = accumulator.apply(result, list.get(i));
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    result = accumulator.apply(result, list.get(i));
 
-                if (till.test(result)) {
-                    break;
+                    if (till.test(result)) {
+                        break;
+                    }
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    result = accumulator.apply(result, list.get(i));
+
+                    if (till.test(result)) {
+                        break;
+                    }
                 }
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
             int idx = 0;
 
-            while (idx < fromIndex && iter.hasNext()) {
-                iter.next();
-                idx++;
-            }
-
-            while (iter.hasNext()) {
-                result = accumulator.apply(result, iter.next());
-
-                if (till.test(result)) {
-                    break;
+            if (fromIndex <= toIndex) {
+                while (idx < fromIndex && iter.hasNext()) {
+                    iter.next();
+                    idx++;
                 }
 
-                if (++idx >= toIndex) {
-                    break;
+                while (iter.hasNext()) {
+                    result = accumulator.apply(result, iter.next());
+
+                    if (till.test(result)) {
+                        break;
+                    }
+
+                    if (++idx >= toIndex) {
+                        break;
+                    }
+                }
+            } else {
+                while (idx < toIndex && iter.hasNext()) {
+                    iter.next();
+                    idx++;
+                }
+
+                final T[] a = (T[]) new Object[fromIndex - toIndex];
+
+                while (iter.hasNext()) {
+                    a[idx - toIndex] = iter.next();
+
+                    if (++idx >= fromIndex) {
+                        break;
+                    }
+                }
+
+                for (int i = a.length - 1; i >= 0; i--) {
+                    result = accumulator.apply(result, a[i]);
+
+                    if (till.test(result)) {
+                        break;
+                    }
                 }
             }
         }
@@ -20479,9 +20597,13 @@ public final class N {
      */
     public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
             final IndexedBiFunction<R, ? super T, A, R> accumulator, final Predicate<? super R> till) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        if (fromIndex <= toIndex) {
+            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        } else {
+            N.checkIndex(toIndex, fromIndex, c == null ? 0 : c.size());
+        }
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return identity;
         }
 
@@ -20490,31 +20612,66 @@ public final class N {
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
 
-            for (int i = fromIndex; i < toIndex; i++) {
-                result = accumulator.apply(result, i, list.get(i), c);
+            if (fromIndex <= toIndex) {
+                for (int i = fromIndex; i < toIndex; i++) {
+                    result = accumulator.apply(result, i, list.get(i), c);
 
-                if (till.test(result)) {
-                    break;
+                    if (till.test(result)) {
+                        break;
+                    }
+                }
+            } else {
+                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                    result = accumulator.apply(result, i, list.get(i), c);
+
+                    if (till.test(result)) {
+                        break;
+                    }
                 }
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
             int idx = 0;
 
-            while (idx < fromIndex && iter.hasNext()) {
-                iter.next();
-                idx++;
-            }
-
-            while (iter.hasNext()) {
-                result = accumulator.apply(result, idx, iter.next(), c);
-
-                if (till.test(result)) {
-                    break;
+            if (fromIndex < toIndex) {
+                while (idx < fromIndex && iter.hasNext()) {
+                    iter.next();
+                    idx++;
                 }
 
-                if (++idx >= toIndex) {
-                    break;
+                while (iter.hasNext()) {
+                    result = accumulator.apply(result, idx, iter.next(), c);
+
+                    if (till.test(result)) {
+                        break;
+                    }
+
+                    if (++idx >= toIndex) {
+                        break;
+                    }
+                }
+            } else {
+                while (idx < toIndex && iter.hasNext()) {
+                    iter.next();
+                    idx++;
+                }
+
+                final T[] a = (T[]) new Object[fromIndex - toIndex];
+
+                while (iter.hasNext()) {
+                    a[idx - toIndex] = iter.next();
+
+                    if (++idx >= fromIndex) {
+                        break;
+                    }
+                }
+
+                for (int i = a.length - 1; i >= 0; i--) {
+                    result = accumulator.apply(result, i + toIndex, a[i], c);
+
+                    if (till.test(result)) {
+                        break;
+                    }
                 }
             }
         }
@@ -25020,7 +25177,7 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> T[] top(final T[] a, final int n) {
-        return top(a, n, null);
+        return (T[]) top(a, n, N.OBJECT_COMPARATOR);
     }
 
     public static <T> T[] top(final T[] a, final int n, final Comparator<? super T> cmp) {
@@ -25028,7 +25185,7 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> T[] top(final T[] a, final int fromIndex, final int toIndex, final int n) {
-        return top(a, fromIndex, toIndex, n, null);
+        return (T[]) top(a, fromIndex, toIndex, n, N.OBJECT_COMPARATOR);
     }
 
     @SuppressWarnings("rawtypes")
@@ -26847,7 +27004,7 @@ public final class N {
      * @return
      * @see IntList#xor(IntList)
      */
-    public static <T> List<T> xor(final Collection<T> a, final Collection<T> b) {
+    public static <T> List<T> xor(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<T>(b);
         } else if (N.isNullOrEmpty(b)) {
@@ -32051,7 +32208,7 @@ public final class N {
                 candidate = a[i];
             }
 
-            if (candidate == null) {
+            if (candidate == null && cmp == OBJECT_COMPARATOR) {
                 return null;
             }
         }
@@ -32114,6 +32271,10 @@ public final class N {
                 if (cmp.compare(e, candidate) < 0) {
                     candidate = e;
                 }
+
+                if (candidate == null && cmp == OBJECT_COMPARATOR) {
+                    return null;
+                }
             }
         } else {
             final Iterator<? extends T> it = c.iterator();
@@ -32129,6 +32290,10 @@ public final class N {
 
                     if (cmp.compare(e, candidate) < 0) {
                         candidate = e;
+                    }
+
+                    if (candidate == null && cmp == OBJECT_COMPARATOR) {
+                        return null;
                     }
                 }
             }

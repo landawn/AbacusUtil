@@ -27,6 +27,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1258,7 +1259,7 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
             return OptionalInt.empty();
         }
 
-        final Optional<Integer> optional = boxed().kthLargest(k, Stream.INT_COMPARATOR);
+        final OptionalNullable<Integer> optional = boxed().kthLargest(k, Stream.INT_COMPARATOR);
 
         return optional.isPresent() ? OptionalInt.of(optional.get()) : OptionalInt.empty();
     }

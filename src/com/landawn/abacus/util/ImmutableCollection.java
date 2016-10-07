@@ -4,7 +4,7 @@ package com.landawn.abacus.util;
 import java.util.AbstractCollection;
 import java.util.Collection;
 
-public abstract class ImmutableCollection<E> extends AbstractCollection<E> {
+abstract class ImmutableCollection<E> extends AbstractCollection<E> {
     protected ImmutableCollection() {
     }
 

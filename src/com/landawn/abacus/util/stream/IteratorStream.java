@@ -36,6 +36,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
@@ -2251,9 +2252,9 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Optional<T> reduce(BinaryOperator<T> accumulator) {
+    public OptionalNullable<T> reduce(BinaryOperator<T> accumulator) {
         if (elements.hasNext() == false) {
-            Optional.empty();
+            OptionalNullable.empty();
         }
 
         T result = elements.next();
@@ -2262,7 +2263,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             result = accumulator.apply(result, elements.next());
         }
 
-        return Optional.of(result);
+        return OptionalNullable.of(result);
     }
 
     @Override
@@ -2322,11 +2323,12 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Optional<T> min(Comparator<? super T> comparator) {
+    public OptionalNullable<T> min(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         }
 
+        comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
         T candidate = elements.next();
         T next = null;
 
@@ -2337,15 +2339,16 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
         }
 
-        return Optional.of(candidate);
+        return OptionalNullable.of(candidate);
     }
 
     @Override
-    public Optional<T> max(Comparator<? super T> comparator) {
+    public OptionalNullable<T> max(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         }
 
+        comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
         T candidate = elements.next();
         T next = null;
 
@@ -2356,13 +2359,13 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
         }
 
-        return Optional.of(candidate);
+        return OptionalNullable.of(candidate);
     }
 
     @Override
-    public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
+    public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         }
 
         comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
@@ -2382,7 +2385,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
         }
 
-        return queue.size() < k ? (Optional<T>) Optional.empty() : Optional.of(queue.peek());
+        return queue.size() < k ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(queue.peek());
     }
 
     @Override
@@ -2511,27 +2514,27 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     //    @Override
-    //    public Optional<T> findFirst() {
-    //        return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
+    //    public OptionalNullable<T> findFirst() {
+    //        return elements.hasNext() ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elements.next());
     //    }
 
     @Override
-    public Optional<T> findFirst(Predicate<? super T> predicate) {
+    public OptionalNullable<T> findFirst(Predicate<? super T> predicate) {
         while (elements.hasNext()) {
             T e = elements.next();
 
             if (predicate.test(e)) {
-                return Optional.of(e);
+                return OptionalNullable.of(e);
             }
         }
 
-        return (Optional<T>) Optional.empty();
+        return (OptionalNullable<T>) OptionalNullable.empty();
     }
 
     //    @Override
-    //    public Optional<T> findLast() {
+    //    public OptionalNullable<T> findLast() {
     //        if (elements.hasNext() == false) {
-    //            return (Optional<T>) Optional.empty();
+    //            return (OptionalNullable<T>) OptionalNullable.empty();
     //        }
     //
     //        T e = null;
@@ -2540,13 +2543,13 @@ final class IteratorStream<T> extends AbstractStream<T> {
     //            e = elements.next();
     //        }
     //
-    //        return Optional.of(e);
+    //        return OptionalNullable.of(e);
     //    }
 
     @Override
-    public Optional<T> findLast(Predicate<? super T> predicate) {
+    public OptionalNullable<T> findLast(Predicate<? super T> predicate) {
         if (elements.hasNext() == false) {
-            return (Optional<T>) Optional.empty();
+            return (OptionalNullable<T>) OptionalNullable.empty();
         }
 
         boolean hasResult = false;
@@ -2562,25 +2565,25 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
         }
 
-        return hasResult ? Optional.of(result) : (Optional<T>) Optional.empty();
+        return hasResult ? OptionalNullable.of(result) : (OptionalNullable<T>) OptionalNullable.empty();
     }
 
     //    @Override
-    //    public Optional<T> findAny() {
-    //        return elements.hasNext() ? (Optional<T>) Optional.empty() : Optional.of(elements.next());
+    //    public OptionalNullable<T> findAny() {
+    //        return elements.hasNext() ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elements.next());
     //    }
 
     @Override
-    public Optional<T> findAny(Predicate<? super T> predicate) {
+    public OptionalNullable<T> findAny(Predicate<? super T> predicate) {
         while (elements.hasNext()) {
             T e = elements.next();
 
             if (predicate.test(e)) {
-                return Optional.of(e);
+                return OptionalNullable.of(e);
             }
         }
 
-        return (Optional<T>) Optional.empty();
+        return (OptionalNullable<T>) OptionalNullable.empty();
     }
 
     @Override

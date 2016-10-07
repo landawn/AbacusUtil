@@ -33,6 +33,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1948,9 +1949,9 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Optional<T> reduce(BinaryOperator<T> accumulator) {
+    public OptionalNullable<T> reduce(BinaryOperator<T> accumulator) {
         if (count() == 0) {
-            Optional.empty();
+            OptionalNullable.empty();
         }
 
         T result = elements[fromIndex];
@@ -1959,7 +1960,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             result = accumulator.apply(result, elements[i]);
         }
 
-        return Optional.of(result);
+        return OptionalNullable.of(result);
     }
 
     @Override
@@ -2019,36 +2020,36 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Optional<T> min(Comparator<? super T> comparator) {
+    public OptionalNullable<T> min(Comparator<? super T> comparator) {
         if (count() == 0) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
-            return Optional.of(elements[fromIndex]);
+            return OptionalNullable.of(elements[fromIndex]);
         }
 
-        return Optional.of(N.min(elements, fromIndex, toIndex, comparator));
+        return OptionalNullable.of(N.min(elements, fromIndex, toIndex, comparator));
     }
 
     @Override
-    public Optional<T> max(Comparator<? super T> comparator) {
+    public OptionalNullable<T> max(Comparator<? super T> comparator) {
         if (count() == 0) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
-            return Optional.of(elements[toIndex - 1]);
+            return OptionalNullable.of(elements[toIndex - 1]);
         }
 
-        return Optional.of(N.max(elements, fromIndex, toIndex, comparator));
+        return OptionalNullable.of(N.max(elements, fromIndex, toIndex, comparator));
     }
 
     @Override
-    public Optional<T> kthLargest(int k, Comparator<? super T> comparator) {
+    public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
         if (count() == 0 || k > toIndex - fromIndex) {
-            return Optional.empty();
+            return OptionalNullable.empty();
         } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
-            return Optional.of(elements[toIndex - k]);
+            return OptionalNullable.of(elements[toIndex - k]);
         }
 
-        return Optional.of(N.kthLargest(elements, fromIndex, toIndex, k, comparator));
+        return OptionalNullable.of(N.kthLargest(elements, fromIndex, toIndex, k, comparator));
     }
 
     @Override
@@ -2177,51 +2178,51 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     //    @Override
-    //    public Optional<T> findFirst() {
-    //        return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[fromIndex]);
+    //    public OptionalNullable<T> findFirst() {
+    //        return count() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elements[fromIndex]);
     //    }
 
     @Override
-    public Optional<T> findFirst(final Predicate<? super T> predicate) {
+    public OptionalNullable<T> findFirst(final Predicate<? super T> predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
-                return Optional.of(elements[i]);
+                return OptionalNullable.of(elements[i]);
             }
         }
 
-        return (Optional<T>) Optional.empty();
+        return (OptionalNullable<T>) OptionalNullable.empty();
     }
 
     //    @Override
-    //    public Optional<T> findLast() {
-    //        return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[toIndex - 1]);
+    //    public OptionalNullable<T> findLast() {
+    //        return count() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elements[toIndex - 1]);
     //    }
 
     @Override
-    public Optional<T> findLast(final Predicate<? super T> predicate) {
+    public OptionalNullable<T> findLast(final Predicate<? super T> predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
-                return Optional.of(elements[i]);
+                return OptionalNullable.of(elements[i]);
             }
         }
 
-        return (Optional<T>) Optional.empty();
+        return (OptionalNullable<T>) OptionalNullable.empty();
     }
 
     //    @Override
-    //    public Optional<T> findAny() {
-    //        return count() == 0 ? (Optional<T>) Optional.empty() : Optional.of(elements[fromIndex]);
+    //    public OptionalNullable<T> findAny() {
+    //        return count() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elements[fromIndex]);
     //    }
 
     @Override
-    public Optional<T> findAny(final Predicate<? super T> predicate) {
+    public OptionalNullable<T> findAny(final Predicate<? super T> predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
-                return Optional.of(elements[i]);
+                return OptionalNullable.of(elements[i]);
             }
         }
 
-        return (Optional<T>) Optional.empty();
+        return (OptionalNullable<T>) OptionalNullable.empty();
     }
 
     @Override

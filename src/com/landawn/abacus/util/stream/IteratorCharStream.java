@@ -22,6 +22,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -957,7 +958,7 @@ final class IteratorCharStream extends AbstractCharStream {
             return OptionalChar.empty();
         }
 
-        final Optional<Character> optional = boxed().kthLargest(k, Stream.CHAR_COMPARATOR);
+        final OptionalNullable<Character> optional = boxed().kthLargest(k, Stream.CHAR_COMPARATOR);
 
         return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
     }

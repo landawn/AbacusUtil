@@ -60,7 +60,7 @@ import com.landawn.abacus.util.SQLBuilder;
 import com.landawn.abacus.util.SQLBuilder.NE;
 import com.landawn.abacus.util.SQLBuilder.NE2;
 import com.landawn.abacus.util.SQLBuilder.NE3;
-import com.landawn.abacus.util.SQLBuilder.Pair;
+import com.landawn.abacus.util.SQLBuilder.Pair2;
 import com.landawn.abacus.util.SQLBuilder.RE;
 import com.landawn.abacus.util.SQLBuilder.RE2;
 import com.landawn.abacus.util.SQLBuilder.RE3;
@@ -1035,12 +1035,12 @@ public final class SQLiteExecutor {
     // mess up
     @Deprecated
     boolean exists(EntityId entityId) {
-        final Pair pair = generateQuerySQL(entityId, NE._1_list);
+        final Pair2 pair = generateQuerySQL(entityId, NE._1_list);
 
         return exists(pair.sql, pair.parameters);
     }
 
-    private Pair generateQuerySQL(EntityId entityId, Collection<String> selectPropNames) {
+    private Pair2 generateQuerySQL(EntityId entityId, Collection<String> selectPropNames) {
         final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
 
         switch (columnNamingPolicy) {
@@ -1066,7 +1066,7 @@ public final class SQLiteExecutor {
     }
 
     public boolean exists(String tableName, Condition whereClause) {
-        final Pair pair = select(tableName, SQLBuilder._1, whereClause);
+        final Pair2 pair = select(tableName, SQLBuilder._1, whereClause);
         final Object[] parameters = N.isNullOrEmpty(pair.parameters) ? N.EMPTY_OBJECT_ARRAY : pair.parameters.toArray(new Object[pair.parameters.size()]);
 
         return exists(pair.sql, parameters);
@@ -1094,7 +1094,7 @@ public final class SQLiteExecutor {
     }
 
     public int count(String tableName, Condition whereClause) {
-        final Pair pair = select(tableName, SQLBuilder.COUNT_ALL, whereClause);
+        final Pair2 pair = select(tableName, SQLBuilder.COUNT_ALL, whereClause);
         final Object[] parameters = N.isNullOrEmpty(pair.parameters) ? N.EMPTY_OBJECT_ARRAY : pair.parameters.toArray(new Object[pair.parameters.size()]);
 
         return count(pair.sql, parameters);
@@ -1104,7 +1104,7 @@ public final class SQLiteExecutor {
         return queryForSingleResult(int.class, sql, parameters).or(0);
     }
 
-    private Pair select(String tableName, String selectColumnName, Condition whereClause) {
+    private Pair2 select(String tableName, String selectColumnName, Condition whereClause) {
         switch (columnNamingPolicy) {
             case LOWER_CASE_WITH_UNDERSCORE:
                 return RE.select(selectColumnName).from(tableName).where(whereClause).pair();
