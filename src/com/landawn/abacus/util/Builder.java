@@ -540,8 +540,8 @@ public abstract class Builder<T> {
             return this;
         }
 
-        public MapBuilder<K, V, M> removeAll(Collection<? extends K> c) {
-            for (K k : c) {
+        public MapBuilder<K, V, M> removeAll(Collection<?> c) {
+            for (Object k : c) {
                 value.remove(k);
             }
 
@@ -569,21 +569,21 @@ public abstract class Builder<T> {
             return this;
         }
 
+        public MultimapBuilder<K, E, V> remove(K k) {
+            value.remove(k);
+        
+            return this;
+        }
+
         public MultimapBuilder<K, E, V> remove(Object k, Object v) {
             value.remove(k, v);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> removeAll(K k) {
-            value.removeAll(k);
-
-            return this;
-        }
-
-        public MultimapBuilder<K, E, V> removeAll(Collection<? extends K> c) {
-            for (K k : c) {
-                value.removeAll(k);
+        public MultimapBuilder<K, E, V> removeAll(Collection<?> c) {
+            for (Object k : c) {
+                value.remove(k);
             }
 
             return this;

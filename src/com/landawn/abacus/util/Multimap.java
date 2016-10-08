@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -32,6 +31,7 @@ import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -204,6 +204,123 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return value;
     }
 
+    /**
+     * Replace the value with the specified element. 
+     * 
+     * @param key
+     * @param e
+     * @return
+     */
+    public Multimap<K, E, V> set(final K key, final E e) {
+        V val = valueMap.get(key);
+
+        if (val == null) {
+            val = N.newInstance(concreteCollectionType);
+            valueMap.put(key, val);
+        } else {
+            val.clear();
+        }
+
+        val.add(e);
+
+        return this;
+    }
+
+    /**
+     * Replace the value with the specified <code>Collection</code>. Remove the key and all values if the specified <code>Collection</code> is null or empty. 
+     * 
+     * @param key
+     * @param c
+     * @return
+     */
+    public Multimap<K, E, V> setAll(final K key, final Collection<? extends E> c) {
+        if (N.isNullOrEmpty(c)) {
+            valueMap.remove(key);
+        } else {
+            V val = valueMap.get(key);
+
+            if (val == null) {
+                val = N.newInstance(concreteCollectionType);
+                valueMap.put(key, val);
+            } else {
+                val.clear();
+            }
+
+            val.addAll(c);
+        }
+
+        return this;
+    }
+
+    /**
+     * Replace the values with the values in the specified <code>Map</code>. 
+     * 
+     * @param m
+     * @return
+     */
+    public Multimap<K, E, V> setAll(final Map<? extends K, ? extends E> m) {
+        if (N.isNullOrEmpty(m)) {
+            return this;
+        }
+
+        K key = null;
+        V val = null;
+
+        for (Map.Entry<? extends K, ? extends E> e : m.entrySet()) {
+            key = e.getKey();
+            val = valueMap.get(key);
+
+            if (val == null) {
+                val = N.newInstance(concreteCollectionType);
+                valueMap.put(key, val);
+            } else {
+                val.clear();
+            }
+
+            val.add(e.getValue());
+        }
+
+        return this;
+    }
+
+    /**
+     * Replace the values with the values in specified <code>Multimap</code>.
+     * Remove the key and all values if the values in the specified <code>Multimap</code> is null or empty.
+     * This should not happen because all the values in <code>Multimap</code> must not be null or empty. 
+     * 
+     * @param m
+     * @return
+     */
+    public Multimap<K, E, V> setAll(final Multimap<? extends K, ? extends E, ? extends Collection<? extends E>> m) {
+        if (N.isNullOrEmpty(m)) {
+            return this;
+        }
+
+        K key = null;
+        V val = null;
+
+        for (Map.Entry<? extends K, ? extends Collection<? extends E>> e : m.entrySet()) {
+            if (N.isNullOrEmpty(e.getValue())) {
+                valueMap.remove(e.getKey());
+                continue;
+            }
+
+            key = e.getKey();
+            val = valueMap.get(key);
+
+            if (val == null) {
+                val = N.newInstance(concreteCollectionType);
+                valueMap.put(key, val);
+            } else {
+                val.clear();
+            }
+
+            val.addAll(e.getValue());
+        }
+
+        return this;
+    }
+
     public boolean put(final K key, final E e) {
         V val = valueMap.get(key);
 
@@ -228,7 +345,11 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return val.add(e);
     }
 
-    public void putAll(final K key, final Collection<? extends E> c) {
+    public boolean putAll(final K key, final Collection<? extends E> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         V val = valueMap.get(key);
 
         if (val == null) {
@@ -236,16 +357,15 @@ public final class Multimap<K, E, V extends Collection<E>> {
             valueMap.put(key, val);
         }
 
-        if (N.notNullOrEmpty(c)) {
-            val.addAll(c);
-        }
+        return val.addAll(c);
     }
 
-    public void putAll(final Map<? extends K, ? extends E> m) {
+    public boolean putAll(final Map<? extends K, ? extends E> m) {
         if (N.isNullOrEmpty(m)) {
-            return;
+            return false;
         }
 
+        boolean result = false;
         K key = null;
         V val = null;
 
@@ -258,19 +378,30 @@ public final class Multimap<K, E, V extends Collection<E>> {
                 valueMap.put(key, val);
             }
 
-            val.add(e.getValue());
+            if (result == false) {
+                result = val.add(e.getValue());
+            } else {
+                val.add(e.getValue());
+            }
         }
+
+        return result;
     }
 
-    public void putAll(final Multimap<? extends K, ? extends E, ? extends Collection<? extends E>> m) {
+    public boolean putAll(final Multimap<? extends K, ? extends E, ? extends Collection<? extends E>> m) {
         if (N.isNullOrEmpty(m)) {
-            return;
+            return false;
         }
 
+        boolean result = false;
         K key = null;
         V val = null;
 
         for (Map.Entry<? extends K, ? extends Collection<? extends E>> e : m.entrySet()) {
+            if (N.isNullOrEmpty(e.getValue())) {
+                continue;
+            }
+
             key = e.getKey();
             val = valueMap.get(key);
 
@@ -279,57 +410,64 @@ public final class Multimap<K, E, V extends Collection<E>> {
                 valueMap.put(key, val);
             }
 
-            if (N.notNullOrEmpty(e.getValue())) {
+            if (result == false) {
+                result = val.addAll(e.getValue());
+            } else {
                 val.addAll(e.getValue());
             }
         }
+
+        return result;
+    }
+
+    /**
+     * 
+     * @param key
+     * @return values associated with specified key.
+     */
+    public V remove(final Object key) {
+        return valueMap.remove(key);
     }
 
     public boolean remove(final Object key, final Object e) {
         V val = valueMap.get(key);
 
-        if (N.isNullOrEmpty(val)) {
-            valueMap.remove(key);
-
-            return false;
-        }
-
-        if (val.remove(e)) {
-            if (N.isNullOrEmpty(val)) {
+        if (val != null && val.remove(e)) {
+            if (val.isEmpty()) {
                 valueMap.remove(key);
             }
 
             return true;
-        } else {
+        }
+
+        return false;
+    }
+
+    public boolean removeAll(final Object key, final Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
             return false;
         }
-    }
 
-    public V removeAll(final Object key) {
-        return valueMap.remove(key);
-    }
-
-    public void removeAll(final Object key, final Collection<?> c) {
-        if (N.isNullOrEmpty(c)) {
-            return;
-        }
-
-        V val = valueMap.get(key);
+        boolean result = false;
+        final V val = valueMap.get(key);
 
         if (N.notNullOrEmpty(val)) {
-            val.removeAll(c);
+            result = val.removeAll(c);
+
+            if (val.isEmpty()) {
+                valueMap.remove(key);
+            }
         }
 
-        if (N.isNullOrEmpty(val)) {
-            valueMap.remove(key);
-        }
+        return result;
     }
 
-    public void removeAll(final Map<?, ?> m) {
+    public boolean removeAll(final Map<?, ?> m) {
         if (N.isNullOrEmpty(m)) {
-            return;
+            return false;
         }
 
+        boolean result = false;
         Object key = null;
         V val = null;
 
@@ -338,20 +476,27 @@ public final class Multimap<K, E, V extends Collection<E>> {
             val = valueMap.get(key);
 
             if (N.notNullOrEmpty(val)) {
-                val.remove(e.getValue());
-            }
+                if (result == false) {
+                    result = val.remove(e.getValue());
+                } else {
+                    val.remove(e.getValue());
+                }
 
-            if (N.isNullOrEmpty(val)) {
-                valueMap.remove(key);
+                if (val.isEmpty()) {
+                    valueMap.remove(key);
+                }
             }
         }
+
+        return result;
     }
 
-    public void removeAll(final Multimap<?, ?, ?> m) {
+    public boolean removeAll(final Multimap<?, ?, ?> m) {
         if (N.isNullOrEmpty(m)) {
-            return;
+            return false;
         }
 
+        boolean result = false;
         Object key = null;
         V val = null;
 
@@ -360,13 +505,19 @@ public final class Multimap<K, E, V extends Collection<E>> {
             val = valueMap.get(key);
 
             if (N.notNullOrEmpty(val) && N.notNullOrEmpty(e.getValue())) {
-                val.removeAll(e.getValue());
-            }
+                if (result == false) {
+                    result = val.removeAll(e.getValue());
+                } else {
+                    val.removeAll(e.getValue());
+                }
 
-            if (N.isNullOrEmpty(val)) {
-                valueMap.remove(key);
+                if (val.isEmpty()) {
+                    valueMap.remove(key);
+                }
             }
         }
+
+        return result;
     }
 
     /**
@@ -579,7 +730,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * if (N.notNullOrEmpty(newValue)) {
      *     valueMap.put(key, newValue);
      * } else {
-     *     if (oldValue != null || containsKey(key)) {
+     *     if (oldValue != null) {
      *         valueMap.remove(key);
      *     }
      * }
@@ -600,7 +751,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         if (N.notNullOrEmpty(newValue)) {
             valueMap.put(key, newValue);
         } else {
-            if (oldValue != null || containsKey(key)) {
+            if (oldValue != null) {
                 valueMap.remove(key);
             }
         }
@@ -618,7 +769,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * if (N.notNullOrEmpty(newValue)) {
      *     valueMap.put(key, newValue);
      * } else {
-     *     if (oldValue != null || containsKey(key)) {
+     *     if (oldValue != null) {
      *         valueMap.remove(key);
      *     }
      * }
@@ -641,7 +792,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         if (N.notNullOrEmpty(newValue)) {
             valueMap.put(key, newValue);
         } else {
-            if (oldValue != null || containsKey(key)) {
+            if (oldValue != null) {
                 valueMap.remove(key);
             }
         }
@@ -665,7 +816,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * if (N.notNullOrEmpty(newValue)) {
      *     valueMap.put(key, newValue);
      * } else {
-     *     if (oldValue != null || containsKey(key)) {
+     *     if (oldValue != null) {
      *         valueMap.remove(key);
      *     }
      * }
@@ -694,12 +845,22 @@ public final class Multimap<K, E, V extends Collection<E>> {
         if (N.notNullOrEmpty(newValue)) {
             valueMap.put(key, newValue);
         } else {
-            if (oldValue != null || containsKey(key)) {
+            if (oldValue != null) {
                 valueMap.remove(key);
             }
         }
 
         return newValue;
+    }
+
+    public Map<K, V> toMap() {
+        return new HashMap<>(valueMap);
+    }
+
+    public Map<K, V> toMap(final IntFunction<Map<K, V>> supplier) {
+        final Map<K, V> map = supplier.apply(size());
+        map.putAll(valueMap);
+        return map;
     }
 
     public Stream<Map.Entry<K, V>> stream() {
@@ -718,14 +879,6 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return valueMap.isEmpty();
     }
 
-    protected Class<V> getCollectionType() {
-        return collectionType;
-    }
-
-    public Map<K, V> toMap() {
-        return new LinkedHashMap<>(valueMap);
-    }
-
     @Override
     public int hashCode() {
         return valueMap.hashCode();
@@ -740,5 +893,9 @@ public final class Multimap<K, E, V extends Collection<E>> {
     @Override
     public String toString() {
         return valueMap.toString();
+    }
+
+    protected Class<V> getCollectionType() {
+        return collectionType;
     }
 }

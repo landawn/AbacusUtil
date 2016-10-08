@@ -32,19 +32,19 @@ import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * A collection that supports order-independent equality, like {@link Set}, but
  * may have duplicate elements.
  *
- * <p>Elements of a Multiset that are equal to one another are referred to as
+ * <p>Elements of a LongMultiset that are equal to one another are referred to as
  * <i>occurrences</i> of the same single element. The total number of
- * occurrences of an element in a Multiset is called the <i>count</i> of that
+ * occurrences of an element in a LongMultiset is called the <i>count</i> of that
  * element (the terms "frequency" and "multiplicity" are equivalent, but not
  * used in this API). Since the count of an element is represented as an {@code
- * long}, a Multiset may never contain more than {@link Long#MAX_VALUE}
+ * int}, a LongMultiset may never contain more than {@link MutableLong#MAX_VALUE}
  * occurrences of any one element.
  *
  * @param <E>
@@ -53,7 +53,7 @@ import com.landawn.abacus.util.stream.Stream;
  *
  * @author Haiyang Li
  */
-public final class LongMultiset<E> implements Iterable<E> {
+public final class LongMultiset<E> implements Collection<E> {
     private static final Comparator<Map.Entry<?, MutableLong>> cmpByCount = new Comparator<Map.Entry<?, MutableLong>>() {
         @Override
         public int compare(Entry<?, MutableLong> a, Entry<?, MutableLong> b) {
@@ -156,6 +156,20 @@ public final class LongMultiset<E> implements Iterable<E> {
 
         return result;
     }
+
+    //    public static <T> LongMultiset<T> from(final LongLongMultiset<? extends T> multiset) {
+    //        final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(multiset.size()));
+    //
+    //        for (Map.Entry<? extends T, MutableLong> entry : multiset.entrySet()) {
+    //            if (entry.getValue().longValue() < 0 || entry.getValue().longValue() > Long.MAX_VALUE) {
+    //                throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0 or bigger than Long.MAX_VALUE");
+    //            }
+    //
+    //            result.set(entry.getKey(), entry.getValue().longValue());
+    //        }
+    //
+    //        return result;
+    //    }
     //
     //    public static LongMultiset<Character> from(CharSequence str) {
     //        final LongMultiset<Character> result = new LongMultiset<>(N.initHashCapacity(str.length()));
@@ -166,7 +180,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     //                    result.add(ch);
     //                }
     //            } else {
-    //                for (int i = 0, len = str.length(); i < len; i++) {
+    //                for (long i = 0, len = str.length(); i < len; i++) {
     //                    result.add(str.charAt(i));
     //                }
     //            }
@@ -176,8 +190,8 @@ public final class LongMultiset<E> implements Iterable<E> {
     //    }
 
     //    @SuppressWarnings("rawtypes")
-    //    public static <T> Multiset<T> from(final Class<? extends Map> valueMapType, final Map<? extends T, Long> m) {
-    //        final Multiset<T> multiset = new Multiset<T>(valueMapType);
+    //    public static <T> LongMultiset<T> from(final Class<? extends Map> valueMapType, final Map<? extends T, Long> m) {
+    //        final LongMultiset<T> multiset = new LongMultiset<T>(valueMapType);
     //
     //        multiset.setAll(m);
     //
@@ -190,23 +204,76 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @return the occurrences of the specified object. zero is returned if it's not in this set.
      */
     public long get(final Object e) {
-        MutableLong count = valueMap.get(e);
+        final MutableLong count = valueMap.get(e);
 
-        if (count == null) {
-            return 0;
-        } else {
-            return count.longValue();
-        }
+        return count == null ? 0 : count.longValue();
     }
 
+    /**
+     * 
+     * @param e
+     * @param defaultValue
+     * @return the occurrences of the specified object. the specified defaultValue is returned if it's not in this set.
+     */
     public long getOrDefault(final Object e, long defaultValue) {
-        MutableLong count = valueMap.get(e);
+        final MutableLong count = valueMap.get(e);
 
-        if (count == null) {
-            return defaultValue;
+        return count == null ? defaultValue : count.longValue();
+    }
+
+    /**
+     * The element will be removed if the specified count is 0.
+     * 
+     * @param e
+     * @param occurrences
+     * @return
+     */
+    public long getAndSet(final E e, final long occurrences) {
+        checkOccurrences(occurrences);
+
+        final MutableLong count = valueMap.get(e);
+        long result = count == null ? 0 : count.longValue();
+
+        if (occurrences == 0) {
+            if (count != null) {
+                valueMap.remove(e);
+            }
         } else {
-            return count.longValue();
+            if (count == null) {
+                valueMap.put(e, MutableLong.of(occurrences));
+            } else {
+                count.setValue(occurrences);
+            }
         }
+
+        return result;
+    }
+
+    /**
+     * The element will be removed if the specified count is 0.
+     * 
+     * @param e
+     * @param occurrences
+     * @return
+     */
+    public long setAndGet(final E e, final long occurrences) {
+        checkOccurrences(occurrences);
+
+        final MutableLong count = valueMap.get(e);
+
+        if (occurrences == 0) {
+            if (count != null) {
+                valueMap.remove(e);
+            }
+        } else {
+            if (count == null) {
+                valueMap.put(e, MutableLong.of(occurrences));
+            } else {
+                count.setValue(occurrences);
+            }
+        }
+
+        return occurrences;
     }
 
     /**
@@ -214,55 +281,61 @@ public final class LongMultiset<E> implements Iterable<E> {
      *
      * @param e
      * @param occurrences
-     * @return the previous count associated with element, or 0 if the element not exists. 
+     * @return this LongMultiset.
      * @throws IllegalArgumentException if the occurrences of element is less than 0
      */
-    public long set(final E e, final long occurrences) {
+    public LongMultiset<E> set(final E e, final long occurrences) {
         checkOccurrences(occurrences);
 
         if (occurrences == 0) {
-            MutableLong value = valueMap.remove(e);
-
-            return value == null ? 0 : value.longValue();
+            valueMap.remove(e);
         } else {
-            MutableLong value = valueMap.get(e);
+            final MutableLong count = valueMap.get(e);
 
-            if (value == null) {
+            if (count == null) {
                 valueMap.put(e, MutableLong.of(occurrences));
-
-                return 0;
             } else {
-                long result = value.longValue();
-                value.setValue(occurrences);
-                return result;
+                count.setValue(occurrences);
             }
         }
+
+        return this;
     }
 
     /**
      * 
      * @param m
+     * @return this LongMultiset.
      * @throws IllegalArgumentException if the occurrences of element is less than 0.
      */
-    public void setAll(final Map<? extends E, Long> m) throws IllegalArgumentException {
-        for (Map.Entry<? extends E, Long> entry : m.entrySet()) {
-            checkOccurrences(entry.getValue().longValue());
+    public LongMultiset<E> setAll(final Map<? extends E, Long> m) throws IllegalArgumentException {
+        if (N.notNullOrEmpty(m)) {
+            for (Map.Entry<? extends E, Long> entry : m.entrySet()) {
+                checkOccurrences(entry.getValue().longValue());
+            }
+
+            for (Map.Entry<? extends E, Long> entry : m.entrySet()) {
+                set(entry.getKey(), entry.getValue().longValue());
+            }
         }
 
-        for (Map.Entry<? extends E, Long> entry : m.entrySet()) {
-            set(entry.getKey(), entry.getValue().longValue());
-        }
+        return this;
     }
 
     /**
      * 
      * @param m
+     * @return this LongMultiset.
      * @throws IllegalArgumentException if the occurrences of element is less than 0.
      */
-    public void setAll(final LongMultiset<? extends E> multiset) throws IllegalArgumentException {
-        for (Map.Entry<? extends E, MutableLong> entry : multiset.entrySet()) {
-            set(entry.getKey(), entry.getValue().longValue());
+    public LongMultiset<E> setAll(final LongMultiset<? extends E> multiset) throws IllegalArgumentException {
+        if (N.notNullOrEmpty(multiset)) {
+            for (Map.Entry<? extends E, MutableLong> entry : multiset.entrySet()) {
+                set(entry.getKey(), entry.getValue().longValue());
+            }
         }
+
+        return this;
     }
 
     public Optional<Map.Entry<E, Long>> minOccurrences() {
@@ -330,7 +403,17 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public Map<E, Long> toMap() {
-        final Map<E, Long> result = new LinkedHashMap<>(N.initHashCapacity(size()));
+        final Map<E, Long> result = new HashMap<>(N.initHashCapacity(size()));
+
+        for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
+            result.put(entry.getKey(), entry.getValue().longValue());
+        }
+
+        return result;
+    }
+
+    public Map<E, Long> toMap(final IntFunction<Map<E, Long>> supplier) {
+        final Map<E, Long> result = supplier.apply(size());
 
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().longValue());
@@ -364,10 +447,11 @@ public final class LongMultiset<E> implements Iterable<E> {
     /**
      *
      * @param e
-     * @return the count of the element after the operation.
+     * @return always true
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public long add(final E e) throws IllegalArgumentException {
+    @Override
+    public boolean add(final E e) throws IllegalArgumentException {
         return add(e, 1);
     }
 
@@ -375,82 +459,129 @@ public final class LongMultiset<E> implements Iterable<E> {
      *
      * @param e
      * @param occurrences
-     * @return the count of the element after the operation.
+     * @return true if the specified occurrences is bigger than 0.
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public long add(final E e, final long occurrences) throws IllegalArgumentException {
+    public boolean add(final E e, final long occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
 
         MutableLong count = valueMap.get(e);
 
         if (count != null && occurrences > (Long.MAX_VALUE - count.longValue())) {
-            throw new IllegalArgumentException("The total count is out of the bound of long");
+            throw new IllegalArgumentException("The total count is out of the bound of integer");
         }
 
         if (count == null) {
-            count = MutableLong.of(occurrences);
-
-            if (count.longValue() > 0) {
+            if (occurrences > 0) {
+                count = MutableLong.of(occurrences);
                 valueMap.put(e, count);
             }
         } else {
             count.add(occurrences);
-
-            if (count.longValue() <= 0) {
-                valueMap.remove(e);
-            }
         }
 
-        return count.longValue();
+        return occurrences > 0;
     }
 
-    public long addIfAbsent(final E e) throws IllegalArgumentException {
+    /**
+     * 
+     * @param e
+     * @return true if the specified element is absent.
+     * @throws IllegalArgumentException
+     */
+    public boolean addIfAbsent(final E e) throws IllegalArgumentException {
         return addIfAbsent(e, 1);
     }
 
-    public long addIfAbsent(final E e, final long occurrences) throws IllegalArgumentException {
+    /**
+     * 
+     * @param e
+     * @param occurrences
+     * @return true if the specified element is absent and occurrences is bigger than 0.
+     * @throws IllegalArgumentException 
+     */
+    public boolean addIfAbsent(final E e, final long occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
 
-        final long oldValue = get(e);
+        MutableLong count = valueMap.get(e);
 
-        if (oldValue == 0) {
-            return add(e, occurrences);
+        if (count == null && occurrences > 0) {
+            count = MutableLong.of(occurrences);
+            valueMap.put(e, count);
+
+            return true;
         }
 
-        return oldValue;
+        return false;
     }
 
     public long addAndGet(final E e) {
-        final long result = add(e);
-
-        return result > 0 ? result : 0;
-    }
-
-    public long getAndAdd(final E e) {
-        final long result = get(e);
-
-        add(e);
-
-        return result;
+        return addAndGet(e, 1);
     }
 
     public long addAndGet(final E e, final long occurrences) {
         checkOccurrences(occurrences);
 
-        final long result = add(e, occurrences);
+        MutableLong count = valueMap.get(e);
 
-        return result > 0 ? result : 0;
+        if (count != null && occurrences > (Long.MAX_VALUE - count.longValue())) {
+            throw new IllegalArgumentException("The total count is out of the bound of integer");
+        }
 
+        if (count == null) {
+            if (occurrences > 0) {
+                count = MutableLong.of(occurrences);
+                valueMap.put(e, count);
+            }
+        } else {
+            count.add(occurrences);
+        }
+
+        return count == null ? 0 : count.longValue();
+    }
+
+    public long getAndAdd(final E e) {
+        return getAndAdd(e, 1);
     }
 
     public long getAndAdd(final E e, final long occurrences) {
         checkOccurrences(occurrences);
 
-        final long result = get(e);
+        MutableLong count = valueMap.get(e);
 
-        add(e, occurrences);
+        if (count != null && occurrences > (Long.MAX_VALUE - count.longValue())) {
+            throw new IllegalArgumentException("The total count is out of the bound of integer");
+        }
+
+        final long result = count == null ? 0 : count.longValue();
+
+        if (count == null) {
+            if (occurrences > 0) {
+                count = MutableLong.of(occurrences);
+                valueMap.put(e, count);
+            }
+        } else {
+            count.add(occurrences);
+        }
 
         return result;
+    }
+
+    /**
+     * 
+     * @param m
+     * @throws IllegalArgumentException if the occurrences of element is less than 0.
+     */
+    public boolean addAll(final LongMultiset<? extends E> multiset) throws IllegalArgumentException {
+        if (N.isNullOrEmpty(multiset)) {
+            return false;
+        }
+
+        for (Map.Entry<? extends E, MutableLong> entry : multiset.entrySet()) {
+            add(entry.getKey(), entry.getValue().longValue());
+        }
+
+        return true;
     }
 
     /**
@@ -458,8 +589,9 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @param c
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public void addAll(final Collection<? extends E> c) throws IllegalArgumentException {
-        addAll(c, 1);
+    @Override
+    public boolean addAll(final Collection<? extends E> c) throws IllegalArgumentException {
+        return addAll(c, 1);
     }
 
     /**
@@ -468,12 +600,18 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @param occurrences
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public void addAll(final Collection<? extends E> c, final long occurrences) throws IllegalArgumentException {
+    public boolean addAll(final Collection<? extends E> c, final long occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
+
+        if (N.isNullOrEmpty(c) || occurrences == 0) {
+            return false;
+        }
 
         for (E e : c) {
             add(e, occurrences);
         }
+
+        return occurrences > 0;
     }
 
     /**
@@ -481,31 +619,34 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @param m
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public void addAll(final Map<? extends E, Long> m) throws IllegalArgumentException {
+    public boolean addAll(final Map<? extends E, Long> m) throws IllegalArgumentException {
+        if (N.isNullOrEmpty(m)) {
+            return false;
+        }
+
         for (Map.Entry<? extends E, Long> entry : m.entrySet()) {
             checkOccurrences(entry.getValue().longValue());
         }
 
+        boolean result = false;
+
         for (Map.Entry<? extends E, Long> entry : m.entrySet()) {
-            add(entry.getKey(), entry.getValue().longValue());
+            if (result == false) {
+                result = add(entry.getKey(), entry.getValue().longValue());
+            } else {
+                add(entry.getKey(), entry.getValue().longValue());
+            }
         }
+
+        return result;
     }
 
-    /**
-     * 
-     * @param m
-     * @throws IllegalArgumentException if the occurrences of element is less than 0.
-     */
-    public void addAll(final LongMultiset<? extends E> multiset) throws IllegalArgumentException {
-        for (Map.Entry<? extends E, MutableLong> entry : multiset.entrySet()) {
-            add(entry.getKey(), entry.getValue().longValue());
-        }
-    }
-
+    @Override
     public boolean contains(final Object o) {
         return valueMap.containsKey(o);
     }
 
+    @Override
     public boolean containsAll(final Collection<?> c) {
         return valueMap.keySet().containsAll(c);
     }
@@ -515,9 +656,10 @@ public final class LongMultiset<E> implements Iterable<E> {
      *
      * @param e
      * @param occurrences
-     * @return the count of the element after the operation. It could be a negative number if the present occurrences is less than the specified <code>occurrences</code> to remove.
+     * @return
      */
-    public long remove(final Object e) throws IllegalArgumentException {
+    @Override
+    public boolean remove(final Object e) throws IllegalArgumentException {
         return remove(e, 1);
     }
 
@@ -526,25 +668,60 @@ public final class LongMultiset<E> implements Iterable<E> {
      *
      * @param e
      * @param occurrences
-     * @return the count of the element after the operation. It could be a negative number if the present occurrences is less than the specified <code>occurrences</code> to remove.
+     * @return
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public long remove(final Object e, final long occurrences) throws IllegalArgumentException {
+    public boolean remove(final Object e, final long occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
 
-        MutableLong count = valueMap.get(e);
-
-        if (count != null && occurrences < (count.longValue() - Long.MAX_VALUE)) {
-            throw new IllegalArgumentException("The total count is out of the bound of long");
-        }
+        final MutableLong count = valueMap.get(e);
 
         if (count == null) {
-            count = MutableLong.of(-occurrences);
-
-            if (count.longValue() > 0) {
-                valueMap.put((E) e, count);
-            }
+            return false;
         } else {
+            count.subtract(occurrences);
+
+            if (count.longValue() <= 0) {
+                valueMap.remove(e);
+            }
+
+            return occurrences > 0;
+        }
+    }
+
+    public long removeAndGet(final Object e) {
+        return removeAndGet(e, 1);
+    }
+
+    public long removeAndGet(final Object e, final long occurrences) {
+        checkOccurrences(occurrences);
+
+        final MutableLong count = valueMap.get(e);
+
+        if (count == null) {
+            return 0;
+        } else {
+            count.subtract(occurrences);
+
+            if (count.longValue() <= 0) {
+                valueMap.remove(e);
+            }
+
+            return count.longValue() > 0 ? count.longValue() : 0;
+        }
+    }
+
+    public long getAndRemove(final Object e) {
+        return getAndRemove(e, 1);
+    }
+
+    public long getAndRemove(final Object e, final long occurrences) {
+        checkOccurrences(occurrences);
+
+        final MutableLong count = valueMap.get(e);
+        final long result = count == null ? 0 : count.longValue();
+
+        if (count != null) {
             count.subtract(occurrences);
 
             if (count.longValue() <= 0) {
@@ -552,49 +729,18 @@ public final class LongMultiset<E> implements Iterable<E> {
             }
         }
 
-        return count.longValue();
-    }
-
-    public long removeAndGet(final Object e) {
-        remove(e);
-
-        long result = remove(e);
-
-        return result > 0 ? result : 0;
-    }
-
-    public long getAndRemove(final Object e) {
-        final long result = get(e);
-
-        if (result > 0) {
-            remove(e);
-        }
-
         return result;
     }
 
-    public long removeAndGet(final Object e, final long occurrences) {
-        checkOccurrences(occurrences);
+    /**
+     * 
+     * @param e
+     * @return the occurrences of the specified element before it's removed.
+     */
+    public long removeAllOccurrences(final Object e) {
+        final MutableLong count = valueMap.remove(e);
 
-        long result = remove(e, occurrences);
-
-        return result > 0 ? result : 0;
-    }
-
-    public long getAndRemove(final Object e, final long occurrences) {
-        checkOccurrences(occurrences);
-
-        final long result = get(e);
-
-        if (result > 0) {
-            remove(e);
-        }
-
-        return result;
-    }
-
-    public void removeAllOccurrences(final Object e) {
-        valueMap.remove(e);
+        return count == null ? 0 : count.longValue();
     }
 
     /**
@@ -603,6 +749,7 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
      */
+    @Override
     public boolean removeAll(final Collection<?> c) {
         return removeAll(c, 1);
     }
@@ -619,14 +766,18 @@ public final class LongMultiset<E> implements Iterable<E> {
     public boolean removeAll(final Collection<?> c, final long occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
 
+        if (N.isNullOrEmpty(c) || occurrences == 0) {
+            return false;
+        }
+
         boolean result = false;
 
         for (Object e : c) {
             if (result == false) {
-                result = valueMap.containsKey(e);
+                result = remove(e, occurrences);
+            } else {
+                remove(e, occurrences);
             }
-
-            remove(e, occurrences);
         }
 
         return result;
@@ -639,6 +790,10 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
     public boolean removeAll(final Map<?, Long> m) throws IllegalArgumentException {
+        if (N.isNullOrEmpty(m)) {
+            return false;
+        }
+
         for (Map.Entry<?, Long> entry : m.entrySet()) {
             checkOccurrences(entry.getValue().longValue());
         }
@@ -647,10 +802,10 @@ public final class LongMultiset<E> implements Iterable<E> {
 
         for (Map.Entry<?, Long> entry : m.entrySet()) {
             if (result == false) {
-                result = valueMap.containsKey(entry.getKey());
+                result = remove(entry.getKey(), entry.getValue().longValue());
+            } else {
+                remove(entry.getKey(), entry.getValue().longValue());
             }
-
-            remove(entry.getKey(), entry.getValue().longValue());
         }
 
         return result;
@@ -662,17 +817,15 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @throws IllegalArgumentException if the occurrences of element is less than 0.
      */
     public boolean removeAll(final LongMultiset<?> multiset) throws IllegalArgumentException {
-        boolean result = false;
+        if (N.isNullOrEmpty(multiset)) {
+            return false;
+        }
 
         for (Map.Entry<?, MutableLong> entry : multiset.entrySet()) {
-            if (result == false) {
-                result = valueMap.containsKey(entry.getKey());
-            }
-
             remove(entry.getKey(), entry.getValue().longValue());
         }
 
-        return result;
+        return true;
     }
 
     /**
@@ -684,6 +837,7 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
      */
+    @Override
     public boolean retainAll(final Collection<?> c) {
         Set<E> others = null;
 
@@ -700,14 +854,17 @@ public final class LongMultiset<E> implements Iterable<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Long.MAX_VALUE);
     }
 
+    @Override
     public int size() {
         return valueMap.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return valueMap.isEmpty();
     }
 
+    @Override
     public void clear() {
         valueMap.clear();
     }
@@ -717,39 +874,38 @@ public final class LongMultiset<E> implements Iterable<E> {
         return valueMap.keySet().iterator();
     }
 
-    public Set<E> keySet() {
-        return valueMap.keySet();
-    }
-
     public Set<Map.Entry<E, MutableLong>> entrySet() {
         return valueMap.entrySet();
     }
 
+    @Override
     public Object[] toArray() {
         return valueMap.keySet().toArray();
     }
 
+    @Override
     public <T> T[] toArray(final T[] a) {
         return valueMap.keySet().toArray(a);
     }
 
     /**
      * 
-     * @return a list with all elements, each of them is repeated with the occurrences in this <code>Multiset</code>     
+     * @return a list with all elements, each of them is repeated with the occurrences in this <code>LongMultiset</code>   
      */
     public List<E> flat() {
         final long totalOccurrences = sumOfOccurrences().longValue();
 
         if (totalOccurrences > Integer.MAX_VALUE) {
-            throw new RuntimeException("The total occurrences is bigger than max value of int: " + totalOccurrences);
+            throw new RuntimeException("The total occurrences(" + totalOccurrences + ") is bigger than the max value of int.");
         }
-        final Object[] a = new Object[(int) totalOccurrences];
+
+        final Object[] a = new Object[sumOfOccurrences().intValue()];
 
         int fromIndex = 0;
         int toIndex = 0;
 
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
-            toIndex = fromIndex + entry.getValue().intValue();
+            toIndex = fromIndex + (int) entry.getValue().longValue();
 
             Arrays.fill(a, fromIndex, toIndex, entry.getKey());
             fromIndex = toIndex;
@@ -787,7 +943,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     /**
-     * The implementation is equivalent to performing the following steps for this Multiset:
+     * The implementation is equivalent to performing the following steps for this LongMultiset:
      * 
      * <pre>
      * final long oldValue = get(e);
@@ -828,7 +984,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     /**
-     * The implementation is equivalent to performing the following steps for this Multiset:
+     * The implementation is equivalent to performing the following steps for this LongMultiset:
      * 
      * <pre> 
      * final long oldValue = get(e);
@@ -873,7 +1029,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     /**
-     * The implementation is equivalent to performing the following steps for this Multiset:
+     * The implementation is equivalent to performing the following steps for this LongMultiset:
      * 
      * <pre>
      * final long oldValue = get(key);
@@ -912,7 +1068,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     /**
-     * The implementation is equivalent to performing the following steps for this Multiset:
+     * The implementation is equivalent to performing the following steps for this LongMultiset:
      * 
      * <pre>
      * long oldValue = get(key);
@@ -952,10 +1108,6 @@ public final class LongMultiset<E> implements Iterable<E> {
         return newValue;
     }
 
-    public Stream<Map.Entry<E, MutableLong>> stream() {
-        return Stream.of(valueMap.entrySet());
-    }
-
     @Override
     public int hashCode() {
         return valueMap.hashCode();
@@ -973,7 +1125,7 @@ public final class LongMultiset<E> implements Iterable<E> {
 
     private static void checkOccurrences(final long occurrences) {
         if (occurrences < 0) {
-            throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0");
+            throw new IllegalArgumentException("The specified 'occurrences' can not be less than 1");
         }
     }
 }
