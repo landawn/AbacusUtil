@@ -420,15 +420,6 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return result;
     }
 
-    /**
-     * 
-     * @param key
-     * @return values associated with specified key.
-     */
-    public V remove(final Object key) {
-        return valueMap.remove(key);
-    }
-
     public boolean remove(final Object key, final Object e) {
         V val = valueMap.get(key);
 
@@ -441,6 +432,15 @@ public final class Multimap<K, E, V extends Collection<E>> {
         }
 
         return false;
+    }
+
+    /**
+     * 
+     * @param key
+     * @return values associated with specified key.
+     */
+    public V removeAll(final Object key) {
+        return valueMap.remove(key);
     }
 
     public boolean removeAll(final Object key, final Collection<?> c) {

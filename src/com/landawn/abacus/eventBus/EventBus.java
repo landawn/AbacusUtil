@@ -165,7 +165,7 @@ public class EventBus {
 
     public EventBus unregister(final Object subscriber) {
         synchronized (subscriberMethodMap) {
-            subscriberMethodMap.remove(subscriber);
+            subscriberMethodMap.removeAll(subscriber);
         }
 
         return this;

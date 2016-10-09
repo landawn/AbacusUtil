@@ -272,6 +272,20 @@ public final class Multiset<E> implements Collection<E> {
         return this;
     }
 
+    public Multiset<E> setAll(final Collection<? extends E> c, final int occurrences) {
+        checkOccurrences(occurrences);
+
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        for (E e : c) {
+            set(e, occurrences);
+        }
+
+        return this;
+    }
+
     /**
      * 
      * @param m
@@ -714,14 +728,18 @@ public final class Multiset<E> implements Collection<E> {
     }
 
     /**
-     * The elements will be removed from this set if the occurrences equals to or less than 0 after the operation.
+     * Removes all of this collection's elements that are also contained in the
+     * specified collection (optional operation).  After this call returns,
+     * this collection will contain no elements in common with the specified
+     * collection.
      *
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
+     * @see Collection#removeAll(Collection)
      */
     @Override
     public boolean removeAll(final Collection<?> c) {
-        return removeAll(c, 1);
+        return removeAll(c, Integer.MAX_VALUE);
     }
 
     /**

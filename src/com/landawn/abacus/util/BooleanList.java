@@ -769,18 +769,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            final Boolean[] a = new Boolean[2];
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (a[0] == null) {
-                    a[0] = elementData[i];
-                } else if (a[0].booleanValue() != elementData[i]) {
-                    a[1] = elementData[i];
-                    break;
-                }
-            }
-
-            return a[1] == null ? of(a[0].booleanValue()) : of(a[0].booleanValue(), a[1].booleanValue());
+            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }

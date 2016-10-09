@@ -14470,9 +14470,7 @@ public final class N {
     public static String toString(final char[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -14523,9 +14521,7 @@ public final class N {
     public static String toString(final byte[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -14576,9 +14572,7 @@ public final class N {
     public static String toString(final short[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -14629,9 +14623,7 @@ public final class N {
     public static String toString(final int[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -14682,9 +14674,7 @@ public final class N {
     public static String toString(final long[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -14735,9 +14725,7 @@ public final class N {
     public static String toString(final float[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -14788,9 +14776,7 @@ public final class N {
     public static String toString(final double[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -14841,9 +14827,7 @@ public final class N {
     public static String toString(final Object[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -14894,9 +14878,7 @@ public final class N {
     public static String deepToString(final Object[] a) {
         if (a == null) {
             return N.NULL_STRING;
-        }
-
-        if (a.length == 0) {
+        } else if (a.length == 0) {
             return "[]";
         }
 
@@ -20215,7 +20197,7 @@ public final class N {
         return Collections.disjoint(c1, c2);
     }
 
-    public <T> void forEach(final T[] a, final Consumer<? super T> action) {
+    public static <T> void forEach(final T[] a, final Consumer<? super T> action) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -20223,7 +20205,7 @@ public final class N {
         ObjectList.of(a).forEach(action);
     }
 
-    public <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
+    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return;
         }
@@ -20231,7 +20213,7 @@ public final class N {
         ObjectList.of(a).forEach(fromIndex, toIndex, action);
     }
 
-    public <T> void forEach(final T[] a, final IndexedConsumer<T, T[]> action) {
+    public static <T> void forEach(final T[] a, final IndexedConsumer<T, T[]> action) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -20239,7 +20221,7 @@ public final class N {
         ObjectList.of(a).forEach(action);
     }
 
-    public <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T, T[]> action) {
+    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T, T[]> action) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return;
         }
@@ -20247,7 +20229,7 @@ public final class N {
         ObjectList.of(a).forEach(fromIndex, toIndex, action);
     }
 
-    public <T, R> R forEach(final T[] a, final R identity, final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
+    public static <T, R> R forEach(final T[] a, final R identity, final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
         if (N.isNullOrEmpty(a)) {
             return identity;
         }
@@ -20265,7 +20247,7 @@ public final class N {
      * @param till break if the <code>till</code> returns true.
      * @return
      */
-    public <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final BiFunction<R, ? super T, R> accumulator,
+    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final BiFunction<R, ? super T, R> accumulator,
             final Predicate<? super R> till) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return identity;
@@ -20274,7 +20256,7 @@ public final class N {
         return ObjectList.of(a).forEach(identity, accumulator, till);
     }
 
-    public <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
+    public static <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
         if (N.isNullOrEmpty(a)) {
             return identity;
         }
@@ -20292,8 +20274,8 @@ public final class N {
      * @param till break if the <code>till</code> returns true.
      * @return
      */
-    public <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final IndexedBiFunction<R, ? super T, T[], R> accumulator,
-            final Predicate<? super R> till) {
+    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity,
+            final IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return identity;
         }
@@ -20680,10 +20662,18 @@ public final class N {
     }
 
     public static boolean[] filter(final boolean[] a, final BooleanPredicate filter) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter);
     }
 
     public static boolean[] filter(final boolean[] a, final BooleanPredicate filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -20704,8 +20694,11 @@ public final class N {
      * @return
      */
     public static boolean[] filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        }
 
         final BooleanList list = BooleanList.of(new boolean[min(9, max, (toIndex - fromIndex))], 0);
 
@@ -20720,10 +20713,18 @@ public final class N {
     }
 
     public static char[] filter(final char[] a, final CharPredicate filter) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter);
     }
 
     public static char[] filter(final char[] a, final CharPredicate filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -20744,8 +20745,11 @@ public final class N {
      * @return
      */
     public static char[] filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
 
         final CharList list = CharList.of(new char[min(9, max, (toIndex - fromIndex))], 0);
 
@@ -20760,10 +20764,18 @@ public final class N {
     }
 
     public static byte[] filter(final byte[] a, final BytePredicate filter) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter);
     }
 
     public static byte[] filter(final byte[] a, final BytePredicate filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -20784,8 +20796,11 @@ public final class N {
      * @return
      */
     public static byte[] filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
 
         final ByteList list = ByteList.of(new byte[min(9, max, (toIndex - fromIndex))], 0);
 
@@ -20800,10 +20815,18 @@ public final class N {
     }
 
     public static short[] filter(final short[] a, final ShortPredicate filter) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_SHORT_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter);
     }
 
     public static short[] filter(final short[] a, final ShortPredicate filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_SHORT_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -20824,8 +20847,11 @@ public final class N {
      * @return
      */
     public static short[] filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return N.EMPTY_SHORT_ARRAY;
+        }
 
         final ShortList list = ShortList.of(new short[min(9, max, (toIndex - fromIndex))], 0);
 
@@ -20840,10 +20866,18 @@ public final class N {
     }
 
     public static int[] filter(final int[] a, final IntPredicate filter) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_INT_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter);
     }
 
     public static int[] filter(final int[] a, final IntPredicate filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_INT_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -20864,8 +20898,11 @@ public final class N {
      * @return
      */
     public static int[] filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return N.EMPTY_INT_ARRAY;
+        }
 
         final IntList list = IntList.of(new int[min(9, max, (toIndex - fromIndex))], 0);
 
@@ -20880,10 +20917,18 @@ public final class N {
     }
 
     public static long[] filter(final long[] a, final LongPredicate filter) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_LONG_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter);
     }
 
     public static long[] filter(final long[] a, final LongPredicate filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_LONG_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -20904,8 +20949,11 @@ public final class N {
      * @return
      */
     public static long[] filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return N.EMPTY_LONG_ARRAY;
+        }
 
         final LongList list = LongList.of(new long[min(9, max, (toIndex - fromIndex))], 0);
 
@@ -20920,10 +20968,18 @@ public final class N {
     }
 
     public static float[] filter(final float[] a, final FloatPredicate filter) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter);
     }
 
     public static float[] filter(final float[] a, final FloatPredicate filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -20944,8 +21000,11 @@ public final class N {
      * @return
      */
     public static float[] filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
 
         final FloatList list = FloatList.of(new float[min(9, max, (toIndex - fromIndex))], 0);
 
@@ -20960,10 +21019,18 @@ public final class N {
     }
 
     public static double[] filter(final double[] a, final DoublePredicate filter) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter);
     }
 
     public static double[] filter(final double[] a, final DoublePredicate filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -20984,8 +21051,11 @@ public final class N {
      * @return
      */
     public static double[] filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
 
         final DoubleList list = DoubleList.of(new double[min(9, max, (toIndex - fromIndex))], 0);
 
@@ -21000,10 +21070,18 @@ public final class N {
     }
 
     public static <T> T[] filter(final T[] a, final Predicate<? super T> filter) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
         return filter(a, filter, Integer.MAX_VALUE);
     }
 
     public static <T> T[] filter(final T[] a, final Predicate<? super T> filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
         return filter(a, 0, a.length, filter, max);
     }
 
@@ -21023,8 +21101,11 @@ public final class N {
      * @return
      */
     public static <T> T[] filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return a;
+        }
 
         final List<T> list = ObjectFactory.createList();
 
@@ -21043,10 +21124,18 @@ public final class N {
     }
 
     public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
         return filter(a, filter, Integer.MAX_VALUE, supplier);
     }
 
     public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
         return filter(a, 0, a.length, filter, max, supplier);
     }
 
@@ -21069,8 +21158,11 @@ public final class N {
      */
     public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max,
             final IntFunction<R> supplier) {
-        N.requireNonNull(a);
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return supplier.apply(0);
+        }
 
         final R outputResult = supplier.apply(N.min(64, toIndex - fromIndex));
 
@@ -21085,10 +21177,18 @@ public final class N {
     }
 
     public static <T> List<T> filter(final Collection<T> c, final Predicate<? super T> filter) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
         return filter(c, filter, Integer.MAX_VALUE);
     }
 
     public static <T> List<T> filter(final Collection<T> c, final Predicate<? super T> filter, final int max) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
         return filter(c, 0, c.size(), filter, max);
     }
 
@@ -21097,6 +21197,10 @@ public final class N {
     }
 
     public static <T> List<T> filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return new ArrayList<>();
+        }
+
         return filter(c, fromIndex, toIndex, filter, max, new IntFunction<List<T>>() {
             @Override
             public List<T> apply(int len) {
@@ -21106,11 +21210,19 @@ public final class N {
     }
 
     public static <T, R extends Collection<T>> R filter(final Collection<T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+        if (N.isNullOrEmpty(c)) {
+            return supplier.apply(0);
+        }
+
         return filter(c, filter, Integer.MAX_VALUE, supplier);
     }
 
     public static <T, R extends Collection<T>> R filter(final Collection<T> c, final Predicate<? super T> filter, final int max,
             final IntFunction<R> supplier) {
+        if (N.isNullOrEmpty(c)) {
+            return supplier.apply(0);
+        }
+
         return filter(c, 0, c.size(), filter, max, supplier);
     }
 
@@ -21121,8 +21233,11 @@ public final class N {
 
     public static <T, R extends Collection<T>> R filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
             final int max, final IntFunction<R> supplier) {
-        N.requireNonNull(c);
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return supplier.apply(0);
+        }
 
         final R outputResult = supplier.apply(N.min(64, toIndex - fromIndex));
 
@@ -25363,6 +25478,30 @@ public final class N {
      * @param a
      * @return
      */
+    public static boolean[] distinct(final boolean[] a) {
+        return distinct(a, 0, a.length);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static boolean[] distinct(final boolean[] a, final int fromIndex, final int toIndex) {
+        return N.removeDuplicates(a, fromIndex, toIndex, false);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @return
+     */
     public static char[] distinct(final char[] a) {
         return distinct(a, 0, a.length);
     }
@@ -25532,6 +25671,10 @@ public final class N {
      * @return
      */
     public static <T> T[] distinct(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
         return distinct(a, 0, a.length);
     }
 
@@ -25546,6 +25689,10 @@ public final class N {
      */
     public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return a;
+        }
 
         final List<T> result = new ArrayList<>();
         final Set<T> keySet = new HashSet<>();
@@ -25568,6 +25715,10 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
         return distinct(c, 0, c.size());
     }
 
@@ -25582,6 +25733,10 @@ public final class N {
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return new ArrayList<>();
+        }
 
         final List<T> result = new ArrayList<>();
         final Set<T> keySet = new HashSet<>();
@@ -25612,6 +25767,10 @@ public final class N {
      * @return
      */
     public static <T> T[] distinct(final T[] a, final Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
         return distinct(a, 0, a.length, cmp);
     }
 
@@ -25627,6 +25786,10 @@ public final class N {
      */
     public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return a;
+        }
 
         final List<T> result = new ArrayList<>();
         final Set<T> sortedSet = new TreeSet<T>(cmp);
@@ -25657,6 +25820,10 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
         return distinct(c, 0, c.size(), cmp);
     }
 
@@ -25672,6 +25839,10 @@ public final class N {
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return new ArrayList<>();
+        }
 
         final List<T> result = new ArrayList<>();
         final Set<T> sortedSet = new TreeSet<T>(cmp);
@@ -25734,6 +25905,10 @@ public final class N {
      * @return
      */
     public static <T> T[] distinct(final T[] a, final Function<? super T, ?> keyMapper) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
         return distinct(a, 0, a.length, keyMapper);
     }
 
@@ -25751,6 +25926,10 @@ public final class N {
      */
     public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return a;
+        }
 
         final List<T> result = new ArrayList<>();
         final Set<Object> keySet = new HashSet<>();
@@ -25778,6 +25957,10 @@ public final class N {
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyMapper) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
         return distinct(c, 0, c.size(), keyMapper);
     }
 
@@ -25795,6 +25978,10 @@ public final class N {
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return new ArrayList<>();
+        }
 
         final List<T> result = new ArrayList<>();
         final Set<Object> keySet = new HashSet<>();
@@ -26637,8 +26824,6 @@ public final class N {
      * @see IntList#except(IntList)
      */
     public static <T> T[] except(final T[] a, final Object[] b) {
-        N.requireNonNull(a);
-
         if (N.isNullOrEmpty(a)) {
             return a;
         } else if (N.isNullOrEmpty(b)) {
@@ -26660,11 +26845,7 @@ public final class N {
             return new ArrayList<>();
         }
 
-        final Multiset<Object> bOccurrences = new Multiset<>();
-
-        for (Object e : b) {
-            bOccurrences.add(e);
-        }
+        final Multiset<Object> bOccurrences = Multiset.of(b);
 
         final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
 
@@ -26686,7 +26867,7 @@ public final class N {
      */
     public static boolean[] intersect(final boolean[] a, final boolean[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_BOOLEAN_ARRAY;
+            return N.isNullOrEmpty(a) ? a : N.EMPTY_BOOLEAN_ARRAY;
         }
 
         return BooleanList.of(a).intersect(BooleanList.of(b)).trimToSize().array();
@@ -26816,10 +26997,8 @@ public final class N {
      * @see IntList#intersect(IntList)
      */
     public static <T> T[] intersect(final T[] a, final Object[] b) {
-        N.requireNonNull(a);
-
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return (T[]) N.newArray(a.getClass().getComponentType(), 0);
+            return N.isNullOrEmpty(a) ? a : (T[]) N.newArray(a.getClass().getComponentType(), 0);
         }
 
         return ObjectList.of(a).intersect(ObjectList.of(b)).trimToSize().array();
@@ -26833,15 +27012,11 @@ public final class N {
      * @see IntList#intersect(IntList)
      */
     public static <T> List<T> intersect(final Collection<? extends T> a, final Collection<?> b) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return new ArrayList<>();
         }
 
-        final Multiset<Object> bOccurrences = new Multiset<>();
-
-        for (Object e : b) {
-            bOccurrences.add(e);
-        }
+        final Multiset<Object> bOccurrences = Multiset.of(b);
 
         final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
 
@@ -26862,8 +27037,10 @@ public final class N {
      * @see IntList#xor(IntList)
      */
     public static boolean[] xor(final boolean[] a, final boolean[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_BOOLEAN_ARRAY;
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_BOOLEAN_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return BooleanList.of(a).xor(BooleanList.of(b)).trimToSize().array();
@@ -26877,8 +27054,10 @@ public final class N {
      * @see IntList#xor(IntList)
      */
     public static char[] xor(final char[] a, final char[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_CHAR_ARRAY;
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_CHAR_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return CharList.of(a).xor(CharList.of(b)).trimToSize().array();
@@ -26892,8 +27071,10 @@ public final class N {
      * @see IntList#xor(IntList)
      */
     public static byte[] xor(final byte[] a, final byte[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_BYTE_ARRAY;
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_BYTE_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return ByteList.of(a).xor(ByteList.of(b)).trimToSize().array();
@@ -26907,8 +27088,10 @@ public final class N {
      * @see IntList#xor(IntList)
      */
     public static short[] xor(final short[] a, final short[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_SHORT_ARRAY;
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_SHORT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return ShortList.of(a).xor(ShortList.of(b)).trimToSize().array();
@@ -26928,8 +27111,10 @@ public final class N {
      * @see N#except(int[], int[])
      */
     public static int[] xor(final int[] a, final int[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_INT_ARRAY;
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_INT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return IntList.of(a).xor(IntList.of(b)).trimToSize().array();
@@ -26943,8 +27128,10 @@ public final class N {
      * @see IntList#xor(IntList)
      */
     public static long[] xor(final long[] a, final long[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_LONG_ARRAY;
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_LONG_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return LongList.of(a).xor(LongList.of(b)).trimToSize().array();
@@ -26958,8 +27145,10 @@ public final class N {
      * @see IntList#xor(IntList)
      */
     public static float[] xor(final float[] a, final float[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_FLOAT_ARRAY;
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_FLOAT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return FloatList.of(a).xor(FloatList.of(b)).trimToSize().array();
@@ -26973,8 +27162,10 @@ public final class N {
      * @see IntList#xor(IntList)
      */
     public static double[] xor(final double[] a, final double[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_DOUBLE_ARRAY;
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_DOUBLE_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return DoubleList.of(a).xor(DoubleList.of(b)).trimToSize().array();
@@ -26988,10 +27179,10 @@ public final class N {
      * @see IntList#xor(IntList)
      */
     public static <T> T[] xor(final T[] a, final T[] b) {
-        N.requireNonNull(a);
-
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return (T[]) N.newArray(a.getClass().getComponentType(), 0);
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? a : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
         }
 
         return ObjectList.of(a).xor(ObjectList.of(b)).trimToSize().array();
@@ -27026,6 +27217,12 @@ public final class N {
      * @return
      */
     public static boolean[] concat(final boolean[] a, final boolean[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_BOOLEAN_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_BOOLEAN_ARRAY : a.clone();
+        }
+
         final boolean[] c = new boolean[a.length + b.length];
 
         copy(a, 0, c, 0, a.length);
@@ -27042,6 +27239,12 @@ public final class N {
      * @return
      */
     public static char[] concat(final char[] a, final char[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_CHAR_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_CHAR_ARRAY : a.clone();
+        }
+
         final char[] c = new char[a.length + b.length];
 
         copy(a, 0, c, 0, a.length);
@@ -27058,6 +27261,12 @@ public final class N {
      * @return
      */
     public static byte[] concat(final byte[] a, final byte[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_BYTE_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_BYTE_ARRAY : a.clone();
+        }
+
         final byte[] c = new byte[a.length + b.length];
 
         copy(a, 0, c, 0, a.length);
@@ -27074,6 +27283,12 @@ public final class N {
      * @return
      */
     public static short[] concat(final short[] a, final short[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_SHORT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_SHORT_ARRAY : a.clone();
+        }
+
         final short[] c = new short[a.length + b.length];
 
         copy(a, 0, c, 0, a.length);
@@ -27090,6 +27305,12 @@ public final class N {
      * @return
      */
     public static int[] concat(final int[] a, final int[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_INT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_INT_ARRAY : a.clone();
+        }
+
         final int[] c = new int[a.length + b.length];
 
         copy(a, 0, c, 0, a.length);
@@ -27106,6 +27327,12 @@ public final class N {
      * @return
      */
     public static long[] concat(final long[] a, final long[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_LONG_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_LONG_ARRAY : a.clone();
+        }
+
         final long[] c = new long[a.length + b.length];
 
         copy(a, 0, c, 0, a.length);
@@ -27122,6 +27349,12 @@ public final class N {
      * @return
      */
     public static float[] concat(final float[] a, final float[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_FLOAT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_FLOAT_ARRAY : a.clone();
+        }
+
         final float[] c = new float[a.length + b.length];
 
         copy(a, 0, c, 0, a.length);
@@ -27138,6 +27371,12 @@ public final class N {
      * @return
      */
     public static double[] concat(final double[] a, final double[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_DOUBLE_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_DOUBLE_ARRAY : a.clone();
+        }
+
         final double[] c = new double[a.length + b.length];
 
         copy(a, 0, c, 0, a.length);
@@ -27155,6 +27394,12 @@ public final class N {
      */
     @SuppressWarnings("unchecked")
     public static <T> T[] concat(final T[] a, final T[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? a : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
         final T[] c = (T[]) newArray(a.getClass().getComponentType(), a.length + b.length);
 
         copy(a, 0, c, 0, a.length);
@@ -27307,34 +27552,6 @@ public final class N {
         return result;
     }
 
-    public static <T> int replaceAll(final T[] a, final T oldVal, final T newVal) {
-        if (N.isNullOrEmpty(a)) {
-            return 0;
-        }
-
-        int result = 0;
-
-        if (oldVal == null) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (a[i] == null) {
-                    a[i] = newVal;
-
-                    result++;
-                }
-            }
-        } else {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (equals(a[i], oldVal)) {
-                    a[i] = newVal;
-
-                    result++;
-                }
-            }
-        }
-
-        return result;
-    }
-
     public static <T> int replaceAll(final List<T> list, final T oldVal, final T newVal) {
         if (N.isNullOrEmpty(list)) {
             return 0;
@@ -27387,6 +27604,34 @@ public final class N {
         return result;
     }
 
+    public static <T> int replaceAll(final T[] a, final T oldVal, final T newVal) {
+        if (N.isNullOrEmpty(a)) {
+            return 0;
+        }
+
+        int result = 0;
+
+        if (oldVal == null) {
+            for (int i = 0, len = a.length; i < len; i++) {
+                if (a[i] == null) {
+                    a[i] = newVal;
+
+                    result++;
+                }
+            }
+        } else {
+            for (int i = 0, len = a.length; i < len; i++) {
+                if (equals(a[i], oldVal)) {
+                    a[i] = newVal;
+
+                    result++;
+                }
+            }
+        }
+
+        return result;
+    }
+
     /**
      * <p>
      * Copies the given array and adds the given element at the end of the new
@@ -27397,6 +27642,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static boolean[] add(final boolean[] a, final boolean element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
         final boolean[] newArray = new boolean[a.length + 1];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27415,6 +27664,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static char[] add(final char[] a, final char element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
         final char[] newArray = new char[a.length + 1];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27433,6 +27686,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static byte[] add(final byte[] a, final byte element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
         final byte[] newArray = new byte[a.length + 1];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27451,6 +27708,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static short[] add(final short[] a, final short element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
         final short[] newArray = new short[a.length + 1];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27469,6 +27730,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static int[] add(final int[] a, final int element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
         final int[] newArray = new int[a.length + 1];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27487,6 +27752,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static long[] add(final long[] a, final long element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
         final long[] newArray = new long[a.length + 1];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27505,6 +27774,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static float[] add(final float[] a, final float element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
         final float[] newArray = new float[a.length + 1];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27523,6 +27796,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static double[] add(final double[] a, final double element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
         final double[] newArray = new double[a.length + 1];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27541,6 +27818,10 @@ public final class N {
      * @return A new array containing the existing elements plus the new element
      */
     public static <T> T[] add(final T[] a, final T element) {
+        if (N.isNullOrEmpty(a)) {
+            return N.asArray(element);
+        }
+
         final T[] newArray = (T[]) Array.newInstance(a.getClass().getComponentType(), a.length + 1);
 
         copy(a, 0, newArray, 0, a.length);
@@ -27561,6 +27842,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static boolean[] addAll(final boolean[] a, final boolean... b) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(b);
+        }
+
         final boolean[] newArray = new boolean[a.length + b.length];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27581,6 +27866,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static char[] addAll(final char[] a, final char... b) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(b);
+        }
+
         final char[] newArray = new char[a.length + b.length];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27601,6 +27890,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static byte[] addAll(final byte[] a, final byte... b) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(b);
+        }
+
         final byte[] newArray = new byte[a.length + b.length];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27621,6 +27914,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static short[] addAll(final short[] a, final short... b) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(b);
+        }
+
         final short[] newArray = new short[a.length + b.length];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27641,6 +27938,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static int[] addAll(final int[] a, final int... b) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(b);
+        }
+
         final int[] newArray = new int[a.length + b.length];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27661,6 +27962,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static long[] addAll(final long[] a, final long... b) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(b);
+        }
+
         final long[] newArray = new long[a.length + b.length];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27681,6 +27986,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static float[] addAll(final float[] a, final float... b) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(b);
+        }
+
         final float[] newArray = new float[a.length + b.length];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27701,6 +28010,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static double[] addAll(final double[] a, final double... b) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(b);
+        }
+
         final double[] newArray = new double[a.length + b.length];
 
         copy(a, 0, newArray, 0, a.length);
@@ -27721,6 +28034,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static <T> T[] addAll(final T[] a, final T... b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.asArray(b);
+        }
+
         final T[] newArray = (T[]) Array.newInstance(a.getClass().getComponentType(), a.length + b.length);
 
         copy(a, 0, newArray, 0, a.length);
@@ -29314,39 +29631,40 @@ public final class N {
      * @param indices
      * @return
      */
-    public static void deleteAll(final List<?> list, int... indices) {
+    public static boolean deleteAll(final List<?> list, int... indices) {
         N.requireNonNull(list);
 
         if (N.isNullOrEmpty(indices)) {
-            return;
-        }
-
-        if (indices.length == 1) {
+            return false;
+        } else if (indices.length == 1) {
             list.remove(indices[0]);
-        } else {
-            indices = indices.clone();
-            sort(indices);
-
-            if (indices[0] < 0 || indices[indices.length - 1] >= list.size()) {
-                throw new IndexOutOfBoundsException("The specified indices are from: " + indices[0] + " to: " + indices[indices.length - 1]);
-            }
-
-            final Iterator<?> iterator = list.iterator();
-
-            int idx = -1;
-            for (int i = 0, len = indices.length; i < len; i++) {
-                if (i > 0 && indices[i] == indices[i - 1]) {
-                    continue;
-                }
-
-                while (idx < indices[i]) {
-                    idx++;
-                    iterator.next();
-                }
-
-                iterator.remove();
-            }
+            return true;
         }
+
+        indices = indices.clone();
+        sort(indices);
+
+        if (indices[0] < 0 || indices[indices.length - 1] >= list.size()) {
+            throw new IndexOutOfBoundsException("The specified indices are from: " + indices[0] + " to: " + indices[indices.length - 1]);
+        }
+
+        final Iterator<?> iterator = list.iterator();
+
+        int idx = -1;
+        for (int i = 0, len = indices.length; i < len; i++) {
+            if (i > 0 && indices[i] == indices[i - 1]) {
+                continue;
+            }
+
+            while (idx < indices[i]) {
+                idx++;
+                iterator.next();
+            }
+
+            iterator.remove();
+        }
+
+        return true;
     }
 
     /**
@@ -29371,7 +29689,7 @@ public final class N {
      */
     public static boolean[] remove(final boolean[] a, final boolean element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_BOOLEAN_ARRAY;
         }
 
         int index = indexOf(a, 0, element);
@@ -29401,7 +29719,7 @@ public final class N {
      */
     public static char[] remove(final char[] a, final char element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_CHAR_ARRAY;
         }
 
         int index = indexOf(a, 0, element);
@@ -29431,7 +29749,7 @@ public final class N {
      */
     public static byte[] remove(final byte[] a, final byte element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_BYTE_ARRAY;
         }
 
         int index = indexOf(a, 0, element);
@@ -29461,7 +29779,7 @@ public final class N {
      */
     public static short[] remove(final short[] a, final short element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_SHORT_ARRAY;
         }
 
         int index = indexOf(a, 0, element);
@@ -29491,7 +29809,7 @@ public final class N {
      */
     public static int[] remove(final int[] a, final int element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_INT_ARRAY;
         }
 
         int index = indexOf(a, 0, element);
@@ -29521,7 +29839,7 @@ public final class N {
      */
     public static long[] remove(final long[] a, final long element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_LONG_ARRAY;
         }
 
         int index = indexOf(a, 0, element);
@@ -29551,7 +29869,7 @@ public final class N {
      */
     public static float[] remove(final float[] a, final float element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_FLOAT_ARRAY;
         }
 
         int index = indexOf(a, 0, element);
@@ -29581,7 +29899,7 @@ public final class N {
      */
     public static double[] remove(final double[] a, final double element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_DOUBLE_ARRAY;
         }
 
         int index = indexOf(a, 0, element);
@@ -29611,7 +29929,7 @@ public final class N {
      */
     public static <T> T[] remove(final T[] a, final Object element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return a;
         }
 
         int index = indexOf(a, 0, element);
@@ -29631,6 +29949,10 @@ public final class N {
      * @return <tt>true</tt> if this collection changed as a result of the call
      */
     static boolean remove(final Collection<?> c, final Object element) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return c.remove(element);
     }
 
@@ -29647,7 +29969,7 @@ public final class N {
      */
     public static boolean[] removeAllOccurrences(final boolean[] a, final boolean element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_BOOLEAN_ARRAY;
         }
 
         final boolean[] copy = a.clone();
@@ -29677,7 +29999,7 @@ public final class N {
      */
     public static char[] removeAllOccurrences(final char[] a, final char element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_CHAR_ARRAY;
         }
 
         final char[] copy = a.clone();
@@ -29707,7 +30029,7 @@ public final class N {
      */
     public static byte[] removeAllOccurrences(final byte[] a, final byte element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_BYTE_ARRAY;
         }
 
         final byte[] copy = a.clone();
@@ -29737,7 +30059,7 @@ public final class N {
      */
     public static short[] removeAllOccurrences(final short[] a, final short element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_SHORT_ARRAY;
         }
 
         final short[] copy = a.clone();
@@ -29767,7 +30089,7 @@ public final class N {
      */
     public static int[] removeAllOccurrences(final int[] a, final int element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_INT_ARRAY;
         }
 
         final int[] copy = a.clone();
@@ -29797,7 +30119,7 @@ public final class N {
      */
     public static long[] removeAllOccurrences(final long[] a, final long element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_LONG_ARRAY;
         }
 
         final long[] copy = a.clone();
@@ -29827,7 +30149,7 @@ public final class N {
      */
     public static float[] removeAllOccurrences(final float[] a, final float element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_FLOAT_ARRAY;
         }
 
         final float[] copy = a.clone();
@@ -29857,7 +30179,7 @@ public final class N {
      */
     public static double[] removeAllOccurrences(final double[] a, final double element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return N.EMPTY_DOUBLE_ARRAY;
         }
 
         final double[] copy = a.clone();
@@ -29887,7 +30209,7 @@ public final class N {
      */
     public static <T> T[] removeAllOccurrences(final T[] a, final Object element) {
         if (N.isNullOrEmpty(a)) {
-            return a.clone();
+            return a;
         }
 
         final T[] copy = a.clone();
@@ -29902,6 +30224,14 @@ public final class N {
         }
 
         return idx == copy.length ? copy : N.copyOfRange(copy, 0, idx);
+    }
+
+    public boolean removeAllOccurrences(Collection<?> c, final Object element) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return c.removeAll(N.asList(element));
     }
 
     /**
@@ -30089,8 +30419,6 @@ public final class N {
      * @see Collection#removeAll(Collection)
      */
     public static <T> T[] removeAll(final T[] a, final Object... elements) {
-        N.requireNonNull(a);
-
         if (N.isNullOrEmpty(a)) {
             return a;
         } else if (N.isNullOrEmpty(elements)) {
@@ -30104,17 +30432,76 @@ public final class N {
         return list.trimToSize().array();
     }
 
+    public static boolean removeAll(final Collection<?> c, final Object... elements) {
+        if (N.isNullOrEmpty(c) || N.isNullOrEmpty(elements)) {
+            return false;
+        } else {
+            return c.removeAll(N.asList(elements));
+        }
+    }
+
+    public static boolean[] removeDuplicates(final boolean[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        }
+
+        return removeDuplicates(a, false);
+    }
+
+    public static boolean[] removeDuplicates(final boolean[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        }
+
+        return removeDuplicates(a, 0, a.length, isSorted);
+    }
+
+    public static boolean[] removeDuplicates(final boolean[] a, final int from, final int to, final boolean isSorted) {
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
+        }
+
+        final Boolean[] b = new Boolean[2];
+
+        for (int i = from; i < to; i++) {
+            if (b[0] == null) {
+                b[0] = a[i];
+            } else if (b[0].booleanValue() != a[i]) {
+                b[1] = a[i];
+                break;
+            }
+        }
+
+        return b[1] == null ? new boolean[] { b[0].booleanValue() } : new boolean[] { b[0].booleanValue(), b[1].booleanValue() };
+    }
+
     public static char[] removeDuplicates(final char[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
         return removeDuplicates(a, false);
     }
 
     public static char[] removeDuplicates(final char[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
         return removeDuplicates(a, 0, a.length, isSorted);
     }
 
     public static char[] removeDuplicates(final char[] a, final int from, final int to, final boolean isSorted) {
-        if (N.isNullOrEmpty(a) || to - from <= 1) {
-            return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return N.EMPTY_CHAR_ARRAY;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
         }
 
         if (isSorted) {
@@ -30153,16 +30540,28 @@ public final class N {
     }
 
     public static byte[] removeDuplicates(final byte[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         return removeDuplicates(a, false);
     }
 
     public static byte[] removeDuplicates(final byte[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+
         return removeDuplicates(a, 0, a.length, isSorted);
     }
 
     public static byte[] removeDuplicates(final byte[] a, final int from, final int to, final boolean isSorted) {
-        if (N.isNullOrEmpty(a) || to - from <= 1) {
-            return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return N.EMPTY_BYTE_ARRAY;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
         }
 
         if (isSorted) {
@@ -30201,16 +30600,28 @@ public final class N {
     }
 
     public static short[] removeDuplicates(final short[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_SHORT_ARRAY;
+        }
+
         return removeDuplicates(a, false);
     }
 
     public static short[] removeDuplicates(final short[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_SHORT_ARRAY;
+        }
+
         return removeDuplicates(a, 0, a.length, isSorted);
     }
 
     public static short[] removeDuplicates(final short[] a, final int from, final int to, final boolean isSorted) {
-        if (N.isNullOrEmpty(a) || to - from <= 1) {
-            return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return N.EMPTY_SHORT_ARRAY;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
         }
 
         if (isSorted) {
@@ -30249,16 +30660,28 @@ public final class N {
     }
 
     public static int[] removeDuplicates(final int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_INT_ARRAY;
+        }
+
         return removeDuplicates(a, false);
     }
 
     public static int[] removeDuplicates(final int[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_INT_ARRAY;
+        }
+
         return removeDuplicates(a, 0, a.length, isSorted);
     }
 
     public static int[] removeDuplicates(final int[] a, final int from, final int to, final boolean isSorted) {
-        if (N.isNullOrEmpty(a) || to - from <= 1) {
-            return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return N.EMPTY_INT_ARRAY;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
         }
 
         if (isSorted) {
@@ -30298,16 +30721,28 @@ public final class N {
     }
 
     public static long[] removeDuplicates(final long[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_LONG_ARRAY;
+        }
+
         return removeDuplicates(a, false);
     }
 
     public static long[] removeDuplicates(final long[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_LONG_ARRAY;
+        }
+
         return removeDuplicates(a, 0, a.length, isSorted);
     }
 
     public static long[] removeDuplicates(final long[] a, final int from, final int to, final boolean isSorted) {
-        if (N.isNullOrEmpty(a) || to - from <= 1) {
-            return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return N.EMPTY_LONG_ARRAY;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
         }
 
         if (isSorted) {
@@ -30346,16 +30781,28 @@ public final class N {
     }
 
     public static float[] removeDuplicates(final float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+
         return removeDuplicates(a, false);
     }
 
     public static float[] removeDuplicates(final float[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+
         return removeDuplicates(a, 0, a.length, isSorted);
     }
 
     public static float[] removeDuplicates(final float[] a, final int from, final int to, final boolean isSorted) {
-        if (N.isNullOrEmpty(a) || to - from <= 1) {
-            return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return N.EMPTY_FLOAT_ARRAY;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
         }
 
         if (isSorted) {
@@ -30395,16 +30842,28 @@ public final class N {
     }
 
     public static double[] removeDuplicates(final double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+
         return removeDuplicates(a, false);
     }
 
     public static double[] removeDuplicates(final double[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+
         return removeDuplicates(a, 0, a.length, isSorted);
     }
 
     public static double[] removeDuplicates(final double[] a, final int from, final int to, final boolean isSorted) {
-        if (N.isNullOrEmpty(a) || to - from <= 1) {
-            return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
         }
 
         if (isSorted) {
@@ -30459,16 +30918,28 @@ public final class N {
      * @throws NullPointerException if the specified array <code>a</code> is null.
      */
     public static <T> T[] removeDuplicates(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
         return removeDuplicates(a, false);
     }
 
     public static <T> T[] removeDuplicates(final T[] a, final boolean isSorted) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
         return removeDuplicates(a, 0, a.length, isSorted);
     }
 
     public static <T> T[] removeDuplicates(final T[] a, final int from, final int to, final boolean isSorted) {
-        if (N.isNullOrEmpty(a) || to - from <= 1) {
-            return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
+        checkIndex(from, to, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && from == 0 && to == 0) {
+            return a;
+        } else if (to - from <= 1) {
+            return N.copyOfRange(a, from, to);
         }
 
         if (isSorted) {
@@ -30507,6 +30978,10 @@ public final class N {
      * @return <code>true</code> if there is one or more duplicated elements are removed. otherwise <code>false</code> is returned.
      */
     public static boolean removeDuplicates(final Collection<?> c) {
+        if (N.isNullOrEmpty(c) || c.size() == 1) {
+            return false;
+        }
+
         return removeDuplicates(c, false);
     }
 
@@ -30518,8 +30993,6 @@ public final class N {
      */
     @SuppressWarnings("rawtypes")
     public static boolean removeDuplicates(final Collection<?> c, final boolean isSorted) {
-        N.requireNonNull(c);
-
         if (N.isNullOrEmpty(c) || c.size() == 1) {
             return false;
         }

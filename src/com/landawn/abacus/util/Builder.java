@@ -459,11 +459,23 @@ public abstract class Builder<T> {
             return this;
         }
 
-        public MultisetBuilder<T> addAll(Multiset<? extends T> c) {
+        public MultisetBuilder<T> addAll(Collection<? extends T> c) {
             @SuppressWarnings("rawtypes")
-            final Multiset tmp = c;
+            final Collection tmp = c;
 
-            c.addAll(tmp);
+            value.addAll(tmp);
+
+            return this;
+        }
+
+        public MultisetBuilder<T> addAll(final Map<? extends T, Integer> m) {
+            value.addAll(m);
+
+            return this;
+        }
+
+        public MultisetBuilder<T> addAll(Multiset<? extends T> multiset) {
+            value.addAll(multiset);
 
             return this;
         }
@@ -475,7 +487,19 @@ public abstract class Builder<T> {
         }
 
         public MultisetBuilder<T> removeAll(Collection<?> c) {
-            c.removeAll(c);
+            value.removeAll(c);
+
+            return this;
+        }
+
+        public MultisetBuilder<T> removeAll(final Map<? extends T, Integer> m) {
+            value.removeAll(m);
+
+            return this;
+        }
+
+        public MultisetBuilder<T> removeAll(Multiset<? extends T> multiset) {
+            value.removeAll(multiset);
 
             return this;
         }
@@ -492,11 +516,23 @@ public abstract class Builder<T> {
             return this;
         }
 
-        public LongMultisetBuilder<T> addAll(LongMultiset<? extends T> c) {
+        public LongMultisetBuilder<T> addAll(Collection<? extends T> c) {
             @SuppressWarnings("rawtypes")
-            final LongMultiset tmp = c;
+            final Collection tmp = c;
 
             value.addAll(tmp);
+
+            return this;
+        }
+
+        public LongMultisetBuilder<T> addAll(final Map<? extends T, Long> m) {
+            value.addAll(m);
+
+            return this;
+        }
+
+        public LongMultisetBuilder<T> addAll(LongMultiset<? extends T> multiset) {
+            value.addAll(multiset);
 
             return this;
         }
@@ -509,6 +545,18 @@ public abstract class Builder<T> {
 
         public LongMultisetBuilder<T> removeAll(Collection<?> c) {
             value.removeAll(c);
+
+            return this;
+        }
+
+        public LongMultisetBuilder<T> removeAll(final Map<? extends T, Long> m) {
+            value.removeAll(m);
+
+            return this;
+        }
+
+        public LongMultisetBuilder<T> removeAll(LongMultiset<? extends T> multiset) {
+            value.removeAll(multiset);
 
             return this;
         }
@@ -554,8 +602,20 @@ public abstract class Builder<T> {
             super(m);
         }
 
-        public MultimapBuilder<K, E, V> put(K k, E v) {
-            value.put(k, v);
+        public MultimapBuilder<K, E, V> put(K key, E e) {
+            value.put(key, e);
+
+            return this;
+        }
+
+        public MultimapBuilder<K, E, V> putAll(final K k, final Collection<? extends E> c) {
+            value.putAll(k, c);
+
+            return this;
+        }
+
+        public MultimapBuilder<K, E, V> putAll(Map<? extends K, ? extends E> m) {
+            value.putAll(m);
 
             return this;
         }
@@ -569,22 +629,37 @@ public abstract class Builder<T> {
             return this;
         }
 
-        public MultimapBuilder<K, E, V> remove(K k) {
-            value.remove(k);
-        
-            return this;
-        }
-
-        public MultimapBuilder<K, E, V> remove(Object k, Object v) {
-            value.remove(k, v);
+        public MultimapBuilder<K, E, V> remove(Object k, Object e) {
+            value.remove(k, e);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> removeAll(Collection<?> c) {
+        public MultimapBuilder<K, E, V> removeAll(K k) {
+            value.removeAll(k);
+
+            return this;
+        }
+
+        public MultimapBuilder<K, E, V> removeAll(Collection<? extends K> c) {
             for (Object k : c) {
-                value.remove(k);
+                value.removeAll(k);
             }
+
+            return this;
+        }
+
+        public MultimapBuilder<K, E, V> removeAll(Map<? extends K, ? extends E> m) {
+            value.removeAll(m);
+
+            return this;
+        }
+
+        public MultimapBuilder<K, E, V> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
+            @SuppressWarnings("rawtypes")
+            final Multimap tmp = m;
+
+            value.removeAll(tmp);
 
             return this;
         }
