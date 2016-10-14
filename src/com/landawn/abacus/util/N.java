@@ -1024,7 +1024,7 @@ public final class N {
     private static final XMLParser abacusXMLParser = ParserFactory.isAbacusXMLAvailable() ? ParserFactory.createAbacusXMLParser() : null;
     private static final XMLParser xmlParser = ParserFactory.isXMLAvailable() ? ParserFactory.createXMLParser() : null;
     private static final KryoParser kryoParser = ParserFactory.isKryoAvailable() ? ParserFactory.createKryoParser() : null;
-    private static final JSONSerializationConfig jsc = JSC.valueOf(true, true);
+    private static final JSONSerializationConfig jsc = JSC.of(true, true);
     private static final XMLSerializationConfig xscForClone = XSC.create().setIgnoreTypeInfo(false);
 
     // ...
@@ -6867,6 +6867,20 @@ public final class N {
         return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : cmp.compare(a, b));
     }
 
+    public static int compare(final Object[] a, final Object[] b) {
+        int rt = 0;
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            rt = (a[i] == null) ? ((b[i] == null) ? 0 : -1) : ((b[i] == null) ? 1 : ((Comparable<Object>) a[i]).compareTo(b[i]));
+
+            if (rt != 0) {
+                return rt;
+            }
+        }
+
+        return rt;
+    }
+
     // Abbreviating
     // -----------------------------------------------------------------------
     /**
@@ -6955,23 +6969,23 @@ public final class N {
      *
      * @param str
      *            the String to reverse, may be null
-     * @param separatorChar
+     * @param separator
      *            the separator character to use
      * @return the reversed String, {@code null} if null String input
      * @since 2.0
      */
-    public static String reverseDelimited(final String str, final char separatorChar) {
+    public static String reverseDelimited(final String str, final char separator) {
         if (N.isNullOrEmpty(str)) {
             return str;
         }
 
         // could implement manually, but simple way is to reuse other,
         // probably slower, methods.
-        final String[] strs = N.split(str, separatorChar);
+        final String[] strs = N.split(str, separator);
 
         N.reverse(strs);
 
-        return N.join(strs, separatorChar);
+        return N.join(strs, separator);
     }
 
     public static String padStart(final String str, final int minLength) {
@@ -8087,44 +8101,12 @@ public final class N {
         return replacePattern(source, regex, N.EMPTY_STRING);
     }
 
-    /**
-     * <p>
-     * Splits the provided text into an array, separator specified. This is an
-     * alternative to using StringTokenizer.
-     * </p>
-     *
-     * <p>
-     * The separator is not included in the returned String array. Adjacent
-     * separators are treated as one separator. For more control over the split
-     * use the StrTokenizer class.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns an empty String[]
-     * </p>
-     *
-     * <pre>
-     * N.split(null, *)         = []
-     * N.split("", *)           = []
-     * N.split("a.b.c", '.')    = ["a", "b", "c"]
-     * N.split("a..b.c", '.')   = ["a", "b", "c"]
-     * N.split("a:b:c", '.')    = ["a:b:c"]
-     * N.split("a b c", ' ')    = ["a", "b", "c"]
-     * </pre>
-     *
-     * @param str
-     *            the String to parse, may be null
-     * @param separatorChar
-     *            the character used as the delimiter
-     * @return an array of parsed Strings, an empty String[] if null String input
-     * @since 2.0
-     */
-    public static String[] split(final String str, final char separatorChar) {
-        return splitWorker(str, separatorChar, false);
+    public static String[] split(final String str, final char separator) {
+        return splitWorker(str, separator, false);
     }
 
-    public static String[] split(final String str, final char separatorChar, final boolean trim) {
-        final String[] strs = split(str, separatorChar);
+    public static String[] split(final String str, final char separator, final boolean trim) {
+        final String[] strs = split(str, separator);
 
         if (trim && N.notNullOrEmpty(strs)) {
             for (int i = 0, len = strs.length; i < len; i++) {
@@ -8135,94 +8117,20 @@ public final class N {
         return strs;
     }
 
-    /**
-     * <p>
-     * Splits the provided text into an array, separators specified. This is an
-     * alternative to using StringTokenizer.
-     * </p>
-     *
-     * <p>
-     * The separator is not included in the returned String array. Adjacent
-     * separators are treated as one separator. For more control over the split
-     * use the StrTokenizer class.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns an empty String[]
-     * separatorChars splits on whitespace.
-     * </p>
-     *
-     * <pre>
-     * N.split(null, *)         = []
-     * N.split("", *)           = []
-     * N.split("abc def", null) = ["abc", "def"]
-     * N.split("abc def", " ")  = ["abc", "def"]
-     * N.split("abc  def", " ") = ["abc", "def"]
-     * N.split("ab:cd:ef", ":") = ["ab", "cd", "ef"]
-     * </pre>
-     *
-     * @param str
-     *            the String to parse, may be null
-     * @param separatorChars
-     *            the characters used as the delimiters, {@code null} splits on
-     *            whitespace
-     * @return an array of parsed Strings, an empty String[] if null String input
-     */
-    public static String[] split(final String str, final String separatorChars) {
-        return split(str, separatorChars, false);
+    public static String[] split(final String str, final String separator) {
+        return split(str, separator, false);
     }
 
-    public static String[] split(final String str, final String separatorChars, final boolean trim) {
-        return split(str, separatorChars, -1, trim);
+    public static String[] split(final String str, final String separator, final boolean trim) {
+        return split(str, separator, Integer.MAX_VALUE, trim);
     }
 
-    /**
-     * <p>
-     * Splits the provided text into an array with a maximum length, separators
-     * specified.
-     * </p>
-     *
-     * <p>
-     * The separator is not included in the returned String array. Adjacent
-     * separators are treated as one separator.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns an empty String[]
-     * separatorChars splits on whitespace.
-     * </p>
-     *
-     * <p>
-     * If more than {@code max} delimited substrings are found, the last
-     * returned string includes all characters after the first {@code max - 1}
-     * returned strings (including separator characters).
-     * </p>
-     *
-     * <pre>
-     * N.split(null, *, *)            = []
-     * N.split("", *, *)              = []
-     * N.split("ab cd ef", null, 0)   = ["ab", "cd", "ef"]
-     * N.split("ab   cd ef", null, 0) = ["ab", "cd", "ef"]
-     * N.split("ab:cd:ef", ":", 0)    = ["ab", "cd", "ef"]
-     * N.split("ab:cd:ef", ":", 2)    = ["ab", "cd:ef"]
-     * </pre>
-     *
-     * @param str
-     *            the String to parse, may be null
-     * @param separatorChars
-     *            the characters used as the delimiters, {@code null} splits on
-     *            whitespace
-     * @param max
-     *            the maximum number of elements to include in the array. A zero
-     *            or negative value implies no limit
-     * @return an array of parsed Strings, an empty String[] if null String input
-     */
-    public static String[] split(final String str, final String separatorChars, final int max) {
-        return splitWorker(str, separatorChars, max, false);
+    public static String[] split(final String str, final String separator, final int max) {
+        return splitWorker(str, separator, max, false);
     }
 
-    public static String[] split(final String str, final String separatorChars, final int max, final boolean trim) {
-        final String[] strs = split(str, separatorChars, max);
+    public static String[] split(final String str, final String separator, final int max, final boolean trim) {
+        final String[] strs = split(str, separator, max);
 
         if (trim && N.notNullOrEmpty(strs)) {
             for (int i = 0, len = strs.length; i < len; i++) {
@@ -8233,52 +8141,12 @@ public final class N {
         return strs;
     }
 
-    /**
-     * <p>
-     * Splits the provided text into an array, separator specified, preserving
-     * all tokens, including empty tokens created by adjacent separators. This
-     * is an alternative to using StringTokenizer.
-     * </p>
-     *
-     * <p>
-     * The separator is not included in the returned String array. Adjacent
-     * separators are treated as separators for empty tokens. For more control
-     * over the split use the StrTokenizer class.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns an empty String[]
-     * </p>
-     *
-     * <pre>
-     * N.splitPreserveAllTokens(null, *)         = []
-     * N.splitPreserveAllTokens("", *)           = []
-     * N.splitPreserveAllTokens("a.b.c", '.')    = ["a", "b", "c"]
-     * N.splitPreserveAllTokens("a..b.c", '.')   = ["a", "", "b", "c"]
-     * N.splitPreserveAllTokens("a:b:c", '.')    = ["a:b:c"]
-     * N.splitPreserveAllTokens("a\tb\nc", null) = ["a", "b", "c"]
-     * N.splitPreserveAllTokens("a b c", ' ')    = ["a", "b", "c"]
-     * N.splitPreserveAllTokens("a b c ", ' ')   = ["a", "b", "c", ""]
-     * N.splitPreserveAllTokens("a b c  ", ' ')   = ["a", "b", "c", "", ""]
-     * N.splitPreserveAllTokens(" a b c", ' ')   = ["", "a", "b", "c"]
-     * N.splitPreserveAllTokens("  a b c", ' ')  = ["", "", "a", "b", "c"]
-     * N.splitPreserveAllTokens(" a b c ", ' ')  = ["", "a", "b", "c", ""]
-     * </pre>
-     *
-     * @param str
-     *            the String to parse, may be {@code null}
-     * @param separatorChar
-     *            the character used as the delimiter, {@code null} splits on
-     *            whitespace
-     * @return an array of parsed Strings, an empty String[] if null String input
-     * @since 2.1
-     */
-    public static String[] splitPreserveAllTokens(final String str, final char separatorChar) {
-        return splitPreserveAllTokens(str, separatorChar, false);
+    public static String[] splitPreserveAllTokens(final String str, final char separator) {
+        return splitPreserveAllTokens(str, separator, false);
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final char separatorChar, boolean trim) {
-        final String[] strs = splitWorker(str, separatorChar, true);
+    public static String[] splitPreserveAllTokens(final String str, final char separator, boolean trim) {
+        final String[] strs = splitWorker(str, separator, true);
 
         if (trim && N.notNullOrEmpty(strs)) {
             for (int i = 0, len = strs.length; i < len; i++) {
@@ -8289,108 +8157,20 @@ public final class N {
         return strs;
     }
 
-    /**
-     * <p>
-     * Splits the provided text into an array, separators specified, preserving
-     * all tokens, including empty tokens created by adjacent separators. This
-     * is an alternative to using StringTokenizer.
-     * </p>
-     *
-     * <p>
-     * The separator is not included in the returned String array. Adjacent
-     * separators are treated as separators for empty tokens. For more control
-     * over the split use the StrTokenizer class.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns an empty String[].
-     * A {@code null} separatorChars splits on whitespace.
-     * </p>
-     *
-     * <pre>
-     * N.splitPreserveAllTokens(null, *)           = []
-     * N.splitPreserveAllTokens("", *)             = []
-     * N.splitPreserveAllTokens("abc def", null)   = ["abc", "def"]
-     * N.splitPreserveAllTokens("abc def", " ")    = ["abc", "def"]
-     * N.splitPreserveAllTokens("abc  def", " ")   = ["abc", "", def"]
-     * N.splitPreserveAllTokens("ab:cd:ef", ":")   = ["ab", "cd", "ef"]
-     * N.splitPreserveAllTokens("ab:cd:ef:", ":")  = ["ab", "cd", "ef", ""]
-     * N.splitPreserveAllTokens("ab:cd:ef::", ":") = ["ab", "cd", "ef", "", ""]
-     * N.splitPreserveAllTokens("ab::cd:ef", ":")  = ["ab", "", cd", "ef"]
-     * N.splitPreserveAllTokens(":cd:ef", ":")     = ["", cd", "ef"]
-     * N.splitPreserveAllTokens("::cd:ef", ":")    = ["", "", cd", "ef"]
-     * N.splitPreserveAllTokens(":cd:ef:", ":")    = ["", cd", "ef", ""]
-     * </pre>
-     *
-     * @param str
-     *            the String to parse, may be {@code null}
-     * @param separatorChars
-     *            the characters used as the delimiters, {@code null} splits on
-     *            whitespace
-     * @return an array of parsed Strings, an empty String[] if null String input
-     * @since 2.1
-     */
-    public static String[] splitPreserveAllTokens(final String str, final String separatorChars) {
-        return splitPreserveAllTokens(str, separatorChars, false);
+    public static String[] splitPreserveAllTokens(final String str, final String separator) {
+        return splitPreserveAllTokens(str, separator, false);
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final String separatorChars, boolean trim) {
-        return splitPreserveAllTokens(str, separatorChars, -1, trim);
+    public static String[] splitPreserveAllTokens(final String str, final String separator, boolean trim) {
+        return splitPreserveAllTokens(str, separator, Integer.MAX_VALUE, trim);
     }
 
-    /**
-     * <p>
-     * Splits the provided text into an array with a maximum length, separators
-     * specified, preserving all tokens, including empty tokens created by
-     * adjacent separators.
-     * </p>
-     *
-     * <p>
-     * The separator is not included in the returned String array. Adjacent
-     * separators are treated as separators for empty tokens. Adjacent
-     * separators are treated as one separator.
-     * </p>
-     *
-     * <p>
-     * A {@code null} input String returns an empty String[].
-     * A {@code null} separatorChars splits on whitespace.
-     * </p>
-     *
-     * <p>
-     * If more than {@code max} delimited substrings are found, the last
-     * returned string includes all characters after the first {@code max - 1}
-     * returned strings (including separator characters).
-     * </p>
-     *
-     * <pre>
-     * N.splitPreserveAllTokens(null, *, *)            = []
-     * N.splitPreserveAllTokens("", *, *)              = []
-     * N.splitPreserveAllTokens("ab de fg", null, 0)   = ["ab", "cd", "ef"]
-     * N.splitPreserveAllTokens("ab   de fg", null, 0) = ["ab", "cd", "ef"]
-     * N.splitPreserveAllTokens("ab:cd:ef", ":", 0)    = ["ab", "cd", "ef"]
-     * N.splitPreserveAllTokens("ab:cd:ef", ":", 2)    = ["ab", "cd:ef"]
-     * N.splitPreserveAllTokens("ab   de fg", null, 2) = ["ab", "  de fg"]
-     * N.splitPreserveAllTokens("ab   de fg", null, 3) = ["ab", "", " de fg"]
-     * N.splitPreserveAllTokens("ab   de fg", null, 4) = ["ab", "", "", "de fg"]
-     * </pre>
-     *
-     * @param str
-     *            the String to parse, may be {@code null}
-     * @param separatorChars
-     *            the characters used as the delimiters, {@code null} splits on
-     *            whitespace
-     * @param max
-     *            the maximum number of elements to include in the array. A zero
-     *            or negative value implies no limit
-     * @return an array of parsed Strings, an empty String[] if null String input
-     * @since 2.1
-     */
-    public static String[] splitPreserveAllTokens(final String str, final String separatorChars, final int max) {
-        return splitPreserveAllTokens(str, separatorChars, max, false);
+    public static String[] splitPreserveAllTokens(final String str, final String separator, final int max) {
+        return splitPreserveAllTokens(str, separator, max, false);
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final String separatorChars, final int max, boolean trim) {
-        final String[] strs = splitWorker(str, separatorChars, max, true);
+    public static String[] splitPreserveAllTokens(final String str, final String separator, final int max, boolean trim) {
+        final String[] strs = splitWorker(str, separator, max, true);
 
         if (trim && N.notNullOrEmpty(strs)) {
             for (int i = 0, len = strs.length; i < len; i++) {
@@ -8401,7 +8181,7 @@ public final class N {
         return strs;
     }
 
-    private static String[] splitWorker(final String str, final char separatorChar, final boolean preserveAllTokens) {
+    private static String[] splitWorker(final String str, final char separator, final boolean preserveAllTokens) {
         // Performance tuned for 2.0 (JDK1.4)
 
         //    if (str == null) {
@@ -8418,6 +8198,7 @@ public final class N {
         }
 
         final int len = str.length();
+        final char[] chs = N.getCharsForReadOnly(str);
         final List<String> list = ObjectFactory.createList();
 
         try {
@@ -8425,7 +8206,7 @@ public final class N {
             boolean match = false;
             boolean lastMatch = false;
             while (i < len) {
-                if (str.charAt(i) == separatorChar) {
+                if (chs[i] == separator) {
                     if (match || preserveAllTokens) {
                         list.add(str.substring(start, i));
                         match = false;
@@ -8451,7 +8232,7 @@ public final class N {
         }
     }
 
-    private static String[] splitWorker(final String str, final String separatorChars, final int max, final boolean preserveAllTokens) {
+    private static String[] splitWorker(final String str, final String separator, final int max, final boolean preserveAllTokens) {
         // Performance tuned for 2.0 (JDK1.4)
         // Direct code is quicker than StringTokenizer.
         // Also, StringTokenizer uses isSpace() not isWhitespace()
@@ -8471,19 +8252,19 @@ public final class N {
 
         final int len = str.length();
         final List<String> list = ObjectFactory.createList();
-
+        int cnt = 1;
+        int i = 0, start = 0;
+        boolean match = false;
+        boolean lastMatch = false;
         try {
-            int sizePlus1 = 1;
-            int i = 0, start = 0;
-            boolean match = false;
-            boolean lastMatch = false;
-            if (separatorChars == null) {
+            if (separator == null) {
                 // Null separator means use whitespace
+                final char[] chs = N.getCharsForReadOnly(str);
                 while (i < len) {
-                    if (Character.isWhitespace(str.charAt(i))) {
+                    if (Character.isWhitespace(chs[i])) {
                         if (match || preserveAllTokens) {
                             lastMatch = true;
-                            if (sizePlus1++ == max) {
+                            if (cnt++ == max) {
                                 i = len;
                                 lastMatch = false;
                             }
@@ -8500,15 +8281,19 @@ public final class N {
                     match = true;
                     i++;
                 }
-            } else if (separatorChars.length() == 1) {
-                // Optimise 1 character case
-                final char sep = separatorChars.charAt(0);
+
+                if (match || preserveAllTokens && lastMatch) {
+                    list.add(str.substring(start, i));
+                }
+            } else if (separator.length() == 1) {
+                final char[] chs = N.getCharsForReadOnly(str);
+                final char sep = separator.charAt(0);
 
                 while (i < len) {
-                    if (str.charAt(i) == sep) {
+                    if (chs[i] == sep) {
                         if (match || preserveAllTokens) {
                             lastMatch = true;
-                            if (sizePlus1++ == max) {
+                            if (cnt++ == max) {
                                 i = len;
                                 lastMatch = false;
                             }
@@ -8524,34 +8309,51 @@ public final class N {
                     lastMatch = false;
                     match = true;
                     i++;
+                }
+
+                if (match || preserveAllTokens && lastMatch) {
+                    list.add(str.substring(start, i));
                 }
             } else {
-                // standard case
-                while (i < len) {
-                    if (separatorChars.indexOf(str.charAt(i)) >= 0) {
-                        if (match || preserveAllTokens) {
-                            lastMatch = true;
-                            if (sizePlus1++ == max) {
-                                i = len;
-                                lastMatch = false;
+                final int separatorLength = separator.length();
+                int beginIndex = 0;
+                int idx = 0;
+                while (idx < len) {
+                    idx = str.indexOf(separator, beginIndex);
+
+                    if (idx > -1) {
+                        if (idx > beginIndex) {
+                            if (cnt++ == max) {
+                                idx = len;
+                                list.add(str.substring(beginIndex));
+                            } else {
+                                // The following is OK, because String.substring( beg, end ) excludes
+                                // the character at the position 'end'.
+                                list.add(str.substring(beginIndex, idx));
+
+                                // Set the starting point for the next search.
+                                // The following is equivalent to beg = end + (separatorLength - 1) + 1,
+                                // which is the right calculation:
+                                beginIndex = idx + separatorLength;
                             }
-
-                            list.add(str.substring(start, i));
-                            match = false;
+                        } else {
+                            // We found a consecutive occurrence of the separator, so skip it.
+                            if (preserveAllTokens) {
+                                if (cnt++ == max) {
+                                    idx = len;
+                                    list.add(str.substring(beginIndex));
+                                } else {
+                                    list.add(N.EMPTY_STRING);
+                                }
+                            }
+                            beginIndex = idx + separatorLength;
                         }
-
-                        start = ++i;
-                        continue;
+                    } else {
+                        // String.substring( beg ) goes from 'beg' to the end of the String.
+                        list.add(str.substring(beginIndex));
+                        idx = len;
                     }
-
-                    lastMatch = false;
-                    match = true;
-                    i++;
                 }
-            }
-
-            if (match || preserveAllTokens && lastMatch) {
-                list.add(str.substring(start, i));
             }
 
             return list.toArray(new String[list.size()]);
@@ -27552,6 +27354,34 @@ public final class N {
         return result;
     }
 
+    public static <T> int replaceAll(final T[] a, final T oldVal, final T newVal) {
+        if (N.isNullOrEmpty(a)) {
+            return 0;
+        }
+
+        int result = 0;
+
+        if (oldVal == null) {
+            for (int i = 0, len = a.length; i < len; i++) {
+                if (a[i] == null) {
+                    a[i] = newVal;
+
+                    result++;
+                }
+            }
+        } else {
+            for (int i = 0, len = a.length; i < len; i++) {
+                if (equals(a[i], oldVal)) {
+                    a[i] = newVal;
+
+                    result++;
+                }
+            }
+        }
+
+        return result;
+    }
+
     public static <T> int replaceAll(final List<T> list, final T oldVal, final T newVal) {
         if (N.isNullOrEmpty(list)) {
             return 0;
@@ -27597,34 +27427,6 @@ public final class N {
 
                         result++;
                     }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    public static <T> int replaceAll(final T[] a, final T oldVal, final T newVal) {
-        if (N.isNullOrEmpty(a)) {
-            return 0;
-        }
-
-        int result = 0;
-
-        if (oldVal == null) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (a[i] == null) {
-                    a[i] = newVal;
-
-                    result++;
-                }
-            }
-        } else {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (equals(a[i], oldVal)) {
-                    a[i] = newVal;
-
-                    result++;
                 }
             }
         }
@@ -30436,7 +30238,7 @@ public final class N {
         if (N.isNullOrEmpty(c) || N.isNullOrEmpty(elements)) {
             return false;
         } else {
-            return c.removeAll(N.asList(elements));
+            return c.removeAll(N.asSet(elements));
         }
     }
 
@@ -34583,6 +34385,57 @@ public final class N {
     public static String json2XML(final Class<?> cls, final String json) {
         return xmlParser.serialize(jsonParser.deserialize(cls, json));
     }
+
+    //    public static <T> CompletableFuture<T> asyncInvoke(final Method method, final Object... args) {
+    //        return asyncExecutor.invoke(method, args);
+    //    }
+    //
+    //    public static <T> CompletableFuture<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
+    //        return asyncExecutor.invoke(instance, method, args);
+    //    }
+
+    //    public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
+    //        IOUtil.parse(iter, elementParser);
+    //    }
+    //
+    //    public static <T> void parse(final Iterator<? extends T> iter, final long offset, final long count, final Consumer<? super T> elementParser) {
+    //        IOUtil.parse(iter, offset, count, elementParser);
+    //    }
+    //
+    //    /**
+    //     * Parse the elements in the specified iterators one by one.
+    //     * 
+    //     * @param iter
+    //     * @param offset
+    //     * @param count
+    //     * @param processThreadNumber thread number used to parse/process the lines/records
+    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+    //     * @param elementParser always remember to handle line <code>null</code>
+    //     */
+    //    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
+    //            final Consumer<? super T> elementParser) {
+    //        IOUtil.parse(iter, offset, count, processThreadNumber, queueSize, elementParser);
+    //    }
+    //
+    //    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNumber, final int processThreadNumber,
+    //            final int queueSize, final Consumer<? super T> elementParser) {
+    //        IOUtil.parse(iterators, readThreadNumber, processThreadNumber, queueSize, elementParser);
+    //    }
+    //
+    //    /**
+    //     * Parse the elements in the specified iterators one by one.
+    //     * 
+    //     * @param iterators
+    //     * @param offset
+    //     * @param count
+    //     * @param processThreadNumber thread number used to parse/process the lines/records
+    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+    //     * @param elementParser always remember to handle line <code>null</code>
+    //     */
+    //    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
+    //            final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
+    //        IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
+    //    }
 
     public static void execute(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
         AutoRetry.execute(runnable, ifRetry, retryTimes, retryInterval);

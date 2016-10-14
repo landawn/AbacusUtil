@@ -257,16 +257,6 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[0]);
     //    }
 
-    public OptionalLong findFirst(LongPredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return OptionalLong.of(elementData[i]);
-            }
-        }
-
-        return OptionalLong.empty();
-    }
-
     //    /**
     //     * Return the last element of the array list.
     //     * @return
@@ -275,16 +265,6 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     //    public OptionalLong findLast() {
     //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[size - 1]);
     //    }
-
-    public OptionalLong findLast(LongPredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
-            if (predicate.test(elementData[i])) {
-                return OptionalLong.of(elementData[i]);
-            }
-        }
-
-        return OptionalLong.empty();
-    }
 
     public long get(int index) {
         rangeCheck(index);
@@ -314,13 +294,15 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return oldValue;
     }
 
-    public void add(long e) {
+    public LongList add(long e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
+
+        return this;
     }
 
-    public void add(int index, long e) {
+    public LongList add(int index, long e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -334,10 +316,12 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         elementData[index] = e;
 
         size++;
+
+        return this;
     }
 
     @Override
-    public void addAll(LongList c) {
+    public LongList addAll(LongList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -345,10 +329,12 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     @Override
-    public void addAll(int index, LongList c) {
+    public LongList addAll(int index, LongList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -364,6 +350,8 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -438,9 +426,19 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
 
         int w = 0;
 
-        for (int i = 0; i < size; i++) {
-            if (c.contains(elementData[i]) == complement) {
-                elementData[w++] = elementData[i];
+        if (c.size() > 3 && size() > 9) {
+            final Set<Long> set = c.toSet();
+
+            for (int i = 0; i < size; i++) {
+                if (set.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (c.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
             }
         }
 
@@ -477,10 +475,19 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     public boolean containsAll(LongList c) {
         final long[] srcElementData = c.array();
 
-        for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+        if (c.size() > 3 && size() > 9) {
+            final Set<Long> set = c.toSet();
 
-            if (!contains(srcElementData[i])) {
-                return false;
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (set.contains(srcElementData[i]) == false) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (contains(srcElementData[i]) == false) {
+                    return false;
+                }
             }
         }
 
@@ -501,11 +508,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
      * @see IntList#except(IntList)
      */
     public LongList except(LongList b) {
-        final Multiset<Long> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Long> bOccurrences = b.toMultiset();
 
         final LongList c = new LongList(N.min(size(), N.max(9, size() - b.size())));
 
@@ -525,11 +528,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
      * @see IntList#intersect(IntList)
      */
     public LongList intersect(LongList b) {
-        final Multiset<Long> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Long> bOccurrences = b.toMultiset();
 
         final LongList c = new LongList(N.min(9, size(), b.size()));
 
@@ -694,6 +693,44 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
                 }
             }
         }
+    }
+
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalLong findFirst() {
+    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[0]);
+    //    }
+
+    public OptionalLong findFirst(LongPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalLong.of(elementData[i]);
+            }
+        }
+
+        return OptionalLong.empty();
+    }
+
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalLong findLast() {
+    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[size - 1]);
+    //    }
+
+    public OptionalLong findLast(LongPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalLong.of(elementData[i]);
+            }
+        }
+
+        return OptionalLong.empty();
     }
 
     @Override
@@ -924,20 +961,6 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         }
     }
 
-    @Override
-    public List<LongList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<long[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<LongList> result = new ArrayList<>(list.size());
-
-        for (long[] a : list) {
-            result.add(LongList.of(a));
-        }
-
-        return result;
-    }
-
     public LongList top(final int n) {
         return top(0, size(), n);
     }
@@ -993,8 +1016,22 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     @Override
+    public List<LongList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<long[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<LongList> result = new ArrayList<>(list.size());
+
+        for (long[] a : list) {
+            result.add(LongList.of(a));
+        }
+
+        return result;
+    }
+
+    @Override
     public LongList trimToSize() {
-        if (elementData.length != size) {
+        if (elementData.length > size) {
             elementData = N.copyOfRange(elementData, 0, size);
         }
 

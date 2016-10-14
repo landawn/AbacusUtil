@@ -196,16 +196,6 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     //        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[0]);
     //    }
 
-    public OptionalNullable<T> findFirst(Predicate<? super T> predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return OptionalNullable.of(elementData[i]);
-            }
-        }
-
-        return OptionalNullable.empty();
-    }
-
     //    /**
     //     * Return the last non-null element of the array list, or {@code OptionalNullable.empty()} if there is no non-null element.
     //     * @return
@@ -214,16 +204,6 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     //    public OptionalNullable<T> findLast() {
     //        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[size - 1]);
     //    }
-
-    public OptionalNullable<T> findLast(Predicate<? super T> predicate) {
-        for (int i = size - 1; i >= 0; i--) {
-            if (predicate.test(elementData[i])) {
-                return OptionalNullable.of(elementData[i]);
-            }
-        }
-
-        return OptionalNullable.empty();
-    }
 
     public T get(int index) {
         rangeCheck(index);
@@ -253,13 +233,15 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return oldValue;
     }
 
-    public void add(T e) {
+    public ObjectList<T> add(T e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
+
+        return this;
     }
 
-    public void add(int index, T e) {
+    public ObjectList<T> add(int index, T e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -273,10 +255,12 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         elementData[index] = e;
 
         size++;
+
+        return this;
     }
 
     @Override
-    public void addAll(ObjectList<T> c) {
+    public ObjectList<T> addAll(ObjectList<T> c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -284,10 +268,12 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     @Override
-    public void addAll(int index, ObjectList<T> c) {
+    public ObjectList<T> addAll(int index, ObjectList<T> c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -303,6 +289,8 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -378,9 +366,19 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
 
         int w = 0;
 
-        for (int i = 0; i < size; i++) {
-            if (c.contains(elementData[i]) == complement) {
-                elementData[w++] = elementData[i];
+        if (c.size() > 3 && size() > 9) {
+            final Set<?> set = c.toSet();
+
+            for (int i = 0; i < size; i++) {
+                if (set.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (c.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
             }
         }
 
@@ -417,10 +415,19 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public boolean containsAll(ObjectList<?> c) {
         final Object[] srcElementData = c.array();
 
-        for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+        if (c.size() > 3 && size() > 9) {
+            final Set<?> set = c.toSet();
 
-            if (!contains(srcElementData[i])) {
-                return false;
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (set.contains(srcElementData[i]) == false) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (contains(srcElementData[i]) == false) {
+                    return false;
+                }
             }
         }
 
@@ -441,11 +448,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @see IntList#except(IntList)
      */
     public ObjectList<T> except(ObjectList<?> b) {
-        final Multiset<Object> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<?> bOccurrences = b.toMultiset();
 
         final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(getComponentType(), N.min(size(), N.max(9, size() - b.size()))));
 
@@ -465,11 +468,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @see IntList#intersect(IntList)
      */
     public ObjectList<T> intersect(ObjectList<?> b) {
-        final Multiset<Object> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<?> bOccurrences = b.toMultiset();
 
         final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(getComponentType(), N.min(9, size(), b.size())));
 
@@ -930,6 +929,44 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
 
     }
 
+    //    /**
+    //     * Return the first element of the array list, or {@code OptionalNullable.empty()} if there is no element.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalNullable<T> findFirst() {
+    //        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[0]);
+    //    }
+
+    public OptionalNullable<T> findFirst(Predicate<? super T> predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalNullable.of(elementData[i]);
+            }
+        }
+
+        return OptionalNullable.empty();
+    }
+
+    //    /**
+    //     * Return the last non-null element of the array list, or {@code OptionalNullable.empty()} if there is no non-null element.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalNullable<T> findLast() {
+    //        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elementData[size - 1]);
+    //    }
+
+    public OptionalNullable<T> findLast(Predicate<? super T> predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalNullable.of(elementData[i]);
+            }
+        }
+
+        return OptionalNullable.empty();
+    }
+
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex);
@@ -1341,20 +1378,6 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
     }
 
-    @Override
-    public List<ObjectList<T>> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<T[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<ObjectList<T>> result = new ArrayList<>(list.size());
-
-        for (T[] a : list) {
-            result.add(of(a));
-        }
-
-        return result;
-    }
-
     public ObjectList<T> top(final int n) {
         return top(0, size(), n);
     }
@@ -1422,8 +1445,22 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     @Override
+    public List<ObjectList<T>> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<T[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<ObjectList<T>> result = new ArrayList<>(list.size());
+
+        for (T[] a : list) {
+            result.add(of(a));
+        }
+
+        return result;
+    }
+
+    @Override
     public ObjectList<T> trimToSize() {
-        if (elementData.length != size) {
+        if (elementData.length > size) {
             elementData = N.copyOfRange(elementData, 0, size);
         }
 
@@ -1458,26 +1495,26 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public <R extends com.landawn.abacus.util.AbstractList> R unboxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        final Class<?> cls = getComponentType();
+        final Class<?> componentType = getComponentType();
 
-        if (cls.equals(Integer.class)) {
+        if (componentType.equals(Integer.class)) {
             return (R) IntList.of(Array.unbox((Integer[]) elementData, fromIndex, toIndex, 0));
-        } else if (cls.equals(Long.class)) {
+        } else if (componentType.equals(Long.class)) {
             return (R) LongList.of(Array.unbox((Long[]) elementData, fromIndex, toIndex, 0));
-        } else if (cls.equals(Float.class)) {
+        } else if (componentType.equals(Float.class)) {
             return (R) FloatList.of(Array.unbox((Float[]) elementData, fromIndex, toIndex, 0));
-        } else if (cls.equals(Double.class)) {
+        } else if (componentType.equals(Double.class)) {
             return (R) DoubleList.of(Array.unbox((Double[]) elementData, fromIndex, toIndex, 0));
-        } else if (cls.equals(Boolean.class)) {
+        } else if (componentType.equals(Boolean.class)) {
             return (R) BooleanList.of(Array.unbox((Boolean[]) elementData, fromIndex, toIndex, false));
-        } else if (cls.equals(Character.class)) {
+        } else if (componentType.equals(Character.class)) {
             return (R) CharList.of(Array.unbox((Character[]) elementData, fromIndex, toIndex, (char) 0));
-        } else if (cls.equals(Byte.class)) {
+        } else if (componentType.equals(Byte.class)) {
             return (R) ByteList.of(Array.unbox((Byte[]) elementData, fromIndex, toIndex, (byte) 0));
-        } else if (cls.equals(Short.class)) {
+        } else if (componentType.equals(Short.class)) {
             return (R) ShortList.of(Array.unbox((Short[]) elementData, fromIndex, toIndex, (short) 0));
         } else {
-            throw new IllegalArgumentException(N.getClassName(cls) + " is not a wrapper of primitive type");
+            throw new IllegalArgumentException(N.getClassName(componentType) + " is not a wrapper of primitive type");
         }
     }
 

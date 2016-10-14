@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -31,6 +32,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.RandomAccess;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -2131,1045 +2133,132 @@ public final class Array {
 
     // ============================= Java 8 and above
 
-    static void parallelSort(final char[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a);
-    }
-
-    static void parallelSort(final char[] a, final int fromIndex, final int toIndex) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex);
-    }
-
-    static void parallelSort(final byte[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a);
-    }
-
-    static void parallelSort(final byte[] a, final int fromIndex, final int toIndex) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex);
-    }
-
-    static void parallelSort(final short[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a);
-    }
-
-    static void parallelSort(final short[] a, final int fromIndex, final int toIndex) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex);
-    }
-
-    static void parallelSort(final int[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a);
-    }
-
-    static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex);
-    }
-
-    static void parallelSort(final long[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a);
-    }
-
-    static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex);
-    }
-
-    static void parallelSort(final float[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a);
-    }
-
-    static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex);
-    }
-
-    static void parallelSort(final double[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a);
-    }
-
-    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex);
-    }
-
-    static void parallelSort(Object[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, N.OBJECT_COMPARATOR);
-    }
-
-    static void parallelSort(Object[] a, int fromIndex, int toIndex) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex, N.OBJECT_COMPARATOR);
-    }
-
-    static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, cmp);
-    }
-
-    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        Arrays.parallelSort(a, fromIndex, toIndex, cmp);
-    }
-
-    //    static void parallelSort(final char[] array) {
-    //        if (N.isNullOrEmpty(array)) {
-    //            return;
-    //        }
-    //
-    //        parallelSort(array, 0, array.length);
-    //    }
-    //
-    //    static void parallelSort(final char[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-    //            return;
-    //        }
-    //
-    //        final int len = toIndex - fromIndex;
-    //
-    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
-    //            sort(a, fromIndex, toIndex);
-    //            return;
-    //        }
-    //
-    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
-    //        final AtomicInteger activeThreadNum = new AtomicInteger();
-    //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            final int start = fromIndex + i * lenOfSubArray;
-    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-    //            subArrayIndexQueue.add(Pair.of(start, end));
-    //
-    //            activeThreadNum.incrementAndGet();
-    //
-    //            parallelSortExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    try {
-    //                        if (errorHolder.value() != null) {
-    //                            return;
-    //                        }
-    //
-    //                        Arrays.sort(a, start, end);
-    //                    } catch (Throwable e) {
-    //                        setError(errorHolder, e);
-    //                    } finally {
-    //                        activeThreadNum.decrementAndGet();
-    //                    }
-    //                }
-    //            });
-    //        }
-    //
-    //        while (activeThreadNum.get() > 0) {
-    //            N.sleep(10);
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //
-    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
-    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
-    //                if (++i == size) {
-    //                    subArrayIndexQueue.add(pairA);
-    //                } else {
-    //                    i++;
-    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
-    //
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    parallelSortExecutor.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            try {
-    //                                if (errorHolder.value() != null) {
-    //                                    return;
-    //                                }
-    //
-    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
-    //
-    //                            } catch (Throwable e) {
-    //                                setError(errorHolder, e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //            }
-    //
-    //            while (activeThreadNum.get() > 0) {
-    //                N.sleep(10);
-    //            }
-    //
-    //            if (errorHolder.value() != null) {
-    //                throw N.toRuntimeException(errorHolder.value());
-    //            }
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //    }
-    //
-    //    static void merge(final char[] a, int fromIndexA, int toIndexA, final char[] b, int fromIndexB, int toIndexB, int fromIndex) {
-    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
-    //            if (a[fromIndexA] <= b[fromIndexB]) {
-    //                b[fromIndex++] = a[fromIndexA++];
-    //            } else {
-    //                b[fromIndex++] = b[fromIndexB++];
-    //            }
-    //        }
-    //
-    //        if (fromIndexA < toIndexA) {
-    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
-    //            fromIndex += toIndexA - fromIndexA;
-    //        }
-    //    }
-    //
-    //    static void parallelSort(final byte[] array) {
-    //        if (N.isNullOrEmpty(array)) {
-    //            return;
-    //        }
-    //
-    //        parallelSort(array, 0, array.length);
-    //    }
-    //
-    //    static void parallelSort(final byte[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-    //            return;
-    //        }
-    //
-    //        final int len = toIndex - fromIndex;
-    //
-    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
-    //            sort(a, fromIndex, toIndex);
-    //            return;
-    //        }
-    //
-    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
-    //        final AtomicInteger activeThreadNum = new AtomicInteger();
-    //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            final int start = fromIndex + i * lenOfSubArray;
-    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-    //            subArrayIndexQueue.add(Pair.of(start, end));
-    //
-    //            activeThreadNum.incrementAndGet();
-    //
-    //            parallelSortExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    try {
-    //                        if (errorHolder.value() != null) {
-    //                            return;
-    //                        }
-    //
-    //                        Arrays.sort(a, start, end);
-    //                    } catch (Throwable e) {
-    //                        setError(errorHolder, e);
-    //                    } finally {
-    //                        activeThreadNum.decrementAndGet();
-    //                    }
-    //                }
-    //            });
-    //        }
-    //
-    //        while (activeThreadNum.get() > 0) {
-    //            N.sleep(10);
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //
-    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
-    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
-    //                if (++i == size) {
-    //                    subArrayIndexQueue.add(pairA);
-    //                } else {
-    //                    i++;
-    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
-    //
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    parallelSortExecutor.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            try {
-    //                                if (errorHolder.value() != null) {
-    //                                    return;
-    //                                }
-    //
-    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
-    //
-    //                            } catch (Throwable e) {
-    //                                setError(errorHolder, e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //            }
-    //
-    //            while (activeThreadNum.get() > 0) {
-    //                N.sleep(10);
-    //            }
-    //
-    //            if (errorHolder.value() != null) {
-    //                throw N.toRuntimeException(errorHolder.value());
-    //            }
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //    }
-    //
-    //    static void merge(final byte[] a, int fromIndexA, int toIndexA, final byte[] b, int fromIndexB, int toIndexB, int fromIndex) {
-    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
-    //            if (a[fromIndexA] <= b[fromIndexB]) {
-    //                b[fromIndex++] = a[fromIndexA++];
-    //            } else {
-    //                b[fromIndex++] = b[fromIndexB++];
-    //            }
-    //        }
-    //
-    //        if (fromIndexA < toIndexA) {
-    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
-    //            fromIndex += toIndexA - fromIndexA;
-    //        }
-    //    }
-    //
-    //    static void parallelSort(final short[] array) {
-    //        if (N.isNullOrEmpty(array)) {
-    //            return;
-    //        }
-    //
-    //        parallelSort(array, 0, array.length);
-    //    }
-    //
-    //    static void parallelSort(final short[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-    //            return;
-    //        }
-    //
-    //        final int len = toIndex - fromIndex;
-    //
-    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
-    //            sort(a, fromIndex, toIndex);
-    //            return;
-    //        }
-    //
-    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
-    //        final AtomicInteger activeThreadNum = new AtomicInteger();
-    //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            final int start = fromIndex + i * lenOfSubArray;
-    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-    //            subArrayIndexQueue.add(Pair.of(start, end));
-    //
-    //            activeThreadNum.incrementAndGet();
-    //
-    //            parallelSortExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    try {
-    //                        if (errorHolder.value() != null) {
-    //                            return;
-    //                        }
-    //
-    //                        Arrays.sort(a, start, end);
-    //                    } catch (Throwable e) {
-    //                        setError(errorHolder, e);
-    //                    } finally {
-    //                        activeThreadNum.decrementAndGet();
-    //                    }
-    //                }
-    //            });
-    //        }
-    //
-    //        while (activeThreadNum.get() > 0) {
-    //            N.sleep(10);
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //
-    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
-    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
-    //                if (++i == size) {
-    //                    subArrayIndexQueue.add(pairA);
-    //                } else {
-    //                    i++;
-    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
-    //
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    parallelSortExecutor.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            try {
-    //                                if (errorHolder.value() != null) {
-    //                                    return;
-    //                                }
-    //
-    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
-    //
-    //                            } catch (Throwable e) {
-    //                                setError(errorHolder, e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //            }
-    //
-    //            while (activeThreadNum.get() > 0) {
-    //                N.sleep(10);
-    //            }
-    //
-    //            if (errorHolder.value() != null) {
-    //                throw N.toRuntimeException(errorHolder.value());
-    //            }
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //    }
-    //
-    //    static void merge(final short[] a, int fromIndexA, int toIndexA, final short[] b, int fromIndexB, int toIndexB, int fromIndex) {
-    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
-    //            if (a[fromIndexA] <= b[fromIndexB]) {
-    //                b[fromIndex++] = a[fromIndexA++];
-    //            } else {
-    //                b[fromIndex++] = b[fromIndexB++];
-    //            }
-    //        }
-    //
-    //        if (fromIndexA < toIndexA) {
-    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
-    //            fromIndex += toIndexA - fromIndexA;
-    //        }
-    //    }
-    //
-    //    static void parallelSort(final int[] array) {
-    //        if (N.isNullOrEmpty(array)) {
-    //            return;
-    //        }
-    //
-    //        parallelSort(array, 0, array.length);
-    //    }
-    //
-    //    static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-    //            return;
-    //        }
-    //
-    //        final int len = toIndex - fromIndex;
-    //
-    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
-    //            sort(a, fromIndex, toIndex);
-    //            return;
-    //        }
-    //
-    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
-    //        final AtomicInteger activeThreadNum = new AtomicInteger();
-    //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            final int start = fromIndex + i * lenOfSubArray;
-    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-    //            subArrayIndexQueue.add(Pair.of(start, end));
-    //
-    //            activeThreadNum.incrementAndGet();
-    //
-    //            parallelSortExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    try {
-    //                        if (errorHolder.value() != null) {
-    //                            return;
-    //                        }
-    //
-    //                        Arrays.sort(a, start, end);
-    //                    } catch (Throwable e) {
-    //                        setError(errorHolder, e);
-    //                    } finally {
-    //                        activeThreadNum.decrementAndGet();
-    //                    }
-    //                }
-    //            });
-    //        }
-    //
-    //        while (activeThreadNum.get() > 0) {
-    //            N.sleep(10);
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //
-    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
-    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
-    //                if (++i == size) {
-    //                    subArrayIndexQueue.add(pairA);
-    //                } else {
-    //                    i++;
-    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
-    //
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    parallelSortExecutor.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            try {
-    //                                if (errorHolder.value() != null) {
-    //                                    return;
-    //                                }
-    //
-    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
-    //
-    //                            } catch (Throwable e) {
-    //                                setError(errorHolder, e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //            }
-    //
-    //            while (activeThreadNum.get() > 0) {
-    //                N.sleep(10);
-    //            }
-    //
-    //            if (errorHolder.value() != null) {
-    //                throw N.toRuntimeException(errorHolder.value());
-    //            }
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //    }
-    //
-    //    static void merge(final int[] a, int fromIndexA, int toIndexA, final int[] b, int fromIndexB, int toIndexB, int fromIndex) {
-    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
-    //            if (a[fromIndexA] <= b[fromIndexB]) {
-    //                b[fromIndex++] = a[fromIndexA++];
-    //            } else {
-    //                b[fromIndex++] = b[fromIndexB++];
-    //            }
-    //        }
-    //
-    //        if (fromIndexA < toIndexA) {
-    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
-    //            fromIndex += toIndexA - fromIndexA;
-    //        }
-    //    }
-    //
-    //    static void parallelSort(final long[] array) {
-    //        if (N.isNullOrEmpty(array)) {
-    //            return;
-    //        }
-    //
-    //        parallelSort(array, 0, array.length);
-    //    }
-    //
-    //    static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-    //            return;
-    //        }
-    //
-    //        final int len = toIndex - fromIndex;
-    //
-    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
-    //            sort(a, fromIndex, toIndex);
-    //            return;
-    //        }
-    //
-    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
-    //        final AtomicInteger activeThreadNum = new AtomicInteger();
-    //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            final int start = fromIndex + i * lenOfSubArray;
-    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-    //            subArrayIndexQueue.add(Pair.of(start, end));
-    //
-    //            activeThreadNum.incrementAndGet();
-    //
-    //            parallelSortExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    try {
-    //                        if (errorHolder.value() != null) {
-    //                            return;
-    //                        }
-    //
-    //                        Arrays.sort(a, start, end);
-    //                    } catch (Throwable e) {
-    //                        setError(errorHolder, e);
-    //                    } finally {
-    //                        activeThreadNum.decrementAndGet();
-    //                    }
-    //                }
-    //            });
-    //        }
-    //
-    //        while (activeThreadNum.get() > 0) {
-    //            N.sleep(10);
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //
-    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
-    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
-    //                if (++i == size) {
-    //                    subArrayIndexQueue.add(pairA);
-    //                } else {
-    //                    i++;
-    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
-    //
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    parallelSortExecutor.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            try {
-    //                                if (errorHolder.value() != null) {
-    //                                    return;
-    //                                }
-    //
-    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
-    //
-    //                            } catch (Throwable e) {
-    //                                setError(errorHolder, e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //            }
-    //
-    //            while (activeThreadNum.get() > 0) {
-    //                N.sleep(10);
-    //            }
-    //
-    //            if (errorHolder.value() != null) {
-    //                throw N.toRuntimeException(errorHolder.value());
-    //            }
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //    }
-    //
-    //    static void merge(final long[] a, int fromIndexA, int toIndexA, final long[] b, int fromIndexB, int toIndexB, int fromIndex) {
-    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
-    //            if (a[fromIndexA] <= b[fromIndexB]) {
-    //                b[fromIndex++] = a[fromIndexA++];
-    //            } else {
-    //                b[fromIndex++] = b[fromIndexB++];
-    //            }
-    //        }
-    //
-    //        if (fromIndexA < toIndexA) {
-    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
-    //            fromIndex += toIndexA - fromIndexA;
-    //        }
-    //    }
-    //
-    //    static void parallelSort(final float[] array) {
-    //        if (N.isNullOrEmpty(array)) {
-    //            return;
-    //        }
-    //
-    //        parallelSort(array, 0, array.length);
-    //    }
-    //
-    //    static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-    //            return;
-    //        }
-    //
-    //        final int len = toIndex - fromIndex;
-    //
-    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
-    //            sort(a, fromIndex, toIndex);
-    //            return;
-    //        }
-    //
-    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
-    //        final AtomicInteger activeThreadNum = new AtomicInteger();
-    //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            final int start = fromIndex + i * lenOfSubArray;
-    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-    //            subArrayIndexQueue.add(Pair.of(start, end));
-    //
-    //            activeThreadNum.incrementAndGet();
-    //
-    //            parallelSortExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    try {
-    //                        if (errorHolder.value() != null) {
-    //                            return;
-    //                        }
-    //
-    //                        Arrays.sort(a, start, end);
-    //                    } catch (Throwable e) {
-    //                        setError(errorHolder, e);
-    //                    } finally {
-    //                        activeThreadNum.decrementAndGet();
-    //                    }
-    //                }
-    //            });
-    //        }
-    //
-    //        while (activeThreadNum.get() > 0) {
-    //            N.sleep(10);
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //
-    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
-    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
-    //                if (++i == size) {
-    //                    subArrayIndexQueue.add(pairA);
-    //                } else {
-    //                    i++;
-    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
-    //
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    parallelSortExecutor.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            try {
-    //                                if (errorHolder.value() != null) {
-    //                                    return;
-    //                                }
-    //
-    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
-    //
-    //                            } catch (Throwable e) {
-    //                                setError(errorHolder, e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //            }
-    //
-    //            while (activeThreadNum.get() > 0) {
-    //                N.sleep(10);
-    //            }
-    //
-    //            if (errorHolder.value() != null) {
-    //                throw N.toRuntimeException(errorHolder.value());
-    //            }
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //    }
-    //
-    //    static void merge(final float[] a, int fromIndexA, int toIndexA, final float[] b, int fromIndexB, int toIndexB, int fromIndex) {
-    //        int numOfNaN = 0;
-    //
-    //        for (int i = toIndexA - 1; i >= fromIndexA && Float.isNaN(a[i]); i--) {
-    //            toIndexA--;
-    //            numOfNaN++;
-    //        }
-    //
-    //        for (int i = toIndexB - 1; i >= fromIndexB && Float.isNaN(b[i]); i--) {
-    //            toIndexB--;
-    //            numOfNaN++;
-    //        }
-    //
-    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
-    //            if (Float.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
-    //                b[fromIndex++] = a[fromIndexA++];
-    //            } else {
-    //                b[fromIndex++] = b[fromIndexB++];
-    //            }
-    //        }
-    //
-    //        if (fromIndexA < toIndexA) {
-    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
-    //            fromIndex += toIndexA - fromIndexA;
-    //        } else if (fromIndexB < toIndexB && numOfNaN > 0) {
-    //            N.copy(b, fromIndexB, b, fromIndex, toIndexB - fromIndexB);
-    //            fromIndex += toIndexB - fromIndexB;
-    //        }
-    //
-    //        if (numOfNaN > 0) {
-    //            N.fill(b, fromIndex, fromIndex + numOfNaN, Float.NaN);
-    //        }
-    //    }
-    //
-    //    static void parallelSort(final double[] array) {
-    //        if (N.isNullOrEmpty(array)) {
-    //            return;
-    //        }
-    //
-    //        parallelSort(array, 0, array.length);
-    //    }
-    //
-    //    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
-    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-    //            return;
-    //        }
-    //
-    //        final int len = toIndex - fromIndex;
-    //
-    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
-    //            sort(a, fromIndex, toIndex);
-    //            return;
-    //        }
-    //
-    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
-    //        final AtomicInteger activeThreadNum = new AtomicInteger();
-    //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            final int start = fromIndex + i * lenOfSubArray;
-    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-    //            subArrayIndexQueue.add(Pair.of(start, end));
-    //
-    //            activeThreadNum.incrementAndGet();
-    //
-    //            parallelSortExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    try {
-    //                        if (errorHolder.value() != null) {
-    //                            return;
-    //                        }
-    //
-    //                        Arrays.sort(a, start, end);
-    //                    } catch (Throwable e) {
-    //                        setError(errorHolder, e);
-    //                    } finally {
-    //                        activeThreadNum.decrementAndGet();
-    //                    }
-    //                }
-    //            });
-    //        }
-    //
-    //        while (activeThreadNum.get() > 0) {
-    //            N.sleep(10);
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //
-    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
-    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
-    //                if (++i == size) {
-    //                    subArrayIndexQueue.add(pairA);
-    //                } else {
-    //                    i++;
-    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
-    //
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    parallelSortExecutor.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            try {
-    //                                if (errorHolder.value() != null) {
-    //                                    return;
-    //                                }
-    //
-    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
-    //
-    //                            } catch (Throwable e) {
-    //                                setError(errorHolder, e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //            }
-    //
-    //            while (activeThreadNum.get() > 0) {
-    //                N.sleep(10);
-    //            }
-    //
-    //            if (errorHolder.value() != null) {
-    //                throw N.toRuntimeException(errorHolder.value());
-    //            }
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //    }
-    //
-    //    static void merge(final double[] a, int fromIndexA, int toIndexA, final double[] b, int fromIndexB, int toIndexB, int fromIndex) {
-    //        int numOfNaN = 0;
-    //
-    //        for (int i = toIndexA - 1; i >= fromIndexA && Double.isNaN(a[i]); i--) {
-    //            toIndexA--;
-    //            numOfNaN++;
-    //        }
-    //
-    //        for (int i = toIndexB - 1; i >= fromIndexB && Double.isNaN(b[i]); i--) {
-    //            toIndexB--;
-    //            numOfNaN++;
-    //        }
-    //
-    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
-    //            if (Double.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
-    //                b[fromIndex++] = a[fromIndexA++];
-    //            } else {
-    //                b[fromIndex++] = b[fromIndexB++];
-    //            }
-    //        }
-    //
-    //        if (fromIndexA < toIndexA) {
-    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
-    //            fromIndex += toIndexA - fromIndexA;
-    //        } else if (fromIndexB < toIndexB && numOfNaN > 0) {
-    //            N.copy(b, fromIndexB, b, fromIndex, toIndexB - fromIndexB);
-    //            fromIndex += toIndexB - fromIndexB;
-    //        }
-    //
-    //        if (numOfNaN > 0) {
-    //            N.fill(b, fromIndex, fromIndex + numOfNaN, Double.NaN);
-    //        }
-    //    }
-    //
-    //    static void parallelSort(final Object[] a) {
+    //    static void parallelSort(final char[] a) {
     //        if (N.isNullOrEmpty(a)) {
     //            return;
     //        }
     //
-    //        parallelSort(a, 0, a.length);
+    //        Arrays.parallelSort(a);
     //    }
     //
-    //    static void parallelSort(final Object[] a, final int fromIndex, final int toIndex) {
-    //        parallelSort(a, fromIndex, toIndex, null);
+    //    static void parallelSort(final char[] a, final int fromIndex, final int toIndex) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, fromIndex, toIndex);
+    //    }
+    //
+    //    static void parallelSort(final byte[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a);
+    //    }
+    //
+    //    static void parallelSort(final byte[] a, final int fromIndex, final int toIndex) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, fromIndex, toIndex);
+    //    }
+    //
+    //    static void parallelSort(final short[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a);
+    //    }
+    //
+    //    static void parallelSort(final short[] a, final int fromIndex, final int toIndex) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, fromIndex, toIndex);
+    //    }
+    //
+    //    static void parallelSort(final int[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a);
+    //    }
+    //
+    //    static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, fromIndex, toIndex);
+    //    }
+    //
+    //    static void parallelSort(final long[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a);
+    //    }
+    //
+    //    static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, fromIndex, toIndex);
+    //    }
+    //
+    //    static void parallelSort(final float[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a);
+    //    }
+    //
+    //    static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, fromIndex, toIndex);
+    //    }
+    //
+    //    static void parallelSort(final double[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a);
+    //    }
+    //
+    //    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, fromIndex, toIndex);
+    //    }
+    //
+    //    static void parallelSort(Object[] a) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, N.OBJECT_COMPARATOR);
+    //    }
+    //
+    //    static void parallelSort(Object[] a, int fromIndex, int toIndex) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        Arrays.parallelSort(a, fromIndex, toIndex, N.OBJECT_COMPARATOR);
     //    }
     //
     //    static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
@@ -3177,123 +2266,1036 @@ public final class Array {
     //            return;
     //        }
     //
-    //        parallelSort(a, 0, a.length, cmp);
+    //        Arrays.parallelSort(a, cmp);
     //    }
     //
-    //    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, Comparator<? super T> cmp) {
-    //        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+    //    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    //        if (N.isNullOrEmpty(a)) {
     //            return;
     //        }
     //
-    //        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
-    //        final int len = toIndex - fromIndex;
-    //
-    //        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
-    //            sort(a, fromIndex, toIndex, comparator);
-    //            return;
-    //        }
-    //
-    //        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
-    //        final AtomicInteger activeThreadNum = new AtomicInteger();
-    //        final Holder<Throwable> errorHolder = new Holder<Throwable>();
-    //        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
-    //
-    //        for (int i = 0; i < CPU_CORES; i++) {
-    //            final int start = fromIndex + i * lenOfSubArray;
-    //            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-    //            subArrayIndexQueue.add(Pair.of(start, end));
-    //
-    //            activeThreadNum.incrementAndGet();
-    //
-    //            parallelSortExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    try {
-    //                        if (errorHolder.value() != null) {
-    //                            return;
-    //                        }
-    //
-    //                        Arrays.sort(a, start, end, comparator);
-    //                    } catch (Throwable e) {
-    //                        setError(errorHolder, e);
-    //                    } finally {
-    //                        activeThreadNum.decrementAndGet();
-    //                    }
-    //                }
-    //            });
-    //        }
-    //
-    //        while (activeThreadNum.get() > 0) {
-    //            N.sleep(10);
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
-    //
-    //        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
-    //            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-    //                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
-    //                if (++i == size) {
-    //                    subArrayIndexQueue.add(pairA);
-    //                } else {
-    //                    i++;
-    //                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-    //                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
-    //
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    parallelSortExecutor.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            try {
-    //                                if (errorHolder.value() != null) {
-    //                                    return;
-    //                                }
-    //
-    //                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left,
-    //                                        comparator);
-    //
-    //                            } catch (Throwable e) {
-    //                                setError(errorHolder, e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //            }
-    //
-    //            while (activeThreadNum.get() > 0) {
-    //                N.sleep(10);
-    //            }
-    //
-    //            if (errorHolder.value() != null) {
-    //                throw N.toRuntimeException(errorHolder.value());
-    //            }
-    //        }
-    //
-    //        if (errorHolder.value() != null) {
-    //            throw N.toRuntimeException(errorHolder.value());
-    //        }
+    //        Arrays.parallelSort(a, fromIndex, toIndex, cmp);
     //    }
-    //
-    //    static <T> void merge(final T[] a, int fromIndexA, int toIndexA, final T[] b, int fromIndexB, int toIndexB, int fromIndex, Comparator<? super T> cmp) {
-    //        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
-    //            if (cmp.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
-    //                b[fromIndex++] = a[fromIndexA++];
-    //            } else {
-    //                b[fromIndex++] = b[fromIndexB++];
-    //            }
-    //        }
-    //
-    //        if (fromIndexA < toIndexA) {
-    //            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
-    //            fromIndex += toIndexA - fromIndexA;
-    //        }
-    //    }
+
+    static void parallelSort(final char[] array) {
+        if (N.isNullOrEmpty(array)) {
+            return;
+        }
+
+        parallelSort(array, 0, array.length);
+    }
+
+    static void parallelSort(final char[] a, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return;
+        }
+
+        final int len = toIndex - fromIndex;
+
+        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+            sort(a, fromIndex, toIndex);
+            return;
+        }
+
+        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final AtomicInteger activeThreadNum = new AtomicInteger();
+        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+
+        for (int i = 0; i < CPU_CORES; i++) {
+            final int start = fromIndex + i * lenOfSubArray;
+            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+            subArrayIndexQueue.add(Pair.of(start, end));
+
+            activeThreadNum.incrementAndGet();
+
+            parallelSortExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (errorHolder.value() != null) {
+                            return;
+                        }
+
+                        Arrays.sort(a, start, end);
+                    } catch (Throwable e) {
+                        setError(errorHolder, e);
+                    } finally {
+                        activeThreadNum.decrementAndGet();
+                    }
+                }
+            });
+        }
+
+        while (activeThreadNum.get() > 0) {
+            N.sleep(10);
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+
+        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                if (++i == size) {
+                    subArrayIndexQueue.add(pairA);
+                } else {
+                    i++;
+                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+
+                    activeThreadNum.incrementAndGet();
+
+                    parallelSortExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (errorHolder.value() != null) {
+                                    return;
+                                }
+
+                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+
+                            } catch (Throwable e) {
+                                setError(errorHolder, e);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+            }
+
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
+            }
+
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.value());
+            }
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+    }
+
+    static void merge(final char[] a, int fromIndexA, int toIndexA, final char[] b, int fromIndexB, int toIndexB, int fromIndex) {
+        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+            if (a[fromIndexA] <= b[fromIndexB]) {
+                b[fromIndex++] = a[fromIndexA++];
+            } else {
+                b[fromIndex++] = b[fromIndexB++];
+            }
+        }
+
+        if (fromIndexA < toIndexA) {
+            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+            fromIndex += toIndexA - fromIndexA;
+        }
+    }
+
+    static void parallelSort(final byte[] array) {
+        if (N.isNullOrEmpty(array)) {
+            return;
+        }
+
+        parallelSort(array, 0, array.length);
+    }
+
+    static void parallelSort(final byte[] a, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return;
+        }
+
+        final int len = toIndex - fromIndex;
+
+        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+            sort(a, fromIndex, toIndex);
+            return;
+        }
+
+        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final AtomicInteger activeThreadNum = new AtomicInteger();
+        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+
+        for (int i = 0; i < CPU_CORES; i++) {
+            final int start = fromIndex + i * lenOfSubArray;
+            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+            subArrayIndexQueue.add(Pair.of(start, end));
+
+            activeThreadNum.incrementAndGet();
+
+            parallelSortExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (errorHolder.value() != null) {
+                            return;
+                        }
+
+                        Arrays.sort(a, start, end);
+                    } catch (Throwable e) {
+                        setError(errorHolder, e);
+                    } finally {
+                        activeThreadNum.decrementAndGet();
+                    }
+                }
+            });
+        }
+
+        while (activeThreadNum.get() > 0) {
+            N.sleep(10);
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+
+        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                if (++i == size) {
+                    subArrayIndexQueue.add(pairA);
+                } else {
+                    i++;
+                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+
+                    activeThreadNum.incrementAndGet();
+
+                    parallelSortExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (errorHolder.value() != null) {
+                                    return;
+                                }
+
+                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+
+                            } catch (Throwable e) {
+                                setError(errorHolder, e);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+            }
+
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
+            }
+
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.value());
+            }
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+    }
+
+    static void merge(final byte[] a, int fromIndexA, int toIndexA, final byte[] b, int fromIndexB, int toIndexB, int fromIndex) {
+        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+            if (a[fromIndexA] <= b[fromIndexB]) {
+                b[fromIndex++] = a[fromIndexA++];
+            } else {
+                b[fromIndex++] = b[fromIndexB++];
+            }
+        }
+
+        if (fromIndexA < toIndexA) {
+            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+            fromIndex += toIndexA - fromIndexA;
+        }
+    }
+
+    static void parallelSort(final short[] array) {
+        if (N.isNullOrEmpty(array)) {
+            return;
+        }
+
+        parallelSort(array, 0, array.length);
+    }
+
+    static void parallelSort(final short[] a, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return;
+        }
+
+        final int len = toIndex - fromIndex;
+
+        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+            sort(a, fromIndex, toIndex);
+            return;
+        }
+
+        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final AtomicInteger activeThreadNum = new AtomicInteger();
+        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+
+        for (int i = 0; i < CPU_CORES; i++) {
+            final int start = fromIndex + i * lenOfSubArray;
+            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+            subArrayIndexQueue.add(Pair.of(start, end));
+
+            activeThreadNum.incrementAndGet();
+
+            parallelSortExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (errorHolder.value() != null) {
+                            return;
+                        }
+
+                        Arrays.sort(a, start, end);
+                    } catch (Throwable e) {
+                        setError(errorHolder, e);
+                    } finally {
+                        activeThreadNum.decrementAndGet();
+                    }
+                }
+            });
+        }
+
+        while (activeThreadNum.get() > 0) {
+            N.sleep(10);
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+
+        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                if (++i == size) {
+                    subArrayIndexQueue.add(pairA);
+                } else {
+                    i++;
+                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+
+                    activeThreadNum.incrementAndGet();
+
+                    parallelSortExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (errorHolder.value() != null) {
+                                    return;
+                                }
+
+                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+
+                            } catch (Throwable e) {
+                                setError(errorHolder, e);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+            }
+
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
+            }
+
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.value());
+            }
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+    }
+
+    static void merge(final short[] a, int fromIndexA, int toIndexA, final short[] b, int fromIndexB, int toIndexB, int fromIndex) {
+        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+            if (a[fromIndexA] <= b[fromIndexB]) {
+                b[fromIndex++] = a[fromIndexA++];
+            } else {
+                b[fromIndex++] = b[fromIndexB++];
+            }
+        }
+
+        if (fromIndexA < toIndexA) {
+            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+            fromIndex += toIndexA - fromIndexA;
+        }
+    }
+
+    static void parallelSort(final int[] array) {
+        if (N.isNullOrEmpty(array)) {
+            return;
+        }
+
+        parallelSort(array, 0, array.length);
+    }
+
+    static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return;
+        }
+
+        final int len = toIndex - fromIndex;
+
+        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+            sort(a, fromIndex, toIndex);
+            return;
+        }
+
+        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final AtomicInteger activeThreadNum = new AtomicInteger();
+        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+
+        for (int i = 0; i < CPU_CORES; i++) {
+            final int start = fromIndex + i * lenOfSubArray;
+            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+            subArrayIndexQueue.add(Pair.of(start, end));
+
+            activeThreadNum.incrementAndGet();
+
+            parallelSortExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (errorHolder.value() != null) {
+                            return;
+                        }
+
+                        Arrays.sort(a, start, end);
+                    } catch (Throwable e) {
+                        setError(errorHolder, e);
+                    } finally {
+                        activeThreadNum.decrementAndGet();
+                    }
+                }
+            });
+        }
+
+        while (activeThreadNum.get() > 0) {
+            N.sleep(10);
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+
+        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                if (++i == size) {
+                    subArrayIndexQueue.add(pairA);
+                } else {
+                    i++;
+                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+
+                    activeThreadNum.incrementAndGet();
+
+                    parallelSortExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (errorHolder.value() != null) {
+                                    return;
+                                }
+
+                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+
+                            } catch (Throwable e) {
+                                setError(errorHolder, e);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+            }
+
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
+            }
+
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.value());
+            }
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+    }
+
+    static void merge(final int[] a, int fromIndexA, int toIndexA, final int[] b, int fromIndexB, int toIndexB, int fromIndex) {
+        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+            if (a[fromIndexA] <= b[fromIndexB]) {
+                b[fromIndex++] = a[fromIndexA++];
+            } else {
+                b[fromIndex++] = b[fromIndexB++];
+            }
+        }
+
+        if (fromIndexA < toIndexA) {
+            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+            fromIndex += toIndexA - fromIndexA;
+        }
+    }
+
+    static void parallelSort(final long[] array) {
+        if (N.isNullOrEmpty(array)) {
+            return;
+        }
+
+        parallelSort(array, 0, array.length);
+    }
+
+    static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return;
+        }
+
+        final int len = toIndex - fromIndex;
+
+        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+            sort(a, fromIndex, toIndex);
+            return;
+        }
+
+        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final AtomicInteger activeThreadNum = new AtomicInteger();
+        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+
+        for (int i = 0; i < CPU_CORES; i++) {
+            final int start = fromIndex + i * lenOfSubArray;
+            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+            subArrayIndexQueue.add(Pair.of(start, end));
+
+            activeThreadNum.incrementAndGet();
+
+            parallelSortExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (errorHolder.value() != null) {
+                            return;
+                        }
+
+                        Arrays.sort(a, start, end);
+                    } catch (Throwable e) {
+                        setError(errorHolder, e);
+                    } finally {
+                        activeThreadNum.decrementAndGet();
+                    }
+                }
+            });
+        }
+
+        while (activeThreadNum.get() > 0) {
+            N.sleep(10);
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+
+        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                if (++i == size) {
+                    subArrayIndexQueue.add(pairA);
+                } else {
+                    i++;
+                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+
+                    activeThreadNum.incrementAndGet();
+
+                    parallelSortExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (errorHolder.value() != null) {
+                                    return;
+                                }
+
+                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+
+                            } catch (Throwable e) {
+                                setError(errorHolder, e);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+            }
+
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
+            }
+
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.value());
+            }
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+    }
+
+    static void merge(final long[] a, int fromIndexA, int toIndexA, final long[] b, int fromIndexB, int toIndexB, int fromIndex) {
+        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+            if (a[fromIndexA] <= b[fromIndexB]) {
+                b[fromIndex++] = a[fromIndexA++];
+            } else {
+                b[fromIndex++] = b[fromIndexB++];
+            }
+        }
+
+        if (fromIndexA < toIndexA) {
+            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+            fromIndex += toIndexA - fromIndexA;
+        }
+    }
+
+    static void parallelSort(final float[] array) {
+        if (N.isNullOrEmpty(array)) {
+            return;
+        }
+
+        parallelSort(array, 0, array.length);
+    }
+
+    static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return;
+        }
+
+        final int len = toIndex - fromIndex;
+
+        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+            sort(a, fromIndex, toIndex);
+            return;
+        }
+
+        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final AtomicInteger activeThreadNum = new AtomicInteger();
+        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+
+        for (int i = 0; i < CPU_CORES; i++) {
+            final int start = fromIndex + i * lenOfSubArray;
+            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+            subArrayIndexQueue.add(Pair.of(start, end));
+
+            activeThreadNum.incrementAndGet();
+
+            parallelSortExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (errorHolder.value() != null) {
+                            return;
+                        }
+
+                        Arrays.sort(a, start, end);
+                    } catch (Throwable e) {
+                        setError(errorHolder, e);
+                    } finally {
+                        activeThreadNum.decrementAndGet();
+                    }
+                }
+            });
+        }
+
+        while (activeThreadNum.get() > 0) {
+            N.sleep(10);
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+
+        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                if (++i == size) {
+                    subArrayIndexQueue.add(pairA);
+                } else {
+                    i++;
+                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+
+                    activeThreadNum.incrementAndGet();
+
+                    parallelSortExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (errorHolder.value() != null) {
+                                    return;
+                                }
+
+                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+
+                            } catch (Throwable e) {
+                                setError(errorHolder, e);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+            }
+
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
+            }
+
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.value());
+            }
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+    }
+
+    static void merge(final float[] a, int fromIndexA, int toIndexA, final float[] b, int fromIndexB, int toIndexB, int fromIndex) {
+        int numOfNaN = 0;
+
+        for (int i = toIndexA - 1; i >= fromIndexA && Float.isNaN(a[i]); i--) {
+            toIndexA--;
+            numOfNaN++;
+        }
+
+        for (int i = toIndexB - 1; i >= fromIndexB && Float.isNaN(b[i]); i--) {
+            toIndexB--;
+            numOfNaN++;
+        }
+
+        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+            if (Float.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
+                b[fromIndex++] = a[fromIndexA++];
+            } else {
+                b[fromIndex++] = b[fromIndexB++];
+            }
+        }
+
+        if (fromIndexA < toIndexA) {
+            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+            fromIndex += toIndexA - fromIndexA;
+        } else if (fromIndexB < toIndexB && numOfNaN > 0) {
+            N.copy(b, fromIndexB, b, fromIndex, toIndexB - fromIndexB);
+            fromIndex += toIndexB - fromIndexB;
+        }
+
+        if (numOfNaN > 0) {
+            N.fill(b, fromIndex, fromIndex + numOfNaN, Float.NaN);
+        }
+    }
+
+    static void parallelSort(final double[] array) {
+        if (N.isNullOrEmpty(array)) {
+            return;
+        }
+
+        parallelSort(array, 0, array.length);
+    }
+
+    static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return;
+        }
+
+        final int len = toIndex - fromIndex;
+
+        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+            sort(a, fromIndex, toIndex);
+            return;
+        }
+
+        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final AtomicInteger activeThreadNum = new AtomicInteger();
+        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+
+        for (int i = 0; i < CPU_CORES; i++) {
+            final int start = fromIndex + i * lenOfSubArray;
+            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+            subArrayIndexQueue.add(Pair.of(start, end));
+
+            activeThreadNum.incrementAndGet();
+
+            parallelSortExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (errorHolder.value() != null) {
+                            return;
+                        }
+
+                        Arrays.sort(a, start, end);
+                    } catch (Throwable e) {
+                        setError(errorHolder, e);
+                    } finally {
+                        activeThreadNum.decrementAndGet();
+                    }
+                }
+            });
+        }
+
+        while (activeThreadNum.get() > 0) {
+            N.sleep(10);
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+
+        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                if (++i == size) {
+                    subArrayIndexQueue.add(pairA);
+                } else {
+                    i++;
+                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+
+                    activeThreadNum.incrementAndGet();
+
+                    parallelSortExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (errorHolder.value() != null) {
+                                    return;
+                                }
+
+                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left);
+
+                            } catch (Throwable e) {
+                                setError(errorHolder, e);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+            }
+
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
+            }
+
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.value());
+            }
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+    }
+
+    static void merge(final double[] a, int fromIndexA, int toIndexA, final double[] b, int fromIndexB, int toIndexB, int fromIndex) {
+        int numOfNaN = 0;
+
+        for (int i = toIndexA - 1; i >= fromIndexA && Double.isNaN(a[i]); i--) {
+            toIndexA--;
+            numOfNaN++;
+        }
+
+        for (int i = toIndexB - 1; i >= fromIndexB && Double.isNaN(b[i]); i--) {
+            toIndexB--;
+            numOfNaN++;
+        }
+
+        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+            if (Double.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
+                b[fromIndex++] = a[fromIndexA++];
+            } else {
+                b[fromIndex++] = b[fromIndexB++];
+            }
+        }
+
+        if (fromIndexA < toIndexA) {
+            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+            fromIndex += toIndexA - fromIndexA;
+        } else if (fromIndexB < toIndexB && numOfNaN > 0) {
+            N.copy(b, fromIndexB, b, fromIndex, toIndexB - fromIndexB);
+            fromIndex += toIndexB - fromIndexB;
+        }
+
+        if (numOfNaN > 0) {
+            N.fill(b, fromIndex, fromIndex + numOfNaN, Double.NaN);
+        }
+    }
+
+    static void parallelSort(final Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        parallelSort(a, 0, a.length);
+    }
+
+    static void parallelSort(final Object[] a, final int fromIndex, final int toIndex) {
+        parallelSort(a, fromIndex, toIndex, N.OBJECT_COMPARATOR);
+    }
+
+    static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        parallelSort(a, 0, a.length, cmp);
+    }
+
+    static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, Comparator<? super T> cmp) {
+        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return;
+        }
+
+        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
+        final int len = toIndex - fromIndex;
+
+        if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
+            sort(a, fromIndex, toIndex, comparator);
+            return;
+        }
+
+        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final AtomicInteger activeThreadNum = new AtomicInteger();
+        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
+
+        for (int i = 0; i < CPU_CORES; i++) {
+            final int start = fromIndex + i * lenOfSubArray;
+            final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
+            subArrayIndexQueue.add(Pair.of(start, end));
+
+            activeThreadNum.incrementAndGet();
+
+            parallelSortExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (errorHolder.value() != null) {
+                            return;
+                        }
+
+                        Arrays.sort(a, start, end, comparator);
+                    } catch (Throwable e) {
+                        setError(errorHolder, e);
+                    } finally {
+                        activeThreadNum.decrementAndGet();
+                    }
+                }
+            });
+        }
+
+        while (activeThreadNum.get() > 0) {
+            N.sleep(10);
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+
+        while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
+            for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
+                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                if (++i == size) {
+                    subArrayIndexQueue.add(pairA);
+                } else {
+                    i++;
+                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+
+                    activeThreadNum.incrementAndGet();
+
+                    parallelSortExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if (errorHolder.value() != null) {
+                                    return;
+                                }
+
+                                merge(N.copyOfRange(a, pairA.left, pairA.right), 0, pairA.right - pairA.left, a, pairB.left, pairB.right, pairA.left,
+                                        comparator);
+
+                            } catch (Throwable e) {
+                                setError(errorHolder, e);
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+            }
+
+            while (activeThreadNum.get() > 0) {
+                N.sleep(10);
+            }
+
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.value());
+            }
+        }
+
+        if (errorHolder.value() != null) {
+            throw N.toRuntimeException(errorHolder.value());
+        }
+    }
+
+    static <T> void merge(final T[] a, int fromIndexA, int toIndexA, final T[] b, int fromIndexB, int toIndexB, int fromIndex, Comparator<? super T> cmp) {
+        while (fromIndexA < toIndexA && fromIndexB < toIndexB) {
+            if (cmp.compare(a[fromIndexA], b[fromIndexB]) <= 0) {
+                b[fromIndex++] = a[fromIndexA++];
+            } else {
+                b[fromIndex++] = b[fromIndexB++];
+            }
+        }
+
+        if (fromIndexA < toIndexA) {
+            N.copy(a, fromIndexA, b, fromIndex, toIndexA - fromIndexA);
+            fromIndex += toIndexA - fromIndexA;
+        }
+    }
 
     static <T extends Comparable<? super T>> void parallelSort(final List<? extends T> c) {
         if (N.isNullOrEmpty(c)) {

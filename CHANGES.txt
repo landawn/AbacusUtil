@@ -1,3 +1,11 @@
+========Changes in 0.9.22=========================================================================
+
+1, Change the specification/implementation of N.splitXXX(...).
+
+2, Refactoring: XXXParseConfig.
+
+3, Improvements and bug fix
+
 ========Changes in 0.9.21=========================================================================
 
 1, Refactoring: removeAll(Collection) in Multiset and LongMultiset to keep consistent with removeAll(Collection) in Collection.

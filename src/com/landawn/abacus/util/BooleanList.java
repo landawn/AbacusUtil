@@ -164,16 +164,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[0]);
     //    }
 
-    public OptionalBoolean findFirst(BooleanPredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return OptionalBoolean.of(elementData[i]);
-            }
-        }
-
-        return OptionalBoolean.empty();
-    }
-
     //    /**
     //     * Return the last element of the array list.
     //     * @return
@@ -182,16 +172,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     //    public OptionalBoolean findLast() {
     //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[size - 1]);
     //    }
-
-    public OptionalBoolean findLast(BooleanPredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
-            if (predicate.test(elementData[i])) {
-                return OptionalBoolean.of(elementData[i]);
-            }
-        }
-
-        return OptionalBoolean.empty();
-    }
 
     public boolean get(int index) {
         rangeCheck(index);
@@ -221,13 +201,15 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return oldValue;
     }
 
-    public void add(boolean e) {
+    public BooleanList add(boolean e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
+
+        return this;
     }
 
-    public void add(int index, boolean e) {
+    public BooleanList add(int index, boolean e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -241,10 +223,12 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         elementData[index] = e;
 
         size++;
+
+        return this;
     }
 
     @Override
-    public void addAll(BooleanList c) {
+    public BooleanList addAll(BooleanList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -252,10 +236,12 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     @Override
-    public void addAll(int index, BooleanList c) {
+    public BooleanList addAll(int index, BooleanList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -271,6 +257,8 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -345,9 +333,19 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
         int w = 0;
 
-        for (int i = 0; i < size; i++) {
-            if (c.contains(elementData[i]) == complement) {
-                elementData[w++] = elementData[i];
+        if (c.size() > 3 && size() > 9) {
+            final Set<Boolean> set = c.toSet();
+
+            for (int i = 0; i < size; i++) {
+                if (set.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (c.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
             }
         }
 
@@ -384,10 +382,19 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     public boolean containsAll(BooleanList c) {
         final boolean[] srcElementData = c.array();
 
-        for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+        if (c.size() > 3 && size() > 9) {
+            final Set<Boolean> set = c.toSet();
 
-            if (!contains(srcElementData[i])) {
-                return false;
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (set.contains(srcElementData[i]) == false) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (contains(srcElementData[i]) == false) {
+                    return false;
+                }
             }
         }
 
@@ -408,11 +415,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * @see IntList#except(IntList)
      */
     public BooleanList except(BooleanList b) {
-        final Multiset<Boolean> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Boolean> bOccurrences = b.toMultiset();
 
         final BooleanList c = new BooleanList(N.min(size(), N.max(9, size() - b.size())));
 
@@ -432,11 +435,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * @see IntList#intersect(IntList)
      */
     public BooleanList intersect(BooleanList b) {
-        final Multiset<Boolean> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Boolean> bOccurrences = b.toMultiset();
 
         final BooleanList c = new BooleanList(N.min(9, size(), b.size()));
 
@@ -544,6 +543,44 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
                 }
             }
         }
+    }
+
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalBoolean findFirst() {
+    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[0]);
+    //    }
+
+    public OptionalBoolean findFirst(BooleanPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalBoolean.of(elementData[i]);
+            }
+        }
+
+        return OptionalBoolean.empty();
+    }
+
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalBoolean findLast() {
+    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[size - 1]);
+    //    }
+
+    public OptionalBoolean findLast(BooleanPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalBoolean.of(elementData[i]);
+            }
+        }
+
+        return OptionalBoolean.empty();
     }
 
     @Override
@@ -776,20 +813,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
-    public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<BooleanList> result = new ArrayList<>(list.size());
-
-        for (boolean[] a : list) {
-            result.add(of(a));
-        }
-
-        return result;
-    }
-
-    @Override
     public void sort() {
         if (size <= 1) {
             return;
@@ -832,8 +855,22 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
+    public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<BooleanList> result = new ArrayList<>(list.size());
+
+        for (boolean[] a : list) {
+            result.add(of(a));
+        }
+
+        return result;
+    }
+
+    @Override
     public BooleanList trimToSize() {
-        if (elementData.length != size) {
+        if (elementData.length > size) {
             elementData = N.copyOfRange(elementData, 0, size);
         }
 

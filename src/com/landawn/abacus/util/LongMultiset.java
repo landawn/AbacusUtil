@@ -44,7 +44,7 @@ import com.landawn.abacus.util.function.Predicate;
  * occurrences of an element in a LongMultiset is called the <i>count</i> of that
  * element (the terms "frequency" and "multiplicity" are equivalent, but not
  * used in this API). Since the count of an element is represented as an {@code
- * int}, a LongMultiset may never contain more than {@link MutableLong#MAX_VALUE}
+ * long}, a LongMultiset may never contain more than {@link MutableLong#MAX_VALUE}
  * occurrences of any one element.
  *
  * @param <E>
@@ -76,6 +76,12 @@ public final class LongMultiset<E> implements Collection<E> {
         this(N.newInstance(valueMapType));
     }
 
+    public LongMultiset(final Collection<? extends E> c) {
+        this();
+
+        addAll(c);
+    }
+
     /**
      *
      * @param valueMap The valueMap and this Multiset share the same data; any changes to one will appear in the other.
@@ -83,12 +89,6 @@ public final class LongMultiset<E> implements Collection<E> {
     @Internal
     LongMultiset(final Map<E, MutableLong> valueMap) {
         this.valueMap = valueMap;
-    }
-
-    public LongMultiset(final Collection<? extends E> c) {
-        this();
-
-        addAll(c);
     }
 
     public static <T> LongMultiset<T> of(final T... a) {
@@ -302,15 +302,13 @@ public final class LongMultiset<E> implements Collection<E> {
         return this;
     }
 
-    public LongMultiset<E> setAll(final Collection<? extends E> c, final int occurrences) {
+    public LongMultiset<E> setAll(final Collection<? extends E> c, final long occurrences) {
         checkOccurrences(occurrences);
 
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        for (E e : c) {
-            set(e, occurrences);
+        if (N.notNullOrEmpty(c)) {
+            for (E e : c) {
+                set(e, occurrences);
+            }
         }
 
         return this;
@@ -416,48 +414,6 @@ public final class LongMultiset<E> implements Collection<E> {
         return OptionalDouble.of(sum / size());
     }
 
-    public Map<E, Long> toMap() {
-        final Map<E, Long> result = new HashMap<>(N.initHashCapacity(size()));
-
-        for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
-            result.put(entry.getKey(), entry.getValue().longValue());
-        }
-
-        return result;
-    }
-
-    public Map<E, Long> toMap(final IntFunction<Map<E, Long>> supplier) {
-        final Map<E, Long> result = supplier.apply(size());
-
-        for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
-            result.put(entry.getKey(), entry.getValue().longValue());
-        }
-
-        return result;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public Map<E, Long> toMapSortedByOccurrences() {
-        return toMapSortedBy((Comparator) cmpByCount);
-    }
-
-    public Map<E, Long> toMapSortedBy(final Comparator<Map.Entry<E, MutableLong>> cmp) {
-        if (N.isNullOrEmpty(valueMap)) {
-            return new LinkedHashMap<>();
-        }
-
-        final Map.Entry<E, MutableLong>[] entries = entrySet().toArray(new Map.Entry[size()]);
-        Arrays.sort(entries, cmp);
-
-        final Map<E, Long> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
-
-        for (Map.Entry<E, MutableLong> entry : entries) {
-            sortedValues.put(entry.getKey(), entry.getValue().longValue());
-        }
-
-        return sortedValues;
-    }
-
     /**
      *
      * @param e
@@ -482,7 +438,7 @@ public final class LongMultiset<E> implements Collection<E> {
         MutableLong count = valueMap.get(e);
 
         if (count != null && occurrences > (Long.MAX_VALUE - count.longValue())) {
-            throw new IllegalArgumentException("The total count is out of the bound of integer");
+            throw new IllegalArgumentException("The total count is out of the bound of long");
         }
 
         if (count == null) {
@@ -539,7 +495,7 @@ public final class LongMultiset<E> implements Collection<E> {
         MutableLong count = valueMap.get(e);
 
         if (count != null && occurrences > (Long.MAX_VALUE - count.longValue())) {
-            throw new IllegalArgumentException("The total count is out of the bound of integer");
+            throw new IllegalArgumentException("The total count is out of the bound of long");
         }
 
         if (count == null) {
@@ -564,7 +520,7 @@ public final class LongMultiset<E> implements Collection<E> {
         MutableLong count = valueMap.get(e);
 
         if (count != null && occurrences > (Long.MAX_VALUE - count.longValue())) {
-            throw new IllegalArgumentException("The total count is out of the bound of integer");
+            throw new IllegalArgumentException("The total count is out of the bound of long");
         }
 
         final long result = count == null ? 0 : count.longValue();
@@ -579,23 +535,6 @@ public final class LongMultiset<E> implements Collection<E> {
         }
 
         return result;
-    }
-
-    /**
-     * 
-     * @param m
-     * @throws IllegalArgumentException if the occurrences of element is less than 0.
-     */
-    public boolean addAll(final LongMultiset<? extends E> multiset) throws IllegalArgumentException {
-        if (N.isNullOrEmpty(multiset)) {
-            return false;
-        }
-
-        for (Map.Entry<? extends E, MutableLong> entry : multiset.entrySet()) {
-            add(entry.getKey(), entry.getValue().longValue());
-        }
-
-        return true;
     }
 
     /**
@@ -653,6 +592,23 @@ public final class LongMultiset<E> implements Collection<E> {
         }
 
         return result;
+    }
+
+    /**
+     * 
+     * @param m
+     * @throws IllegalArgumentException if the occurrences of element is less than 0.
+     */
+    public boolean addAll(final LongMultiset<? extends E> multiset) throws IllegalArgumentException {
+        if (N.isNullOrEmpty(multiset)) {
+            return false;
+        }
+
+        for (Map.Entry<? extends E, MutableLong> entry : multiset.entrySet()) {
+            add(entry.getKey(), entry.getValue().longValue());
+        }
+
+        return true;
     }
 
     @Override
@@ -758,10 +714,11 @@ public final class LongMultiset<E> implements Collection<E> {
     }
 
     /**
-     * Removes all of this collection's elements that are also contained in the
+     * Removes all of this Multiset's elements that are also contained in the
      * specified collection (optional operation).  After this call returns,
-     * this collection will contain no elements in common with the specified
-     * collection.
+     * this Multiset will contain no elements in common with the specified
+     * collection. This method ignores how often any element might appear in
+     * {@code c}, and only cares whether or not an element appears at all.
      * 
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
@@ -854,6 +811,7 @@ public final class LongMultiset<E> implements Collection<E> {
      *
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
+     * @see Collection#retainAll(Collection)
      */
     @Override
     public boolean retainAll(final Collection<?> c) {
@@ -904,6 +862,48 @@ public final class LongMultiset<E> implements Collection<E> {
     @Override
     public <T> T[] toArray(final T[] a) {
         return valueMap.keySet().toArray(a);
+    }
+
+    public Map<E, Long> toMap() {
+        final Map<E, Long> result = new HashMap<>(N.initHashCapacity(size()));
+
+        for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
+            result.put(entry.getKey(), entry.getValue().longValue());
+        }
+
+        return result;
+    }
+
+    public Map<E, Long> toMap(final IntFunction<Map<E, Long>> supplier) {
+        final Map<E, Long> result = supplier.apply(size());
+
+        for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
+            result.put(entry.getKey(), entry.getValue().longValue());
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Map<E, Long> toMapSortedByOccurrences() {
+        return toMapSortedBy((Comparator) cmpByCount);
+    }
+
+    public Map<E, Long> toMapSortedBy(final Comparator<Map.Entry<E, MutableLong>> cmp) {
+        if (N.isNullOrEmpty(valueMap)) {
+            return new LinkedHashMap<>();
+        }
+
+        final Map.Entry<E, MutableLong>[] entries = entrySet().toArray(new Map.Entry[size()]);
+        Arrays.sort(entries, cmp);
+
+        final Map<E, Long> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
+
+        for (Map.Entry<E, MutableLong> entry : entries) {
+            sortedValues.put(entry.getKey(), entry.getValue().longValue());
+        }
+
+        return sortedValues;
     }
 
     /**

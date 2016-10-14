@@ -574,10 +574,7 @@ public abstract class Builder<T> {
         }
 
         public MapBuilder<K, V, M> putAll(Map<? extends K, ? extends V> m) {
-            @SuppressWarnings("rawtypes")
-            final Map tmp = m;
-
-            value.putAll(tmp);
+            value.putAll(m);
 
             return this;
         }
@@ -621,10 +618,7 @@ public abstract class Builder<T> {
         }
 
         public MultimapBuilder<K, E, V> putAll(Multimap<? extends K, ? extends E, ? extends V> m) {
-            @SuppressWarnings("rawtypes")
-            final Multimap tmp = m;
-
-            value.putAll(tmp);
+            value.putAll(m);
 
             return this;
         }
@@ -656,10 +650,7 @@ public abstract class Builder<T> {
         }
 
         public MultimapBuilder<K, E, V> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
-            @SuppressWarnings("rawtypes")
-            final Multimap tmp = m;
-
-            value.removeAll(tmp);
+            value.removeAll(m);
 
             return this;
         }

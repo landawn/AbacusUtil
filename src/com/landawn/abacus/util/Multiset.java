@@ -76,6 +76,12 @@ public final class Multiset<E> implements Collection<E> {
         this(N.newInstance(valueMapType));
     }
 
+    public Multiset(final Collection<? extends E> c) {
+        this();
+
+        addAll(c);
+    }
+
     /**
      *
      * @param valueMap The valueMap and this Multiset share the same data; any changes to one will appear in the other.
@@ -83,12 +89,6 @@ public final class Multiset<E> implements Collection<E> {
     @Internal
     Multiset(final Map<E, MutableInt> valueMap) {
         this.valueMap = valueMap;
-    }
-
-    public Multiset(final Collection<? extends E> c) {
-        this();
-
-        addAll(c);
     }
 
     public static <T> Multiset<T> of(final T... a) {
@@ -275,12 +275,10 @@ public final class Multiset<E> implements Collection<E> {
     public Multiset<E> setAll(final Collection<? extends E> c, final int occurrences) {
         checkOccurrences(occurrences);
 
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        for (E e : c) {
-            set(e, occurrences);
+        if (N.notNullOrEmpty(c)) {
+            for (E e : c) {
+                set(e, occurrences);
+            }
         }
 
         return this;
@@ -384,48 +382,6 @@ public final class Multiset<E> implements Collection<E> {
         final double sum = sumOfOccurrences();
 
         return OptionalDouble.of(sum / size());
-    }
-
-    public Map<E, Integer> toMap() {
-        final Map<E, Integer> result = new HashMap<>(N.initHashCapacity(size()));
-
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
-            result.put(entry.getKey(), entry.getValue().intValue());
-        }
-
-        return result;
-    }
-
-    public Map<E, Integer> toMap(final IntFunction<Map<E, Integer>> supplier) {
-        final Map<E, Integer> result = supplier.apply(size());
-
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
-            result.put(entry.getKey(), entry.getValue().intValue());
-        }
-
-        return result;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public Map<E, Integer> toMapSortedByOccurrences() {
-        return toMapSortedBy((Comparator) cmpByCount);
-    }
-
-    public Map<E, Integer> toMapSortedBy(final Comparator<Map.Entry<E, MutableInt>> cmp) {
-        if (N.isNullOrEmpty(valueMap)) {
-            return new LinkedHashMap<>();
-        }
-
-        final Map.Entry<E, MutableInt>[] entries = entrySet().toArray(new Map.Entry[size()]);
-        Arrays.sort(entries, cmp);
-
-        final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
-
-        for (Map.Entry<E, MutableInt> entry : entries) {
-            sortedValues.put(entry.getKey(), entry.getValue().intValue());
-        }
-
-        return sortedValues;
     }
 
     /**
@@ -553,23 +509,6 @@ public final class Multiset<E> implements Collection<E> {
 
     /**
      * 
-     * @param m
-     * @throws IllegalArgumentException if the occurrences of element is less than 0.
-     */
-    public boolean addAll(final Multiset<? extends E> multiset) throws IllegalArgumentException {
-        if (N.isNullOrEmpty(multiset)) {
-            return false;
-        }
-
-        for (Map.Entry<? extends E, MutableInt> entry : multiset.entrySet()) {
-            add(entry.getKey(), entry.getValue().intValue());
-        }
-
-        return true;
-    }
-
-    /**
-     * 
      * @param c
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
@@ -623,6 +562,23 @@ public final class Multiset<E> implements Collection<E> {
         }
 
         return result;
+    }
+
+    /**
+     * 
+     * @param m
+     * @throws IllegalArgumentException if the occurrences of element is less than 0.
+     */
+    public boolean addAll(final Multiset<? extends E> multiset) throws IllegalArgumentException {
+        if (N.isNullOrEmpty(multiset)) {
+            return false;
+        }
+
+        for (Map.Entry<? extends E, MutableInt> entry : multiset.entrySet()) {
+            add(entry.getKey(), entry.getValue().intValue());
+        }
+
+        return true;
     }
 
     @Override
@@ -728,10 +684,11 @@ public final class Multiset<E> implements Collection<E> {
     }
 
     /**
-     * Removes all of this collection's elements that are also contained in the
+     * Removes all of this Multiset's elements that are also contained in the
      * specified collection (optional operation).  After this call returns,
-     * this collection will contain no elements in common with the specified
-     * collection.
+     * this Multiset will contain no elements in common with the specified
+     * collection. This method ignores how often any element might appear in
+     * {@code c}, and only cares whether or not an element appears at all.
      *
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
@@ -874,6 +831,48 @@ public final class Multiset<E> implements Collection<E> {
     @Override
     public <T> T[] toArray(final T[] a) {
         return valueMap.keySet().toArray(a);
+    }
+
+    public Map<E, Integer> toMap() {
+        final Map<E, Integer> result = new HashMap<>(N.initHashCapacity(size()));
+
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            result.put(entry.getKey(), entry.getValue().intValue());
+        }
+
+        return result;
+    }
+
+    public Map<E, Integer> toMap(final IntFunction<Map<E, Integer>> supplier) {
+        final Map<E, Integer> result = supplier.apply(size());
+
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            result.put(entry.getKey(), entry.getValue().intValue());
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Map<E, Integer> toMapSortedByOccurrences() {
+        return toMapSortedBy((Comparator) cmpByCount);
+    }
+
+    public Map<E, Integer> toMapSortedBy(final Comparator<Map.Entry<E, MutableInt>> cmp) {
+        if (N.isNullOrEmpty(valueMap)) {
+            return new LinkedHashMap<>();
+        }
+
+        final Map.Entry<E, MutableInt>[] entries = entrySet().toArray(new Map.Entry[size()]);
+        Arrays.sort(entries, cmp);
+
+        final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
+
+        for (Map.Entry<E, MutableInt> entry : entries) {
+            sortedValues.put(entry.getKey(), entry.getValue().intValue());
+        }
+
+        return sortedValues;
     }
 
     /**

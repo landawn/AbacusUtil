@@ -253,16 +253,6 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     //        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[0]);
     //    }
 
-    public OptionalFloat findFirst(FloatPredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return OptionalFloat.of(elementData[i]);
-            }
-        }
-
-        return OptionalFloat.empty();
-    }
-
     //    /**
     //     * Return the last element of the array list.
     //     * @return
@@ -271,16 +261,6 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     //    public OptionalFloat findLast() {
     //        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[size - 1]);
     //    }
-
-    public OptionalFloat findLast(FloatPredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
-            if (predicate.test(elementData[i])) {
-                return OptionalFloat.of(elementData[i]);
-            }
-        }
-
-        return OptionalFloat.empty();
-    }
 
     public float get(int index) {
         rangeCheck(index);
@@ -310,13 +290,15 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return oldValue;
     }
 
-    public void add(float e) {
+    public FloatList add(float e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
+
+        return this;
     }
 
-    public void add(int index, float e) {
+    public FloatList add(int index, float e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -330,10 +312,12 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         elementData[index] = e;
 
         size++;
+
+        return this;
     }
 
     @Override
-    public void addAll(FloatList c) {
+    public FloatList addAll(FloatList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -341,10 +325,12 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     @Override
-    public void addAll(int index, FloatList c) {
+    public FloatList addAll(int index, FloatList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -360,6 +346,8 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -434,9 +422,19 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
 
         int w = 0;
 
-        for (int i = 0; i < size; i++) {
-            if (c.contains(elementData[i]) == complement) {
-                elementData[w++] = elementData[i];
+        if (c.size() > 3 && size() > 9) {
+            final Set<Float> set = c.toSet();
+
+            for (int i = 0; i < size; i++) {
+                if (set.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (c.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
             }
         }
 
@@ -473,10 +471,19 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     public boolean containsAll(FloatList c) {
         final float[] srcElementData = c.array();
 
-        for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+        if (c.size() > 3 && size() > 9) {
+            final Set<Float> set = c.toSet();
 
-            if (!contains(srcElementData[i])) {
-                return false;
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (set.contains(srcElementData[i]) == false) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (contains(srcElementData[i]) == false) {
+                    return false;
+                }
             }
         }
 
@@ -497,11 +504,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
      * @see IntList#except(IntList)
      */
     public FloatList except(FloatList b) {
-        final Multiset<Float> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Float> bOccurrences = b.toMultiset();
 
         final FloatList c = new FloatList(N.min(size(), N.max(9, size() - b.size())));
 
@@ -521,11 +524,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
      * @see IntList#intersect(IntList)
      */
     public FloatList intersect(FloatList b) {
-        final Multiset<Float> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Float> bOccurrences = b.toMultiset();
 
         final FloatList c = new FloatList(N.min(9, size(), b.size()));
 
@@ -690,6 +689,44 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
                 }
             }
         }
+    }
+
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalFloat findFirst() {
+    //        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[0]);
+    //    }
+
+    public OptionalFloat findFirst(FloatPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalFloat.of(elementData[i]);
+            }
+        }
+
+        return OptionalFloat.empty();
+    }
+
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalFloat findLast() {
+    //        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[size - 1]);
+    //    }
+
+    public OptionalFloat findLast(FloatPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalFloat.of(elementData[i]);
+            }
+        }
+
+        return OptionalFloat.empty();
     }
 
     @Override
@@ -920,20 +957,6 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         }
     }
 
-    @Override
-    public List<FloatList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<float[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<FloatList> result = new ArrayList<>(list.size());
-
-        for (float[] a : list) {
-            result.add(FloatList.of(a));
-        }
-
-        return result;
-    }
-
     public FloatList top(final int n) {
         return top(0, size(), n);
     }
@@ -989,8 +1012,22 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     }
 
     @Override
+    public List<FloatList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<float[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<FloatList> result = new ArrayList<>(list.size());
+
+        for (float[] a : list) {
+            result.add(FloatList.of(a));
+        }
+
+        return result;
+    }
+
+    @Override
     public FloatList trimToSize() {
-        if (elementData.length != size) {
+        if (elementData.length > size) {
             elementData = N.copyOfRange(elementData, 0, size);
         }
 

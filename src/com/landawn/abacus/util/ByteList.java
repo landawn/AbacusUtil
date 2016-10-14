@@ -212,16 +212,6 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[0]);
     //    }
 
-    public OptionalByte findFirst(BytePredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return OptionalByte.of(elementData[i]);
-            }
-        }
-
-        return OptionalByte.empty();
-    }
-
     //    /**
     //     * Return the last element of the array list.
     //     * @return
@@ -230,16 +220,6 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     //    public OptionalByte findLast() {
     //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[size - 1]);
     //    }
-
-    public OptionalByte findLast(BytePredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
-            if (predicate.test(elementData[i])) {
-                return OptionalByte.of(elementData[i]);
-            }
-        }
-
-        return OptionalByte.empty();
-    }
 
     public byte get(int index) {
         rangeCheck(index);
@@ -269,13 +249,15 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return oldValue;
     }
 
-    public void add(byte e) {
+    public ByteList add(byte e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
+
+        return this;
     }
 
-    public void add(int index, byte e) {
+    public ByteList add(int index, byte e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -289,10 +271,12 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         elementData[index] = e;
 
         size++;
+
+        return this;
     }
 
     @Override
-    public void addAll(ByteList c) {
+    public ByteList addAll(ByteList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -300,10 +284,12 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     @Override
-    public void addAll(int index, ByteList c) {
+    public ByteList addAll(int index, ByteList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -319,6 +305,8 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -394,9 +382,19 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
 
         int w = 0;
 
-        for (int i = 0; i < size; i++) {
-            if (c.contains(elementData[i]) == complement) {
-                elementData[w++] = elementData[i];
+        if (c.size() > 3 && size() > 9) {
+            final Set<Byte> set = c.toSet();
+
+            for (int i = 0; i < size; i++) {
+                if (set.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (c.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
             }
         }
 
@@ -433,10 +431,19 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     public boolean containsAll(ByteList c) {
         final byte[] srcElementData = c.array();
 
-        for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+        if (c.size() > 3 && size() > 9) {
+            final Set<Byte> set = c.toSet();
 
-            if (!contains(srcElementData[i])) {
-                return false;
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (set.contains(srcElementData[i]) == false) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (contains(srcElementData[i]) == false) {
+                    return false;
+                }
             }
         }
 
@@ -457,11 +464,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @see IntList#except(IntList)
      */
     public ByteList except(ByteList b) {
-        final Multiset<Byte> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Byte> bOccurrences = b.toMultiset();
 
         final ByteList c = new ByteList(N.min(size(), N.max(9, size() - b.size())));
 
@@ -481,11 +484,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
      * @see IntList#intersect(IntList)
      */
     public ByteList intersect(ByteList b) {
-        final Multiset<Byte> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Byte> bOccurrences = b.toMultiset();
 
         final ByteList c = new ByteList(N.min(9, size(), b.size()));
 
@@ -650,6 +649,44 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
                 }
             }
         }
+    }
+
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalByte findFirst() {
+    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[0]);
+    //    }
+
+    public OptionalByte findFirst(BytePredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalByte.of(elementData[i]);
+            }
+        }
+
+        return OptionalByte.empty();
+    }
+
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalByte findLast() {
+    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[size - 1]);
+    //    }
+
+    public OptionalByte findLast(BytePredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalByte.of(elementData[i]);
+            }
+        }
+
+        return OptionalByte.empty();
     }
 
     @Override
@@ -881,20 +918,6 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
-    public List<ByteList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<ByteList> result = new ArrayList<>(list.size());
-
-        for (byte[] a : list) {
-            result.add(of(a));
-        }
-
-        return result;
-    }
-
-    @Override
     public void sort() {
         if (size > 1) {
             N.sort(elementData, 0, size);
@@ -929,8 +952,22 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
+    public List<ByteList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<ByteList> result = new ArrayList<>(list.size());
+
+        for (byte[] a : list) {
+            result.add(of(a));
+        }
+
+        return result;
+    }
+
+    @Override
     public ByteList trimToSize() {
-        if (elementData.length != size) {
+        if (elementData.length > size) {
             elementData = N.copyOfRange(elementData, 0, size);
         }
 

@@ -46,7 +46,7 @@ import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.Exclusion;
-import com.landawn.abacus.parser.SerializationConfig;
+import com.landawn.abacus.parser.XMLSerializationConfig;
 import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.SQLExecutor.AbstractResultSetExtractor;
@@ -63,7 +63,7 @@ public final class PropertiesUtil {
     private static final Logger logger = LoggerFactory.getLogger(PropertiesUtil.class);
 
     private static final String TYPE = "type";
-    private static final SerializationConfig xsc = XSC.valueOf(true, true, DateTimeFormat.ISO_8601_DATETIME, Exclusion.NONE, null);
+    private static final XMLSerializationConfig xsc = XSC.of(true, true, DateTimeFormat.ISO_8601_DATETIME, Exclusion.NONE, null);
 
     private static final ResultSetExtractor<ConfigEntity> CONFIG_ENTITY_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<ConfigEntity>() {
         @Override

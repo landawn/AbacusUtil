@@ -1936,6 +1936,238 @@ public final class Collectors {
         return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
+    //    public static <T> Collector<T, ?, DataSet> toDataSet(final String entityName, final Class<?> entityClass, final List<String> columnNames) {
+    //        @SuppressWarnings("rawtypes")
+    //        final Collector<T, List<T>, List<T>> collector = (Collector) toList();
+    //
+    //        final Function<List<T>, DataSet> finisher = new Function<List<T>, DataSet>() {
+    //            @Override
+    //            public DataSet apply(List<T> t) {
+    //                return N.newDataSet(entityName, entityClass, columnNames, t);
+    //            }
+    //        };
+    //
+    //        return new CollectorImpl<T, List<T>, DataSet>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher);
+    //    }
+
+    public static <T> Collector<T, ?, CharSummaryStatistics> summarizingChar(final ToCharFunction<? super T> mapper) {
+        final Supplier<CharSummaryStatistics> supplier = new Supplier<CharSummaryStatistics>() {
+            @Override
+            public CharSummaryStatistics get() {
+                return new CharSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<CharSummaryStatistics, T> accumulator = new BiConsumer<CharSummaryStatistics, T>() {
+            @Override
+            public void accept(CharSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsChar(t));
+            }
+        };
+
+        final BinaryOperator<CharSummaryStatistics> combiner = new BinaryOperator<CharSummaryStatistics>() {
+            @Override
+            public CharSummaryStatistics apply(CharSummaryStatistics a, CharSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, CharSummaryStatistics, CharSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T> Collector<T, ?, ByteSummaryStatistics> summarizingByte(final ToByteFunction<? super T> mapper) {
+        final Supplier<ByteSummaryStatistics> supplier = new Supplier<ByteSummaryStatistics>() {
+            @Override
+            public ByteSummaryStatistics get() {
+                return new ByteSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<ByteSummaryStatistics, T> accumulator = new BiConsumer<ByteSummaryStatistics, T>() {
+            @Override
+            public void accept(ByteSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsByte(t));
+            }
+        };
+
+        final BinaryOperator<ByteSummaryStatistics> combiner = new BinaryOperator<ByteSummaryStatistics>() {
+            @Override
+            public ByteSummaryStatistics apply(ByteSummaryStatistics a, ByteSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, ByteSummaryStatistics, ByteSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T> Collector<T, ?, ShortSummaryStatistics> summarizingShort(final ToShortFunction<? super T> mapper) {
+        final Supplier<ShortSummaryStatistics> supplier = new Supplier<ShortSummaryStatistics>() {
+            @Override
+            public ShortSummaryStatistics get() {
+                return new ShortSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<ShortSummaryStatistics, T> accumulator = new BiConsumer<ShortSummaryStatistics, T>() {
+            @Override
+            public void accept(ShortSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsShort(t));
+            }
+        };
+
+        final BinaryOperator<ShortSummaryStatistics> combiner = new BinaryOperator<ShortSummaryStatistics>() {
+            @Override
+            public ShortSummaryStatistics apply(ShortSummaryStatistics a, ShortSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, ShortSummaryStatistics, ShortSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    /**
+     * Returns a {@code Collector} which applies an {@code int}-producing
+     * mapping function to each input element, and returns summary statistics
+     * for the resulting values.
+     *
+     * @param <T> the type of the input elements
+     * @param mapper a mapping function to apply to each element
+     * @return a {@code Collector} implementing the summary-statistics reduction
+     *
+     * @see #summarizingDouble(ToDoubleFunction)
+     * @see #summarizingLong(ToLongFunction)
+     */
+    public static <T> Collector<T, ?, IntSummaryStatistics> summarizingInt(final ToIntFunction<? super T> mapper) {
+        final Supplier<IntSummaryStatistics> supplier = new Supplier<IntSummaryStatistics>() {
+            @Override
+            public IntSummaryStatistics get() {
+                return new IntSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<IntSummaryStatistics, T> accumulator = new BiConsumer<IntSummaryStatistics, T>() {
+            @Override
+            public void accept(IntSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsInt(t));
+            }
+        };
+
+        final BinaryOperator<IntSummaryStatistics> combiner = new BinaryOperator<IntSummaryStatistics>() {
+            @Override
+            public IntSummaryStatistics apply(IntSummaryStatistics a, IntSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, IntSummaryStatistics, IntSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    /**
+     * Returns a {@code Collector} which applies an {@code long}-producing
+     * mapping function to each input element, and returns summary statistics
+     * for the resulting values.
+     *
+     * @param <T> the type of the input elements
+     * @param mapper the mapping function to apply to each element
+     * @return a {@code Collector} implementing the summary-statistics reduction
+     *
+     * @see #summarizingDouble(ToDoubleFunction)
+     * @see #summarizingInt(ToIntFunction)
+     */
+    public static <T> Collector<T, ?, LongSummaryStatistics> summarizingLong(final ToLongFunction<? super T> mapper) {
+        final Supplier<LongSummaryStatistics> supplier = new Supplier<LongSummaryStatistics>() {
+            @Override
+            public LongSummaryStatistics get() {
+                return new LongSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<LongSummaryStatistics, T> accumulator = new BiConsumer<LongSummaryStatistics, T>() {
+            @Override
+            public void accept(LongSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsLong(t));
+            }
+        };
+
+        final BinaryOperator<LongSummaryStatistics> combiner = new BinaryOperator<LongSummaryStatistics>() {
+            @Override
+            public LongSummaryStatistics apply(LongSummaryStatistics a, LongSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, LongSummaryStatistics, LongSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    public static <T> Collector<T, ?, FloatSummaryStatistics> summarizingFloat(final ToFloatFunction<? super T> mapper) {
+        final Supplier<FloatSummaryStatistics> supplier = new Supplier<FloatSummaryStatistics>() {
+            @Override
+            public FloatSummaryStatistics get() {
+                return new FloatSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<FloatSummaryStatistics, T> accumulator = new BiConsumer<FloatSummaryStatistics, T>() {
+            @Override
+            public void accept(FloatSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsFloat(t));
+            }
+        };
+
+        final BinaryOperator<FloatSummaryStatistics> combiner = new BinaryOperator<FloatSummaryStatistics>() {
+            @Override
+            public FloatSummaryStatistics apply(FloatSummaryStatistics a, FloatSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, FloatSummaryStatistics, FloatSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
+    /**
+     * Returns a {@code Collector} which applies an {@code double}-producing
+     * mapping function to each input element, and returns summary statistics
+     * for the resulting values.
+     *
+     * @param <T> the type of the input elements
+     * @param mapper a mapping function to apply to each element
+     * @return a {@code Collector} implementing the summary-statistics reduction
+     *
+     * @see #summarizingLong(ToLongFunction)
+     * @see #summarizingInt(ToIntFunction)
+     */
+    public static <T> Collector<T, ?, DoubleSummaryStatistics> summarizingDouble(final ToDoubleFunction<? super T> mapper) {
+        final Supplier<DoubleSummaryStatistics> supplier = new Supplier<DoubleSummaryStatistics>() {
+            @Override
+            public DoubleSummaryStatistics get() {
+                return new DoubleSummaryStatistics();
+            }
+        };
+
+        final BiConsumer<DoubleSummaryStatistics, T> accumulator = new BiConsumer<DoubleSummaryStatistics, T>() {
+            @Override
+            public void accept(DoubleSummaryStatistics a, T t) {
+                a.accept(mapper.applyAsDouble(t));
+            }
+        };
+
+        final BinaryOperator<DoubleSummaryStatistics> combiner = new BinaryOperator<DoubleSummaryStatistics>() {
+            @Override
+            public DoubleSummaryStatistics apply(DoubleSummaryStatistics a, DoubleSummaryStatistics b) {
+                a.combine(b);
+                return a;
+            }
+        };
+
+        return new CollectorImpl<T, DoubleSummaryStatistics, DoubleSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
+    }
+
     /**
      * Returns a {@code Collector} which performs a reduction of its
      * input elements under a specified {@code BinaryOperator} using the
@@ -3256,224 +3488,6 @@ public final class Collectors {
     //
     //        return new CollectorImpl<T, List<T>, DataSet>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher);
     //    }
-
-    public static <T> Collector<T, ?, CharSummaryStatistics> summarizingChar(final ToCharFunction<? super T> mapper) {
-        final Supplier<CharSummaryStatistics> supplier = new Supplier<CharSummaryStatistics>() {
-            @Override
-            public CharSummaryStatistics get() {
-                return new CharSummaryStatistics();
-            }
-        };
-
-        final BiConsumer<CharSummaryStatistics, T> accumulator = new BiConsumer<CharSummaryStatistics, T>() {
-            @Override
-            public void accept(CharSummaryStatistics a, T t) {
-                a.accept(mapper.applyAsChar(t));
-            }
-        };
-
-        final BinaryOperator<CharSummaryStatistics> combiner = new BinaryOperator<CharSummaryStatistics>() {
-            @Override
-            public CharSummaryStatistics apply(CharSummaryStatistics a, CharSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
-
-        return new CollectorImpl<T, CharSummaryStatistics, CharSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
-    }
-
-    public static <T> Collector<T, ?, ByteSummaryStatistics> summarizingByte(final ToByteFunction<? super T> mapper) {
-        final Supplier<ByteSummaryStatistics> supplier = new Supplier<ByteSummaryStatistics>() {
-            @Override
-            public ByteSummaryStatistics get() {
-                return new ByteSummaryStatistics();
-            }
-        };
-
-        final BiConsumer<ByteSummaryStatistics, T> accumulator = new BiConsumer<ByteSummaryStatistics, T>() {
-            @Override
-            public void accept(ByteSummaryStatistics a, T t) {
-                a.accept(mapper.applyAsByte(t));
-            }
-        };
-
-        final BinaryOperator<ByteSummaryStatistics> combiner = new BinaryOperator<ByteSummaryStatistics>() {
-            @Override
-            public ByteSummaryStatistics apply(ByteSummaryStatistics a, ByteSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
-
-        return new CollectorImpl<T, ByteSummaryStatistics, ByteSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
-    }
-
-    public static <T> Collector<T, ?, ShortSummaryStatistics> summarizingShort(final ToShortFunction<? super T> mapper) {
-        final Supplier<ShortSummaryStatistics> supplier = new Supplier<ShortSummaryStatistics>() {
-            @Override
-            public ShortSummaryStatistics get() {
-                return new ShortSummaryStatistics();
-            }
-        };
-
-        final BiConsumer<ShortSummaryStatistics, T> accumulator = new BiConsumer<ShortSummaryStatistics, T>() {
-            @Override
-            public void accept(ShortSummaryStatistics a, T t) {
-                a.accept(mapper.applyAsShort(t));
-            }
-        };
-
-        final BinaryOperator<ShortSummaryStatistics> combiner = new BinaryOperator<ShortSummaryStatistics>() {
-            @Override
-            public ShortSummaryStatistics apply(ShortSummaryStatistics a, ShortSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
-
-        return new CollectorImpl<T, ShortSummaryStatistics, ShortSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
-    }
-
-    /**
-     * Returns a {@code Collector} which applies an {@code int}-producing
-     * mapping function to each input element, and returns summary statistics
-     * for the resulting values.
-     *
-     * @param <T> the type of the input elements
-     * @param mapper a mapping function to apply to each element
-     * @return a {@code Collector} implementing the summary-statistics reduction
-     *
-     * @see #summarizingDouble(ToDoubleFunction)
-     * @see #summarizingLong(ToLongFunction)
-     */
-    public static <T> Collector<T, ?, IntSummaryStatistics> summarizingInt(final ToIntFunction<? super T> mapper) {
-        final Supplier<IntSummaryStatistics> supplier = new Supplier<IntSummaryStatistics>() {
-            @Override
-            public IntSummaryStatistics get() {
-                return new IntSummaryStatistics();
-            }
-        };
-
-        final BiConsumer<IntSummaryStatistics, T> accumulator = new BiConsumer<IntSummaryStatistics, T>() {
-            @Override
-            public void accept(IntSummaryStatistics a, T t) {
-                a.accept(mapper.applyAsInt(t));
-            }
-        };
-
-        final BinaryOperator<IntSummaryStatistics> combiner = new BinaryOperator<IntSummaryStatistics>() {
-            @Override
-            public IntSummaryStatistics apply(IntSummaryStatistics a, IntSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
-
-        return new CollectorImpl<T, IntSummaryStatistics, IntSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
-    }
-
-    /**
-     * Returns a {@code Collector} which applies an {@code long}-producing
-     * mapping function to each input element, and returns summary statistics
-     * for the resulting values.
-     *
-     * @param <T> the type of the input elements
-     * @param mapper the mapping function to apply to each element
-     * @return a {@code Collector} implementing the summary-statistics reduction
-     *
-     * @see #summarizingDouble(ToDoubleFunction)
-     * @see #summarizingInt(ToIntFunction)
-     */
-    public static <T> Collector<T, ?, LongSummaryStatistics> summarizingLong(final ToLongFunction<? super T> mapper) {
-        final Supplier<LongSummaryStatistics> supplier = new Supplier<LongSummaryStatistics>() {
-            @Override
-            public LongSummaryStatistics get() {
-                return new LongSummaryStatistics();
-            }
-        };
-
-        final BiConsumer<LongSummaryStatistics, T> accumulator = new BiConsumer<LongSummaryStatistics, T>() {
-            @Override
-            public void accept(LongSummaryStatistics a, T t) {
-                a.accept(mapper.applyAsLong(t));
-            }
-        };
-
-        final BinaryOperator<LongSummaryStatistics> combiner = new BinaryOperator<LongSummaryStatistics>() {
-            @Override
-            public LongSummaryStatistics apply(LongSummaryStatistics a, LongSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
-
-        return new CollectorImpl<T, LongSummaryStatistics, LongSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
-    }
-
-    public static <T> Collector<T, ?, FloatSummaryStatistics> summarizingFloat(final ToFloatFunction<? super T> mapper) {
-        final Supplier<FloatSummaryStatistics> supplier = new Supplier<FloatSummaryStatistics>() {
-            @Override
-            public FloatSummaryStatistics get() {
-                return new FloatSummaryStatistics();
-            }
-        };
-
-        final BiConsumer<FloatSummaryStatistics, T> accumulator = new BiConsumer<FloatSummaryStatistics, T>() {
-            @Override
-            public void accept(FloatSummaryStatistics a, T t) {
-                a.accept(mapper.applyAsFloat(t));
-            }
-        };
-
-        final BinaryOperator<FloatSummaryStatistics> combiner = new BinaryOperator<FloatSummaryStatistics>() {
-            @Override
-            public FloatSummaryStatistics apply(FloatSummaryStatistics a, FloatSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
-
-        return new CollectorImpl<T, FloatSummaryStatistics, FloatSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
-    }
-
-    /**
-     * Returns a {@code Collector} which applies an {@code double}-producing
-     * mapping function to each input element, and returns summary statistics
-     * for the resulting values.
-     *
-     * @param <T> the type of the input elements
-     * @param mapper a mapping function to apply to each element
-     * @return a {@code Collector} implementing the summary-statistics reduction
-     *
-     * @see #summarizingLong(ToLongFunction)
-     * @see #summarizingInt(ToIntFunction)
-     */
-    public static <T> Collector<T, ?, DoubleSummaryStatistics> summarizingDouble(final ToDoubleFunction<? super T> mapper) {
-        final Supplier<DoubleSummaryStatistics> supplier = new Supplier<DoubleSummaryStatistics>() {
-            @Override
-            public DoubleSummaryStatistics get() {
-                return new DoubleSummaryStatistics();
-            }
-        };
-
-        final BiConsumer<DoubleSummaryStatistics, T> accumulator = new BiConsumer<DoubleSummaryStatistics, T>() {
-            @Override
-            public void accept(DoubleSummaryStatistics a, T t) {
-                a.accept(mapper.applyAsDouble(t));
-            }
-        };
-
-        final BinaryOperator<DoubleSummaryStatistics> combiner = new BinaryOperator<DoubleSummaryStatistics>() {
-            @Override
-            public DoubleSummaryStatistics apply(DoubleSummaryStatistics a, DoubleSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
-
-        return new CollectorImpl<T, DoubleSummaryStatistics, DoubleSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
-    }
 
     static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
         Objects.requireNonNull(function);

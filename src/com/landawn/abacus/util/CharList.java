@@ -204,16 +204,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[0]);
     //    }
 
-    public OptionalChar findFirst(CharPredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return OptionalChar.of(elementData[i]);
-            }
-        }
-
-        return OptionalChar.empty();
-    }
-
     //    /**
     //     * Return the last element of the array list.
     //     * @return
@@ -222,16 +212,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     //    public OptionalChar findLast() {
     //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[size - 1]);
     //    }
-
-    public OptionalChar findLast(CharPredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
-            if (predicate.test(elementData[i])) {
-                return OptionalChar.of(elementData[i]);
-            }
-        }
-
-        return OptionalChar.empty();
-    }
 
     public char get(int index) {
         rangeCheck(index);
@@ -261,13 +241,15 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return oldValue;
     }
 
-    public void add(char e) {
+    public CharList add(char e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
+
+        return this;
     }
 
-    public void add(int index, char e) {
+    public CharList add(int index, char e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -281,10 +263,12 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         elementData[index] = e;
 
         size++;
+
+        return this;
     }
 
     @Override
-    public void addAll(CharList c) {
+    public CharList addAll(CharList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -292,10 +276,12 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     @Override
-    public void addAll(int index, CharList c) {
+    public CharList addAll(int index, CharList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -311,6 +297,8 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return this;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -385,9 +373,19 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
         int w = 0;
 
-        for (int i = 0; i < size; i++) {
-            if (c.contains(elementData[i]) == complement) {
-                elementData[w++] = elementData[i];
+        if (c.size() > 3 && size() > 9) {
+            final Set<Character> set = c.toSet();
+
+            for (int i = 0; i < size; i++) {
+                if (set.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (c.contains(elementData[i]) == complement) {
+                    elementData[w++] = elementData[i];
+                }
             }
         }
 
@@ -424,10 +422,19 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     public boolean containsAll(CharList c) {
         final char[] srcElementData = c.array();
 
-        for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+        if (c.size() > 3 && size() > 9) {
+            final Set<Character> set = c.toSet();
 
-            if (!contains(srcElementData[i])) {
-                return false;
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (set.contains(srcElementData[i]) == false) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
+                if (contains(srcElementData[i]) == false) {
+                    return false;
+                }
             }
         }
 
@@ -452,11 +459,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @see IntList#except(IntList)
      */
     public CharList except(CharList b) {
-        final Multiset<Character> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Character> bOccurrences = b.toMultiset();
 
         final CharList c = new CharList(N.min(size(), N.max(9, size() - b.size())));
 
@@ -476,11 +479,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @see IntList#intersect(IntList)
      */
     public CharList intersect(CharList b) {
-        final Multiset<Character> bOccurrences = new Multiset<>();
-
-        for (int i = 0, len = b.size(); i < len; i++) {
-            bOccurrences.add(b.get(i));
-        }
+        final Multiset<Character> bOccurrences = b.toMultiset();
 
         final CharList c = new CharList(N.min(9, size(), b.size()));
 
@@ -644,6 +643,44 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
                 }
             }
         }
+    }
+
+    //    /**
+    //     * Return the first element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalChar findFirst() {
+    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[0]);
+    //    }
+
+    public OptionalChar findFirst(CharPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return OptionalChar.of(elementData[i]);
+            }
+        }
+
+        return OptionalChar.empty();
+    }
+
+    //    /**
+    //     * Return the last element of the array list.
+    //     * @return
+    //     */
+    //    @Beta
+    //    public OptionalChar findLast() {
+    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[size - 1]);
+    //    }
+
+    public OptionalChar findLast(CharPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalChar.of(elementData[i]);
+            }
+        }
+
+        return OptionalChar.empty();
     }
 
     @Override
@@ -875,20 +912,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     @Override
-    public List<CharList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<char[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<CharList> result = new ArrayList<>(list.size());
-
-        for (char[] a : list) {
-            result.add(of(a));
-        }
-
-        return result;
-    }
-
-    @Override
     public void sort() {
         if (size > 1) {
             N.sort(elementData, 0, size);
@@ -923,8 +946,22 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     @Override
+    public List<CharList> split(final int fromIndex, final int toIndex, final int size) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<char[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<CharList> result = new ArrayList<>(list.size());
+
+        for (char[] a : list) {
+            result.add(of(a));
+        }
+
+        return result;
+    }
+
+    @Override
     public CharList trimToSize() {
-        if (elementData.length != size) {
+        if (elementData.length > size) {
             elementData = N.copyOfRange(elementData, 0, size);
         }
 

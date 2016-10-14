@@ -49,8 +49,8 @@ import com.landawn.abacus.util.stream.Stream;
  */
 public final class Multimap<K, E, V extends Collection<E>> {
     private final Map<K, V> valueMap;
-    private final Class<V> collectionType;
-    private final Class<V> concreteCollectionType;
+    private final Class<V> valueType;
+    private final Class<V> concreteValueType;
 
     Multimap() {
         this(HashMap.class, ArrayList.class);
@@ -61,13 +61,13 @@ public final class Multimap<K, E, V extends Collection<E>> {
     }
 
     @SuppressWarnings("rawtypes")
-    public Multimap(final Class<? extends Collection> collectionType) {
-        this(HashMap.class, collectionType);
+    public Multimap(final Class<? extends Collection> valueType) {
+        this(HashMap.class, valueType);
     }
 
     @SuppressWarnings("rawtypes")
-    public Multimap(final Class<? extends Map> valueMapType, final Class<? extends Collection> collectionType) {
-        this(N.newInstance(valueMapType), collectionType);
+    public Multimap(final Class<? extends Map> mapType, final Class<? extends Collection> valueType) {
+        this(N.newInstance(mapType), valueType);
     }
 
     /**
@@ -79,20 +79,20 @@ public final class Multimap<K, E, V extends Collection<E>> {
     @Internal
     Multimap(final Map<K, V> valueMap, final Class<? extends Collection> collectionType) {
         this.valueMap = valueMap;
-        this.collectionType = (Class) collectionType;
+        this.valueType = (Class) collectionType;
 
         if (Modifier.isAbstract(collectionType.getModifiers())) {
             if (List.class.isAssignableFrom(collectionType)) {
-                concreteCollectionType = (Class) ArrayList.class;
+                concreteValueType = (Class) ArrayList.class;
             } else if (Set.class.isAssignableFrom(collectionType)) {
-                concreteCollectionType = (Class) HashSet.class;
+                concreteValueType = (Class) HashSet.class;
             } else if (Queue.class.isAssignableFrom(collectionType)) {
-                concreteCollectionType = (Class) ArrayDeque.class;
+                concreteValueType = (Class) ArrayDeque.class;
             } else {
                 throw new IllegalArgumentException("Unsupported collection type: " + collectionType.getCanonicalName());
             }
         } else {
-            concreteCollectionType = (Class) collectionType;
+            concreteValueType = (Class) collectionType;
         }
     }
 
@@ -215,7 +215,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteCollectionType);
+            val = N.newInstance(concreteValueType);
             valueMap.put(key, val);
         } else {
             val.clear();
@@ -240,7 +240,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
             V val = valueMap.get(key);
 
             if (val == null) {
-                val = N.newInstance(concreteCollectionType);
+                val = N.newInstance(concreteValueType);
                 valueMap.put(key, val);
             } else {
                 val.clear();
@@ -271,7 +271,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
             val = valueMap.get(key);
 
             if (val == null) {
-                val = N.newInstance(concreteCollectionType);
+                val = N.newInstance(concreteValueType);
                 valueMap.put(key, val);
             } else {
                 val.clear();
@@ -309,7 +309,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
             val = valueMap.get(key);
 
             if (val == null) {
-                val = N.newInstance(concreteCollectionType);
+                val = N.newInstance(concreteValueType);
                 valueMap.put(key, val);
             } else {
                 val.clear();
@@ -325,7 +325,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteCollectionType);
+            val = N.newInstance(concreteValueType);
             valueMap.put(key, val);
         }
 
@@ -336,7 +336,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteCollectionType);
+            val = N.newInstance(concreteValueType);
             valueMap.put(key, val);
         } else if (val.contains(e)) {
             return false;
@@ -353,7 +353,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         V val = valueMap.get(key);
 
         if (val == null) {
-            val = N.newInstance(concreteCollectionType);
+            val = N.newInstance(concreteValueType);
             valueMap.put(key, val);
         }
 
@@ -374,7 +374,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
             val = valueMap.get(key);
 
             if (val == null) {
-                val = N.newInstance(concreteCollectionType);
+                val = N.newInstance(concreteValueType);
                 valueMap.put(key, val);
             }
 
@@ -406,7 +406,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
             val = valueMap.get(key);
 
             if (val == null) {
-                val = N.newInstance(concreteCollectionType);
+                val = N.newInstance(concreteValueType);
                 valueMap.put(key, val);
             }
 
@@ -896,6 +896,6 @@ public final class Multimap<K, E, V extends Collection<E>> {
     }
 
     protected Class<V> getCollectionType() {
-        return collectionType;
+        return valueType;
     }
 }
