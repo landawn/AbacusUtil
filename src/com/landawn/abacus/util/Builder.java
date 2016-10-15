@@ -4,8 +4,9 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 
-public abstract class Builder<T> {
+public class Builder<T> {
     final T value;
 
     Builder(T value) {
@@ -68,8 +69,18 @@ public abstract class Builder<T> {
         return new MultimapBuilder<>(m);
     }
 
-    public static final <T> ObjectBuilder<T> of(T t) {
-        return new ObjectBuilder<>(t);
+    public static final <T> Builder<T> of(T t) {
+        return new Builder<>(t);
+    }
+
+    public Builder<T> __(final Consumer<? super T> op) {
+        op.accept(value);
+
+        return this;
+    }
+
+    public <R> Builder<R> map(final Function<? super T, R> mapper) {
+        return of(mapper.apply(value));
     }
 
     //    public static <T> CollectionBuilder<T, List<T>> list() {
@@ -651,24 +662,6 @@ public abstract class Builder<T> {
 
         public MultimapBuilder<K, E, V> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
             value.removeAll(m);
-
-            return this;
-        }
-    }
-
-    public static final class ObjectBuilder<T> extends Builder<T> {
-        ObjectBuilder(T v) {
-            super(v);
-        }
-
-        //        public ObjectBuilder<T> _(Consumer<? super T> op) {
-        //            op.accept(value);
-        //
-        //            return this;
-        //        }
-
-        public ObjectBuilder<T> __(Consumer<? super T> op) {
-            op.accept(value);
 
             return this;
         }
