@@ -125,6 +125,10 @@ public class Difference<L, R, D> {
         return of(N.entity2Map(entity1), N.entity2Map(entity2));
     }
 
+    public D get() {
+        return diff;
+    }
+
     public L inCommon() {
         return common;
     }
@@ -135,10 +139,6 @@ public class Difference<L, R, D> {
 
     public R onRightOnly() {
         return rightOnly;
-    }
-
-    public D get() {
-        return diff;
     }
 
     @SuppressWarnings("rawtypes")
