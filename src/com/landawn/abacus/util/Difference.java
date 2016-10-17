@@ -122,6 +122,11 @@ public class Difference<L, R, D> {
      * @return
      */
     public static Difference<Map<String, Object>, Map<String, Object>, Map<String, Pair0<Object, Object>>> of(Object entity1, Object entity2) {
+        if (N.isEntity(entity1.getClass()) == false || N.isEntity(entity2.getClass()) == false) {
+            throw new IllegalArgumentException(
+                    entity1.getClass().getCanonicalName() + " or " + entity2.getClass().getCanonicalName() + " is not an entity class");
+        }
+
         return of(N.entity2Map(entity1), N.entity2Map(entity2));
     }
 

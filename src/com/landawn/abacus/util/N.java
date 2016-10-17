@@ -6733,71 +6733,71 @@ public final class N {
         }
     }
 
-    /**
-     * Compares two same type entities and returns the properties which are different.
-     * 
-     * @param entity1
-     * @param entity2
-     * @return
-     */
-    public static Map<String, List<Object>> differencesOf(final Object entity1, final Object entity2) {
-        if (N.isEntity(entity1.getClass()) == false) {
-            throw new IllegalArgumentException(entity1.getClass() + " is not entity");
-        }
-
-        if (entity1.getClass().equals(entity2.getClass()) == false) {
-            throw new IllegalArgumentException(entity1.getClass() + " and " + entity2.getClass() + " are different classes");
-        }
-
-        final Map<String, List<Object>> res = new HashMap<>();
-        final Map<String, Method> methodList = getPropGetMethodList(entity1.getClass());
-        Object propValue1 = null;
-        Object propValue2 = null;
-
-        for (Map.Entry<String, Method> entry : methodList.entrySet()) {
-            propValue1 = N.getPropValue(entity1, entry.getValue());
-            propValue2 = N.getPropValue(entity2, entry.getValue());
-
-            if (N.equals(propValue1, propValue2) == false) {
-                res.put(entry.getKey(), Arrays.asList(propValue1, propValue2));
-            }
-        }
-
-        return res;
-    }
-
-    /**
-     * Compares two same type entities and returns the properties which have the same values.
-     * 
-     * @param entity1
-     * @param entity2
-     * @return
-     */
-    public static Map<String, Object> equalsOf(final Object entity1, final Object entity2) {
-        if (N.isEntity(entity1.getClass()) == false) {
-            throw new IllegalArgumentException(entity1.getClass() + " is not entity");
-        }
-
-        if (entity1.getClass().equals(entity2.getClass()) == false) {
-            throw new IllegalArgumentException(entity1.getClass() + " and " + entity2.getClass() + " are different classes");
-        }
-
-        final Map<String, Object> res = new HashMap<>();
-        final Map<String, Method> methodList = getPropGetMethodList(entity1.getClass());
-        Object propValue1 = null;
-        Object propValue2 = null;
-
-        for (Map.Entry<String, Method> entry : methodList.entrySet()) {
-            propValue1 = N.getPropValue(entity1, entry.getValue());
-            propValue2 = N.getPropValue(entity2, entry.getValue());
-
-            if (N.equals(propValue1, propValue2)) {
-                res.put(entry.getKey(), propValue1);
-            }
-        }
-
-        return res;
-    }
+    //    /**
+    //     * Compares two same type entities and returns the properties which are different.
+    //     * 
+    //     * @param entity1
+    //     * @param entity2
+    //     * @return
+    //     */
+    //    public static Map<String, List<Object>> differencesOf(final Object entity1, final Object entity2) {
+    //        if (N.isEntity(entity1.getClass()) == false) {
+    //            throw new IllegalArgumentException(entity1.getClass() + " is not entity");
+    //        }
+    //
+    //        if (entity1.getClass().equals(entity2.getClass()) == false) {
+    //            throw new IllegalArgumentException(entity1.getClass() + " and " + entity2.getClass() + " are different classes");
+    //        }
+    //
+    //        final Map<String, List<Object>> res = new HashMap<>();
+    //        final Map<String, Method> methodList = getPropGetMethodList(entity1.getClass());
+    //        Object propValue1 = null;
+    //        Object propValue2 = null;
+    //
+    //        for (Map.Entry<String, Method> entry : methodList.entrySet()) {
+    //            propValue1 = N.getPropValue(entity1, entry.getValue());
+    //            propValue2 = N.getPropValue(entity2, entry.getValue());
+    //
+    //            if (N.equals(propValue1, propValue2) == false) {
+    //                res.put(entry.getKey(), Arrays.asList(propValue1, propValue2));
+    //            }
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    /**
+    //     * Compares two same type entities and returns the properties which have the same values.
+    //     * 
+    //     * @param entity1
+    //     * @param entity2
+    //     * @return
+    //     */
+    //    public static Map<String, Object> equalsOf(final Object entity1, final Object entity2) {
+    //        if (N.isEntity(entity1.getClass()) == false) {
+    //            throw new IllegalArgumentException(entity1.getClass() + " is not entity");
+    //        }
+    //
+    //        if (entity1.getClass().equals(entity2.getClass()) == false) {
+    //            throw new IllegalArgumentException(entity1.getClass() + " and " + entity2.getClass() + " are different classes");
+    //        }
+    //
+    //        final Map<String, Object> res = new HashMap<>();
+    //        final Map<String, Method> methodList = getPropGetMethodList(entity1.getClass());
+    //        Object propValue1 = null;
+    //        Object propValue2 = null;
+    //
+    //        for (Map.Entry<String, Method> entry : methodList.entrySet()) {
+    //            propValue1 = N.getPropValue(entity1, entry.getValue());
+    //            propValue2 = N.getPropValue(entity2, entry.getValue());
+    //
+    //            if (N.equals(propValue1, propValue2)) {
+    //                res.put(entry.getKey(), propValue1);
+    //            }
+    //        }
+    //
+    //        return res;
+    //    }
 
     public static <T> Comparator<T> nullMinComparator() {
         return NULL_MIN_COMPARATOR;
@@ -6879,52 +6879,6 @@ public final class N {
         }
 
         return rt;
-    }
-
-    public static String pick(String str, String prefix, String postfix) {
-        if (N.isNullOrEmpty(str)) {
-            return null;
-        }
-
-        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.indexOf(prefix);
-
-        if (beginIndex < 0) {
-            return null;
-        }
-
-        beginIndex += prefix.length();
-
-        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.indexOf(postfix, beginIndex);
-
-        if (endIndex < 0) {
-            return null;
-        }
-
-        return str.substring(beginIndex, endIndex);
-    }
-
-    public static <T> T pick(Class<T> targetClass, String str, String prefix, String postfix) {
-        final Type<T> type = typeOf(targetClass);
-
-        if (N.isNullOrEmpty(str)) {
-            return type.defaultValue();
-        }
-
-        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.indexOf(prefix);
-
-        if (beginIndex < 0) {
-            return type.defaultValue();
-        }
-
-        beginIndex += prefix.length();
-
-        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.indexOf(postfix, beginIndex);
-
-        if (endIndex < 0) {
-            return type.defaultValue();
-        }
-
-        return N.as(type, str.subSequence(beginIndex, endIndex));
     }
 
     // Abbreviating
@@ -17732,6 +17686,92 @@ public final class N {
      */
     public static <T> int binarySearch(final List<? extends T> c, final int fromIndex, final int toIndex, final T key, final Comparator<? super T> cmp) {
         return Array.binarySearch(c, fromIndex, toIndex, key, cmp);
+    }
+
+    public static String findFirst(String str, String prefix, String postfix) {
+        return findFirst(String.class, str, prefix, postfix);
+    }
+
+    public static <T> T findFirst(Class<T> targetClass, String str, String prefix, String postfix) {
+        return findFirst(targetClass, str, 0, prefix, postfix);
+    }
+
+    /**
+     * Returns first substring between the specified <code>prefix</code> and </code>postfix</code>, or default value if there is no substring found.
+     * 
+     * @param targetClass
+     * @param str
+     * @param fromIndex
+     * @param prefix
+     * @param postfix
+     * @return
+     * @see String#indexOf(String, int)
+     */
+    public static <T> T findFirst(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
+        final Type<T> type = typeOf(targetClass);
+
+        if (N.isNullOrEmpty(str)) {
+            return type.defaultValue();
+        }
+
+        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.indexOf(prefix, fromIndex);
+
+        if (beginIndex < 0) {
+            return type.defaultValue();
+        }
+
+        beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
+
+        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.indexOf(postfix, beginIndex);
+
+        if (endIndex < 0) {
+            return type.defaultValue();
+        }
+
+        return N.as(type, str.subSequence(beginIndex, endIndex));
+    }
+
+    public static String findLast(String str, String prefix, String postfix) {
+        return findLast(String.class, str, prefix, postfix);
+    }
+
+    public static <T> T findLast(Class<T> targetClass, String str, String prefix, String postfix) {
+        return findLast(targetClass, str, N.isNullOrEmpty(str) ? 0 : str.length(), prefix, postfix);
+    }
+
+    /**
+     * Returns last substring between the specified <code>prefix</code> and </code>postfix</code>, or default value if there is no substring found.
+     * 
+     * @param targetClass
+     * @param str
+     * @param fromIndex
+     * @param prefix
+     * @param postfix
+     * @return
+     * @see String#lastIndexOf(String, int)
+     */
+    public static <T> T findLast(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
+        final Type<T> type = typeOf(targetClass);
+
+        if (N.isNullOrEmpty(str)) {
+            return type.defaultValue();
+        }
+
+        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.lastIndexOf(postfix, fromIndex);
+
+        if (endIndex < 0) {
+            return type.defaultValue();
+        }
+
+        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.lastIndexOf(prefix, endIndex + (N.isNullOrEmpty(postfix) ? 0 : postfix.length()));
+
+        if (beginIndex < 0) {
+            return type.defaultValue();
+        }
+
+        beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
+
+        return N.as(type, str.subSequence(beginIndex, endIndex));
     }
 
     public static int indexOf(final boolean[] a, final boolean e) {
