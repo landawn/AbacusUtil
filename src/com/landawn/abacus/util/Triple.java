@@ -120,4 +120,57 @@ public final class Triple<L, M, R> {
     public String toString() {
         return "{left=" + N.toString(left) + ", middle=" + N.toString(middle) + ", right=" + N.toString(right) + "}";
     }
+
+    /**
+     * Immutable Triple
+     *
+     * @param <L>
+     * @param <M>
+     * @param <R>
+     */
+    public static final class Triple0<L, M, R> {
+        public L left;
+        public M middle;
+        public R right;
+
+        public Triple0(final L l, final M m, final R r) {
+            this.left = l;
+            this.middle = m;
+            this.right = r;
+        }
+
+        public static <L, M, R> Triple0<L, M, R> of(final L l, final M m, final R r) {
+            return new Triple0<L, M, R>(l, m, r);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + N.hashCode(left);
+            result = prime * result + N.hashCode(middle);
+            result = prime * result + N.hashCode(right);
+            return result;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Triple) {
+                final Triple0<L, M, R> other = (Triple0<L, M, R>) obj;
+
+                return N.equals(left, other.left) && N.equals(middle, other.middle) && N.equals(right, other.right);
+            }
+
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "{left=" + N.toString(left) + ", middle=" + N.toString(middle) + ", right=" + N.toString(right) + "}";
+        }
+    }
 }

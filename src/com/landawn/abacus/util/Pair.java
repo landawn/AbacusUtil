@@ -106,4 +106,53 @@ public final class Pair<L, R> {
     public String toString() {
         return "{left=" + N.toString(left) + ", right=" + N.toString(right) + "}";
     }
+
+    /**
+     * Immutable Pair
+     *
+     * @param <L>
+     * @param <R>
+     */
+    public static final class Pair0<L, R> {
+        public final L left;
+        public final R right;
+
+        public Pair0(final L l, final R r) {
+            this.left = l;
+            this.right = r;
+        }
+
+        public static <L, R> Pair0<L, R> of(final L l, final R r) {
+            return new Pair0<L, R>(l, r);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + N.hashCode(left);
+            result = prime * result + N.hashCode(right);
+            return result;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Pair0) {
+                final Pair0<L, R> other = (Pair0<L, R>) obj;
+
+                return N.equals(left, other.left) && N.equals(right, other.right);
+            }
+
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "{left=" + N.toString(left) + ", right=" + N.toString(right) + "}";
+        }
+    }
 }
