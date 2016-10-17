@@ -5,7 +5,22 @@ import java.util.Map;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IndexedConsumer2;
 
+/**
+ * <pre>
+ * 
+ * Account account = createAccount();
+ * PreparedStatement stmt = createPreparedStatement();
+ * Builder.of(stmt, 1).__((i, stmt) -> stmt.setString(i, account.getFirstName())).__((i, stmt) -> stmt.setDate(i, account.getBirthdate()));
+ * 
+ * 
+ * </pre>
+ * 
+ * @author haiyangl
+ *
+ * @param <T>
+ */
 public class Builder<T> {
     final T value;
 
@@ -71,6 +86,10 @@ public class Builder<T> {
 
     public static final <T> Builder<T> of(T t) {
         return new Builder<>(t);
+    }
+
+    public static final <T> IndexedBuilder<T> of(T t, int startIndex) {
+        return new IndexedBuilder<>(t, startIndex);
     }
 
     public Builder<T> __(final Consumer<? super T> op) {
@@ -662,6 +681,21 @@ public class Builder<T> {
 
         public MultimapBuilder<K, E, V> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
             value.removeAll(m);
+
+            return this;
+        }
+    }
+
+    public static final class IndexedBuilder<T> extends Builder<T> {
+        private int startIndex;
+
+        IndexedBuilder(T value, int startIndex) {
+            super(value);
+            this.startIndex = startIndex;
+        }
+
+        public IndexedBuilder<T> __(final IndexedConsumer2<? super T> op) {
+            op.accept(startIndex++, value);
 
             return this;
         }

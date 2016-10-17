@@ -1002,6 +1002,20 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     @Override
+    public String join(int fromIndex, int toIndex, char delimiter) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.join(elementData, fromIndex, toIndex, delimiter);
+    }
+
+    @Override
+    public String join(int fromIndex, int toIndex, String delimiter) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.join(elementData, fromIndex, toIndex, delimiter);
+    }
+
+    @Override
     public DoubleList trimToSize() {
         if (elementData.length > size) {
             elementData = N.copyOfRange(elementData, 0, size);

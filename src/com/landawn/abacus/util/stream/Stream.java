@@ -28,11 +28,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1580,6 +1584,26 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      * @return
      */
     public abstract Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector);
+
+    /**
+     * Returns a reusable stream which can be repeatedly used.
+     * 
+     * @param generator
+     * @return
+     */
+    public abstract Stream<T> cached(IntFunction<T[]> generator);
+
+    public abstract long persist(File file, Function<? super T, String> toLine);
+
+    public abstract long persist(OutputStream os, Function<? super T, String> toLine);
+
+    public abstract long persist(Writer writer, Function<? super T, String> toLine);
+
+    public abstract long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
+            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter);
+
+    public abstract long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
+            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter);
 
     @Override
     public abstract ImmutableIterator<T> iterator();

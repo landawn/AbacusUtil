@@ -6881,6 +6881,52 @@ public final class N {
         return rt;
     }
 
+    public static String pick(String str, String prefix, String postfix) {
+        if (N.isNullOrEmpty(str)) {
+            return null;
+        }
+
+        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.indexOf(prefix);
+
+        if (beginIndex < 0) {
+            return null;
+        }
+
+        beginIndex += prefix.length();
+
+        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.indexOf(postfix, beginIndex);
+
+        if (endIndex < 0) {
+            return null;
+        }
+
+        return str.substring(beginIndex, endIndex);
+    }
+
+    public static <T> T pick(Class<T> targetClass, String str, String prefix, String postfix) {
+        final Type<T> type = typeOf(targetClass);
+
+        if (N.isNullOrEmpty(str)) {
+            return type.defaultValue();
+        }
+
+        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.indexOf(prefix);
+
+        if (beginIndex < 0) {
+            return type.defaultValue();
+        }
+
+        beginIndex += prefix.length();
+
+        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.indexOf(postfix, beginIndex);
+
+        if (endIndex < 0) {
+            return type.defaultValue();
+        }
+
+        return N.as(type, str.subSequence(beginIndex, endIndex));
+    }
+
     // Abbreviating
     // -----------------------------------------------------------------------
     /**
@@ -6969,23 +7015,23 @@ public final class N {
      *
      * @param str
      *            the String to reverse, may be null
-     * @param separator
-     *            the separator character to use
+     * @param delimiter
+     *            the delimiter character to use
      * @return the reversed String, {@code null} if null String input
      * @since 2.0
      */
-    public static String reverseDelimited(final String str, final char separator) {
+    public static String reverseDelimited(final String str, final char delimiter) {
         if (N.isNullOrEmpty(str)) {
             return str;
         }
 
         // could implement manually, but simple way is to reuse other,
         // probably slower, methods.
-        final String[] strs = N.split(str, separator);
+        final String[] strs = N.split(str, delimiter);
 
         N.reverse(strs);
 
-        return N.join(strs, separator);
+        return N.join(strs, delimiter);
     }
 
     public static String padStart(final String str, final int minLength) {
@@ -7149,12 +7195,12 @@ public final class N {
         }
     }
 
-    public static String repeat(final char ch, final int repeat, final char separator) {
+    public static String repeat(final char ch, final int repeat, final char delimiter) {
         if (repeat < 1) {
             throw new IllegalArgumentException("The specified count must be greater than 0");
         }
 
-        return repeat(String.valueOf(ch), repeat, String.valueOf(separator));
+        return repeat(String.valueOf(ch), repeat, String.valueOf(delimiter));
     }
 
     /**
@@ -7167,13 +7213,13 @@ public final class N {
         return repeat(str, repeat, N.EMPTY_STRING);
     }
 
-    public static String repeat(final String str, final int repeat, final String separator) {
+    public static String repeat(final String str, final int repeat, final String delimiter) {
         if (N.isNullOrEmpty(str)) {
             throw new IllegalArgumentException("The specified String can't be null or empty");
         }
 
-        if (separator == null) {
-            throw new IllegalArgumentException("The specified separator can't be null");
+        if (delimiter == null) {
+            throw new IllegalArgumentException("The specified delimiter can't be null");
         }
 
         if (repeat < 1) {
@@ -7185,17 +7231,17 @@ public final class N {
         }
 
         final int strLen = str.length();
-        final int separatorLen = separator.length();
-        final int len = strLen + separatorLen;
+        final int delimiterLen = delimiter.length();
+        final int len = strLen + delimiterLen;
         if (Integer.MAX_VALUE / len < repeat) {
             throw new ArrayIndexOutOfBoundsException("Required array size too large: " + 1L * len * repeat);
         }
 
-        final int size = len * repeat - separatorLen;
+        final int size = len * repeat - delimiterLen;
         final char[] cbuf = new char[size];
 
         str.getChars(0, strLen, cbuf, 0);
-        separator.getChars(0, separatorLen, cbuf, strLen);
+        delimiter.getChars(0, delimiterLen, cbuf, strLen);
 
         int n = 0;
 
@@ -8101,12 +8147,12 @@ public final class N {
         return replacePattern(source, regex, N.EMPTY_STRING);
     }
 
-    public static String[] split(final String str, final char separator) {
-        return splitWorker(str, separator, false);
+    public static String[] split(final String str, final char delimiter) {
+        return splitWorker(str, delimiter, false);
     }
 
-    public static String[] split(final String str, final char separator, final boolean trim) {
-        final String[] strs = split(str, separator);
+    public static String[] split(final String str, final char delimiter, final boolean trim) {
+        final String[] strs = split(str, delimiter);
 
         if (trim && N.notNullOrEmpty(strs)) {
             for (int i = 0, len = strs.length; i < len; i++) {
@@ -8117,20 +8163,20 @@ public final class N {
         return strs;
     }
 
-    public static String[] split(final String str, final String separator) {
-        return split(str, separator, false);
+    public static String[] split(final String str, final String delimiter) {
+        return split(str, delimiter, false);
     }
 
-    public static String[] split(final String str, final String separator, final boolean trim) {
-        return split(str, separator, Integer.MAX_VALUE, trim);
+    public static String[] split(final String str, final String delimiter, final boolean trim) {
+        return split(str, delimiter, Integer.MAX_VALUE, trim);
     }
 
-    public static String[] split(final String str, final String separator, final int max) {
-        return splitWorker(str, separator, max, false);
+    public static String[] split(final String str, final String delimiter, final int max) {
+        return splitWorker(str, delimiter, max, false);
     }
 
-    public static String[] split(final String str, final String separator, final int max, final boolean trim) {
-        final String[] strs = split(str, separator, max);
+    public static String[] split(final String str, final String delimiter, final int max, final boolean trim) {
+        final String[] strs = split(str, delimiter, max);
 
         if (trim && N.notNullOrEmpty(strs)) {
             for (int i = 0, len = strs.length; i < len; i++) {
@@ -8141,12 +8187,12 @@ public final class N {
         return strs;
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final char separator) {
-        return splitPreserveAllTokens(str, separator, false);
+    public static String[] splitPreserveAllTokens(final String str, final char delimiter) {
+        return splitPreserveAllTokens(str, delimiter, false);
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final char separator, boolean trim) {
-        final String[] strs = splitWorker(str, separator, true);
+    public static String[] splitPreserveAllTokens(final String str, final char delimiter, boolean trim) {
+        final String[] strs = splitWorker(str, delimiter, true);
 
         if (trim && N.notNullOrEmpty(strs)) {
             for (int i = 0, len = strs.length; i < len; i++) {
@@ -8157,20 +8203,20 @@ public final class N {
         return strs;
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final String separator) {
-        return splitPreserveAllTokens(str, separator, false);
+    public static String[] splitPreserveAllTokens(final String str, final String delimiter) {
+        return splitPreserveAllTokens(str, delimiter, false);
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final String separator, boolean trim) {
-        return splitPreserveAllTokens(str, separator, Integer.MAX_VALUE, trim);
+    public static String[] splitPreserveAllTokens(final String str, final String delimiter, boolean trim) {
+        return splitPreserveAllTokens(str, delimiter, Integer.MAX_VALUE, trim);
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final String separator, final int max) {
-        return splitPreserveAllTokens(str, separator, max, false);
+    public static String[] splitPreserveAllTokens(final String str, final String delimiter, final int max) {
+        return splitPreserveAllTokens(str, delimiter, max, false);
     }
 
-    public static String[] splitPreserveAllTokens(final String str, final String separator, final int max, boolean trim) {
-        final String[] strs = splitWorker(str, separator, max, true);
+    public static String[] splitPreserveAllTokens(final String str, final String delimiter, final int max, boolean trim) {
+        final String[] strs = splitWorker(str, delimiter, max, true);
 
         if (trim && N.notNullOrEmpty(strs)) {
             for (int i = 0, len = strs.length; i < len; i++) {
@@ -8181,7 +8227,7 @@ public final class N {
         return strs;
     }
 
-    private static String[] splitWorker(final String str, final char separator, final boolean preserveAllTokens) {
+    private static String[] splitWorker(final String str, final char delimiter, final boolean preserveAllTokens) {
         // Performance tuned for 2.0 (JDK1.4)
 
         //    if (str == null) {
@@ -8206,7 +8252,7 @@ public final class N {
             boolean match = false;
             boolean lastMatch = false;
             while (i < len) {
-                if (chs[i] == separator) {
+                if (chs[i] == delimiter) {
                     if (match || preserveAllTokens) {
                         list.add(str.substring(start, i));
                         match = false;
@@ -8232,7 +8278,7 @@ public final class N {
         }
     }
 
-    private static String[] splitWorker(final String str, final String separator, final int max, final boolean preserveAllTokens) {
+    private static String[] splitWorker(final String str, final String delimiter, final int max, final boolean preserveAllTokens) {
         // Performance tuned for 2.0 (JDK1.4)
         // Direct code is quicker than StringTokenizer.
         // Also, StringTokenizer uses isSpace() not isWhitespace()
@@ -8257,8 +8303,8 @@ public final class N {
         boolean match = false;
         boolean lastMatch = false;
         try {
-            if (separator == null) {
-                // Null separator means use whitespace
+            if (delimiter == null) {
+                // Null delimiter means use whitespace
                 final char[] chs = N.getCharsForReadOnly(str);
                 while (i < len) {
                     if (Character.isWhitespace(chs[i])) {
@@ -8285,9 +8331,9 @@ public final class N {
                 if (match || preserveAllTokens && lastMatch) {
                     list.add(str.substring(start, i));
                 }
-            } else if (separator.length() == 1) {
+            } else if (delimiter.length() == 1) {
                 final char[] chs = N.getCharsForReadOnly(str);
-                final char sep = separator.charAt(0);
+                final char sep = delimiter.charAt(0);
 
                 while (i < len) {
                     if (chs[i] == sep) {
@@ -8315,11 +8361,11 @@ public final class N {
                     list.add(str.substring(start, i));
                 }
             } else {
-                final int separatorLength = separator.length();
+                final int delimiterLength = delimiter.length();
                 int beginIndex = 0;
                 int idx = 0;
                 while (idx < len) {
-                    idx = str.indexOf(separator, beginIndex);
+                    idx = str.indexOf(delimiter, beginIndex);
 
                     if (idx > -1) {
                         if (idx > beginIndex) {
@@ -8332,12 +8378,12 @@ public final class N {
                                 list.add(str.substring(beginIndex, idx));
 
                                 // Set the starting point for the next search.
-                                // The following is equivalent to beg = end + (separatorLength - 1) + 1,
+                                // The following is equivalent to beg = end + (delimiterLength - 1) + 1,
                                 // which is the right calculation:
-                                beginIndex = idx + separatorLength;
+                                beginIndex = idx + delimiterLength;
                             }
                         } else {
-                            // We found a consecutive occurrence of the separator, so skip it.
+                            // We found a consecutive occurrence of the delimiter, so skip it.
                             if (preserveAllTokens) {
                                 if (cnt++ == max) {
                                     idx = len;
@@ -8346,7 +8392,7 @@ public final class N {
                                     list.add(N.EMPTY_STRING);
                                 }
                             }
-                            beginIndex = idx + separatorLength;
+                            beginIndex = idx + delimiterLength;
                         }
                     } else {
                         // String.substring( beg ) goes from 'beg' to the end of the String.
@@ -10133,38 +10179,38 @@ public final class N {
         return string2List(str, ELEMENT_SEPARATOR);
     }
 
-    public static List<String> string2List(final String str, final String separator) {
-        return string2List(str, separator, false);
+    public static List<String> string2List(final String str, final String delimiter) {
+        return string2List(str, delimiter, false);
     }
 
-    public static List<String> string2List(final String str, final String separator, final boolean trim) {
-        return string2List(String.class, str, separator, trim);
+    public static List<String> string2List(final String str, final String delimiter, final boolean trim) {
+        return string2List(String.class, str, delimiter, trim);
     }
 
     public static <E> List<E> string2List(final Class<E> eleCls, final String str) {
         return string2List(eleCls, str, ELEMENT_SEPARATOR);
     }
 
-    public static <E> List<E> string2List(final Class<E> eleCls, final String str, final String separator) {
-        return string2List(eleCls, str, separator, false);
+    public static <E> List<E> string2List(final Class<E> eleCls, final String str, final String delimiter) {
+        return string2List(eleCls, str, delimiter, false);
     }
 
     /**
      *
      * @param eleCls
      * @param str A String not bracketed or quoted, may generated by join methods
-     * @param separator
+     * @param delimiter
      * @param trim
      * @return an empty List if the specified <code>str</code> is null or empty.
      */
-    public static <E> List<E> string2List(final Class<E> eleCls, final String str, final String separator, final boolean trim) {
+    public static <E> List<E> string2List(final Class<E> eleCls, final String str, final String delimiter, final boolean trim) {
         if (N.isNullOrEmpty(str)) {
             return asList();
         }
 
         List<E> list = new ArrayList<>();
 
-        string2Collection(list, eleCls, str, separator, trim);
+        string2Collection(list, eleCls, str, delimiter, trim);
 
         return list;
     }
@@ -10173,38 +10219,38 @@ public final class N {
         return string2Set(str, ELEMENT_SEPARATOR);
     }
 
-    public static Set<String> string2Set(final String str, final String separator) {
-        return string2Set(str, separator, false);
+    public static Set<String> string2Set(final String str, final String delimiter) {
+        return string2Set(str, delimiter, false);
     }
 
-    public static Set<String> string2Set(final String str, final String separator, final boolean trim) {
-        return string2Set(String.class, str, separator, trim);
+    public static Set<String> string2Set(final String str, final String delimiter, final boolean trim) {
+        return string2Set(String.class, str, delimiter, trim);
     }
 
     public static <E> Set<E> string2Set(final Class<E> eleCls, final String str) {
         return string2Set(eleCls, str, ELEMENT_SEPARATOR);
     }
 
-    public static <E> Set<E> string2Set(final Class<E> eleCls, final String str, final String separator) {
-        return string2Set(eleCls, str, separator, false);
+    public static <E> Set<E> string2Set(final Class<E> eleCls, final String str, final String delimiter) {
+        return string2Set(eleCls, str, delimiter, false);
     }
 
     /**
      *
      * @param eleCls
      * @param str A String not bracketed or quoted, may generated by join methods
-     * @param separator
+     * @param delimiter
      * @param trim
      * @return an empty Set if the specified <code>str</code> is null or empty.
      */
-    public static <E> Set<E> string2Set(final Class<E> eleCls, final String str, final String separator, final boolean trim) {
+    public static <E> Set<E> string2Set(final Class<E> eleCls, final String str, final String delimiter, final boolean trim) {
         if (N.isNullOrEmpty(str)) {
             return asSet();
         }
 
         Set<E> set = new HashSet<>();
 
-        string2Collection(set, eleCls, str, separator, trim);
+        string2Collection(set, eleCls, str, delimiter, trim);
 
         return set;
     }
@@ -10213,11 +10259,11 @@ public final class N {
      * @param c
      * @param eleCls
      * @param str A String not bracketed or quoted, may generated by join methods
-     * @param separator
+     * @param delimiter
      * @param trim
      * @return the input collection.
      */
-    public static <E, T extends Collection<? super E>> T string2Collection(final T c, Class<E> eleCls, final String str, final String separator,
+    public static <E, T extends Collection<? super E>> T string2Collection(final T c, Class<E> eleCls, final String str, final String delimiter,
             final boolean trim) {
         if (N.isNullOrEmpty(str)) {
             return c;
@@ -10227,7 +10273,7 @@ public final class N {
             eleCls = (Class<E>) String.class;
         }
 
-        final String[] strs = str.split(separator);
+        final String[] strs = str.split(delimiter);
 
         if (eleCls.equals(String.class) || eleCls.equals(Object.class)) {
             if (trim) {
@@ -10260,31 +10306,31 @@ public final class N {
         return string2Array(str, ELEMENT_SEPARATOR);
     }
 
-    public static String[] string2Array(final String str, final String separator) {
-        return string2Array(str, separator, false);
+    public static String[] string2Array(final String str, final String delimiter) {
+        return string2Array(str, delimiter, false);
     }
 
-    public static String[] string2Array(final String str, final String separator, final boolean trim) {
-        return string2Array(String[].class, str, separator, trim);
+    public static String[] string2Array(final String str, final String delimiter, final boolean trim) {
+        return string2Array(String[].class, str, delimiter, trim);
     }
 
     public static <T> T string2Array(final Class<T> arrayClass, final String str) {
         return string2Array(arrayClass, str, ELEMENT_SEPARATOR);
     }
 
-    public static <T> T string2Array(final Class<T> arrayClass, final String str, final String separator) {
-        return string2Array(arrayClass, str, separator, false);
+    public static <T> T string2Array(final Class<T> arrayClass, final String str, final String delimiter) {
+        return string2Array(arrayClass, str, delimiter, false);
     }
 
     /**
      *
      * @param arrayClass
      * @param str A String not bracketed or quoted, may generated by join methods
-     * @param separator
+     * @param delimiter
      * @param trim
      * @return an empty Array if the specified <code>str</code> is null or empty.
      */
-    public static <T> T string2Array(Class<T> arrayClass, final String str, final String separator, final boolean trim) {
+    public static <T> T string2Array(Class<T> arrayClass, final String str, final String delimiter, final boolean trim) {
         if (arrayClass == null) {
             arrayClass = (Class<T>) String[].class;
         }
@@ -10295,7 +10341,7 @@ public final class N {
             return N.newArray(eleCls, 0);
         }
 
-        final String[] strs = str.split(separator);
+        final String[] strs = str.split(delimiter);
 
         if (eleCls.equals(String.class) || eleCls.equals(Object.class)) {
             if (trim) {
@@ -10345,20 +10391,20 @@ public final class N {
     }
 
     // replaced with join
-    static String collection2String(final Collection<?> c, final String separator) {
-        return collection2String(c, separator, false);
+    static String collection2String(final Collection<?> c, final String delimiter) {
+        return collection2String(c, delimiter, false);
     }
 
     /**
-     * Join the elements in the Collection with the specified <code>separator</code>
+     * Join the elements in the Collection with the specified <code>delimiter</code>
      *
      * @param c
-     * @param separator
+     * @param delimiter
      * @param trim
      * @return
      */
     // replaced with join
-    static String collection2String(final Collection<?> c, final String separator, final boolean trim) {
+    static String collection2String(final Collection<?> c, final String delimiter, final boolean trim) {
         if (N.isNullOrEmpty(c)) {
             return N.EMPTY_STRING;
         }
@@ -10382,15 +10428,15 @@ public final class N {
                 if (c.size() == 1) {
                     return toString(it.next()).trim();
                 } else if (c.size() == 2) {
-                    return toString(it.next()).trim() + separator + toString(it.next()).trim();
+                    return toString(it.next()).trim() + delimiter + toString(it.next()).trim();
                 } else if (c.size() == 3) {
-                    return toString(it.next()).trim() + separator + toString(it.next()).trim() + separator + toString(it.next()).trim();
+                    return toString(it.next()).trim() + delimiter + toString(it.next()).trim() + delimiter + toString(it.next()).trim();
                 } else {
                     final StringBuilder sb = ObjectFactory.createStringBuilder();
 
                     for (int i = 0, size = c.size(); i < size; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(toString(it.next()).trim());
@@ -10406,15 +10452,15 @@ public final class N {
                 if (c.size() == 1) {
                     return toString(it.next());
                 } else if (c.size() == 2) {
-                    return toString(it.next()) + separator + toString(it.next());
+                    return toString(it.next()) + delimiter + toString(it.next());
                 } else if (c.size() == 3) {
-                    return toString(it.next()) + separator + toString(it.next()) + separator + toString(it.next());
+                    return toString(it.next()) + delimiter + toString(it.next()) + delimiter + toString(it.next());
                 } else {
                     final StringBuilder sb = ObjectFactory.createStringBuilder();
 
                     for (int i = 0, size = c.size(); i < size; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(toString(it.next()));
@@ -10431,15 +10477,15 @@ public final class N {
             if (c.size() == 1) {
                 return type.stringOf(it.next());
             } else if (c.size() == 2) {
-                return type.stringOf(it.next()) + separator + type.stringOf(it.next());
+                return type.stringOf(it.next()) + delimiter + type.stringOf(it.next());
             } else if (c.size() == 3) {
-                return type.stringOf(it.next()) + separator + type.stringOf(it.next()) + separator + type.stringOf(it.next());
+                return type.stringOf(it.next()) + delimiter + type.stringOf(it.next()) + delimiter + type.stringOf(it.next());
             } else {
                 final StringBuilder sb = ObjectFactory.createStringBuilder();
 
                 for (int i = 0, size = c.size(); i < size; i++) {
                     if (i > 0) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(type.stringOf(it.next()));
@@ -10460,20 +10506,20 @@ public final class N {
     }
 
     // replaced with join
-    static String array2String(final Object a, final String separator) {
-        return array2String(a, separator, false);
+    static String array2String(final Object a, final String delimiter) {
+        return array2String(a, delimiter, false);
     }
 
     /**
-     * Join the elements in the array with the specified <code>separator</code>
+     * Join the elements in the array with the specified <code>delimiter</code>
      *
      * @param a
-     * @param separator
+     * @param delimiter
      * @param trim
      * @return
      */
     // replaced with join
-    static String array2String(final Object a, final String separator, final boolean trim) {
+    static String array2String(final Object a, final String delimiter, final boolean trim) {
         if (a == null || Array.getLength(a) == 0) {
             return N.EMPTY_STRING;
         }
@@ -10489,7 +10535,7 @@ public final class N {
 
                     for (int i = 0, len = array.length; i < len; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(array[i]);
@@ -10503,7 +10549,7 @@ public final class N {
 
                     for (int i = 0, len = array.length; i < len; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(array[i]);
@@ -10517,7 +10563,7 @@ public final class N {
 
                     for (int i = 0, len = array.length; i < len; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(array[i]);
@@ -10531,7 +10577,7 @@ public final class N {
 
                     for (int i = 0, len = array.length; i < len; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(array[i]);
@@ -10545,7 +10591,7 @@ public final class N {
 
                     for (int i = 0, len = array.length; i < len; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(array[i]);
@@ -10559,7 +10605,7 @@ public final class N {
 
                     for (int i = 0, len = array.length; i < len; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(array[i]);
@@ -10573,7 +10619,7 @@ public final class N {
 
                     for (int i = 0, len = array.length; i < len; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(array[i]);
@@ -10587,7 +10633,7 @@ public final class N {
 
                     for (int i = 0, len = array.length; i < len; i++) {
                         if (i > 0) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(array[i]);
@@ -10602,7 +10648,7 @@ public final class N {
                     if (trim) {
                         for (int i = 0, len = array.length; i < len; i++) {
                             if (i > 0) {
-                                sb.append(separator);
+                                sb.append(delimiter);
                             }
 
                             if (array[i] == null) {
@@ -10614,7 +10660,7 @@ public final class N {
                     } else {
                         for (int i = 0, len = array.length; i < len; i++) {
                             if (i > 0) {
-                                sb.append(separator);
+                                sb.append(delimiter);
                             }
 
                             sb.append(array[i]);
@@ -10637,7 +10683,7 @@ public final class N {
         try {
             array2Collection(c, a);
 
-            return collection2String(c, separator, trim);
+            return collection2String(c, delimiter, trim);
         } finally {
             ObjectFactory.recycle(c);
         }
@@ -10647,23 +10693,23 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final boolean[] a, final char separator) {
+    public static String join(final boolean[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final boolean[] a, final String separator) {
+    public static String join(final boolean[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final boolean[] a, final int fromIndex, final int toIndex, final char separator) {
+    public static String join(final boolean[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10675,7 +10721,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(a[i]);
@@ -10687,7 +10733,7 @@ public final class N {
         }
     }
 
-    public static String join(final boolean[] a, final int fromIndex, final int toIndex, final String separator) {
+    public static String join(final boolean[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10697,14 +10743,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(a[i]);
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(a[i]);
@@ -10721,23 +10767,23 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final char[] a, final char separator) {
+    public static String join(final char[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final char[] a, final String separator) {
+    public static String join(final char[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final char[] a, final int fromIndex, final int toIndex, final char separator) {
+    public static String join(final char[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10749,7 +10795,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(a[i]);
@@ -10761,7 +10807,7 @@ public final class N {
         }
     }
 
-    public static String join(final char[] a, final int fromIndex, final int toIndex, final String separator) {
+    public static String join(final char[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10771,14 +10817,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(a[i]);
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(a[i]);
@@ -10795,23 +10841,23 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final byte[] a, final char separator) {
+    public static String join(final byte[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final byte[] a, final String separator) {
+    public static String join(final byte[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final byte[] a, final int fromIndex, final int toIndex, final char separator) {
+    public static String join(final byte[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10823,7 +10869,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(a[i]);
@@ -10835,7 +10881,7 @@ public final class N {
         }
     }
 
-    public static String join(final byte[] a, final int fromIndex, final int toIndex, final String separator) {
+    public static String join(final byte[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10845,14 +10891,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(a[i]);
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(a[i]);
@@ -10869,23 +10915,23 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final short[] a, final char separator) {
+    public static String join(final short[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final short[] a, final String separator) {
+    public static String join(final short[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final short[] a, final int fromIndex, final int toIndex, final char separator) {
+    public static String join(final short[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10897,7 +10943,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(a[i]);
@@ -10909,7 +10955,7 @@ public final class N {
         }
     }
 
-    public static String join(final short[] a, final int fromIndex, final int toIndex, final String separator) {
+    public static String join(final short[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10919,14 +10965,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(a[i]);
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(a[i]);
@@ -10943,23 +10989,23 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final int[] a, final char separator) {
+    public static String join(final int[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final int[] a, final String separator) {
+    public static String join(final int[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final int[] a, final int fromIndex, final int toIndex, final char separator) {
+    public static String join(final int[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10971,7 +11017,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(a[i]);
@@ -10983,7 +11029,7 @@ public final class N {
         }
     }
 
-    public static String join(final int[] a, final int fromIndex, final int toIndex, final String separator) {
+    public static String join(final int[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -10993,14 +11039,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(a[i]);
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(a[i]);
@@ -11017,23 +11063,23 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final long[] a, final char separator) {
+    public static String join(final long[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final long[] a, final String separator) {
+    public static String join(final long[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final long[] a, final int fromIndex, final int toIndex, final char separator) {
+    public static String join(final long[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -11045,7 +11091,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(a[i]);
@@ -11057,7 +11103,7 @@ public final class N {
         }
     }
 
-    public static String join(final long[] a, final int fromIndex, final int toIndex, final String separator) {
+    public static String join(final long[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -11067,14 +11113,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(a[i]);
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(a[i]);
@@ -11091,23 +11137,23 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final float[] a, final char separator) {
+    public static String join(final float[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final float[] a, final String separator) {
+    public static String join(final float[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final float[] a, final int fromIndex, final int toIndex, final char separator) {
+    public static String join(final float[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -11119,7 +11165,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(a[i]);
@@ -11131,7 +11177,7 @@ public final class N {
         }
     }
 
-    public static String join(final float[] a, final int fromIndex, final int toIndex, final String separator) {
+    public static String join(final float[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -11141,14 +11187,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(a[i]);
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(a[i]);
@@ -11165,23 +11211,23 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final double[] a, final char separator) {
+    public static String join(final double[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final double[] a, final String separator) {
+    public static String join(final double[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final double[] a, final int fromIndex, final int toIndex, final char separator) {
+    public static String join(final double[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -11193,7 +11239,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(a[i]);
@@ -11205,7 +11251,7 @@ public final class N {
         }
     }
 
-    public static String join(final double[] a, final int fromIndex, final int toIndex, final String separator) {
+    public static String join(final double[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -11215,14 +11261,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(a[i]);
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(a[i]);
@@ -11239,27 +11285,27 @@ public final class N {
         return join(a, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final Object[] a, final char separator) {
+    public static String join(final Object[] a, final char delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final Object[] a, final String separator) {
+    public static String join(final Object[] a, final String delimiter) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
         }
 
-        return join(a, 0, a.length, separator);
+        return join(a, 0, a.length, delimiter);
     }
 
-    public static String join(final Object[] a, final int fromIndex, final int toIndex, final char separator) {
-        return N.join(a, fromIndex, toIndex, separator, false);
+    public static String join(final Object[] a, final int fromIndex, final int toIndex, final char delimiter) {
+        return N.join(a, fromIndex, toIndex, delimiter, false);
     }
 
-    public static String join(final Object[] a, final int fromIndex, final int toIndex, final char separator, final boolean trim) {
+    public static String join(final Object[] a, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -11271,7 +11317,7 @@ public final class N {
         try {
             for (int i = fromIndex; i < toIndex; i++) {
                 if (i > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 sb.append(trim ? toString(a[i]).trim() : toString(a[i]));
@@ -11283,11 +11329,11 @@ public final class N {
         }
     }
 
-    public static String join(final Object[] a, final int fromIndex, final int toIndex, final String separator) {
-        return N.join(a, fromIndex, toIndex, separator, false);
+    public static String join(final Object[] a, final int fromIndex, final int toIndex, final String delimiter) {
+        return N.join(a, fromIndex, toIndex, delimiter, false);
     }
 
-    public static String join(final Object[] a, final int fromIndex, final int toIndex, final String separator, final boolean trim) {
+    public static String join(final Object[] a, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
@@ -11297,14 +11343,14 @@ public final class N {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            if (N.isNullOrEmpty(separator)) {
+            if (N.isNullOrEmpty(delimiter)) {
                 for (int i = fromIndex; i < toIndex; i++) {
                     sb.append(trim ? toString(a[i]).trim() : toString(a[i]));
                 }
             } else {
                 for (int i = fromIndex; i < toIndex; i++) {
                     if (i > fromIndex) {
-                        sb.append(separator);
+                        sb.append(delimiter);
                     }
 
                     sb.append(trim ? toString(a[i]).trim() : toString(a[i]));
@@ -11321,27 +11367,27 @@ public final class N {
         return join(c, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final Collection<?> c, final char separator) {
+    public static String join(final Collection<?> c, final char delimiter) {
         if (N.isNullOrEmpty(c)) {
             return N.EMPTY_STRING;
         }
 
-        return join(c, 0, c.size(), separator);
+        return join(c, 0, c.size(), delimiter);
     }
 
-    public static String join(final Collection<?> c, final String separator) {
+    public static String join(final Collection<?> c, final String delimiter) {
         if (N.isNullOrEmpty(c)) {
             return N.EMPTY_STRING;
         }
 
-        return join(c, 0, c.size(), separator);
+        return join(c, 0, c.size(), delimiter);
     }
 
-    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char separator) {
-        return N.join(c, fromIndex, toIndex, separator, false);
+    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter) {
+        return N.join(c, fromIndex, toIndex, delimiter, false);
     }
 
-    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char separator, final boolean trim) {
+    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -11354,7 +11400,7 @@ public final class N {
             int i = 0;
             for (Object e : c) {
                 if (i++ > fromIndex) {
-                    sb.append(separator);
+                    sb.append(delimiter);
                 }
 
                 if (i > fromIndex) {
@@ -11372,11 +11418,11 @@ public final class N {
         }
     }
 
-    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String separator) {
-        return N.join(c, fromIndex, toIndex, separator, false);
+    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter) {
+        return N.join(c, fromIndex, toIndex, delimiter, false);
     }
 
-    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String separator, final boolean trim) {
+    public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -11389,14 +11435,14 @@ public final class N {
             if (c instanceof List && c instanceof RandomAccess) {
                 final List<?> list = (List<?>) c;
 
-                if (N.isNullOrEmpty(separator)) {
+                if (N.isNullOrEmpty(delimiter)) {
                     for (int i = fromIndex; i < toIndex; i++) {
                         sb.append(trim ? toString(list.get(i)).trim() : toString(list.get(i)));
                     }
                 } else {
                     for (int i = fromIndex; i < toIndex; i++) {
                         if (i > fromIndex) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         sb.append(trim ? toString(list.get(i)).trim() : toString(list.get(i)));
@@ -11404,7 +11450,7 @@ public final class N {
                 }
             } else {
                 int i = 0;
-                if (N.isNullOrEmpty(separator)) {
+                if (N.isNullOrEmpty(delimiter)) {
                     for (Object e : c) {
                         if (i++ >= fromIndex) {
                             sb.append(trim ? toString(e).trim() : toString(e));
@@ -11417,7 +11463,7 @@ public final class N {
                 } else {
                     for (Object e : c) {
                         if (i++ > fromIndex) {
-                            sb.append(separator);
+                            sb.append(delimiter);
                         }
 
                         if (i > fromIndex) {
@@ -11441,59 +11487,59 @@ public final class N {
         return join(m, N.ELEMENT_SEPARATOR);
     }
 
-    public static String join(final Map<?, ?> m, final char entrySeparator) {
+    public static String join(final Map<?, ?> m, final char entryDelimiter) {
         if (N.isNullOrEmpty(m)) {
             return N.EMPTY_STRING;
         }
 
-        return join(m, 0, m.size(), entrySeparator);
+        return join(m, 0, m.size(), entryDelimiter);
     }
 
-    public static String join(final Map<?, ?> m, final String entrySeparator) {
+    public static String join(final Map<?, ?> m, final String entryDelimiter) {
         if (N.isNullOrEmpty(m)) {
             return N.EMPTY_STRING;
         }
 
-        return join(m, 0, m.size(), entrySeparator);
+        return join(m, 0, m.size(), entryDelimiter);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entrySeparator) {
-        return N.join(m, fromIndex, toIndex, entrySeparator, false);
+    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter) {
+        return N.join(m, fromIndex, toIndex, entryDelimiter, false);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entrySeparator, final boolean trim) {
-        return N.join(m, fromIndex, toIndex, D._EQUAL, entrySeparator, trim);
+    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final boolean trim) {
+        return N.join(m, fromIndex, toIndex, D._EQUAL, entryDelimiter, trim);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entrySeparator) {
-        return N.join(m, fromIndex, toIndex, entrySeparator, false);
+    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter) {
+        return N.join(m, fromIndex, toIndex, entryDelimiter, false);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entrySeparator, final boolean trim) {
-        return N.join(m, fromIndex, toIndex, D.EQUAL, entrySeparator, trim);
+    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final boolean trim) {
+        return N.join(m, fromIndex, toIndex, D.EQUAL, entryDelimiter, trim);
     }
 
-    public static String join(final Map<?, ?> m, final char keyValueSeparator, final char entrySeparator) {
+    public static String join(final Map<?, ?> m, final char keyValueDelimiter, final char entryDelimiter) {
         if (N.isNullOrEmpty(m)) {
             return N.EMPTY_STRING;
         }
 
-        return join(m, 0, m.size(), keyValueSeparator, entrySeparator);
+        return join(m, 0, m.size(), keyValueDelimiter, entryDelimiter);
     }
 
-    public static String join(final Map<?, ?> m, final String keyValueSeparator, final String entrySeparator) {
+    public static String join(final Map<?, ?> m, final String keyValueDelimiter, final String entryDelimiter) {
         if (N.isNullOrEmpty(m)) {
             return N.EMPTY_STRING;
         }
 
-        return join(m, 0, m.size(), keyValueSeparator, entrySeparator);
+        return join(m, 0, m.size(), keyValueDelimiter, entryDelimiter);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char keyValueSeparator, final char entrySeparator) {
-        return N.join(m, fromIndex, toIndex, keyValueSeparator, entrySeparator, false);
+    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char keyValueDelimiter, final char entryDelimiter) {
+        return N.join(m, fromIndex, toIndex, keyValueDelimiter, entryDelimiter, false);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char keyValueSeparator, final char entrySeparator,
+    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char keyValueDelimiter, final char entryDelimiter,
             final boolean trim) {
         checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
 
@@ -11507,12 +11553,12 @@ public final class N {
             int i = 0;
             for (Map.Entry<?, ?> entry : m.entrySet()) {
                 if (i++ > fromIndex) {
-                    sb.append(entrySeparator);
+                    sb.append(entryDelimiter);
                 }
 
                 if (i > fromIndex) {
                     sb.append(trim ? toString(entry.getKey()).trim() : toString(entry.getKey()));
-                    sb.append(keyValueSeparator);
+                    sb.append(keyValueDelimiter);
                     sb.append(trim ? toString(entry.getValue()).trim() : toString(entry.getValue()));
                 }
 
@@ -11527,11 +11573,11 @@ public final class N {
         }
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String keyValueSeparator, final String entrySeparator) {
-        return N.join(m, fromIndex, toIndex, keyValueSeparator, entrySeparator, false);
+    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String keyValueDelimiter, final String entryDelimiter) {
+        return N.join(m, fromIndex, toIndex, keyValueDelimiter, entryDelimiter, false);
     }
 
-    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String keyValueSeparator, final String entrySeparator,
+    public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String keyValueDelimiter, final String entryDelimiter,
             final boolean trim) {
         checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
 
@@ -11545,12 +11591,12 @@ public final class N {
             int i = 0;
             for (Map.Entry<?, ?> entry : m.entrySet()) {
                 if (i++ > fromIndex) {
-                    sb.append(entrySeparator);
+                    sb.append(entryDelimiter);
                 }
 
                 if (i > fromIndex) {
                     sb.append(trim ? toString(entry.getKey()).trim() : toString(entry.getKey()));
-                    sb.append(keyValueSeparator);
+                    sb.append(keyValueDelimiter);
                     sb.append(trim ? toString(entry.getValue()).trim() : toString(entry.getValue()));
                 }
 
@@ -18070,8 +18116,8 @@ public final class N {
         return N.INDEX_NOT_FOUND;
     }
 
-    public static int indexOf(final String str, final String substr, final String separator) {
-        return indexOf(str, 0, substr, separator);
+    public static int indexOf(final String str, final String substr, final String delimiter) {
+        return indexOf(str, 0, substr, delimiter);
     }
 
     /**
@@ -18080,10 +18126,10 @@ public final class N {
      * @param fromIndex
      *            the index from which to start the search.
      * @param substr
-     * @param separator
+     * @param delimiter
      * @return
      */
-    public static int indexOf(final String str, final int fromIndex, final String substr, final String separator) {
+    public static int indexOf(final String str, final int fromIndex, final String substr, final String delimiter) {
         checkIndex(fromIndex);
 
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
@@ -18098,9 +18144,9 @@ public final class N {
 
         if (index + substr.length() == str.length()) {
             return index;
-        } else if (str.length() >= index + substr.length() + separator.length()) {
-            for (int i = 0, j = index + substr.length(), seperatorLen = separator.length(); i < seperatorLen;) {
-                if (separator.charAt(i++) != str.charAt(j++)) {
+        } else if (str.length() >= index + substr.length() + delimiter.length()) {
+            for (int i = 0, j = index + substr.length(), seperatorLen = delimiter.length(); i < seperatorLen;) {
+                if (delimiter.charAt(i++) != str.charAt(j++)) {
                     return INDEX_NOT_FOUND;
                 }
             }
@@ -18630,8 +18676,8 @@ public final class N {
         return result;
     }
 
-    public static int lastIndexOf(final String str, final String substr, final String separator) {
-        return lastIndexOf(str, str.length(), substr, separator);
+    public static int lastIndexOf(final String str, final String substr, final String delimiter) {
+        return lastIndexOf(str, str.length(), substr, delimiter);
     }
 
     /**
@@ -18640,10 +18686,10 @@ public final class N {
      * @param fromIndex
      *            the start index to traverse backwards from
      * @param substr
-     * @param separator
+     * @param delimiter
      * @return
      */
-    public static int lastIndexOf(final String str, final int fromIndex, final String substr, final String separator) {
+    public static int lastIndexOf(final String str, final int fromIndex, final String substr, final String delimiter) {
         checkIndex(fromIndex);
 
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
@@ -18661,9 +18707,9 @@ public final class N {
 
         if (index + substr.length() == str.length()) {
             return index;
-        } else if (str.length() >= index + substr.length() + separator.length()) {
-            for (int i = 0, j = index + substr.length(), len = separator.length(); i < len;) {
-                if (separator.charAt(i++) != str.charAt(j++)) {
+        } else if (str.length() >= index + substr.length() + delimiter.length()) {
+            for (int i = 0, j = index + substr.length(), len = delimiter.length(); i < len;) {
+                if (delimiter.charAt(i++) != str.charAt(j++)) {
                     return INDEX_NOT_FOUND;
                 }
             }
@@ -19004,12 +19050,12 @@ public final class N {
         return true;
     }
 
-    public static boolean contains(final String str, final String substr, final String separator) {
+    public static boolean contains(final String str, final String substr, final String delimiter) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
             return false;
         }
 
-        return indexOf(str, substr, separator) != INDEX_NOT_FOUND;
+        return indexOf(str, substr, delimiter) != INDEX_NOT_FOUND;
     }
 
     public static boolean containsIgnoreCase(final String str, final String substr) {

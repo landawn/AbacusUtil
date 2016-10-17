@@ -2717,6 +2717,11 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<T> cached(IntFunction<T[]> generator) {
+        return new ArrayStream<T>(toArray(generator), closeHandlers, sorted, cmp);
+    }
+
+    @Override
     public ImmutableIterator<T> iterator() {
         return elements;
     }

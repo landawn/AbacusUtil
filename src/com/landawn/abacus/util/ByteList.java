@@ -966,6 +966,20 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
     }
 
     @Override
+    public String join(int fromIndex, int toIndex, char delimiter) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.join(elementData, fromIndex, toIndex, delimiter);
+    }
+
+    @Override
+    public String join(int fromIndex, int toIndex, String delimiter) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.join(elementData, fromIndex, toIndex, delimiter);
+    }
+
+    @Override
     public ByteList trimToSize() {
         if (elementData.length > size) {
             elementData = N.copyOfRange(elementData, 0, size);

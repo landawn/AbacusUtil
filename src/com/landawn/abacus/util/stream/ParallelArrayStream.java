@@ -1,5 +1,6 @@
 package com.landawn.abacus.util.stream;
 
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -4708,6 +4709,126 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         return new ParallelIteratorStream<>(Stream.merge(this, b, nextSelector), closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public Stream<T> cached(IntFunction<T[]> generator) {
+        final T[] a = toArray(generator);
+        return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
+    }
+
+    @Override
+    public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
+            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+
+        if (maxThreadNum <= 1) {
+            return sequential().persist(stmt, batchSize, batchInterval, stmtSetter);
+        }
+
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final AtomicLong result = new AtomicLong();
+
+        if (splitter == Splitter.ARRAY) {
+            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+
+            for (int i = 0; i < maxThreadNum; i++) {
+                final int sliceIndex = i;
+
+                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        int cursor = fromIndex + sliceIndex * sliceSize;
+                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
+                        long cnt = 0;
+
+                        try {
+                            while (cursor < to && eHolder.value() == null) {
+                                stmtSetter.accept(stmt, elements[cursor++]);
+                                stmt.addBatch();
+
+                                if ((++cnt % batchSize) == 0) {
+                                    stmt.executeBatch();
+                                    stmt.clearBatch();
+
+                                    if (batchInterval > 0) {
+                                        N.sleep(batchInterval);
+                                    }
+                                }
+                            }
+
+                            if ((cnt % batchSize) > 0) {
+                                stmt.executeBatch();
+                                stmt.clearBatch();
+                            }
+
+                            result.addAndGet(cnt);
+                        } catch (Throwable e) {
+                            Stream.setError(eHolder, e);
+                        }
+                    }
+                }));
+            }
+        } else {
+            final MutableInt cursor = MutableInt.of(fromIndex);
+
+            for (int i = 0; i < maxThreadNum; i++) {
+                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        long cnt = 0;
+                        T next = null;
+
+                        try {
+                            while (eHolder.value() == null) {
+                                synchronized (elements) {
+                                    if (cursor.intValue() < toIndex) {
+                                        next = elements[cursor.getAndIncrement()];
+                                    } else {
+                                        break;
+                                    }
+                                }
+
+                                stmtSetter.accept(stmt, next);
+                                stmt.addBatch();
+
+                                if ((++cnt % batchSize) == 0) {
+                                    stmt.executeBatch();
+                                    stmt.clearBatch();
+
+                                    if (batchInterval > 0) {
+                                        N.sleep(batchInterval);
+                                    }
+                                }
+                            }
+
+                            if ((cnt % batchSize) > 0) {
+                                stmt.executeBatch();
+                                stmt.clearBatch();
+                            }
+
+                            result.addAndGet(cnt);
+                        } catch (Throwable e) {
+                            Stream.setError(eHolder, e);
+                        }
+                    }
+                }));
+            }
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        try {
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
+            }
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
+
+        return result.longValue();
     }
 
     @Override

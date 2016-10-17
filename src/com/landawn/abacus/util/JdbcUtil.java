@@ -86,6 +86,7 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.SQLExecutor.StatementSetter;
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -1100,6 +1101,103 @@ public final class JdbcUtil {
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
+     * @param conn
+     * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
+     * <pre><code>
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
+        columnNameList.retainAll(yourSelectColumnNames);        
+        String sql = RE.insert(columnNameList).into(tableName).sql();  
+     * </code></pre>
+     * @param stmtSetter
+     * @return
+     */
+    public static int importData(final DataSet dataset, final Connection conn, final String insertSQL,
+            final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+        return importData(dataset, 0, dataset.size(), conn, insertSQL, stmtSetter);
+    }
+
+    /**
+     * Imports the data from <code>DataSet</code> to database. 
+     * 
+     * @param dataset
+     * @param offset
+     * @param count
+     * @param conn
+     * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
+     * <pre><code>
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
+        columnNameList.retainAll(yourSelectColumnNames);        
+        String sql = RE.insert(columnNameList).into(tableName).sql();  
+     * </code></pre>
+     * @param stmtSetter
+     * @return
+     */
+    public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL,
+            final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+        return importData(dataset, offset, count, conn, insertSQL, 200, 0, stmtSetter);
+    }
+
+    /**
+     * Imports the data from <code>DataSet</code> to database. 
+     * 
+     * @param dataset
+     * @param offset
+     * @param count
+     * @param conn
+     * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
+     * <pre><code>
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
+        columnNameList.retainAll(yourSelectColumnNames);        
+        String sql = RE.insert(columnNameList).into(tableName).sql();  
+     * </code></pre>
+     * @param batchSize
+     * @param batchInterval
+     * @param stmtSetter
+     * @return
+     */
+    public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL, final int batchSize,
+            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+        return importData(dataset, offset, count, conn, insertSQL, batchSize, batchInterval, null, stmtSetter);
+    }
+
+    /**
+     * Imports the data from <code>DataSet</code> to database. 
+     * 
+     * @param dataset
+     * @param offset
+     * @param count
+     * @param conn
+     * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
+     * <pre><code>
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
+        columnNameList.retainAll(yourSelectColumnNames);        
+        String sql = RE.insert(columnNameList).into(tableName).sql();  
+     * </code></pre>
+     * @param batchSize
+     * @param batchInterval
+     * @param filter
+     * @param stmtSetter
+     * @return
+     */
+    public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL, final int batchSize,
+            final int batchInterval, final Predicate<Object[]> filter, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+        PreparedStatement stmt = null;
+
+        try {
+            stmt = conn.prepareStatement(insertSQL);
+
+            return importData(dataset, offset, count, stmt, batchSize, batchInterval, filter, stmtSetter);
+        } catch (SQLException e) {
+            throw new AbacusSQLException(e);
+        } finally {
+            JdbcUtil.closeQuietly(stmt);
+        }
+    }
+
+    /**
+     * Imports the data from <code>DataSet</code> to database. 
+     * 
+     * @param dataset
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
      * @return
      */
@@ -1265,7 +1363,7 @@ public final class JdbcUtil {
 
             final DataChannel dc = new StatementDataChannel(stmt);
             final Object[] row = filter == null ? null : new Object[columnCount];
-            for (int i = offset; result < count; i++) {
+            for (int i = offset, size = dataset.size(); result < count && i < size; i++) {
                 dataset.absolute(i);
 
                 if (filter == null) {
@@ -1288,9 +1386,104 @@ public final class JdbcUtil {
 
                 stmt.addBatch();
 
-                result++;
+                if ((++result % batchSize) == 0) {
+                    stmt.executeBatch();
+                    stmt.clearBatch();
 
-                if ((result % batchSize) == 0) {
+                    if (batchInterval > 0) {
+                        N.sleep(batchInterval);
+                    }
+                }
+            }
+
+            if ((result % batchSize) > 0) {
+                stmt.executeBatch();
+                stmt.clearBatch();
+            }
+        } catch (SQLException e) {
+            throw new AbacusSQLException(e);
+        }
+
+        return result;
+    }
+
+    public static int importData(final DataSet dataset, final PreparedStatement stmt,
+            final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+        return importData(dataset, 0, dataset.size(), stmt, stmtSetter);
+    }
+
+    /**
+     * Imports the data from <code>DataSet</code> to database. 
+     * 
+     * @param dataset
+     * @param offset
+     * @param count
+     * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
+     * @return
+     */
+    public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt,
+            final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+        return importData(dataset, offset, count, stmt, 200, 0, stmtSetter);
+    }
+
+    /**
+     * Imports the data from <code>DataSet</code> to database. 
+     * 
+     * @param dataset
+     * @param columnTypeMap
+     * @param offset
+     * @param count
+     * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
+     * @param filter
+     * @param stmtSetter
+     * @return
+     */
+    public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt, final int batchSize,
+            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+        return importData(dataset, offset, count, stmt, batchSize, batchInterval, null, stmtSetter);
+    }
+
+    /**
+     * Imports the data from <code>DataSet</code> to database. 
+     * 
+     * @param dataset
+     * @param columnTypeMap
+     * @param offset
+     * @param count
+     * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
+     * @param batchSize
+     * @param batchInterval
+     * @param filter
+     * @param stmtSetter
+     * @return
+     */
+    public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt, final int batchSize,
+            final int batchInterval, final Predicate<Object[]> filter, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+        if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
+            throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
+        }
+
+        final int columnCount = dataset.columnNameList().size();
+        final Object[] row = new Object[columnCount];
+        int result = 0;
+
+        try {
+            for (int i = offset, size = dataset.size(); result < count && i < size; i++) {
+                dataset.absolute(i);
+
+                for (int j = 0; j < columnCount; j++) {
+                    row[j] = dataset.get(j);
+                }
+
+                if (filter != null && filter.test(row) == false) {
+                    continue;
+                }
+
+                stmtSetter.accept(stmt, row);
+
+                stmt.addBatch();
+
+                if ((++result % batchSize) == 0) {
                     stmt.executeBatch();
                     stmt.clearBatch();
 
@@ -1463,9 +1656,7 @@ public final class JdbcUtil {
 
                 stmt.addBatch();
 
-                result++;
-
-                if ((result % batchSize) == 0) {
+                if ((++result % batchSize) == 0) {
                     stmt.executeBatch();
                     stmt.clearBatch();
 
@@ -1549,9 +1740,77 @@ public final class JdbcUtil {
 
                 stmt.addBatch();
 
-                result++;
+                if ((++result % batchSize) == 0) {
+                    stmt.executeBatch();
+                    stmt.clearBatch();
 
-                if ((result % batchSize) == 0) {
+                    if (batchInterval > 0) {
+                        N.sleep(batchInterval);
+                    }
+                }
+            }
+
+            if ((result % batchSize) > 0) {
+                stmt.executeBatch();
+                stmt.clearBatch();
+            }
+        } catch (SQLException e) {
+            throw new AbacusSQLException(e);
+        }
+
+        return result;
+    }
+
+    public static <T> long importData(final Iterator<T> iter, final Connection conn, final String insertSQL,
+            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+        return importData(iter, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, stmtSetter);
+    }
+
+    public static <T> long importData(final Iterator<T> iter, final long offset, final long count, final Connection conn, final String insertSQL,
+            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+        PreparedStatement stmt = null;
+
+        try {
+            stmt = conn.prepareStatement(insertSQL);
+
+            return importData(iter, offset, count, stmt, batchSize, batchInterval, stmtSetter);
+        } catch (SQLException e) {
+            throw new AbacusSQLException(e);
+        } finally {
+            JdbcUtil.closeQuietly(stmt);
+        }
+    }
+
+    public static <T> long importData(final Iterator<T> iter, final PreparedStatement stmt, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+        return importData(iter, 0, Long.MAX_VALUE, stmt, 200, 0, stmtSetter);
+    }
+
+    /**
+     * Imports the data from Iterator to database.
+     * 
+     * @param iter
+     * @param offset
+     * @param count
+     * @param stmt
+     * @param batchSize
+     * @param batchInterval
+     * @param func convert element to the parameters for record insert. Returns a <code>null</code> array to skip the line. 
+     * @return
+     */
+    public static <T> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt, final int batchSize,
+            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+        long result = 0;
+
+        try {
+            while (offset-- > 0 && iter.hasNext()) {
+                iter.next();
+            }
+
+            while (result < count && iter.hasNext()) {
+                stmtSetter.accept(stmt, iter.next());
+                stmt.addBatch();
+
+                if ((++result % batchSize) == 0) {
                     stmt.executeBatch();
                     stmt.clearBatch();
 
