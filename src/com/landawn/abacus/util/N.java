@@ -372,7 +372,7 @@ public final class N {
 
     public static final int CPU_CORES = Runtime.getRuntime().availableProcessors();
 
-    public static final long MAX_MEMORY = Runtime.getRuntime().maxMemory();
+    public static final int MAX_MEMORY_IN_MB = (int) (Runtime.getRuntime().maxMemory() / N.ONE_MB);
 
     // ...
     public static final String OS_NAME = System.getProperty("os.name");
@@ -17688,11 +17688,15 @@ public final class N {
         return Array.binarySearch(c, fromIndex, toIndex, key, cmp);
     }
 
-    public static String findFirst(String str, String prefix, String postfix) {
+    public static Optional<String> findFirst(String str, String prefix, String postfix) {
         return findFirst(String.class, str, prefix, postfix);
     }
 
-    public static <T> T findFirst(Class<T> targetClass, String str, String prefix, String postfix) {
+    public static Optional<String> findFirst(String str, int fromIndex, String prefix, String postfix) {
+        return findFirst(String.class, str, fromIndex, prefix, postfix);
+    }
+
+    public static <T> Optional<T> findFirst(Class<T> targetClass, String str, String prefix, String postfix) {
         return findFirst(targetClass, str, 0, prefix, postfix);
     }
 
@@ -17707,17 +17711,17 @@ public final class N {
      * @return
      * @see String#indexOf(String, int)
      */
-    public static <T> T findFirst(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
+    public static <T> Optional<T> findFirst(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
         final Type<T> type = typeOf(targetClass);
 
         if (N.isNullOrEmpty(str)) {
-            return type.defaultValue();
+            return Optional.empty();
         }
 
         int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.indexOf(prefix, fromIndex);
 
         if (beginIndex < 0) {
-            return type.defaultValue();
+            return Optional.empty();
         }
 
         beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
@@ -17725,17 +17729,21 @@ public final class N {
         int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.indexOf(postfix, beginIndex);
 
         if (endIndex < 0) {
-            return type.defaultValue();
+            return Optional.empty();
         }
 
-        return N.as(type, str.subSequence(beginIndex, endIndex));
+        return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
     }
 
-    public static String findLast(String str, String prefix, String postfix) {
+    public static Optional<String> findLast(String str, String prefix, String postfix) {
         return findLast(String.class, str, prefix, postfix);
     }
 
-    public static <T> T findLast(Class<T> targetClass, String str, String prefix, String postfix) {
+    public static Optional<String> findLast(String str, int fromIndex, String prefix, String postfix) {
+        return findLast(String.class, str, fromIndex, prefix, postfix);
+    }
+
+    public static <T> Optional<T> findLast(Class<T> targetClass, String str, String prefix, String postfix) {
         return findLast(targetClass, str, N.isNullOrEmpty(str) ? 0 : str.length(), prefix, postfix);
     }
 
@@ -17750,28 +17758,28 @@ public final class N {
      * @return
      * @see String#lastIndexOf(String, int)
      */
-    public static <T> T findLast(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
+    public static <T> Optional<T> findLast(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
         final Type<T> type = typeOf(targetClass);
 
         if (N.isNullOrEmpty(str)) {
-            return type.defaultValue();
+            return Optional.empty();
         }
 
         int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.lastIndexOf(postfix, fromIndex);
 
         if (endIndex < 0) {
-            return type.defaultValue();
+            return Optional.empty();
         }
 
         int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.lastIndexOf(prefix, endIndex + (N.isNullOrEmpty(postfix) ? 0 : postfix.length()));
 
         if (beginIndex < 0) {
-            return type.defaultValue();
+            return Optional.empty();
         }
 
         beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
 
-        return N.as(type, str.subSequence(beginIndex, endIndex));
+        return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
     }
 
     public static int indexOf(final boolean[] a, final boolean e) {

@@ -11,7 +11,6 @@ import java.util.Map;
  * 
  * @since 0.8
  * 
- * @author Haiyang Li
  */
 public final class Charsets {
     public static final Charset US_ASCII = Charset.forName("US-ASCII");

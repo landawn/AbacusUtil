@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -36,7 +37,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.nio.charset.Charset;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
@@ -719,7 +722,7 @@ public final class IOUtil {
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
 
-    public static String readLine(final File file) {
+    public static String readFirstLine(final File file) {
         return readLine(file, 0);
     }
 
@@ -743,7 +746,7 @@ public final class IOUtil {
         }
     }
 
-    public static String readLine(final InputStream is) {
+    public static String readNextLine(final InputStream is) {
         return readLine(is, 0);
     }
 
@@ -755,7 +758,7 @@ public final class IOUtil {
         return readLine(createReader(is, encoding), lineOffset);
     }
 
-    public static String readLine(final Reader reader) {
+    public static String readNextLine(final Reader reader) {
         return readLine(reader, 0);
     }
 
@@ -1404,37 +1407,33 @@ public final class IOUtil {
         }
     }
 
-    public static void write(final File out, final String str) {
+    public static void write(final File out, final CharSequence str) {
         write(out, str, Charsets.DEFAULT);
     }
 
-    public static void write(final File out, final String str, Charset charset) {
+    public static void write(final File out, final CharSequence str, Charset charset) {
         charset = charset == null ? Charsets.DEFAULT : charset;
 
-        if (str == null) {
-            write(out, chars2Bytes(N.NULL_CHAR_ARRAY, charset));
-        } else {
-            write(out, str.getBytes(charset));
-        }
+        write(out, chars2Bytes(toCharArray(str), charset));
     }
 
-    public static void write(final OutputStream out, final String str) {
+    public static void write(final OutputStream out, final CharSequence str) {
         write(out, str, false);
     }
 
-    public static void write(final OutputStream out, final String str, final Charset charset) {
+    public static void write(final OutputStream out, final CharSequence str, final Charset charset) {
         write(out, str, charset, false);
     }
 
-    public static void write(final OutputStream out, final String str, final boolean flush) {
+    public static void write(final OutputStream out, final CharSequence str, final boolean flush) {
         write(out, str, Charsets.DEFAULT, flush);
     }
 
-    public static void write(final OutputStream out, final String str, Charset charset, final boolean flush) {
+    public static void write(final OutputStream out, final CharSequence str, Charset charset, final boolean flush) {
         charset = charset == null ? Charsets.DEFAULT : charset;
 
         try {
-            out.write(str == null ? chars2Bytes(N.NULL_CHAR_ARRAY, charset) : str.getBytes(charset));
+            out.write(chars2Bytes(toCharArray(str), charset));
 
             if (flush) {
                 out.flush();
@@ -1444,13 +1443,12 @@ public final class IOUtil {
         }
     }
 
-    public static void write(final Writer out, final String str) {
+    public static void write(final Writer out, final CharSequence str) {
         write(out, str, false);
     }
 
-    @SuppressWarnings("deprecation")
-    public static void write(final Writer out, final String str, final boolean flush) {
-        write(out, str == null ? N.NULL_CHAR_ARRAY : N.getCharsForReadOnly(str), flush);
+    public static void write(final Writer out, final CharSequence str, final boolean flush) {
+        write(out, toCharArray(str), flush);
     }
 
     public static void write(final File out, final char[] chars) {
@@ -1513,32 +1511,6 @@ public final class IOUtil {
         }
     }
 
-    public static long write(final File output, final InputStream input) {
-        return write(output, input, 0, Long.MAX_VALUE);
-    }
-
-    public static long write(final File output, final InputStream input, final long offset, final long len) {
-        OutputStream os = null;
-
-        try {
-            if (!output.exists()) {
-                output.createNewFile();
-            }
-
-            os = new FileOutputStream(output);
-
-            long result = write(os, input, offset, len);
-
-            os.flush();
-
-            return result;
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        } finally {
-            close(os);
-        }
-    }
-
     public static void write(final File out, final byte[] bytes) {
         write(out, bytes, 0, bytes.length);
     }
@@ -1587,6 +1559,40 @@ public final class IOUtil {
         }
     }
 
+    public static long write(final File output, final InputStream input) {
+        return write(output, input, 0, Long.MAX_VALUE);
+    }
+
+    /**
+     * 
+     * @param output
+     * @param input
+     * @param offset by byte
+     * @param len by byte
+     * @return
+     */
+    public static long write(final File output, final InputStream input, final long offset, final long len) {
+        OutputStream os = null;
+
+        try {
+            if (!output.exists()) {
+                output.createNewFile();
+            }
+
+            os = new FileOutputStream(output);
+
+            long result = write(os, input, offset, len);
+
+            os.flush();
+
+            return result;
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            close(os);
+        }
+    }
+
     public static long write(final OutputStream output, final InputStream input) {
         return write(output, input, false);
     }
@@ -1599,6 +1605,15 @@ public final class IOUtil {
         return write(output, input, 0, Long.MAX_VALUE, flush);
     }
 
+    /**
+     * 
+     * @param output
+     * @param input
+     * @param offset by byte
+     * @param len by byte
+     * @param flush
+     * @return
+     */
     public static long write(final OutputStream output, final InputStream input, final long offset, final long len, final boolean flush) {
         final byte[] buf = ObjectFactory.createByteArrayBuffer();
 
@@ -1634,14 +1649,31 @@ public final class IOUtil {
     }
 
     public static long write(final File output, final Reader input) {
-        return write(output, input, 0, Long.MAX_VALUE);
+        return write(output, input, Charsets.DEFAULT);
+    }
+
+    public static long write(final File output, final Reader input, final Charset charset) {
+        return write(output, input, 0, Long.MAX_VALUE, charset);
     }
 
     public static long write(final File output, final Reader input, final long offset, final long len) {
+        return write(output, input, offset, len, Charsets.DEFAULT);
+    }
+
+    /**
+     * 
+     * @param output
+     * @param input
+     * @param offset by char
+     * @param len by char
+     * @param charset
+     * @return
+     */
+    public static long write(final File output, final Reader input, final long offset, final long len, final Charset charset) {
         Writer writer = null;
 
         try {
-            writer = new FileWriter(output);
+            writer = new OutputStreamWriter(new FileOutputStream(output), charset == null ? Charsets.DEFAULT : charset);
 
             long result = write(writer, input, offset, len);
 
@@ -1667,6 +1699,15 @@ public final class IOUtil {
         return write(output, input, 0, Long.MAX_VALUE, flush);
     }
 
+    /**
+     * 
+     * @param output
+     * @param input
+     * @param offset by char
+     * @param len by char
+     * @param flush
+     * @return
+     */
     public static long write(final Writer output, final Reader input, final long offset, final long len, final boolean flush) {
         final char[] buf = ObjectFactory.createCharArrayBuffer();
 
@@ -1717,6 +1758,235 @@ public final class IOUtil {
     //    public static InputStream base64Wrap(InputStream is) {
     //        return java.util.Base64.getDecoder().wrap(is);
     //    }
+
+    public static long write(final File output, final File input) {
+        return write(output, input, 0, Long.MAX_VALUE);
+    }
+
+    public static long write(final File output, final File input, final long offset, final long len) {
+        OutputStream os = null;
+        InputStream is = null;
+
+        try {
+            os = new FileOutputStream(output);
+            is = new FileInputStream(input);
+
+            return write(os, is, offset, len, true);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            closeQuietly(os);
+            closeQuietly(is);
+        }
+    }
+
+    public static long write(final OutputStream output, final File input) {
+        return write(output, input, false);
+    }
+
+    public static long write(final OutputStream output, final File input, final long offset, final long len) {
+        return write(output, input, offset, len, false);
+    }
+
+    public static long write(final OutputStream output, final File input, final boolean flush) {
+        return write(output, input, 0, Long.MAX_VALUE, flush);
+    }
+
+    /**
+     * 
+     * @param output
+     * @param input
+     * @param offset
+     * @param offset by byte
+     * @param len by byte
+     * @return
+     */
+    public static long write(final OutputStream output, final File input, final long offset, final long len, final boolean flush) {
+        InputStream is = null;
+        try {
+            is = new FileInputStream(input);
+
+            return write(output, is, offset, len, flush);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            closeQuietly(is);
+        }
+    }
+
+    public static long write(final Writer output, final File input) {
+        return write(output, input, false);
+    }
+
+    public static long write(final Writer output, final File input, final long offset, final long len) {
+        return write(output, input, offset, len, false);
+    }
+
+    public static long write(final Writer output, final File input, final boolean flush) {
+        return write(output, input, 0, Long.MAX_VALUE, flush);
+    }
+
+    /**
+     * 
+     * @param output
+     * @param input
+     * @param offset by char
+     * @param len by char
+     * @param flush
+     * @return
+     */
+    public static long write(final Writer output, final File input, final long offset, final long len, final boolean flush) {
+        Reader reader = null;
+        try {
+            reader = new FileReader(input);
+
+            return write(output, reader, offset, len, flush);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            closeQuietly(reader);
+        }
+    }
+
+    public static void append(final File out, final byte[] bytes) {
+        append(out, bytes, 0, bytes.length);
+    }
+
+    public static void append(final File out, final byte[] bytes, final int offset, final int len) {
+        OutputStream os = null;
+
+        try {
+            if (!out.exists()) {
+                out.createNewFile();
+            }
+
+            os = new FileOutputStream(out, true);
+
+            write(os, bytes, offset, len);
+
+            os.flush();
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            close(os);
+        }
+    }
+
+    public static void append(final File out, final char[] chars) {
+        append(out, chars, 0, chars.length);
+    }
+
+    public static void append(final File out, final char[] chars, final int offset, final int len) {
+        append(out, chars, offset, len, Charsets.DEFAULT);
+    }
+
+    public static void append(final File out, final char[] chars, final int offset, final int len, final Charset charset) {
+        append(out, chars2Bytes(chars, offset, len, charset));
+    }
+
+    public static void append(File output, CharSequence str) {
+        append(output, str, Charsets.DEFAULT);
+    }
+
+    public static void append(File output, CharSequence str, Charset charset) {
+        final char[] chs = toCharArray(str);
+
+        append(output, chs, 0, chs.length, charset);
+    }
+
+    public static long append(final File output, final InputStream input) {
+        return append(output, input, 0, Long.MAX_VALUE);
+    }
+
+    /**
+     * 
+     * @param output
+     * @param input
+     * @param offset by byte
+     * @param len by byte
+     * @return
+     */
+    public static long append(final File output, final InputStream input, final long offset, final long len) {
+        OutputStream os = null;
+
+        try {
+            if (!output.exists()) {
+                output.createNewFile();
+            }
+
+            os = new FileOutputStream(output, true);
+
+            long result = write(os, input, offset, len);
+
+            os.flush();
+
+            return result;
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            close(os);
+        }
+    }
+
+    public static long append(final File output, final Reader input) {
+        return append(output, input, Charsets.DEFAULT);
+    }
+
+    public static long append(final File output, final Reader input, final Charset charset) {
+        return append(output, input, 0, Long.MAX_VALUE, charset);
+    }
+
+    public static long append(final File output, final Reader input, final long offset, final long len) {
+        return append(output, input, offset, len, Charsets.DEFAULT);
+    }
+
+    /**
+     * 
+     * @param output
+     * @param input
+     * @param offset by char
+     * @param len by char
+     * @param charset
+     * @return
+     */
+    public static long append(final File output, final Reader input, final long offset, final long len, final Charset charset) {
+        Writer writer = null;
+
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(output, true), charset == null ? Charsets.DEFAULT : charset);
+
+            long result = write(writer, input, offset, len);
+
+            writer.flush();
+
+            return result;
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            close(writer);
+        }
+    }
+
+    public static long append(final File output, final File input) {
+        return append(output, input, 0, Long.MAX_VALUE);
+    }
+
+    public static long append(final File output, final File input, final long offset, final long len) {
+        OutputStream os = null;
+        InputStream is = null;
+
+        try {
+            os = new FileOutputStream(output, true);
+            is = new FileInputStream(input);
+
+            return write(os, is, offset, len, true);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            closeQuietly(os);
+            closeQuietly(is);
+        }
+    }
 
     /**
      * Return the count of skipped bytes.
@@ -1820,28 +2090,248 @@ public final class IOUtil {
         }
     }
 
-    public static BufferedReader createBufferedReader(String filePath) {
+    /**
+     * Note: copied from Google Guava under Apache License v2.
+     * 
+     * @param file
+     * @return
+     */
+    public static MappedByteBuffer map(File file) {
+        N.requireNonNull(file);
+
+        return map(file, MapMode.READ_ONLY);
+    }
+
+    /**
+     * Note: copied from Google Guava under Apache License v2.
+     * 
+     * Fully maps a file in to memory as per
+     * {@link FileChannel#map(java.nio.channels.FileChannel.MapMode, long, long)}
+     * using the requested {@link MapMode}.
+     *
+     * <p>Files are mapped from offset 0 to its length.
+     *
+     * <p>This only works for files <= {@link Integer#MAX_VALUE} bytes.
+     *
+     * @param file the file to map
+     * @param mode the mode to use when mapping {@code file}
+     * @return a buffer reflecting {@code file}
+     * @throws FileNotFoundException if the {@code file} does not exist
+     *
+     * @see FileChannel#map(MapMode, long, long)
+     * @since 2.0
+     */
+    public static MappedByteBuffer map(File file, MapMode mode) {
+        N.requireNonNull(file);
+        N.requireNonNull(mode);
+
+        if (!file.exists()) {
+            throw new AbacusIOException(file.toString() + " is not found");
+        }
+
+        return map(file, mode, 0, file.length());
+    }
+
+    /**
+     * Note: copied from Google Guava under Apache License v2.
+     * 
+     * Maps a file in to memory as per
+     * {@link FileChannel#map(java.nio.channels.FileChannel.MapMode, long, long)}
+     * using the requested {@link MapMode}.
+     *
+     * <p>Files are mapped from offset 0 to {@code size}.
+     *
+     * <p>If the mode is {@link MapMode#READ_WRITE} and the file does not exist,
+     * it will be created with the requested {@code size}. Thus this method is
+     * useful for creating memory mapped files which do not yet exist.
+     *
+     * <p>This only works for files <= {@link Integer#MAX_VALUE} bytes.
+     *
+     * @param file the file to map
+     * @param mode the mode to use when mapping {@code file}
+     * @param offset
+     * @param len
+     * @return a buffer reflecting {@code file}
+     *
+     * @see FileChannel#map(MapMode, long, long)
+     * @since 2.0
+     */
+    public static MappedByteBuffer map(File file, MapMode mode, long offset, long len) {
+        N.requireNonNull(file);
+        N.requireNonNull(mode);
+
+        RandomAccessFile raf = null;
+
+        try {
+            raf = new RandomAccessFile(file, mode == MapMode.READ_ONLY ? "r" : "rw");
+            return raf.getChannel().map(mode, offset, len);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            IOUtil.closeQuietly(raf);
+        }
+    }
+
+    /**
+     * Note: copied from Google Guava under Apache License v2.
+     * 
+     * Returns the lexically cleaned form of the path name, <i>usually</i> (but
+     * not always) equivalent to the original. The following heuristics are used:
+     *
+     * <ul>
+     * <li>empty string becomes .
+     * <li>. stays as .
+     * <li>fold out ./
+     * <li>fold out ../ when possible
+     * <li>collapse multiple slashes
+     * <li>delete trailing slashes (unless the path is just "/")
+     * </ul>
+     *
+     * <p>These heuristics do not always match the behavior of the filesystem. In
+     * particular, consider the path {@code a/../b}, which {@code simplifyPath}
+     * will change to {@code b}. If {@code a} is a symlink to {@code x}, {@code
+     * a/../b} may refer to a sibling of {@code x}, rather than the sibling of
+     * {@code a} referred to by {@code b}.
+     *
+     * @since 11.0
+     */
+    public static String simplifyPath(String pathname) {
+        if (N.isNullOrEmpty(pathname)) {
+            return ".";
+        }
+
+        pathname = pathname.replace('\\', '/');
+
+        // split the path apart
+        String[] components = N.split(pathname, '/', true);
+        List<String> path = new ArrayList<String>();
+
+        // resolve ., .., and //
+        for (String component : components) {
+            if (component.length() == 0 || component.equals(".")) {
+                continue;
+            } else if (component.equals("..")) {
+                if (path.size() > 0 && !path.get(path.size() - 1).equals("..")) {
+                    path.remove(path.size() - 1);
+                } else {
+                    path.add("..");
+                }
+            } else {
+                path.add(component);
+            }
+        }
+
+        // put it back together
+        String result = N.join(path, '/');
+
+        if (pathname.charAt(0) == '/') {
+            result = "/" + result;
+        }
+
+        while (result.startsWith("/../")) {
+            result = result.substring(3);
+        }
+
+        if (result.equals("/..")) {
+            result = "/";
+        } else if ("".equals(result)) {
+            result = ".";
+        }
+
+        return result;
+    }
+
+    /**
+     * Note: copied from Google Guava under Apache License v2.
+     * 
+     * Returns the <a href="http://en.wikipedia.org/wiki/Filename_extension">file
+     * extension</a> for the given file name, or the empty string if the file has
+     * no extension.  The result does not include the '{@code .}'.
+     *
+     * @since 11.0
+     */
+    public static String getFileExtension(String fullName) {
+        N.requireNonNull(fullName);
+
+        String fileName = new File(fullName).getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
+    }
+
+    /**
+     * Note: copied from Google Guava under Apache License v2.
+     * 
+     * Returns the file name without its
+     * <a href="http://en.wikipedia.org/wiki/Filename_extension">file extension</a> or path. This is
+     * similar to the {@code basename} unix command. The result does not include the '{@code .}'.
+     *
+     * @param file The name of the file to trim the extension from. This can be either a fully
+     *     qualified file name (including a path) or just a file name.
+     * @return The file name without its path or extension.
+     * @since 14.0
+     */
+    public static String getNameWithoutExtension(String file) {
+        N.requireNonNull(file);
+
+        String fileName = new File(file).getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+    }
+
+    static java.io.BufferedReader createBufferedReader(String filePath) {
         return createBufferedReader(new File(filePath));
     }
 
-    public static BufferedReader createBufferedReader(File file) {
+    public static java.io.BufferedReader createBufferedReader(File file) {
         try {
-            return new BufferedReader(new FileReader(file));
+            return new java.io.BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
             throw new AbacusIOException(e);
         }
     }
 
-    public static BufferedWriter createBufferedWriter(String filePath) {
+    public static java.io.BufferedReader createBufferedReader(File file, Charset charset) {
+        try {
+            return new java.io.BufferedReader(new InputStreamReader(new FileInputStream(file), charset == null ? Charsets.DEFAULT : charset));
+        } catch (FileNotFoundException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    public static java.io.BufferedReader createBufferedReader(InputStream is) {
+        return new java.io.BufferedReader(new InputStreamReader(is));
+    }
+
+    public static java.io.BufferedReader createBufferedReader(InputStream is, Charset charset) {
+        return new java.io.BufferedReader(new InputStreamReader(is, charset == null ? Charsets.DEFAULT : charset));
+    }
+
+    static java.io.BufferedWriter createBufferedWriter(String filePath) {
         return createBufferedWriter(new File(filePath));
     }
 
-    public static BufferedWriter createBufferedWriter(File file) {
+    public static java.io.BufferedWriter createBufferedWriter(File file) {
         try {
-            return new BufferedWriter(new FileWriter(file));
+            return new java.io.BufferedWriter(new FileWriter(file));
         } catch (IOException e) {
             throw new AbacusIOException(e);
         }
+    }
+
+    public static java.io.BufferedWriter createBufferedWriter(File file, Charset charset) {
+        try {
+            return new java.io.BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), charset == null ? Charsets.DEFAULT : charset));
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    public static java.io.BufferedWriter createBufferedWriter(OutputStream os) {
+        return new java.io.BufferedWriter(new OutputStreamWriter(os));
+    }
+
+    public static java.io.BufferedWriter createBufferedWriter(OutputStream os, Charset charset) {
+        return new java.io.BufferedWriter(new OutputStreamWriter(os, charset == null ? Charsets.DEFAULT : charset));
     }
 
     public static LZ4BlockInputStream createLZ4BlockInputStream(final InputStream is) {
@@ -2262,14 +2752,118 @@ public final class IOUtil {
     }
 
     /**
-     *
-     * @param srcFile
-     * @param rewName the new file name under same path.
-     * @return <code>true</code> if and only if the renaming succeeded;
-     *          <code>false</code> otherwise
+     * 
+     * @param source
+     * @param target
+     * @param options
+     * @return
+     * @see Files#copy(Path, Path, CopyOption...)
      */
-    public static boolean renameTo(final File srcFile, final String newFileName) {
-        return srcFile.renameTo(new File(srcFile.getParent() + N.FILE_SEPARATOR + newFileName));
+    public static Path copy(Path source, Path target, CopyOption... options) {
+        try {
+            return Files.copy(source, target, options);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    /**
+     * 
+     * @param in
+     * @param target
+     * @param options
+     * @return
+     * @see Files#copy(InputStream, Path, CopyOption...)
+     */
+    public static long copy(InputStream in, Path target, CopyOption... options) {
+        try {
+            return Files.copy(in, target, options);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    /**
+     * 
+     * @param source
+     * @param out
+     * @return
+     * @see Files#copy(Path, OutputStream)
+     */
+    public static long copy(Path source, OutputStream out) {
+        try {
+            return Files.copy(source, out);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Copies bytes from the URL <code>source</code> to a file
+     * <code>destination</code>. The directories up to <code>destination</code>
+     * will be created if they don't already exist. <code>destination</code>
+     * will be overwritten if it already exists.
+     * <p>
+     * Warning: this method does not set a connection or read timeout and thus
+     * might block forever. Use {@link #copyURLToFile(URL, File, int, int)}
+     * with reasonable timeouts to prevent this.
+     *
+     * @param source  the <code>URL</code> to copy bytes from, must not be {@code null}
+     * @param destination  the non-directory <code>File</code> to write bytes to
+     *  (possibly overwriting), must not be {@code null}
+     * @throws AbacusIOException if <code>source</code> URL cannot be opened
+     * @throws AbacusIOException if <code>destination</code> is a directory
+     * @throws AbacusIOException if <code>destination</code> cannot be written
+     * @throws AbacusIOException if <code>destination</code> needs creating but can't be
+     * @throws AbacusIOException if an IO error occurs during copying
+     */
+    public static void copyURLToFile(final URL source, final File destination) {
+        InputStream is = null;
+        try {
+            is = source.openStream();
+
+            write(destination, is);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            close(is);
+        }
+    }
+
+    /**
+     * Copies bytes from the URL <code>source</code> to a file
+     * <code>destination</code>. The directories up to <code>destination</code>
+     * will be created if they don't already exist. <code>destination</code>
+     * will be overwritten if it already exists.
+     *
+     * @param source  the <code>URL</code> to copy bytes from, must not be {@code null}
+     * @param destination  the non-directory <code>File</code> to write bytes to
+     *  (possibly overwriting), must not be {@code null}
+     * @param connectionTimeout the number of milliseconds until this method
+     *  will timeout if no connection could be established to the <code>source</code>
+     * @param readTimeout the number of milliseconds until this method will
+     *  timeout if no data could be read from the <code>source</code>
+     * @throws AbacusIOException if <code>source</code> URL cannot be opened
+     * @throws AbacusIOException if <code>destination</code> is a directory
+     * @throws AbacusIOException if <code>destination</code> cannot be written
+     * @throws AbacusIOException if <code>destination</code> needs creating but can't be
+     * @throws AbacusIOException if an IO error occurs during copying
+     */
+    public static void copyURLToFile(final URL source, final File destination, final int connectionTimeout, final int readTimeout) {
+        InputStream is = null;
+        try {
+            final URLConnection connection = source.openConnection();
+            connection.setConnectTimeout(connectionTimeout);
+            connection.setReadTimeout(readTimeout);
+            is = connection.getInputStream();
+
+            write(destination, is);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            close(is);
+        }
     }
 
     public static void move(final File srcFile, final File destDir) {
@@ -2292,6 +2886,17 @@ public final class IOUtil {
         if (!srcFile.renameTo(destFile)) {
             throw new AbacusIOException("Failed to move file from: " + srcFile.getAbsolutePath() + " to: " + destDir.getAbsolutePath());
         }
+    }
+
+    /**
+     *
+     * @param srcFile
+     * @param rewName the new file name under same path.
+     * @return <code>true</code> if and only if the renaming succeeded;
+     *          <code>false</code> otherwise
+     */
+    public static boolean renameTo(final File srcFile, final String newFileName) {
+        return srcFile.renameTo(new File(srcFile.getParent() + N.FILE_SEPARATOR + newFileName));
     }
 
     /**
@@ -2961,121 +3566,6 @@ public final class IOUtil {
         }
 
         return files;
-    }
-
-    /**
-     * 
-     * @param source
-     * @param target
-     * @param options
-     * @return
-     * @see Files#copy(Path, Path, CopyOption...)
-     */
-    public static Path copy(Path source, Path target, CopyOption... options) {
-        try {
-            return Files.copy(source, target, options);
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        }
-    }
-
-    /**
-     * 
-     * @param in
-     * @param target
-     * @param options
-     * @return
-     * @see Files#copy(InputStream, Path, CopyOption...)
-     */
-    public static long copy(InputStream in, Path target, CopyOption... options) {
-        try {
-            return Files.copy(in, target, options);
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        }
-    }
-
-    /**
-     * 
-     * @param source
-     * @param out
-     * @return
-     * @see Files#copy(Path, OutputStream)
-     */
-    public static long copy(Path source, OutputStream out) {
-        try {
-            return Files.copy(source, out);
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        }
-    }
-
-    //-----------------------------------------------------------------------
-    /**
-     * Copies bytes from the URL <code>source</code> to a file
-     * <code>destination</code>. The directories up to <code>destination</code>
-     * will be created if they don't already exist. <code>destination</code>
-     * will be overwritten if it already exists.
-     * <p>
-     * Warning: this method does not set a connection or read timeout and thus
-     * might block forever. Use {@link #copyURLToFile(URL, File, int, int)}
-     * with reasonable timeouts to prevent this.
-     *
-     * @param source  the <code>URL</code> to copy bytes from, must not be {@code null}
-     * @param destination  the non-directory <code>File</code> to write bytes to
-     *  (possibly overwriting), must not be {@code null}
-     * @throws AbacusIOException if <code>source</code> URL cannot be opened
-     * @throws AbacusIOException if <code>destination</code> is a directory
-     * @throws AbacusIOException if <code>destination</code> cannot be written
-     * @throws AbacusIOException if <code>destination</code> needs creating but can't be
-     * @throws AbacusIOException if an IO error occurs during copying
-     */
-    public static void copyURLToFile(final URL source, final File destination) {
-        InputStream is = null;
-        try {
-            is = source.openStream();
-
-            write(destination, is);
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        } finally {
-            close(is);
-        }
-    }
-
-    /**
-     * Copies bytes from the URL <code>source</code> to a file
-     * <code>destination</code>. The directories up to <code>destination</code>
-     * will be created if they don't already exist. <code>destination</code>
-     * will be overwritten if it already exists.
-     *
-     * @param source  the <code>URL</code> to copy bytes from, must not be {@code null}
-     * @param destination  the non-directory <code>File</code> to write bytes to
-     *  (possibly overwriting), must not be {@code null}
-     * @param connectionTimeout the number of milliseconds until this method
-     *  will timeout if no connection could be established to the <code>source</code>
-     * @param readTimeout the number of milliseconds until this method will
-     *  timeout if no data could be read from the <code>source</code>
-     * @throws AbacusIOException if <code>source</code> URL cannot be opened
-     * @throws AbacusIOException if <code>destination</code> is a directory
-     * @throws AbacusIOException if <code>destination</code> cannot be written
-     * @throws AbacusIOException if <code>destination</code> needs creating but can't be
-     * @throws AbacusIOException if an IO error occurs during copying
-     */
-    public static void copyURLToFile(final URL source, final File destination, final int connectionTimeout, final int readTimeout) {
-        InputStream is = null;
-        try {
-            final URLConnection connection = source.openConnection();
-            connection.setConnectTimeout(connectionTimeout);
-            connection.setReadTimeout(readTimeout);
-            is = connection.getInputStream();
-
-            write(destination, is);
-        } catch (IOException e) {
-            throw new AbacusIOException(e);
-        } finally {
-            close(is);
-        }
     }
 
     //-----------------------------------------------------------------------
@@ -3872,5 +4362,10 @@ public final class IOUtil {
         }
 
         return is;
+    }
+
+    @SuppressWarnings("deprecation")
+    private static char[] toCharArray(CharSequence str) {
+        return str == null ? N.NULL_CHAR_ARRAY : N.getCharsForReadOnly(str instanceof String ? (String) str : str.toString());
     }
 }

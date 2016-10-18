@@ -281,7 +281,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public Map<C, E> rowMap(R rowKey) {
+    public Map<C, E> row(R rowKey) {
         final int columnLength = columnKeySet.size();
         Map<C, E> rowMap = new LinkedHashMap<>(N.initHashCapacity(columnLength));
 
@@ -432,7 +432,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public Map<R, E> columnMap(C columnKey) {
+    public Map<R, E> column(C columnKey) {
         final int rowLength = rowKeySet.size();
         final Map<R, E> columnMap = new LinkedHashMap<>(N.initHashCapacity(rowLength));
 

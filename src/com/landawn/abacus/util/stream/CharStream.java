@@ -917,7 +917,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @param str
      * @return
      */
-    public static CharStream from(final String str) {
+    public static CharStream from(final CharSequence str) {
         return N.isNullOrEmpty(str) ? empty() : from(str, 0, str.length());
     }
 
@@ -930,8 +930,31 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return
      */
     @SuppressWarnings("deprecation")
-    public static CharStream from(final String str, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(str) && (startIndex == 0 && endIndex == 0) ? empty() : of(N.getCharsForReadOnly(str), startIndex, endIndex);
+    public static CharStream from(final CharSequence str, final int startIndex, final int endIndex) {
+        if (N.isNullOrEmpty(str)) {
+            return empty();
+        }
+
+        if (str instanceof String) {
+            of(N.getCharsForReadOnly((String) str), startIndex, endIndex);
+        }
+
+        final ImmutableCharIterator iter = new ImmutableCharIterator() {
+            private final int len = str.length();
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public char next() {
+                return str.charAt(cursor++);
+            }
+        };
+
+        return new IteratorCharStream(iter);
     }
 
     public static CharStream range(final char startInclusive, final char endExclusive) {

@@ -143,8 +143,27 @@ public final class Profiler {
     static MultiLoopsStatistics run(final Object instance, final String methodName, final Method method, final List<?> args, final Method setUpForMethod,
             final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final long threadDelay,
             final int loopNum, final long loopDelay, final int roundNum) {
-        if (roundNum <= 0) {
-            throw new IllegalArgumentException("roundNum=" + roundNum);
+
+        if ((threadNum <= 0) || (loopNum <= 0) || (threadDelay < 0) || (loopDelay < 0)) {
+            throw new IllegalArgumentException("threadNum=" + threadNum + ", loopNum=" + loopNum + ", threadDelay=" + threadDelay + ", loopDelay=" + loopDelay);
+        }
+
+        if (N.notNullOrEmpty(args) && (args.size() > 1) && (args.size() != threadNum)) {
+            throw new IllegalArgumentException(
+                    "The input args must be null or size = 1 or size = threadNum. It's the input parameter for the every loop in each thread ");
+        }
+
+        // It takes about 250MB memory to save 1 million test result.
+        if (threadNum * loopNum > N.MAX_MEMORY_IN_MB * 1000) {
+            if (N.MAX_MEMORY_IN_MB < 1024) {
+                logger.warn(
+                        "Saving big number loop result in small memory may slow down the performance of target method. Conside increasing the maximium JVM memory size.");
+
+            } else {
+                logger.warn(
+                        "Saving big number loop result may slow down the performance of target method. Conside adding for-loop to outter of the target method and reducing the loop number ("
+                                + loopNum + ") to a smaller number");
+            }
         }
 
         if (roundNum == 1) {
@@ -170,14 +189,6 @@ public final class Profiler {
     private static MultiLoopsStatistics run(final Object instance, final String methodName, final Method method, final List<?> args,
             final Method setUpForMethod, final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum,
             final long threadDelay, final int loopNum, final long loopDelay) {
-        if ((threadNum <= 0) || (loopNum <= 0) || (threadDelay < 0) || (loopDelay < 0)) {
-            throw new IllegalArgumentException("threadNum=" + threadNum + ", loopNum=" + loopNum + ", threadDelay=" + threadDelay + ", loopDelay=" + loopDelay);
-        }
-
-        if (N.notNullOrEmpty(args) && (args.size() > 1) && (args.size() != threadNum)) {
-            throw new IllegalArgumentException(
-                    "The input args must be null or size = 1 or size = threadNum. It's the input parameter for the every loop in each thread ");
-        }
 
         if (!method.isAccessible()) {
             method.setAccessible(true);
@@ -229,6 +240,7 @@ public final class Profiler {
     private static void runLoops(final Object instance, final String methodName, final Method method, final Object arg, final Method setUpForMethod,
             final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int loopNum, final long loopDelay,
             final List<LoopStatistics> loopStatisticsList, final PrintStream ps) {
+
         for (int loopIndex = 0; loopIndex < loopNum; loopIndex++) {
             if (setUpForLoop != null) {
                 try {
@@ -269,7 +281,8 @@ public final class Profiler {
 
     private static List<MethodStatistics> runLoop(final Object instance, final String methodName, final Method method, final Object arg,
             final Method setUpForMethod, final Method tearDownForMethod, final PrintStream ps) {
-        List<MethodStatistics> methodStatisticsList = new ArrayList<MethodStatistics>();
+
+        final List<MethodStatistics> methodStatisticsList = new ArrayList<MethodStatistics>();
 
         if (setUpForMethod != null) {
             try {
@@ -1148,7 +1161,7 @@ public final class Profiler {
             //            }
 
             writer.println("<br/>");
-            writer.println("<table width=\"600\" border=\"1\">");
+            writer.println("<table width=\"1200\" border=\"1\">");
             writer.println("<tr>");
             writer.println("<th>method name</th>");
             writer.println("<th>avg time</th>");

@@ -53,7 +53,7 @@ public interface Sheet<R, C, E> {
 
     boolean containsRow(R rowKey);
 
-    Map<C, E> rowMap(R rowKey);
+    Map<C, E> row(R rowKey);
 
     Map<R, Map<C, E>> rowMap();
 
@@ -67,7 +67,7 @@ public interface Sheet<R, C, E> {
 
     boolean containsColumn(C columnKey);
 
-    Map<R, E> columnMap(C columnKey);
+    Map<R, E> column(C columnKey);
 
     Map<C, Map<R, E>> columnMap();
 
