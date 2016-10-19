@@ -11718,163 +11718,111 @@ public final class N {
         keyNamingPolicy = keyNamingPolicy == null ? NamingPolicy.CAMEL_CASE : keyNamingPolicy;
 
         final boolean hasIgnoredPropNames = N.notNullOrEmpty(ignoredPropNames);
+        Set<String> signedPropNames = null;
 
         if (entity instanceof DirtyMarker) {
             final Class<?> entityClass = entity.getClass();
-            final Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
+            signedPropNames = ((DirtyMarker) entity).signedPropNames();
 
             if (signedPropNames.size() == 0) {
                 // logger.warn("no property is signed in the specified source entity: "
                 // + toString(entity));
+
+                return resultMap;
             } else {
-                Method propGetMethod = null;
-                Object propValue = null;
+                final Set<String> tmp = new HashSet<>(N.initHashCapacity(signedPropNames.size()));
 
-                try {
-                    switch (keyNamingPolicy) {
-                        case CAMEL_CASE: {
-                            for (String propName : signedPropNames) {
-                                propGetMethod = getPropGetMethod(entityClass, propName);
-                                propName = getPropNameByMethod(propGetMethod);
-
-                                if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                    continue;
-                                }
-
-                                propValue = propGetMethod.invoke(entity);
-
-                                if (ignoreNullProperty && (propValue == null)) {
-                                    continue;
-                                }
-
-                                resultMap.put(propName, propValue);
-                            }
-
-                            break;
-                        }
-
-                        case LOWER_CASE_WITH_UNDERSCORE: {
-                            for (String propName : signedPropNames) {
-                                propGetMethod = getPropGetMethod(entityClass, propName);
-                                propName = getPropNameByMethod(propGetMethod);
-
-                                if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                    continue;
-                                }
-
-                                propValue = propGetMethod.invoke(entity);
-
-                                if (ignoreNullProperty && (propValue == null)) {
-                                    continue;
-                                }
-
-                                resultMap.put(toLowerCaseWithUnderscore(propName), propValue);
-                            }
-
-                            break;
-                        }
-
-                        case UPPER_CASE_WITH_UNDERSCORE: {
-                            for (String propName : signedPropNames) {
-                                propGetMethod = getPropGetMethod(entityClass, propName);
-                                propName = getPropNameByMethod(propGetMethod);
-
-                                if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                    continue;
-                                }
-
-                                propValue = propGetMethod.invoke(entity);
-
-                                if (ignoreNullProperty && (propValue == null)) {
-                                    continue;
-                                }
-
-                                resultMap.put(toUpperCaseWithUnderscore(propName), propValue);
-                            }
-
-                            break;
-                        }
-
-                        default:
-                            throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
-                    }
-                } catch (Exception e) {
-                    throw new AbacusException(e);
+                for (String propName : signedPropNames) {
+                    tmp.add(N.getPropNameByMethod(N.getPropGetMethod(entityClass, propName)));
                 }
+
+                signedPropNames = tmp;
             }
-        } else {
-            final Map<String, Method> getterMethodList = checkPropGetMethodList(entity.getClass());
-            String propName = null;
-            Object propValue = null;
+        }
 
-            try {
-                switch (keyNamingPolicy) {
-                    case CAMEL_CASE: {
-                        for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                            propName = entry.getKey();
+        final Map<String, Method> getterMethodList = checkPropGetMethodList(entity.getClass());
+        String propName = null;
+        Object propValue = null;
 
-                            if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                continue;
-                            }
+        try {
+            switch (keyNamingPolicy) {
+                case CAMEL_CASE: {
+                    for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
+                        propName = entry.getKey();
 
-                            propValue = entry.getValue().invoke(entity);
-
-                            if (ignoreNullProperty && (propValue == null)) {
-                                continue;
-                            }
-
-                            resultMap.put(propName, propValue);
+                        if (signedPropNames != null && signedPropNames.contains(propName) == false) {
+                            continue;
                         }
 
-                        break;
-                    }
-
-                    case LOWER_CASE_WITH_UNDERSCORE: {
-                        for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                            propName = entry.getKey();
-
-                            if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                continue;
-                            }
-
-                            propValue = entry.getValue().invoke(entity);
-
-                            if (ignoreNullProperty && (propValue == null)) {
-                                continue;
-                            }
-
-                            resultMap.put(toLowerCaseWithUnderscore(propName), propValue);
+                        if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
+                            continue;
                         }
 
-                        break;
-                    }
+                        propValue = entry.getValue().invoke(entity);
 
-                    case UPPER_CASE_WITH_UNDERSCORE: {
-                        for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                            propName = entry.getKey();
-
-                            if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                continue;
-                            }
-
-                            propValue = entry.getValue().invoke(entity);
-
-                            if (ignoreNullProperty && (propValue == null)) {
-                                continue;
-                            }
-
-                            resultMap.put(toUpperCaseWithUnderscore(propName), propValue);
+                        if (ignoreNullProperty && (propValue == null)) {
+                            continue;
                         }
 
-                        break;
+                        resultMap.put(propName, propValue);
                     }
 
-                    default:
-                        throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
+                    break;
                 }
-            } catch (Exception e) {
-                throw new AbacusException(e);
+
+                case LOWER_CASE_WITH_UNDERSCORE: {
+                    for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
+                        propName = entry.getKey();
+
+                        if (signedPropNames != null && signedPropNames.contains(propName) == false) {
+                            continue;
+                        }
+
+                        if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
+                            continue;
+                        }
+
+                        propValue = entry.getValue().invoke(entity);
+
+                        if (ignoreNullProperty && (propValue == null)) {
+                            continue;
+                        }
+
+                        resultMap.put(toLowerCaseWithUnderscore(propName), propValue);
+                    }
+
+                    break;
+                }
+
+                case UPPER_CASE_WITH_UNDERSCORE: {
+                    for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
+                        propName = entry.getKey();
+
+                        if (signedPropNames != null && signedPropNames.contains(propName) == false) {
+                            continue;
+                        }
+
+                        if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
+                            continue;
+                        }
+
+                        propValue = entry.getValue().invoke(entity);
+
+                        if (ignoreNullProperty && (propValue == null)) {
+                            continue;
+                        }
+
+                        resultMap.put(toUpperCaseWithUnderscore(propName), propValue);
+                    }
+
+                    break;
+                }
+
+                default:
+                    throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
             }
+        } catch (Exception e) {
+            throw new AbacusException(e);
         }
 
         return resultMap;
@@ -11997,186 +11945,123 @@ public final class N {
         keyNamingPolicy = keyNamingPolicy == null ? NamingPolicy.CAMEL_CASE : keyNamingPolicy;
         final boolean hasIgnoredPropNames = N.notNullOrEmpty(ignoredPropNames);
 
+        Set<String> signedPropNames = null;
+
         if (entity instanceof DirtyMarker) {
             final Class<?> entityClass = entity.getClass();
-            final Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
+            signedPropNames = ((DirtyMarker) entity).signedPropNames();
 
             if (signedPropNames.size() == 0) {
                 // logger.warn("no property is signed in the specified source entity: "
                 // + toString(entity));
+
+                return resultMap;
             } else {
-                Method propGetMethod = null;
-                Object propValue = null;
+                final Set<String> tmp = new HashSet<>(N.initHashCapacity(signedPropNames.size()));
 
-                try {
-                    switch (keyNamingPolicy) {
-                        case CAMEL_CASE: {
-                            for (String propName : signedPropNames) {
-                                propGetMethod = getPropGetMethod(entityClass, propName);
-                                propName = getPropNameByMethod(propGetMethod);
-
-                                if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                    continue;
-                                }
-
-                                propValue = propGetMethod.invoke(entity);
-
-                                if (ignoreNullProperty && (propValue == null)) {
-                                    continue;
-                                }
-
-                                if ((propValue == null) || !isEntity(propValue.getClass())) {
-                                    resultMap.put(propName, propValue);
-                                } else {
-                                    resultMap.put(propName, deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
-                                }
-                            }
-
-                            break;
-                        }
-
-                        case LOWER_CASE_WITH_UNDERSCORE: {
-                            for (String propName : signedPropNames) {
-                                propGetMethod = getPropGetMethod(entityClass, propName);
-                                propName = getPropNameByMethod(propGetMethod);
-
-                                if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                    continue;
-                                }
-
-                                propValue = propGetMethod.invoke(entity);
-
-                                if (ignoreNullProperty && (propValue == null)) {
-                                    continue;
-                                }
-
-                                if ((propValue == null) || !isEntity(propValue.getClass())) {
-                                    resultMap.put(toLowerCaseWithUnderscore(propName), propValue);
-                                } else {
-                                    resultMap.put(toLowerCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
-                                }
-                            }
-
-                            break;
-                        }
-
-                        case UPPER_CASE_WITH_UNDERSCORE: {
-                            for (String propName : signedPropNames) {
-                                propGetMethod = getPropGetMethod(entityClass, propName);
-                                propName = getPropNameByMethod(propGetMethod);
-
-                                if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                    continue;
-                                }
-
-                                propValue = propGetMethod.invoke(entity);
-
-                                if (ignoreNullProperty && (propValue == null)) {
-                                    continue;
-                                }
-
-                                if ((propValue == null) || !isEntity(propValue.getClass())) {
-                                    resultMap.put(toUpperCaseWithUnderscore(propName), propValue);
-                                } else {
-                                    resultMap.put(toUpperCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
-                                }
-                            }
-
-                            break;
-                        }
-
-                        default:
-                            throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
-                    }
-                } catch (Exception e) {
-                    throw new AbacusException(e);
+                for (String propName : signedPropNames) {
+                    tmp.add(N.getPropNameByMethod(N.getPropGetMethod(entityClass, propName)));
                 }
+
+                signedPropNames = tmp;
             }
-        } else {
-            final Map<String, Method> getterMethodList = checkPropGetMethodList(entity.getClass());
-            String propName = null;
-            Object propValue = null;
+        }
 
-            try {
-                switch (keyNamingPolicy) {
-                    case CAMEL_CASE: {
-                        for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                            propName = entry.getKey();
+        final Map<String, Method> getterMethodList = checkPropGetMethodList(entity.getClass());
+        String propName = null;
+        Object propValue = null;
 
-                            if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                continue;
-                            }
+        try {
+            switch (keyNamingPolicy) {
+                case CAMEL_CASE: {
+                    for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
+                        propName = entry.getKey();
 
-                            propValue = entry.getValue().invoke(entity);
-
-                            if (ignoreNullProperty && (propValue == null)) {
-                                continue;
-                            }
-
-                            if ((propValue == null) || !isEntity(propValue.getClass())) {
-                                resultMap.put(propName, propValue);
-                            } else {
-                                resultMap.put(propName, deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
-                            }
+                        if (signedPropNames != null && signedPropNames.contains(propName) == false) {
+                            continue;
                         }
 
-                        break;
-                    }
-
-                    case LOWER_CASE_WITH_UNDERSCORE: {
-                        for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                            propName = entry.getKey();
-
-                            if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                continue;
-                            }
-
-                            propValue = entry.getValue().invoke(entity);
-
-                            if (ignoreNullProperty && (propValue == null)) {
-                                continue;
-                            }
-
-                            if ((propValue == null) || !isEntity(propValue.getClass())) {
-                                resultMap.put(toLowerCaseWithUnderscore(propName), propValue);
-                            } else {
-                                resultMap.put(toLowerCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
-                            }
+                        if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
+                            continue;
                         }
 
-                        break;
-                    }
+                        propValue = entry.getValue().invoke(entity);
 
-                    case UPPER_CASE_WITH_UNDERSCORE: {
-                        for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                            propName = entry.getKey();
-
-                            if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
-                                continue;
-                            }
-
-                            propValue = entry.getValue().invoke(entity);
-
-                            if (ignoreNullProperty && (propValue == null)) {
-                                continue;
-                            }
-
-                            if ((propValue == null) || !isEntity(propValue.getClass())) {
-                                resultMap.put(toUpperCaseWithUnderscore(propName), propValue);
-                            } else {
-                                resultMap.put(toUpperCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
-                            }
+                        if (ignoreNullProperty && (propValue == null)) {
+                            continue;
                         }
 
-                        break;
+                        if ((propValue == null) || !isEntity(propValue.getClass())) {
+                            resultMap.put(propName, propValue);
+                        } else {
+                            resultMap.put(propName, deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
+                        }
                     }
 
-                    default:
-                        throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
+                    break;
                 }
-            } catch (Exception e) {
-                throw new AbacusException(e);
+
+                case LOWER_CASE_WITH_UNDERSCORE: {
+                    for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
+                        propName = entry.getKey();
+
+                        if (signedPropNames != null && signedPropNames.contains(propName) == false) {
+                            continue;
+                        }
+
+                        if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
+                            continue;
+                        }
+
+                        propValue = entry.getValue().invoke(entity);
+
+                        if (ignoreNullProperty && (propValue == null)) {
+                            continue;
+                        }
+
+                        if ((propValue == null) || !isEntity(propValue.getClass())) {
+                            resultMap.put(toLowerCaseWithUnderscore(propName), propValue);
+                        } else {
+                            resultMap.put(toLowerCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
+                        }
+                    }
+
+                    break;
+                }
+
+                case UPPER_CASE_WITH_UNDERSCORE: {
+                    for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
+                        propName = entry.getKey();
+
+                        if (signedPropNames != null && signedPropNames.contains(propName) == false) {
+                            continue;
+                        }
+
+                        if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
+                            continue;
+                        }
+
+                        propValue = entry.getValue().invoke(entity);
+
+                        if (ignoreNullProperty && (propValue == null)) {
+                            continue;
+                        }
+
+                        if ((propValue == null) || !isEntity(propValue.getClass())) {
+                            resultMap.put(toUpperCaseWithUnderscore(propName), propValue);
+                        } else {
+                            resultMap.put(toUpperCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
+                        }
+                    }
+
+                    break;
+                }
+
+                default:
+                    throw new IllegalArgumentException("Unsupported NamingPolicy: " + keyNamingPolicy);
             }
+        } catch (Exception e) {
+            throw new AbacusException(e);
         }
 
         return resultMap;

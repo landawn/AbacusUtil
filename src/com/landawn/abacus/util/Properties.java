@@ -5,10 +5,10 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 
@@ -20,34 +20,34 @@ public class Properties<K, V> implements Map<K, V> {
     protected final Map<K, V> values;
 
     public Properties() {
-        this(new HashMap<K, V>());
+        this(new ConcurrentHashMap<K, V>());
     }
 
     /**
      * 
      * @param valueMap The valueMap and this Properties share the same data; any changes to one will appear in the other.
      */
-    protected Properties(final Map<? extends K, ? extends V> valueMap) {
+    Properties(final ConcurrentHashMap<? extends K, ? extends V> valueMap) {
         this.values = (Map<K, V>) valueMap;
     }
 
     public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1) {
-        final Map<K, V> m = N.asMap(k1, v1);
+        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1);
         return new Properties<K, V>(m);
     }
 
     public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2) {
-        final Map<K, V> m = N.asMap(k1, v1, k2, v2);
+        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1, k2, v2);
         return new Properties<K, V>(m);
     }
 
     public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
-        final Map<K, V> m = N.asMap(k1, v1, k2, v2, k3, v3);
+        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1, k2, v2, k3, v3);
         return new Properties<K, V>(m);
     }
 
     public static <K, V> Properties<K, V> from(final Map<? extends K, ? extends V> map) {
-        return new Properties<K, V>(new HashMap<K, V>(map));
+        return new Properties<K, V>(new ConcurrentHashMap<K, V>(map));
     }
 
     @Override
@@ -223,7 +223,7 @@ public class Properties<K, V> implements Map<K, V> {
     }
 
     public Properties<K, V> copy() {
-        final Properties<K, V> copy = new Properties<K, V>(N.newInstance(this.values.getClass()));
+        final Properties<K, V> copy = new Properties<K, V>();
 
         copy.values.putAll(this.values);
 

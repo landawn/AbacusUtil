@@ -2,9 +2,15 @@
 
 1, Add join(...) to ObjectList/IntList/DoubleList/...
 
-2, Add cache() and persist(...) to Stream
+2, Add cached() and persist(...) to Stream
 
-3, Improvements and bug fix
+3, Add findFirst(...) and findLast(...) to N
+
+4, Add append(...) and more methods to IOUtil
+
+5, Add Difference and MapDifference
+
+6, Improvements and bug fix
 
 ========Changes in 0.9.22=========================================================================
 

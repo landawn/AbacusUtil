@@ -722,7 +722,7 @@ public final class IOUtil {
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
 
-    public static String readFirstLine(final File file) {
+    public static String readLine(final File file) {
         return readLine(file, 0);
     }
 
@@ -746,7 +746,7 @@ public final class IOUtil {
         }
     }
 
-    public static String readNextLine(final InputStream is) {
+    public static String readLine(final InputStream is) {
         return readLine(is, 0);
     }
 
@@ -758,7 +758,7 @@ public final class IOUtil {
         return readLine(createReader(is, encoding), lineOffset);
     }
 
-    public static String readNextLine(final Reader reader) {
+    public static String readLine(final Reader reader) {
         return readLine(reader, 0);
     }
 
