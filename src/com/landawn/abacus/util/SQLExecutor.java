@@ -6,10 +6,8 @@ package com.landawn.abacus.util;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -431,38 +429,38 @@ public final class SQLExecutor implements Closeable {
         this.asyncSQLExecutor = new AsyncSQLExecutor(this, asyncSQLExecutor == null ? new AsyncExecutor(64, 300, TimeUnit.SECONDS) : asyncSQLExecutor);
     }
 
-    public static SQLExecutor create(final String dataSourceFile) {
-        return new SQLExecutor(JdbcUtil.createDataSourceManager(dataSourceFile));
-    }
-
-    public static SQLExecutor create(final InputStream dataSourceInputStream) {
-        return new SQLExecutor(JdbcUtil.createDataSourceManager(dataSourceInputStream));
-    }
-
-    public static SQLExecutor create(final String url, final String user, final String password) {
-        return new SQLExecutor(JdbcUtil.createDataSource(url, user, password));
-    }
-
-    public static SQLExecutor create(final String driver, final String url, final String user, final String password) {
-        return new SQLExecutor(JdbcUtil.createDataSource(driver, url, user, password));
-    }
-
-    public static SQLExecutor create(final Class<? extends Driver> driverClass, final String url, final String user, final String password) {
-        return new SQLExecutor(JdbcUtil.createDataSource(driverClass, url, user, password));
-    }
-
-    /**
-     * 
-     * @param props refer to Connection.xsd for the supported properties.
-     * @return
-     */
-    public static SQLExecutor create(final Map<String, ?> props) {
-        return new SQLExecutor(JdbcUtil.createDataSource(props));
-    }
-
-    public static SQLExecutor create(final javax.sql.DataSource sqlDataSource) {
-        return new SQLExecutor(JdbcUtil.wrap(sqlDataSource));
-    }
+    //    public static SQLExecutor create(final String dataSourceFile) {
+    //        return new SQLExecutor(JdbcUtil.createDataSourceManager(dataSourceFile));
+    //    }
+    //
+    //    public static SQLExecutor create(final InputStream dataSourceInputStream) {
+    //        return new SQLExecutor(JdbcUtil.createDataSourceManager(dataSourceInputStream));
+    //    }
+    //
+    //    public static SQLExecutor create(final String url, final String user, final String password) {
+    //        return new SQLExecutor(JdbcUtil.createDataSource(url, user, password));
+    //    }
+    //
+    //    public static SQLExecutor create(final String driver, final String url, final String user, final String password) {
+    //        return new SQLExecutor(JdbcUtil.createDataSource(driver, url, user, password));
+    //    }
+    //
+    //    public static SQLExecutor create(final Class<? extends Driver> driverClass, final String url, final String user, final String password) {
+    //        return new SQLExecutor(JdbcUtil.createDataSource(driverClass, url, user, password));
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param props refer to Connection.xsd for the supported properties.
+    //     * @return
+    //     */
+    //    public static SQLExecutor create(final Map<String, ?> props) {
+    //        return new SQLExecutor(JdbcUtil.createDataSource(props));
+    //    }
+    //
+    //    public static SQLExecutor create(final javax.sql.DataSource sqlDataSource) {
+    //        return new SQLExecutor(JdbcUtil.wrap(sqlDataSource));
+    //    }
 
     public AsyncSQLExecutor asyncExecutor() {
         return asyncSQLExecutor;

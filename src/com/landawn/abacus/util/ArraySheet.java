@@ -106,7 +106,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public void putAll(Sheet<R, C, ? extends E> source) {
+    public void putAll(Sheet<? extends R, ? extends C, ? extends E> source) {
         if (!this.rowKeySet().containsAll(source.rowKeySet())) {
             throw new IllegalArgumentException(source.rowKeySet() + " are not all included in this sheet with row key set: " + this.rowKeySet());
         }
@@ -115,9 +115,10 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             throw new IllegalArgumentException(source.columnKeySet() + " are not all included in this sheet with column key set: " + this.columnKeySet());
         }
 
-        for (R r : source.rowKeySet()) {
-            for (C c : source.columnKeySet()) {
-                this.put(r, c, source.get(r, c));
+        final Sheet<R, C, ? extends E> tmp = (Sheet<R, C, ? extends E>) source;
+        for (R r : tmp.rowKeySet()) {
+            for (C c : tmp.columnKeySet()) {
+                this.put(r, c, tmp.get(r, c));
             }
         }
     }

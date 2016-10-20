@@ -1,3 +1,10 @@
+========Changes in 0.9.24=========================================================================
+
+1, Refactoring: RemoteExecutor, RemoteExecutionRequest, RemoteExecutionResponse
+
+2, Improvements and bug fix
+
+
 ========Changes in 0.9.23=========================================================================
 
 1, Add join(...) to ObjectList/IntList/DoubleList/...

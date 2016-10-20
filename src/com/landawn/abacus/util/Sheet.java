@@ -37,7 +37,7 @@ public interface Sheet<R, C, E> {
 
     E put(R rowKey, C columnKey, E value);
 
-    void putAll(Sheet<R, C, ? extends E> source);
+    void putAll(Sheet<? extends R, ? extends C, ? extends E> source);
 
     E remove(R rowKey, C columnKey);
 

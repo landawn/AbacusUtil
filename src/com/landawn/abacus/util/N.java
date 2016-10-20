@@ -15781,17 +15781,17 @@ public final class N {
             } else if (char.class.equals(parameterClass) || Character.class.equals(parameterClass)) {
                 propValue = (char) ('a' + rand.nextInt() % 26);
             } else if (int.class.equals(parameterClass) || Integer.class.equals(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(rand.nextInt()));
+                propValue = rand.nextInt();
             } else if (long.class.equals(parameterClass) || Long.class.equals(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(rand.nextLong()));
+                propValue = rand.nextLong();
             } else if (float.class.equals(parameterClass) || Float.class.equals(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(rand.nextFloat()));
+                propValue = rand.nextFloat();
             } else if (double.class.equals(parameterClass) || Double.class.equals(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(rand.nextDouble()));
+                propValue = rand.nextDouble();
             } else if (byte.class.equals(parameterClass) || Byte.class.equals(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(Integer.valueOf(rand.nextInt()).byteValue()));
+                propValue = Integer.valueOf(rand.nextInt()).byteValue();
             } else if (short.class.equals(parameterClass) || Short.class.equals(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(Integer.valueOf(rand.nextInt()).shortValue()));
+                propValue = Integer.valueOf(rand.nextInt()).shortValue();
             } else if (Number.class.isAssignableFrom(parameterClass)) {
                 propValue = type.valueOf(String.valueOf(rand.nextInt()));
             } else if (java.util.Date.class.isAssignableFrom(parameterClass) || Calendar.class.isAssignableFrom(parameterClass)) {
@@ -17652,11 +17652,11 @@ public final class N {
 
         int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.lastIndexOf(postfix, fromIndex);
 
-        if (endIndex < 0) {
+        if (endIndex < 0 || (N.notNullOrEmpty(prefix) && endIndex < prefix.length())) {
             return Optional.empty();
         }
 
-        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.lastIndexOf(prefix, endIndex + (N.isNullOrEmpty(postfix) ? 0 : postfix.length()));
+        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.lastIndexOf(prefix, endIndex - prefix.length());
 
         if (beginIndex < 0) {
             return Optional.empty();
