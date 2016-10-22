@@ -34419,12 +34419,16 @@ public final class N {
     //    }
 
     public static void execute(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
-        AutoRetry.execute(runnable, ifRetry, retryTimes, retryInterval);
+        AutoRetry.of(runnable, ifRetry, retryTimes, retryInterval).run();
     }
 
     public static <T> T execute(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
             final long retryInterval) {
-        return AutoRetry.execute(callable, ifRetry, retryTimes, retryInterval);
+        try {
+            return AutoRetry.of(callable, ifRetry, retryTimes, retryInterval).call();
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
     }
 
     public static CompletableFuture<Void> asyncExecute(final Runnable command) {

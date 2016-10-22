@@ -1006,6 +1006,26 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
         return of(Array.repeat(element, n));
     }
 
+    public static CharStream random(final char from, final char to) {
+        if (from == to) {
+            return iterate(new CharSupplier() {
+                @Override
+                public char getAsChar() {
+                    return from;
+                }
+            });
+        } else {
+            return iterate(new CharSupplier() {
+                final int mod = to - from;
+
+                @Override
+                public char getAsChar() {
+                    return (char) (Math.abs(Stream.RAND.nextInt() % mod) + from);
+                }
+            });
+        }
+    }
+
     public static CharStream iterate(final Supplier<Boolean> hasNext, final CharSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);

@@ -965,6 +965,15 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
         return of(Array.repeat(element, n));
     }
 
+    public static ShortStream random() {
+        return iterate(new ShortSupplier() {
+            @Override
+            public short getAsShort() {
+                return (short) Stream.RAND.nextInt();
+            }
+        });
+    }
+
     public static ShortStream iterate(final Supplier<Boolean> hasNext, final ShortSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);

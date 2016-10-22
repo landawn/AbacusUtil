@@ -1031,6 +1031,15 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
         return of(Array.repeat(element, n));
     }
 
+    public static LongStream random() {
+        return iterate(new LongSupplier() {
+            @Override
+            public long getAsLong() {
+                return Stream.RAND.nextLong();
+            }
+        });
+    }
+
     public static LongStream iterate(final Supplier<Boolean> hasNext, final LongSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);

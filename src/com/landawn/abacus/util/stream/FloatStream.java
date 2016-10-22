@@ -1055,6 +1055,15 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
         return of(Array.repeat(element, n));
     }
 
+    public static FloatStream random() {
+        return iterate(new FloatSupplier() {
+            @Override
+            public float getAsFloat() {
+                return Stream.RAND.nextFloat();
+            }
+        });
+    }
+
     public static FloatStream iterate(final Supplier<Boolean> hasNext, final FloatSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);

@@ -177,8 +177,8 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return of(Array.box(a, fromIndex, toIndex));
     }
 
-    public static <T> ObjectList<T> repeat(T element, int n) {
-        return new ObjectList<T>(Array.repeat(element, n));
+    public static <T> ObjectList<T> repeat(T element, int len) {
+        return new ObjectList<T>(Array.repeat(element, len));
     }
 
     /**

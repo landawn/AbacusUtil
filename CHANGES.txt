@@ -1,3 +1,14 @@
+========Changes in 0.9.25=========================================================================
+
+1, merge AutoRetryIterator into AutoRetry.
+
+2, merge NullSkippedIterator into NullSkipped.
+
+3, add random() to ObjectList/IntList/CharList... and Stream/IntStream/CharStream/...
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.24=========================================================================
 
 1, Refactoring: RemoteExecutor, RemoteExecutionRequest, RemoteExecutionResponse

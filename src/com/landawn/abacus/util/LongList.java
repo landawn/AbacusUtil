@@ -236,8 +236,18 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static LongList repeat(long element, final int n) {
-        return of(Array.repeat(element, n));
+    public static LongList repeat(long element, final int len) {
+        return of(Array.repeat(element, len));
+    }
+
+    public static LongList random(final int len) {
+        final long[] a = new long[len];
+
+        for (int i = 0; i < len; i++) {
+            a[i] = RAND.nextLong();
+        }
+
+        return of(a);
     }
 
     /**

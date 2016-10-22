@@ -35,6 +35,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -257,6 +259,8 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     static final int DEFAULT_QUEUE_SIZE = 16;
 
     static final Splitter DEFAULT_SPILTTER = Splitter.ITERATOR;
+
+    static final Random RAND = new SecureRandom();
 
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY);

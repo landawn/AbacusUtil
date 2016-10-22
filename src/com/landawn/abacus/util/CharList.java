@@ -193,8 +193,23 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static CharList repeat(char element, final int n) {
-        return of(Array.repeat(element, n));
+    public static CharList repeat(char element, final int len) {
+        return of(Array.repeat(element, len));
+    }
+
+    public static CharList random(final char from, final char to, final int len) {
+        if (from == to) {
+            return repeat(from, len);
+        }
+
+        final char[] a = new char[len];
+        final int mod = to - from;
+
+        for (int i = 0; i < len; i++) {
+            a[i] = (char) (Math.abs(RAND.nextInt() % mod) + from);
+        }
+
+        return of(a);
     }
 
     /**

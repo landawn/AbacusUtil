@@ -145,8 +145,18 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return of(a);
     }
 
-    public static BooleanList repeat(boolean element, final int n) {
-        return of(Array.repeat(element, n));
+    public static BooleanList repeat(boolean element, final int len) {
+        return of(Array.repeat(element, len));
+    }
+
+    public static BooleanList random(final int len) {
+        final boolean[] a = new boolean[len];
+
+        for (int i = 0; i < len; i++) {
+            a[i] = RAND.nextBoolean();
+        }
+
+        return of(a);
     }
 
     /**

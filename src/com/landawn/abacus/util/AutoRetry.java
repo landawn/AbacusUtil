@@ -1,5 +1,6 @@
 package com.landawn.abacus.util;
 
+import java.util.Iterator;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.logging.Logger;
@@ -12,10 +13,6 @@ public abstract class AutoRetry {
 
     private AutoRetry() {
         // singleton.
-    }
-
-    static Runnable of(final Runnable runnable, final Function<Throwable, Boolean> ifRetry) {
-        return of(runnable, ifRetry, 1, 0);
     }
 
     /**
@@ -31,7 +28,7 @@ public abstract class AutoRetry {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
 
-        return new AutoRetry1() {
+        return new Runnable() {
             @Override
             public void run() {
                 try {
@@ -63,10 +60,6 @@ public abstract class AutoRetry {
         };
     }
 
-    static <T> Callable<T> of(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
-        return of(callable, ifRetry, 1, 0);
-    }
-
     /**
      * 
      * @param callable
@@ -81,7 +74,7 @@ public abstract class AutoRetry {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
 
-        return new AutoRetry2<T>() {
+        return new Callable<T>() {
             @Override
             public T call() {
                 T result = null;
@@ -136,23 +129,91 @@ public abstract class AutoRetry {
         };
     }
 
-    static void execute(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
-        of(runnable, ifRetry, retryTimes, retryInterval).run();
-    }
+    public static <T> Iterator<T> of(final Iterator<T> iter, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> ifRetry) {
+        return new Iterator<T>() {
+            @Override
+            public boolean hasNext() {
+                try {
+                    return iter.hasNext();
+                } catch (Throwable e) {
+                    logger.error("hasNext", e);
 
-    static <T> T execute(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
-        try {
-            return of(callable, ifRetry, retryTimes, retryInterval).call();
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
-    }
+                    int retriedTimes = 0;
+                    Throwable throwable = e;
 
-    static abstract class AutoRetry1 extends AutoRetry implements Runnable {
+                    while (retriedTimes++ < retryTimes && ifRetry.apply(throwable)) {
+                        try {
+                            if (retryInterval > 0) {
+                                N.sleep(retryInterval);
+                            }
 
-    }
+                            return iter.hasNext();
+                        } catch (Throwable e2) {
+                            logger.error("hasNext", e2);
 
-    static abstract class AutoRetry2<T> extends AutoRetry implements Callable<T> {
+                            throwable = e2;
+                        }
+                    }
 
+                    throw N.toRuntimeException(throwable);
+                }
+            }
+
+            @Override
+            public T next() {
+                try {
+                    return iter.next();
+                } catch (Throwable e) {
+                    logger.error("next", e);
+
+                    int retriedTimes = 0;
+                    Throwable throwable = e;
+
+                    while (retriedTimes++ < retryTimes && ifRetry.apply(throwable)) {
+                        try {
+                            if (retryInterval > 0) {
+                                N.sleep(retryInterval);
+                            }
+
+                            return iter.next();
+                        } catch (Throwable e2) {
+                            logger.error("next", e2);
+
+                            throwable = e2;
+                        }
+                    }
+
+                    throw N.toRuntimeException(throwable);
+                }
+            }
+
+            @Override
+            public void remove() {
+                try {
+                    iter.remove();
+                } catch (Throwable e) {
+                    logger.error("remove", e);
+
+                    int retriedTimes = 0;
+                    Throwable throwable = e;
+
+                    while (retriedTimes++ < retryTimes && ifRetry.apply(throwable)) {
+                        try {
+                            if (retryInterval > 0) {
+                                N.sleep(retryInterval);
+                            }
+
+                            iter.remove();
+                        } catch (Throwable e2) {
+                            logger.error("remove", e2);
+
+                            throwable = e2;
+                        }
+                    }
+
+                    throw N.toRuntimeException(throwable);
+                }
+            }
+        };
     }
 }

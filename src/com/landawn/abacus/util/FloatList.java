@@ -224,8 +224,18 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return of(a);
     }
 
-    public static FloatList repeat(float element, final int n) {
-        return of(Array.repeat(element, n));
+    public static FloatList repeat(float element, final int len) {
+        return of(Array.repeat(element, len));
+    }
+
+    public static FloatList random(final int len) {
+        final float[] a = new float[len];
+
+        for (int i = 0; i < len; i++) {
+            a[i] = RAND.nextFloat();
+        }
+
+        return of(a);
     }
 
     /**

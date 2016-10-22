@@ -1102,6 +1102,15 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         return of(Array.repeat(element, n));
     }
 
+    public static IntStream random() {
+        return iterate(new IntSupplier() {
+            @Override
+            public int getAsInt() {
+                return Stream.RAND.nextInt();
+            }
+        });
+    }
+
     public static IntStream iterate(final Supplier<Boolean> hasNext, final IntSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);

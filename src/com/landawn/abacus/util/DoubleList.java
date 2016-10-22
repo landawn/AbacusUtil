@@ -210,8 +210,18 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return of(a);
     }
 
-    public static DoubleList repeat(double element, final int n) {
-        return of(Array.repeat(element, n));
+    public static DoubleList repeat(double element, final int len) {
+        return of(Array.repeat(element, len));
+    }
+
+    public static DoubleList random(final int len) {
+        final double[] a = new double[len];
+
+        for (int i = 0; i < len; i++) {
+            a[i] = RAND.nextDouble();
+        }
+
+        return of(a);
     }
 
     /**

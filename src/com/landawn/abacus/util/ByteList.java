@@ -191,8 +191,16 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static ByteList repeat(byte element, final int n) {
-        return of(Array.repeat(element, n));
+    public static ByteList repeat(byte element, final int len) {
+        return of(Array.repeat(element, len));
+    }
+
+    public static ByteList random(final int len) {
+        final byte[] a = new byte[len];
+
+        RAND.nextBytes(a);
+
+        return of(a);
     }
 
     /**

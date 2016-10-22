@@ -300,8 +300,18 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static IntList repeat(int element, final int n) {
-        return of(Array.repeat(element, n));
+    public static IntList repeat(int element, final int len) {
+        return of(Array.repeat(element, len));
+    }
+
+    public static IntList random(final int len) {
+        final int[] a = new int[len];
+
+        for (int i = 0; i < len; i++) {
+            a[i] = RAND.nextInt();
+        }
+
+        return of(a);
     }
 
     /**

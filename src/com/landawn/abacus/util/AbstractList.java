@@ -16,11 +16,13 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.IntFunction;
@@ -42,6 +44,8 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      * larger arrays may result in OutOfMemoryError: Requested array size exceeds VM limit
      */
     static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
+    static final Random RAND = new SecureRandom();
 
     static int hugeCapacity(int minCapacity) {
         if (minCapacity < 0) {

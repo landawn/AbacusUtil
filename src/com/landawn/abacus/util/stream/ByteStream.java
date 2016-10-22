@@ -965,6 +965,15 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
         return of(Array.repeat(element, n));
     }
 
+    public static ByteStream random() {
+        return iterate(new ByteSupplier() {
+            @Override
+            public byte getAsByte() {
+                return (byte) Stream.RAND.nextInt();
+            }
+        });
+    }
+
     public static ByteStream iterate(final Supplier<Boolean> hasNext, final ByteSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
@@ -1455,8 +1464,8 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @param combiner
      * @return
      */
-    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final byte valueForNoneA,
-            final byte valueForNoneB, final byte valueForNoneC, final ByteTriFunction<Byte> combiner) {
+    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC, final ByteTriFunction<Byte> combiner) {
         final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
             @Override
             public byte applyAsByte(Byte value) {

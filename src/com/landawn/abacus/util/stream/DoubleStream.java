@@ -1043,6 +1043,15 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
         return of(Array.repeat(element, n));
     }
 
+    public static DoubleStream random() {
+        return iterate(new DoubleSupplier() {
+            @Override
+            public double getAsDouble() {
+                return Stream.RAND.nextDouble();
+            }
+        });
+    }
+
     public static DoubleStream iterate(final Supplier<Boolean> hasNext, final DoubleSupplier next) {
         N.requireNonNull(hasNext);
         N.requireNonNull(next);

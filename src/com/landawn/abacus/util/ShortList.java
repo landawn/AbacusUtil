@@ -192,8 +192,18 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return of(Array.rangeClosed(startInclusive, endInclusive));
     }
 
-    public static ShortList repeat(short element, final int n) {
-        return of(Array.repeat(element, n));
+    public static ShortList repeat(short element, final int len) {
+        return of(Array.repeat(element, len));
+    }
+
+    public static ShortList random(final int len) {
+        final short[] a = new short[len];
+
+        for (int i = 0; i < len; i++) {
+            a[i] = (short) RAND.nextInt();
+        }
+
+        return of(a);
     }
 
     /**
