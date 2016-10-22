@@ -554,6 +554,39 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortStream> split(final ShortPredicate predicate) {
+        return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ShortStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ShortList result = ShortList.of(N.EMPTY_SHORT_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return ShortStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public ShortStream distinct() {
         return new ArrayShortStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }

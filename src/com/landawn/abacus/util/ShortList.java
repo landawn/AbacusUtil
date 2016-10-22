@@ -161,7 +161,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return of(a);
     }
 
-    static ShortList from(Collection<? extends Number> c) {
+    public static ShortList from(Collection<Short> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -169,7 +169,7 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return from(c, (short) 0);
     }
 
-    static ShortList from(Collection<? extends Number> c, short defaultValueForNull) {
+    public static ShortList from(Collection<Short> c, short defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -177,21 +177,23 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         final short[] a = new short[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = e.doubleValue();
-
-                if (N.compare(val, Short.MIN_VALUE) < 0 || N.compare(val, Short.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (short) val;
-            }
+        for (Short e : c) {
+            a[idx++] = e == null ? defaultValueForNull : e;
         }
 
         return of(a);
+    }
+
+    public static ShortList range(short startInclusive, final short endExclusive) {
+        return of(Array.range(startInclusive, endExclusive));
+    }
+
+    public static ShortList rangeClosed(short startInclusive, final short endInclusive) {
+        return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static ShortList repeat(short element, final int n) {
+        return of(Array.repeat(element, n));
     }
 
     /**

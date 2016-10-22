@@ -417,6 +417,39 @@ final class ParallelArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public Stream<IntStream> split(final IntPredicate predicate) {
+        return new ParallelIteratorStream<IntStream>(new ImmutableIterator<IntStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public IntStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final IntList result = IntList.of(N.EMPTY_INT_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return IntStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public IntStream distinct() {
         final int[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayIntStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);

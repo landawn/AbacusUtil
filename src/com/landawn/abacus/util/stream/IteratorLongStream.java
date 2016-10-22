@@ -482,6 +482,45 @@ final class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
+    public Stream<LongStream> split(final LongPredicate predicate) {
+        return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
+            private long next;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public LongStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return LongStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public LongStream distinct() {
         return new IteratorLongStream(new ImmutableLongIterator() {
             private Iterator<Long> distinctIter;

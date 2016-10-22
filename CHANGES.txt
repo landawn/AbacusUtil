@@ -2,7 +2,15 @@
 
 1, Refactoring: RemoteExecutor, RemoteExecutionRequest, RemoteExecutionResponse
 
-2, Improvements and bug fix
+2, Add split(Predicate) to Stream/IntStream/DoubleStream/... to support split the stream sequence by window.
+
+3, zip(...) is supported by IntStream/DoubleStream/...
+
+4, Refactoring zip(...) in Stream.
+
+5, interval(...) is supported by LongStream
+
+6, Improvements and bug fix
 
 
 ========Changes in 0.9.23=========================================================================

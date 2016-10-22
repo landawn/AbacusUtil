@@ -1051,6 +1051,7 @@ public final class Collectors {
      * @return a {@code Collector} that concatenates the input elements into a
      * {@code String}, in encounter order
      */
+    @Deprecated
     public static Collector<CharSequence, ?, String> joining() {
         final Supplier<StringBuilder> supplier = new Supplier<StringBuilder>() {
             @Override

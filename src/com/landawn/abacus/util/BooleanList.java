@@ -122,7 +122,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return of(a);
     }
 
-    static BooleanList from(Collection<Boolean> c) {
+    public static BooleanList from(Collection<Boolean> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -130,7 +130,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return from(c, false);
     }
 
-    static BooleanList from(Collection<Boolean> c, boolean defaultValueForNull) {
+    public static BooleanList from(Collection<Boolean> c, boolean defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -143,6 +143,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         }
 
         return of(a);
+    }
+
+    public static BooleanList repeat(boolean element, final int n) {
+        return of(Array.repeat(element, n));
     }
 
     /**

@@ -325,6 +325,45 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleStream> split(final DoublePredicate predicate) {
+        return new ParallelIteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
+            private double next;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public DoubleStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final DoubleList result = DoubleList.of(N.EMPTY_DOUBLE_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return DoubleStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public DoubleStream distinct() {
         return new ParallelIteratorDoubleStream(new ImmutableDoubleIterator() {
             private Iterator<Double> distinctIter;

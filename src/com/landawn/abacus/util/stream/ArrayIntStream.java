@@ -1029,6 +1029,39 @@ final class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public Stream<IntStream> split(final IntPredicate predicate) {
+        return new IteratorStream<IntStream>(new ImmutableIterator<IntStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public IntStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final IntList result = IntList.of(N.EMPTY_INT_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return IntStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public IntStream distinct() {
         return new ArrayIntStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }

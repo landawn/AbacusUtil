@@ -1842,6 +1842,118 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+        return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            private T next = (T) Stream.NONE;
+
+            @Override
+            public boolean hasNext() {
+                return next != Stream.NONE || elements.hasNext();
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>();
+
+                if (next == Stream.NONE) {
+                    next = elements.next();
+                }
+
+                while (next != Stream.NONE) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = elements.hasNext() ? elements.next() : (T) Stream.NONE;
+                    } else {
+                        break;
+                    }
+                }
+
+                return Stream.of(result);
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public Stream<List<T>> splitIntoList(final Predicate<? super T> predicate) {
+        return new ParallelIteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+            private T next = (T) Stream.NONE;
+
+            @Override
+            public boolean hasNext() {
+                return next != Stream.NONE || elements.hasNext();
+            }
+
+            @Override
+            public List<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>();
+
+                if (next == Stream.NONE) {
+                    next = elements.next();
+                }
+
+                while (next != Stream.NONE) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = elements.hasNext() ? elements.next() : (T) Stream.NONE;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public Stream<Set<T>> splitIntoSet(final Predicate<? super T> predicate) {
+        return new ParallelIteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+            private T next = (T) Stream.NONE;
+
+            @Override
+            public boolean hasNext() {
+                return next != Stream.NONE || elements.hasNext();
+            }
+
+            @Override
+            public Set<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final Set<T> result = new HashSet<>();
+
+                if (next == Stream.NONE) {
+                    next = elements.next();
+                }
+
+                while (next != Stream.NONE) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+
+                        next = elements.hasNext() ? elements.next() : (T) Stream.NONE;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public Stream<T> distinct() {
         return new ParallelIteratorStream<T>(new ImmutableIterator<T>() {
             T[] a = null;

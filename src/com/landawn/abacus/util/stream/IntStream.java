@@ -59,6 +59,7 @@ import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.IntNFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntSupplier;
 import com.landawn.abacus.util.function.IntToByteFunction;
@@ -67,9 +68,11 @@ import com.landawn.abacus.util.function.IntToDoubleFunction;
 import com.landawn.abacus.util.function.IntToFloatFunction;
 import com.landawn.abacus.util.function.IntToLongFunction;
 import com.landawn.abacus.util.function.IntToShortFunction;
+import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToIntFunction;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -286,6 +289,32 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return
      */
     public abstract Stream<IntStream> split(int size);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * final MutableInt border = MutableInt.of(5);
+     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
+     *     if (e <= border.intValue()) {
+     *         return true;
+     *     } else {
+     *         border.addAndGet(5);
+     *         return false;
+     *     }
+     * }).map(s -> s.toArray()).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract Stream<IntStream> split(IntPredicate predicate);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -1344,6 +1373,254 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
                 return cur.next();
             }
         });
+    }
+
+    /**
+     * Zip together the "a" and "b" arrays until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static IntStream zip(final int[] a, final int[] b, final IntBiFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static IntStream zip(final int[] a, final int[] b, final int[] c, final IntTriFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static IntStream zip(final IntStream a, final IntStream b, final IntBiFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static IntStream zip(final IntIterator a, final IntIterator b, final IntBiFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final IntTriFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the iterators until one of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param combiner
+     * @return
+     */
+    public static IntStream zip(final Collection<? extends IntIterator> c, final IntNFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(c, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param combiner
+     * @return
+     */
+    public static IntStream zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB, final IntBiFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC, final IntTriFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param combiner
+     * @return
+     */
+    public static IntStream zip(final IntIterator a, final IntIterator b, final int valueForNoneA, final int valueForNoneB,
+            final IntBiFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC, final IntTriFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToInt(mapper);
+    }
+
+    /**
+     * Zip together the iterators until all of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param valuesForNone value to fill for any iterator runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static IntStream zip(final Collection<? extends IntIterator> c, final int[] valuesForNone, final IntNFunction<Integer> combiner) {
+        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        };
+
+        return Stream.zip(c, valuesForNone, combiner).mapToInt(mapper);
     }
 
     /**

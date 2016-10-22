@@ -553,6 +553,39 @@ final class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
+    public Stream<ByteStream> split(final BytePredicate predicate) {
+        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ByteStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return ByteStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public ByteStream distinct() {
         return new ArrayByteStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }

@@ -428,6 +428,45 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
     }
 
     @Override
+    public Stream<IntStream> split(final IntPredicate predicate) {
+        return new ParallelIteratorStream<IntStream>(new ImmutableIterator<IntStream>() {
+            private int next;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public IntStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final IntList result = IntList.of(N.EMPTY_INT_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return IntStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public IntStream distinct() {
         return new ParallelIteratorIntStream(new ImmutableIntIterator() {
             private Iterator<Integer> distinctIter;

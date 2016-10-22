@@ -743,6 +743,39 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleStream> split(final DoublePredicate predicate) {
+        return new IteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final DoubleList result = DoubleList.of(N.EMPTY_DOUBLE_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return DoubleStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public DoubleStream distinct() {
         return new ArrayDoubleStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }

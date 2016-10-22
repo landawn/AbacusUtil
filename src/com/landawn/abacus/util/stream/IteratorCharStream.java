@@ -379,6 +379,45 @@ final class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharStream> split(final CharPredicate predicate) {
+        return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
+            private char next;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public CharStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return CharStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public CharStream distinct() {
         return new IteratorCharStream(new ImmutableCharIterator() {
             private Iterator<Character> distinctIter;

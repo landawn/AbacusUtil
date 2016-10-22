@@ -160,7 +160,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return of(a);
     }
 
-    static ByteList from(Collection<? extends Number> c) {
+    public static ByteList from(Collection<Byte> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -168,7 +168,7 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         return from(c, (byte) 0);
     }
 
-    static ByteList from(Collection<? extends Number> c, byte defaultValueForNull) {
+    public static ByteList from(Collection<Byte> c, byte defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -176,21 +176,23 @@ public final class ByteList extends PrimitiveNumberList<ByteConsumer, BytePredic
         final byte[] a = new byte[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = e.doubleValue();
-
-                if (N.compare(val, Byte.MIN_VALUE) < 0 || N.compare(val, Byte.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (byte) val;
-            }
+        for (Byte e : c) {
+            a[idx++] = e == null ? defaultValueForNull : e;
         }
 
         return of(a);
+    }
+
+    public static ByteList range(byte startInclusive, final byte endExclusive) {
+        return of(Array.range(startInclusive, endExclusive));
+    }
+
+    public static ByteList rangeClosed(byte startInclusive, final byte endInclusive) {
+        return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static ByteList repeat(byte element, final int n) {
+        return of(Array.repeat(element, n));
     }
 
     /**

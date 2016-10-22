@@ -381,6 +381,45 @@ final class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortStream> split(final ShortPredicate predicate) {
+        return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
+            private short next;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public ShortStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ShortList result = ShortList.of(N.EMPTY_SHORT_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return ShortStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public ShortStream distinct() {
         return new IteratorShortStream(new ImmutableShortIterator() {
             private Iterator<Short> distinctIter;

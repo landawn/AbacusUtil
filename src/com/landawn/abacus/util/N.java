@@ -14036,6 +14036,8 @@ public final class N {
     public static String toString(final Object obj) {
         if (obj == null) {
             return NULL_STRING;
+        } else if (obj instanceof CharSequence) {
+            return obj.toString();
         }
 
         if (obj.getClass().isArray()) {
@@ -34538,9 +34540,7 @@ public final class N {
             try {
                 Thread.sleep(millis);
             } catch (InterruptedException e) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn("Failed to sleep: " + millis, e);
-                }
+                throw new RuntimeException(e);
             }
         }
     }

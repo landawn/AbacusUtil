@@ -482,6 +482,45 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public Stream<FloatStream> split(final FloatPredicate predicate) {
+        return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
+            private float next;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public FloatStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final FloatList result = FloatList.of(N.EMPTY_FLOAT_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return FloatStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public FloatStream distinct() {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private Iterator<Float> distinctIter;

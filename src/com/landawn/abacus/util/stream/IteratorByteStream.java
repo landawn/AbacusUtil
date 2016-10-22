@@ -378,6 +378,45 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
+    public Stream<ByteStream> split(final BytePredicate predicate) {
+        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
+            private byte next;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public ByteStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (predicate.test(next)) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return ByteStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public ByteStream distinct() {
         return new IteratorByteStream(new ImmutableByteIterator() {
             private Iterator<Byte> distinctIter;

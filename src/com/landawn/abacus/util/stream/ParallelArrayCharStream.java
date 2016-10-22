@@ -247,6 +247,39 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharStream> split(final CharPredicate predicate) {
+        return new ParallelIteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public CharStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return CharStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public CharStream distinct() {
         final char[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);

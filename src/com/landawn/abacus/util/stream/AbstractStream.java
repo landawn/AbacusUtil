@@ -11,8 +11,10 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.exception.AbacusSQLException;
 import com.landawn.abacus.util.BufferedWriter;
@@ -36,6 +38,35 @@ abstract class AbstractStream<T> extends Stream<T> implements BaseStream<T, Stre
     AbstractStream(Collection<Runnable> closeHandlers) {
         this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
                 : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
+    }
+
+    @Override
+    public DataSet toDataSet(List<String> columnNames) {
+        return N.newDataSet(columnNames, toList());
+    }
+
+    @Override
+    public String join(CharSequence delimiter) {
+        final Function<T, String> mapper = new Function<T, String>() {
+            @Override
+            public String apply(T t) {
+                return N.toString(t);
+            }
+        };
+
+        return this.map(mapper).collect(Collectors.joining(delimiter));
+    }
+
+    @Override
+    public String join(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+        final Function<T, String> mapper = new Function<T, String>() {
+            @Override
+            public String apply(T t) {
+                return N.toString(t);
+            }
+        };
+
+        return this.map(mapper).collect(Collectors.joining(delimiter, prefix, suffix));
     }
 
     @Override

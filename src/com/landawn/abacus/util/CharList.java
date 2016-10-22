@@ -162,7 +162,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return of(a);
     }
 
-    static CharList from(Collection<Character> c) {
+    public static CharList from(Collection<Character> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -170,7 +170,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return from(c, (char) 0);
     }
 
-    static CharList from(Collection<Character> c, char defaultValueForNull) {
+    public static CharList from(Collection<Character> c, char defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -183,6 +183,18 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         }
 
         return of(a);
+    }
+
+    public static CharList range(char startInclusive, final char endExclusive) {
+        return of(Array.range(startInclusive, endExclusive));
+    }
+
+    public static CharList rangeClosed(char startInclusive, final char endInclusive) {
+        return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static CharList repeat(char element, final int n) {
+        return of(Array.repeat(element, n));
     }
 
     /**

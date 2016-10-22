@@ -60,7 +60,6 @@ public abstract class AutoRetry {
                     throw N.toRuntimeException(throwable);
                 }
             }
-
         };
     }
 

@@ -58,13 +58,16 @@ import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
+import com.landawn.abacus.util.function.CharNFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharSupplier;
 import com.landawn.abacus.util.function.CharToIntFunction;
+import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToCharFunction;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -237,6 +240,32 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return
      */
     public abstract Stream<CharStream> split(int size);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * final MutableInt border = MutableInt.of(5);
+     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
+     *     if (e <= border.intValue()) {
+     *         return true;
+     *     } else {
+     *         border.addAndGet(5);
+     *         return false;
+     *     }
+     * }).map(s -> s.toArray()).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract Stream<CharStream> split(CharPredicate predicate);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -1248,6 +1277,255 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
                 return cur.next();
             }
         });
+    }
+
+    /**
+     * Zip together the "a" and "b" arrays until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static CharStream zip(final char[] a, final char[] b, final CharBiFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static CharStream zip(final char[] a, final char[] b, final char[] c, final CharTriFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static CharStream zip(final CharStream a, final CharStream b, final CharBiFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static CharStream zip(final CharStream a, final CharStream b, final CharStream c, final CharTriFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static CharStream zip(final CharIterator a, final CharIterator b, final CharBiFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static CharStream zip(final CharIterator a, final CharIterator b, final CharIterator c, final CharTriFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the iterators until one of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param combiner
+     * @return
+     */
+    public static CharStream zip(final Collection<? extends CharIterator> c, final CharNFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(c, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param combiner
+     * @return
+     */
+    public static CharStream zip(final CharStream a, final CharStream b, final char valueForNoneA, final char valueForNoneB,
+            final CharBiFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static CharStream zip(final CharStream a, final CharStream b, final CharStream c, final char valueForNoneA, final char valueForNoneB,
+            final char valueForNoneC, final CharTriFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param combiner
+     * @return
+     */
+    public static CharStream zip(final CharIterator a, final CharIterator b, final char valueForNoneA, final char valueForNoneB,
+            final CharBiFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static CharStream zip(final CharIterator a, final CharIterator b, final CharIterator c, final char valueForNoneA, final char valueForNoneB,
+            final char valueForNoneC, final CharTriFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToChar(mapper);
+    }
+
+    /**
+     * Zip together the iterators until all of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param valuesForNone value to fill for any iterator runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static CharStream zip(final Collection<? extends CharIterator> c, final char[] valuesForNone, final CharNFunction<Character> combiner) {
+        final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        };
+
+        return Stream.zip(c, valuesForNone, combiner).mapToChar(mapper);
     }
 
     /**

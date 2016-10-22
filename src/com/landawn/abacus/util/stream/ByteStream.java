@@ -58,13 +58,16 @@ import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
+import com.landawn.abacus.util.function.ByteNFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteSupplier;
 import com.landawn.abacus.util.function.ByteToIntFunction;
+import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToByteFunction;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -238,6 +241,32 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      * @return
      */
     public abstract Stream<ByteStream> split(int size);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * final MutableInt border = MutableInt.of(5);
+     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
+     *     if (e <= border.intValue()) {
+     *         return true;
+     *     } else {
+     *         border.addAndGet(5);
+     *         return false;
+     *     }
+     * }).map(s -> s.toArray()).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract Stream<ByteStream> split(BytePredicate predicate);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -1207,6 +1236,255 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
                 return cur.next();
             }
         });
+    }
+
+    /**
+     * Zip together the "a" and "b" arrays until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static ByteStream zip(final byte[] a, final byte[] b, final ByteBiFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static ByteStream zip(final byte[] a, final byte[] b, final byte[] c, final ByteTriFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteBiFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTriFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteBiFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteTriFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the iterators until one of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param combiner
+     * @return
+     */
+    public static ByteStream zip(final Collection<? extends ByteIterator> c, final ByteNFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(c, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param combiner
+     * @return
+     */
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final byte valueForNoneA, final byte valueForNoneB,
+            final ByteBiFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC, final ByteTriFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param combiner
+     * @return
+     */
+    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final byte valueForNoneA, final byte valueForNoneB,
+            final ByteBiFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final byte valueForNoneA,
+            final byte valueForNoneB, final byte valueForNoneC, final ByteTriFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToByte(mapper);
+    }
+
+    /**
+     * Zip together the iterators until all of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param valuesForNone value to fill for any iterator runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static ByteStream zip(final Collection<? extends ByteIterator> c, final byte[] valuesForNone, final ByteNFunction<Byte> combiner) {
+        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        };
+
+        return Stream.zip(c, valuesForNone, combiner).mapToByte(mapper);
     }
 
     /**

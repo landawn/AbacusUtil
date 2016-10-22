@@ -553,6 +553,39 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharStream> split(final CharPredicate predicate) {
+        return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public CharStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return CharStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public CharStream distinct() {
         return new ArrayCharStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }

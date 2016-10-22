@@ -530,17 +530,17 @@ public final class IOUtil {
     }
 
     public static byte[] readBytes(final File file) {
-        return readBytes(file, Integer.MAX_VALUE);
+        return readBytes(file, 0, Integer.MAX_VALUE);
     }
 
-    public static byte[] readBytes(final File file, final int maxLen) {
+    public static byte[] readBytes(final File file, final long offset, final int maxLen) {
         final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         try {
             is = openFile(outputZipFile, file);
 
-            return readBytes(is, maxLen);
+            return readBytes(is, offset, maxLen);
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
@@ -550,12 +550,18 @@ public final class IOUtil {
     }
 
     public static byte[] readBytes(final InputStream is) {
-        return readBytes(is, Integer.MAX_VALUE);
+        return readBytes(is, 0, Integer.MAX_VALUE);
     }
 
-    public static byte[] readBytes(final InputStream is, final int maxLen) {
+    public static byte[] readBytes(final InputStream is, final long offset, final int maxLen) {
         if (maxLen == 0) {
             return N.EMPTY_BYTE_ARRAY;
+        }
+
+        if (offset > 0) {
+            if (skip(is, offset) < offset) {
+                return N.EMPTY_BYTE_ARRAY;
+            }
         }
 
         ByteArrayOutputStream os = null;
@@ -591,21 +597,21 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final File file) {
-        return readChars(file, Integer.MAX_VALUE);
+        return readChars(file, 0, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final File file, final int maxLen) {
-        return readChars(file, maxLen, Charsets.DEFAULT);
+    public static char[] readChars(final File file, final long offset, final int maxLen) {
+        return readChars(file, 0, maxLen, Charsets.DEFAULT);
     }
 
-    public static char[] readChars(final File file, final int maxLen, final Charset encoding) {
+    public static char[] readChars(final File file, final long offset, final int maxLen, final Charset encoding) {
         final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         try {
             is = openFile(outputZipFile, file);
 
-            return readChars(is, maxLen, encoding);
+            return readChars(is, offset, maxLen, encoding);
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
@@ -615,14 +621,14 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final InputStream is) {
-        return readChars(is, Integer.MAX_VALUE);
+        return readChars(is, 0, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final InputStream is, final int maxLen) {
-        return readChars(is, maxLen, Charsets.DEFAULT);
+    public static char[] readChars(final InputStream is, final long offset, final int maxLen) {
+        return readChars(is, 0, maxLen, Charsets.DEFAULT);
     }
 
-    public static char[] readChars(final InputStream is, final int maxLen, Charset encoding) {
+    public static char[] readChars(final InputStream is, final long offset, final int maxLen, Charset encoding) {
         encoding = encoding == null ? Charsets.DEFAULT : encoding;
 
         Reader reader = null;
@@ -630,7 +636,7 @@ public final class IOUtil {
         // try {
         reader = createReader(is, encoding);
 
-        return readChars(reader, maxLen);
+        return readChars(reader, offset, maxLen);
 
         // } finally {
         // // close(reader);
@@ -638,12 +644,18 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final Reader reader) {
-        return readChars(reader, Integer.MAX_VALUE);
+        return readChars(reader, 0, Integer.MAX_VALUE);
     }
 
-    public static char[] readChars(final Reader reader, final int maxLen) {
+    public static char[] readChars(final Reader reader, final long offset, final int maxLen) {
         if (maxLen == 0) {
             return N.EMPTY_CHAR_ARRAY;
+        }
+
+        if (offset > 0) {
+            if (skip(reader, offset) < offset) {
+                return N.EMPTY_CHAR_ARRAY;
+            }
         }
 
         StringBuilder sb = null;
@@ -685,39 +697,39 @@ public final class IOUtil {
     }
 
     public static String readString(final File file) {
-        return readString(file, Integer.MAX_VALUE);
+        return readString(file, 0, Integer.MAX_VALUE);
     }
 
-    public static String readString(final File file, final int maxLen) {
-        return readString(file, maxLen, Charsets.DEFAULT);
+    public static String readString(final File file, final long offset, final int maxLen) {
+        return readString(file, offset, maxLen, Charsets.DEFAULT);
     }
 
-    public static String readString(final File file, final int maxLen, final Charset encoding) {
-        final char[] chs = readChars(file, maxLen, encoding);
+    public static String readString(final File file, final long offset, final int maxLen, final Charset encoding) {
+        final char[] chs = readChars(file, offset, maxLen, encoding);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
 
     public static String readString(final InputStream is) {
-        return readString(is, Integer.MAX_VALUE);
+        return readString(is, 0, Integer.MAX_VALUE);
     }
 
-    public static String readString(final InputStream is, final int maxLen) {
-        return readString(is, maxLen, Charsets.DEFAULT);
+    public static String readString(final InputStream is, final long offset, final int maxLen) {
+        return readString(is, offset, maxLen, Charsets.DEFAULT);
     }
 
-    public static String readString(final InputStream is, final int maxLen, final Charset encoding) {
-        final char[] chs = readChars(is, maxLen, encoding);
+    public static String readString(final InputStream is, final long offset, final int maxLen, final Charset encoding) {
+        final char[] chs = readChars(is, offset, maxLen, encoding);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
 
     public static String readString(final Reader reader) {
-        return readString(reader, Integer.MAX_VALUE);
+        return readString(reader, 0, Integer.MAX_VALUE);
     }
 
-    public static String readString(final Reader reader, final int maxLen) {
-        final char[] chs = readChars(reader, maxLen);
+    public static String readString(final Reader reader, final long offset, final int maxLen) {
+        final char[] chs = readChars(reader, offset, maxLen);
 
         return N.isNullOrEmpty(chs) ? N.EMPTY_STRING : N.newString(chs, true);
     }
@@ -726,18 +738,18 @@ public final class IOUtil {
         return readLine(file, 0);
     }
 
-    public static String readLine(final File file, final int lineOffset) {
-        return readLine(file, lineOffset, Charsets.DEFAULT);
+    public static String readLine(final File file, final int lineIndex) {
+        return readLine(file, lineIndex, Charsets.DEFAULT);
     }
 
-    public static String readLine(final File file, final int lineOffset, final Charset encoding) {
+    public static String readLine(final File file, final int lineIndex, final Charset encoding) {
         final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
         InputStream is = null;
 
         try {
             is = openFile(outputZipFile, file);
 
-            return readLine(is, lineOffset, encoding);
+            return readLine(is, lineIndex, encoding);
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
@@ -750,26 +762,26 @@ public final class IOUtil {
         return readLine(is, 0);
     }
 
-    public static String readLine(final InputStream is, final int lineOffset) {
-        return readLine(is, lineOffset, Charsets.DEFAULT);
+    public static String readLine(final InputStream is, final int lineIndex) {
+        return readLine(is, lineIndex, Charsets.DEFAULT);
     }
 
-    public static String readLine(final InputStream is, final int lineOffset, final Charset encoding) {
-        return readLine(createReader(is, encoding), lineOffset);
+    public static String readLine(final InputStream is, final int lineIndex, final Charset encoding) {
+        return readLine(createReader(is, encoding), lineIndex);
     }
 
     public static String readLine(final Reader reader) {
         return readLine(reader, 0);
     }
 
-    public static String readLine(final Reader reader, int lineOffset) {
+    public static String readLine(final Reader reader, int lineIndex) {
         final BufferedReader br = reader instanceof BufferedReader ? (BufferedReader) reader : ObjectFactory.createBufferedReader(reader);
 
         try {
-            if (lineOffset == 0) {
+            if (lineIndex == 0) {
                 return br.readLine();
             } else {
-                while (lineOffset-- > 0 && br.readLine() != null) {
+                while (lineIndex-- > 0 && br.readLine() != null) {
                 }
 
                 return br.readLine();
@@ -1998,6 +2010,8 @@ public final class IOUtil {
     public static long skip(final InputStream input, final long toSkip) {
         if (toSkip < 0) {
             throw new IllegalArgumentException("Skip count must be non-negative, actual: " + toSkip);
+        } else if (toSkip == 0) {
+            return 0;
         }
 
         final byte[] buf = ObjectFactory.createByteArrayBuffer();
@@ -2033,6 +2047,8 @@ public final class IOUtil {
     public static long skip(final Reader input, final long toSkip) {
         if (toSkip < 0) {
             throw new IllegalArgumentException("Skip count must be non-negative, actual: " + toSkip);
+        } else if (toSkip == 0) {
+            return 0;
         }
 
         final char[] buf = ObjectFactory.createCharArrayBuffer();
@@ -3079,12 +3095,12 @@ public final class IOUtil {
         }
     }
 
-    public static void split(final File file, final int numOfParts) {
-        split(file, numOfParts, file.getParentFile());
+    public static void split(final File file, final int countOfParts) {
+        split(file, countOfParts, file.getParentFile());
     }
 
-    public static void split(final File file, final int numOfParts, final File destDir) {
-        final long sizeOfPart = (file.length() % numOfParts) == 0 ? (file.length() / numOfParts) : (file.length() / numOfParts) + 1;
+    public static void split(final File file, final int countOfParts, final File destDir) {
+        final long sizeOfPart = (file.length() % countOfParts) == 0 ? (file.length() / countOfParts) : (file.length() / countOfParts) + 1;
 
         splitBySize(file, sizeOfPart, destDir);
     }

@@ -201,7 +201,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return of(a);
     }
 
-    static FloatList from(Collection<? extends Number> c) {
+    public static FloatList from(Collection<Float> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -209,7 +209,7 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return from(c, 0f);
     }
 
-    static FloatList from(Collection<? extends Number> c, float defaultValueForNull) {
+    public static FloatList from(Collection<Float> c, float defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -217,21 +217,15 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         final float[] a = new float[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = e.doubleValue();
-
-                if (N.compare(val, Float.MIN_VALUE) < 0 || N.compare(val, Float.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (float) val;
-            }
+        for (Float e : c) {
+            a[idx++] = e == null ? defaultValueForNull : e;
         }
 
         return of(a);
+    }
+
+    public static FloatList repeat(float element, final int n) {
+        return of(Array.repeat(element, n));
     }
 
     /**

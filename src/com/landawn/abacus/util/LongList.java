@@ -205,7 +205,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return of(a);
     }
 
-    static LongList from(Collection<? extends Number> c) {
+    public static LongList from(Collection<Long> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -213,7 +213,7 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return from(c, 0);
     }
 
-    static LongList from(Collection<? extends Number> c, long defaultValueForNull) {
+    public static LongList from(Collection<Long> c, long defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -221,21 +221,23 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         final long[] a = new long[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = e.doubleValue();
-
-                if (N.compare(val, Long.MIN_VALUE) < 0 || N.compare(val, Long.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (long) val;
-            }
+        for (Long e : c) {
+            a[idx++] = e == null ? defaultValueForNull : e;
         }
 
         return of(a);
+    }
+
+    public static LongList range(long startInclusive, final long endExclusive) {
+        return of(Array.range(startInclusive, endExclusive));
+    }
+
+    public static LongList rangeClosed(long startInclusive, final long endInclusive) {
+        return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static LongList repeat(long element, final int n) {
+        return of(Array.repeat(element, n));
     }
 
     /**

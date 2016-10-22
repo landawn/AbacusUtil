@@ -269,7 +269,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return of(a);
     }
 
-    static IntList from(Collection<? extends Number> c) {
+    public static IntList from(Collection<Integer> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -277,7 +277,7 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return from(c, 0);
     }
 
-    static IntList from(Collection<? extends Number> c, int defaultValueForNull) {
+    public static IntList from(Collection<Integer> c, int defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -285,21 +285,23 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         final int[] a = new int[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = e.doubleValue();
-
-                if (N.compare(val, Integer.MIN_VALUE) < 0 || N.compare(val, Integer.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (int) val;
-            }
+        for (Integer e : c) {
+            a[idx++] = e == null ? defaultValueForNull : e;
         }
 
         return of(a);
+    }
+
+    public static IntList range(int startInclusive, final int endExclusive) {
+        return of(Array.range(startInclusive, endExclusive));
+    }
+
+    public static IntList rangeClosed(int startInclusive, final int endInclusive) {
+        return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static IntList repeat(int element, final int n) {
+        return of(Array.repeat(element, n));
     }
 
     /**

@@ -59,15 +59,18 @@ import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
+import com.landawn.abacus.util.function.FloatNFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatSupplier;
 import com.landawn.abacus.util.function.FloatToDoubleFunction;
 import com.landawn.abacus.util.function.FloatToIntFunction;
 import com.landawn.abacus.util.function.FloatToLongFunction;
+import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToFloatFunction;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -272,6 +275,32 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      * @return
      */
     public abstract Stream<FloatStream> split(int size);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * final MutableInt border = MutableInt.of(5);
+     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
+     *     if (e <= border.intValue()) {
+     *         return true;
+     *     } else {
+     *         border.addAndGet(5);
+     *         return false;
+     *     }
+     * }).map(s -> s.toArray()).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param predicate
+     * @return
+     */
+    public abstract Stream<FloatStream> split(FloatPredicate predicate);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -1297,6 +1326,255 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
                 return cur.next();
             }
         });
+    }
+
+    /**
+     * Zip together the "a" and "b" arrays until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static FloatStream zip(final float[] a, final float[] b, final FloatBiFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static FloatStream zip(final float[] a, final float[] b, final float[] c, final FloatTriFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static FloatStream zip(final FloatStream a, final FloatStream b, final FloatBiFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static FloatStream zip(final FloatStream a, final FloatStream b, final FloatStream c, final FloatTriFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static FloatStream zip(final FloatIterator a, final FloatIterator b, final FloatBiFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static FloatStream zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final FloatTriFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the iterators until one of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param combiner
+     * @return
+     */
+    public static FloatStream zip(final Collection<? extends FloatIterator> c, final FloatNFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(c, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param combiner
+     * @return
+     */
+    public static FloatStream zip(final FloatStream a, final FloatStream b, final float valueForNoneA, final float valueForNoneB,
+            final FloatBiFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static FloatStream zip(final FloatStream a, final FloatStream b, final FloatStream c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC, final FloatTriFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param combiner
+     * @return
+     */
+    public static FloatStream zip(final FloatIterator a, final FloatIterator b, final float valueForNoneA, final float valueForNoneB,
+            final FloatBiFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static FloatStream zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC, final FloatTriFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToFloat(mapper);
+    }
+
+    /**
+     * Zip together the iterators until all of them runs out of values.
+     * Each array of values is combined into a single value using the supplied combiner function.
+     * 
+     * @param c
+     * @param valuesForNone value to fill for any iterator runs out of values.
+     * @param combiner
+     * @return
+     */
+    public static FloatStream zip(final Collection<? extends FloatIterator> c, final float[] valuesForNone, final FloatNFunction<Float> combiner) {
+        final ToFloatFunction<Float> mapper = new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        };
+
+        return Stream.zip(c, valuesForNone, combiner).mapToFloat(mapper);
     }
 
     /**

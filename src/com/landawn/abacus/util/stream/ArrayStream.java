@@ -1563,6 +1563,105 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>();
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return Stream.of(result);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<List<T>> splitIntoList(final Predicate<? super T> predicate) {
+        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public List<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>();
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<Set<T>> splitIntoSet(final Predicate<? super T> predicate) {
+        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Set<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final Set<T> result = new HashSet<>();
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public Stream<T> distinct() {
         return new ArrayStream<T>(N.removeDuplicates(elements, fromIndex, toIndex, sorted && isSameComparator(null, cmp)), closeHandlers, sorted, cmp);
     }

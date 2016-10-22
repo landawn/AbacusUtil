@@ -187,7 +187,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return of(a);
     }
 
-    static DoubleList from(Collection<? extends Number> c) {
+    public static DoubleList from(Collection<Double> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -195,7 +195,7 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return from(c, 0d);
     }
 
-    static DoubleList from(Collection<? extends Number> c, double defaultValueForNull) {
+    public static DoubleList from(Collection<Double> c, double defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -203,11 +203,15 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         final double[] a = new double[c.size()];
         int idx = 0;
 
-        for (Number e : c) {
-            a[idx++] = e == null ? defaultValueForNull : e.doubleValue();
+        for (Double e : c) {
+            a[idx++] = e == null ? defaultValueForNull : e;
         }
 
         return of(a);
+    }
+
+    public static DoubleList repeat(double element, final int n) {
+        return of(Array.repeat(element, n));
     }
 
     /**

@@ -316,6 +316,39 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     }
 
     @Override
+    public Stream<LongStream> split(final LongPredicate predicate) {
+        return new ParallelIteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public LongStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return LongStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public LongStream distinct() {
         final long[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayLongStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);

@@ -247,6 +247,39 @@ final class ParallelArrayByteStream extends AbstractByteStream {
     }
 
     @Override
+    public Stream<ByteStream> split(final BytePredicate predicate) {
+        return new ParallelIteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ByteStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return ByteStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public ByteStream distinct() {
         final byte[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayByteStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);

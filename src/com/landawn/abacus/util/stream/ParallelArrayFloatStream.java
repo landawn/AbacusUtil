@@ -316,6 +316,39 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public Stream<FloatStream> split(final FloatPredicate predicate) {
+        return new ParallelIteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public FloatStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final FloatList result = FloatList.of(N.EMPTY_FLOAT_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return FloatStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public FloatStream distinct() {
         final float[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayFloatStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);

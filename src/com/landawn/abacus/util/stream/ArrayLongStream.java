@@ -744,6 +744,39 @@ final class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
+    public Stream<LongStream> split(final LongPredicate predicate) {
+        return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public LongStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return LongStream.of(result.array(), 0, result.size());
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public LongStream distinct() {
         return new ArrayLongStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
