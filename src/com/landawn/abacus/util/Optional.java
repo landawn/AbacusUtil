@@ -136,10 +136,11 @@ public final class Optional<T> {
      * @see Optional#isPresent()
      */
     public T get() {
-        if (value == null) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     /**
@@ -160,8 +161,9 @@ public final class Optional<T> {
      * null
      */
     public void ifPresent(Consumer<? super T> consumer) {
-        if (value != null)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -177,10 +179,12 @@ public final class Optional<T> {
      */
     public Optional<T> filter(Predicate<? super T> predicate) {
         N.requireNonNull(predicate);
-        if (!isPresent())
+
+        if (isPresent() && predicate.test(value)) {
             return this;
-        else
-            return predicate.test(value) ? this : (Optional<T>) empty();
+        } else {
+            return empty();
+        }
     }
 
     /**
@@ -214,10 +218,11 @@ public final class Optional<T> {
      */
     public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
         N.requireNonNull(mapper);
-        if (!isPresent())
-            return empty();
-        else {
+
+        if (isPresent()) {
             return (Optional<U>) Optional.ofNullable(mapper.apply(value));
+        } else {
+            return empty();
         }
     }
 
@@ -240,10 +245,11 @@ public final class Optional<T> {
      */
     public <U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
         N.requireNonNull(mapper);
-        if (!isPresent())
-            return empty();
-        else {
+
+        if (isPresent()) {
             return N.requireNonNull(mapper.apply(value));
+        } else {
+            return empty();
         }
     }
 
@@ -255,7 +261,7 @@ public final class Optional<T> {
      * @return the value, if present, otherwise {@code other}
      */
     public T or(T other) {
-        return value != null ? value : other;
+        return isPresent() ? value : other;
     }
 
     /**
@@ -269,7 +275,7 @@ public final class Optional<T> {
      * null
      */
     public T orGet(Supplier<? extends T> other) {
-        return value != null ? value : other.get();
+        return isPresent() ? value : other.get();
     }
 
     /**
@@ -289,7 +295,7 @@ public final class Optional<T> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orThrow(Supplier<? extends X> exceptionSupplier) throws X {
-        if (value != null) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -324,12 +330,12 @@ public final class Optional<T> {
             return true;
         }
 
-        if (!(obj instanceof Optional)) {
-            return false;
+        if (obj instanceof Optional) {
+            Optional<?> other = (Optional<?>) obj;
+            return N.equals(value, other.value);
         }
 
-        Optional<?> other = (Optional<?>) obj;
-        return N.equals(value, other.value);
+        return false;
     }
 
     /**

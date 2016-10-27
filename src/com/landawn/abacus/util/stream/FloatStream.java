@@ -53,6 +53,8 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
+import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.FloatBiFunction;
@@ -703,7 +705,6 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -843,9 +844,11 @@ public abstract class FloatStream implements BaseStream<Float, FloatStream> {
      */
     public abstract long count();
 
+    public abstract Optional<Map<Percentage, Float>> distribution();
+
     public abstract FloatSummaryStatistics summarize();
 
-    public abstract Optional<Map<String, Float>> distribution();
+    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarize2();
 
     /**
      * Returns whether any elements of this stream match the provided

@@ -35,7 +35,7 @@ import com.landawn.abacus.util.stream.IntStream;
  *
  * @author Haiyang Li
  */
-public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate, Integer, int[], IntList> {
+public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate, Integer, int[], IntList> {
     private int[] elementData = N.EMPTY_INT_ARRAY;
     private int size = 0;
 
@@ -315,6 +315,24 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     }
 
     /**
+     * Returns random numbers between 0 (inclusive) and the specified value (exclusive).
+     * 
+     * @param bound
+     * @param len
+     * @return
+     * @see java.util.Random#nextInt(int)
+     */
+    public static IntList random(final int bound, final int len) {
+        final int[] a = new int[len];
+
+        for (int i = 0; i < len; i++) {
+            a[i] = RAND.nextInt(bound);
+        }
+
+        return of(a);
+    }
+
+    /**
      * Returns the original element array without copying.
      * 
      * @return
@@ -370,15 +388,13 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return oldValue;
     }
 
-    public IntList add(int e) {
+    public void add(int e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
-
-        return this;
     }
 
-    public IntList add(int index, int e) {
+    public void add(int index, int e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -392,12 +408,10 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         elementData[index] = e;
 
         size++;
-
-        return this;
     }
 
     @Override
-    public IntList addAll(IntList c) {
+    public void addAll(IntList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -405,12 +419,10 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
-
-        return this;
     }
 
     @Override
-    public IntList addAll(int index, IntList c) {
+    public void addAll(int index, IntList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -426,8 +438,34 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+    }
 
-        return this;
+    @Override
+    public void addAll(int[] a) {
+        addAll(size(), a);
+    }
+
+    @Override
+    public void addAll(int index, int[] a) {
+        rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        int numNew = a.length;
+
+        ensureCapacityInternal(size + numNew); // Increments modCount
+
+        int numMoved = size - index;
+
+        if (numMoved > 0) {
+            N.copy(elementData, index, elementData, index + numNew, numMoved);
+        }
+
+        N.copy(a, 0, elementData, index, numNew);
+
+        size += numNew;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -493,6 +531,15 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return batchRemove(c, false) > 0;
     }
 
+    @Override
+    public boolean removeAll(int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return removeAll(of(a));
+    }
+
     public boolean retainAll(IntList c) {
         return batchRemove(c, true) > 0;
     }
@@ -544,6 +591,21 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         return oldValue;
     }
 
+    @Override
+    public void deleteAll(int... indices) {
+        N.deleteAll(elementData, indices);
+    }
+
+    public void fill(final int val) {
+        fill(0, size(), val);
+    }
+
+    public void fill(final int fromIndex, final int toIndex, final int val) {
+        checkIndex(fromIndex, toIndex);
+
+        N.fill(elementData, fromIndex, toIndex, val);
+    }
+
     public boolean contains(int e) {
         return indexOf(e) >= 0;
     }
@@ -568,6 +630,83 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         }
 
         return true;
+    }
+
+    @Override
+    public boolean containsAll(int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
+        return containsAll(of(a));
+    }
+
+    public boolean joint(final IntList c) {
+        final IntList container = size() >= c.size() ? this : c;
+        final int[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Integer> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean joint(final int[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return false;
+        }
+
+        return joint(of(b));
+    }
+
+    public boolean disjoint(final IntList c) {
+        final IntList container = size() >= c.size() ? this : c;
+        final int[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Integer> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean disjoint(final int[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return true;
+        }
+
+        return disjoint(of(b));
+    }
+
+    public int occurrencesOf(final int objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     @Override
@@ -1094,6 +1233,30 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
         }
     }
 
+    /**
+     * This List should be sorted first.
+     * 
+     * @param key
+     * @return
+     */
+    public int binarySearch(final int key) {
+        return N.binarySearch(elementData, key);
+    }
+
+    /**
+     * This List should be sorted first.
+     *
+     * @param fromIndex
+     * @param toIndex
+     * @param key
+     * @return
+     */
+    public int binarySearch(final int fromIndex, final int toIndex, final int key) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.binarySearch(elementData, fromIndex, toIndex, key);
+    }
+
     @Override
     public void reverse() {
         if (size > 1) {
@@ -1102,10 +1265,32 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
     }
 
     @Override
+    public void reverse(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (toIndex - fromIndex > 1) {
+            N.reverse(elementData, fromIndex, toIndex);
+        }
+    }
+
+    @Override
     public void rotate(int distance) {
         if (size > 1) {
             N.rotate(elementData, distance);
         }
+    }
+
+    @Override
+    public void shuffle() {
+        N.shuffle(elementData);
+    }
+
+    @Override
+    public void swap(int i, int j) {
+        rangeCheck(i);
+        rangeCheck(j);
+
+        set(i, set(j, elementData[i]));
     }
 
     @Override
@@ -1124,6 +1309,34 @@ public final class IntList extends PrimitiveNumberList<IntConsumer, IntPredicate
 
         for (int[] a : list) {
             result.add(IntList.of(a));
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<IntList> split(int fromIndex, int toIndex, IntPredicate predicate) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<IntList> result = new ArrayList<>();
+        IntList piece = null;
+
+        for (int i = fromIndex; i < toIndex;) {
+            if (piece == null) {
+                piece = IntList.of(N.EMPTY_INT_ARRAY);
+            }
+
+            if (predicate.test(elementData[i])) {
+                piece.add(elementData[i]);
+                i++;
+            } else {
+                result.add(piece);
+                piece = null;
+            }
+        }
+
+        if (piece != null) {
+            result.add(piece);
         }
 
         return result;

@@ -54,6 +54,8 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
+import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -700,7 +702,6 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -791,9 +792,11 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      */
     public abstract long count();
 
+    public abstract Optional<Map<Percentage, Long>> distribution();
+
     public abstract LongSummaryStatistics summarize();
 
-    public abstract Optional<Map<String, Long>> distribution();
+    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarize2();
 
     /**
      * Returns whether any elements of this stream match the provided

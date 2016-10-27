@@ -119,31 +119,35 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @see OptionalDouble#isPresent()
      */
     public double get() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     public int getAsInt() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return (int) value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return (int) value;
     }
 
     public long getAsLong() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return (long) value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return (long) value;
     }
 
     public float getAsFloat() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return (float) value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return (float) value;
     }
 
     /**
@@ -164,8 +168,9 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * null
      */
     public void ifPresent(DoubleConsumer consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -175,19 +180,19 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @return the value, if present, otherwise {@code other}
      */
     public double or(double other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     public int orInt(int other) {
-        return isPresent ? (int) value : other;
+        return isPresent() ? (int) value : other;
     }
 
     public long orLong(long other) {
-        return isPresent ? (long) value : other;
+        return isPresent() ? (long) value : other;
     }
 
     public float orFloat(float other) {
-        return isPresent ? (float) value : other;
+        return isPresent() ? (float) value : other;
     }
 
     /**
@@ -201,7 +206,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * null
      */
     public double orGet(DoubleSupplier other) {
-        return isPresent ? value : other.getAsDouble();
+        return isPresent() ? value : other.getAsDouble();
     }
 
     /**
@@ -221,7 +226,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> double orThrow(Supplier<X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -234,7 +239,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @return the value, if present, otherwise {@code 0}
      */
     public double orZero() {
-        return isPresent ? value : 0d;
+        return isPresent() ? value : 0d;
     }
 
     @Override
@@ -269,12 +274,12 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
             return true;
         }
 
-        if (!(obj instanceof OptionalDouble)) {
-            return false;
+        if (obj instanceof OptionalDouble) {
+            OptionalDouble other = (OptionalDouble) obj;
+            return (isPresent && other.isPresent) ? Double.compare(value, other.value) == 0 : isPresent == other.isPresent;
         }
 
-        OptionalDouble other = (OptionalDouble) obj;
-        return (isPresent && other.isPresent) ? Double.compare(value, other.value) == 0 : isPresent == other.isPresent;
+        return false;
     }
 
     /**
@@ -285,7 +290,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      */
     @Override
     public int hashCode() {
-        return isPresent ? Double.valueOf(value).hashCode() : 0;
+        return isPresent() ? Double.valueOf(value).hashCode() : 0;
     }
 
     /**
@@ -303,6 +308,6 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("OptionalDouble[%s]", value) : "OptionalDouble.empty";
+        return isPresent() ? String.format("OptionalDouble[%s]", value) : "OptionalDouble.empty";
     }
 }

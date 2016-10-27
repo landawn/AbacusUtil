@@ -690,7 +690,7 @@ public final class N {
     private static final int REPLACEALL_THRESHOLD = 11;
 
     // ...
-    static final Random rand = new SecureRandom();
+    static final Random RAND = new SecureRandom();
 
     @SuppressWarnings("rawtypes")
     static final Comparator NULL_MIN_COMPARATOR = new Comparator<Comparable>() {
@@ -3102,6 +3102,7 @@ public final class N {
      *            if it's true.
      * @return
      */
+    @Internal
     static String newString(final char[] a, final boolean share) {
         if (share && sharedStringConstructor != null) {
             try {
@@ -5743,7 +5744,7 @@ public final class N {
      */
     public static String guid() {
         final byte[] randomBytes = new byte[16];
-        rand.nextBytes(randomBytes);
+        RAND.nextBytes(randomBytes);
 
         randomBytes[6] &= 0x0f; /* clear version        */
         randomBytes[6] |= 0x40; /* set to version 4     */
@@ -6584,7 +6585,7 @@ public final class N {
     }
 
     public static void merge(final Object sourceEntity, final Object targetEntity) {
-        merge(sourceEntity, targetEntity, null);
+        merge(sourceEntity, null, targetEntity);
     }
 
     /**
@@ -6594,13 +6595,13 @@ public final class N {
      * @param sourceEntity
      *            a Java Object what allows access to properties using getter
      *            and setter methods.
+     * @param selectPropNames
      * @param targetEntity
      *            a Java Object what allows access to properties using getter
      *            and setter methods.
-     * @param selectPropNames
      */
     @SuppressWarnings("deprecation")
-    public static void merge(final Object sourceEntity, final Object targetEntity, final Set<String> selectPropNames) {
+    public static void merge(final Object sourceEntity, final Set<String> selectPropNames, final Object targetEntity) {
         final Class<?> sourceEntityClass = sourceEntity.getClass();
         final boolean ignoreUnknownProperty = selectPropNames == null;
 
@@ -12585,6 +12586,10 @@ public final class N {
         return (s == null) || (s.isEmpty());
     }
 
+    public static boolean isNullOrEmpty(final LongMultiset<?> s) {
+        return (s == null) || (s.isEmpty());
+    }
+
     public static boolean isNullOrEmpty(final Multimap<?, ?, ?> m) {
         return (m == null) || (m.isEmpty());
     }
@@ -12673,6 +12678,10 @@ public final class N {
     }
 
     public static boolean notNullOrEmpty(final Multiset<?> s) {
+        return (s != null) && (s.size() > 0);
+    }
+
+    public static boolean notNullOrEmpty(final LongMultiset<?> s) {
         return (s != null) && (s.size() > 0);
     }
 
@@ -12962,6 +12971,26 @@ public final class N {
      * @throws IllegalArgumentException if the specified parameter is null or empty.
      */
     public static <E> Multiset<E> checkNullOrEmpty(final Multiset<E> parameter, final String msg) {
+        if (parameter == null || parameter.isEmpty()) {
+            if (isErrorMsg(msg)) {
+                throw new IllegalArgumentException(msg);
+            } else {
+                throw new IllegalArgumentException(msg + " can not be null or empty");
+            }
+        }
+
+        return parameter;
+    }
+
+    /**
+     * Check if the specified parameter is null or empty
+     *
+     * @param parameter
+     * @param msg name of parameter or error message
+     * @return the input parameter
+     * @throws IllegalArgumentException if the specified parameter is null or empty.
+     */
+    public static <E> LongMultiset<E> checkNullOrEmpty(final LongMultiset<E> parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
@@ -15477,7 +15506,7 @@ public final class N {
     }
 
     public static void shuffle(final boolean[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static void shuffle(final boolean[] a, final Random rnd) {
@@ -15491,7 +15520,7 @@ public final class N {
     }
 
     public static void shuffle(final char[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static void shuffle(final char[] a, final Random rnd) {
@@ -15505,7 +15534,7 @@ public final class N {
     }
 
     public static void shuffle(final byte[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static void shuffle(final byte[] a, final Random rnd) {
@@ -15519,7 +15548,7 @@ public final class N {
     }
 
     public static void shuffle(final short[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static void shuffle(final short[] a, final Random rnd) {
@@ -15533,7 +15562,7 @@ public final class N {
     }
 
     public static void shuffle(final int[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static void shuffle(final int[] a, final Random rnd) {
@@ -15547,7 +15576,7 @@ public final class N {
     }
 
     public static void shuffle(final long[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static void shuffle(final long[] a, final Random rnd) {
@@ -15561,7 +15590,7 @@ public final class N {
     }
 
     public static void shuffle(final float[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static void shuffle(final float[] a, final Random rnd) {
@@ -15575,7 +15604,7 @@ public final class N {
     }
 
     public static void shuffle(final double[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static void shuffle(final double[] a, final Random rnd) {
@@ -15589,7 +15618,7 @@ public final class N {
     }
 
     public static <T> void shuffle(final T[] a) {
-        shuffle(a, rand);
+        shuffle(a, RAND);
     }
 
     public static <T> void shuffle(final T[] a, final Random rnd) {
@@ -15603,7 +15632,7 @@ public final class N {
     }
 
     public static void shuffle(final List<?> list) {
-        shuffle(list, rand);
+        shuffle(list, RAND);
     }
 
     /**
@@ -15779,23 +15808,23 @@ public final class N {
             if (String.class.equals(parameterClass)) {
                 propValue = N.uuid().substring(0, 16);
             } else if (boolean.class.equals(parameterClass) || Boolean.class.equals(parameterClass)) {
-                propValue = rand.nextInt() % 2 == 0 ? false : true;
+                propValue = RAND.nextInt() % 2 == 0 ? false : true;
             } else if (char.class.equals(parameterClass) || Character.class.equals(parameterClass)) {
-                propValue = (char) ('a' + rand.nextInt() % 26);
+                propValue = (char) ('a' + RAND.nextInt() % 26);
             } else if (int.class.equals(parameterClass) || Integer.class.equals(parameterClass)) {
-                propValue = rand.nextInt();
+                propValue = RAND.nextInt();
             } else if (long.class.equals(parameterClass) || Long.class.equals(parameterClass)) {
-                propValue = rand.nextLong();
+                propValue = RAND.nextLong();
             } else if (float.class.equals(parameterClass) || Float.class.equals(parameterClass)) {
-                propValue = rand.nextFloat();
+                propValue = RAND.nextFloat();
             } else if (double.class.equals(parameterClass) || Double.class.equals(parameterClass)) {
-                propValue = rand.nextDouble();
+                propValue = RAND.nextDouble();
             } else if (byte.class.equals(parameterClass) || Byte.class.equals(parameterClass)) {
-                propValue = Integer.valueOf(rand.nextInt()).byteValue();
+                propValue = Integer.valueOf(RAND.nextInt()).byteValue();
             } else if (short.class.equals(parameterClass) || Short.class.equals(parameterClass)) {
-                propValue = Integer.valueOf(rand.nextInt()).shortValue();
+                propValue = Integer.valueOf(RAND.nextInt()).shortValue();
             } else if (Number.class.isAssignableFrom(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(rand.nextInt()));
+                propValue = type.valueOf(String.valueOf(RAND.nextInt()));
             } else if (java.util.Date.class.isAssignableFrom(parameterClass) || Calendar.class.isAssignableFrom(parameterClass)) {
                 propValue = type.valueOf(String.valueOf(N.currentMillis()));
             } else if (N.isEntity(parameterClass)) {
@@ -17320,7 +17349,7 @@ public final class N {
      * @param key
      * @return
      */
-    public static int binarySearch(final boolean[] a, final boolean key) {
+    static int binarySearch(final boolean[] a, final boolean key) {
         return Array.binarySearch(a, key);
     }
 
@@ -17499,7 +17528,7 @@ public final class N {
      * @param key
      * @return
      */
-    public static <T extends Comparable<T>> int binarySearch(final T[] a, final T key) {
+    public static int binarySearch(final Object[] a, final Object key) {
         return Array.binarySearch(a, key);
     }
 
@@ -17512,7 +17541,7 @@ public final class N {
      * @param key
      * @return
      */
-    public static <T extends Comparable<T>> int binarySearch(final T[] a, final int fromIndex, final int toIndex, final T key) {
+    public static int binarySearch(final Object[] a, final int fromIndex, final int toIndex, final Object key) {
         return Array.binarySearch(a, fromIndex, toIndex, key);
     }
 
@@ -19444,524 +19473,568 @@ public final class N {
         return count;
     }
 
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static boolean disjoint(final boolean[] a, final boolean[] b) {
-        return disjoint(a, b, false);
-    }
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final boolean[] a, final boolean[] b) {
+    //        return disjoint(a, b, false);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static boolean disjoint(final boolean[] a, final boolean[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final char[] a, final char[] b) {
+    //        return disjoint(a, b, false);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static boolean disjoint(final char[] a, final char[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final byte[] a, final byte[] b) {
+    //        return disjoint(a, b, false);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static boolean disjoint(final byte[] a, final byte[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final short[] a, final short[] b) {
+    //        return disjoint(a, b, false);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static boolean disjoint(final short[] a, final short[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final int[] a, final int[] b) {
+    //        return disjoint(a, b, false);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static boolean disjoint(final int[] a, final int[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final long[] a, final long[] b) {
+    //        return disjoint(a, b, false);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static boolean disjoint(final long[] a, final long[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final float[] a, final float[] b) {
+    //        return disjoint(a, b, false);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static boolean disjoint(final float[] a, final float[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final double[] a, final double[] b) {
+    //        return disjoint(a, b, false);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static boolean disjoint(final double[] a, final double[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static <T> boolean disjoint(final T[] a, final T[] b) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (a.length <= b.length) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (indexOf(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            for (int i = 0, len = b.length; i < len; i++) {
+    //                if (indexOf(a, b[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified arrays have no elements in common.
+    //     * Binary search is applied if the second array is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second array is sorted.
+    //     * @return {@code true} if the two specified arrays have no elements in common.
+    //     */
+    //    public static <T extends Comparable<T>> boolean disjoint(final T[] a, final T[] b, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (int i = 0, len = a.length; i < len; i++) {
+    //                if (N.binarySearch(b, a[i]) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            if (a.length <= b.length) {
+    //                for (int i = 0, len = a.length; i < len; i++) {
+    //                    if (indexOf(b, a[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            } else {
+    //                for (int i = 0, len = b.length; i < len; i++) {
+    //                    if (indexOf(a, b[i]) >= 0) {
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
 
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static boolean disjoint(final boolean[] a, final boolean[] b, final boolean isBSorted) {
+    //    /**
+    //     * Returns {@code true} if the two specified lists have no elements in common.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @return {@code true} if the two specified lists have no elements in common.
+    //     * @see Collections#disjoint(Collection, Collection)
+    //     */
+    //    public static boolean disjoint(final List<?> c1, final List<?> c2) {
+    //        if (N.isNullOrEmpty(c1) || N.isNullOrEmpty(c2)) {
+    //            return true;
+    //        }
+    //
+    //        return Collections.disjoint(c1, c2);
+    //    }
+    //
+    //    /**
+    //     * Returns {@code true} if the two specified lists have no elements in common.
+    //     * Binary search is applied if the second list is sorted.
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param isBSorted binary search is applied if the second list is sorted.
+    //     * @return {@code true} if the two specified lists have no elements in common.
+    //     */
+    //    public static <T extends Comparable<? super T>> boolean disjoint(final List<? extends T> c1, final List<? extends T> c2, final boolean isBSorted) {
+    //        if (N.isNullOrEmpty(c1) || N.isNullOrEmpty(c2)) {
+    //            return true;
+    //        }
+    //
+    //        if (isBSorted) {
+    //            for (T e : c1) {
+    //                if (N.binarySearch(c2, e) >= 0) {
+    //                    return false;
+    //                }
+    //            }
+    //        } else {
+    //            return Collections.disjoint(c1, c2);
+    //        }
+    //
+    //        return true;
+    //    }
+
+    public static boolean joint(final Object[] a, final Object[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
+            return false;
         }
 
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
+        return ObjectList.of(a).joint(b);
     }
 
     /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
      * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
+     * @param c1
+     * @param c2
+     * @return
      */
-    public static boolean disjoint(final char[] a, final char[] b) {
-        return disjoint(a, b, false);
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static boolean disjoint(final char[] a, final char[] b, final boolean isBSorted) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static boolean disjoint(final byte[] a, final byte[] b) {
-        return disjoint(a, b, false);
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static boolean disjoint(final byte[] a, final byte[] b, final boolean isBSorted) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static boolean disjoint(final short[] a, final short[] b) {
-        return disjoint(a, b, false);
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static boolean disjoint(final short[] a, final short[] b, final boolean isBSorted) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static boolean disjoint(final int[] a, final int[] b) {
-        return disjoint(a, b, false);
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static boolean disjoint(final int[] a, final int[] b, final boolean isBSorted) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static boolean disjoint(final long[] a, final long[] b) {
-        return disjoint(a, b, false);
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static boolean disjoint(final long[] a, final long[] b, final boolean isBSorted) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static boolean disjoint(final float[] a, final float[] b) {
-        return disjoint(a, b, false);
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static boolean disjoint(final float[] a, final float[] b, final boolean isBSorted) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static boolean disjoint(final double[] a, final double[] b) {
-        return disjoint(a, b, false);
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static boolean disjoint(final double[] a, final double[] b, final boolean isBSorted) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified arrays have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static <T> boolean disjoint(final T[] a, final T[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (a.length <= b.length) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (indexOf(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            for (int i = 0, len = b.length; i < len; i++) {
-                if (indexOf(a, b[i]) >= 0) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified arrays have no elements in common.
-     * Binary search is applied if the second array is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second array is sorted.
-     * @return {@code true} if the two specified arrays have no elements in common.
-     */
-    public static <T extends Comparable<T>> boolean disjoint(final T[] a, final T[] b, final boolean isBSorted) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (int i = 0, len = a.length; i < len; i++) {
-                if (N.binarySearch(b, a[i]) >= 0) {
-                    return false;
-                }
-            }
-        } else {
-            if (a.length <= b.length) {
-                for (int i = 0, len = a.length; i < len; i++) {
-                    if (indexOf(b, a[i]) >= 0) {
-                        return false;
-                    }
-                }
-            } else {
-                for (int i = 0, len = b.length; i < len; i++) {
-                    if (indexOf(a, b[i]) >= 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the two specified lists have no elements in common.
-     * 
-     * @param a
-     * @param b
-     * @return {@code true} if the two specified lists have no elements in common.
-     * @see Collections#disjoint(Collection, Collection)
-     */
-    public static boolean disjoint(final List<?> c1, final List<?> c2) {
+    public static boolean joint(final Collection<?> c1, final Collection<?> c2) {
         if (N.isNullOrEmpty(c1) || N.isNullOrEmpty(c2)) {
-            return true;
+            return false;
         }
 
-        return Collections.disjoint(c1, c2);
-    }
-
-    /**
-     * Returns {@code true} if the two specified lists have no elements in common.
-     * Binary search is applied if the second list is sorted.
-     * 
-     * @param a
-     * @param b
-     * @param isBSorted binary search is applied if the second list is sorted.
-     * @return {@code true} if the two specified lists have no elements in common.
-     */
-    public static <T extends Comparable<? super T>> boolean disjoint(final List<? extends T> c1, final List<? extends T> c2, final boolean isBSorted) {
-        if (N.isNullOrEmpty(c1) || N.isNullOrEmpty(c2)) {
-            return true;
-        }
-
-        if (isBSorted) {
-            for (T e : c1) {
-                if (N.binarySearch(c2, e) >= 0) {
-                    return false;
+        if (c1 instanceof Set || (c2 instanceof Set == false && c1.size() > c2.size())) {
+            for (Object e : c2) {
+                if (c1.contains(e)) {
+                    return true;
                 }
             }
         } else {
-            return Collections.disjoint(c1, c2);
+            for (Object e : c1) {
+                if (c2.contains(e)) {
+                    return true;
+                }
+            }
         }
 
-        return true;
+        return false;
+    }
+
+    public static boolean disjoint(final Object[] a, final Object[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return true;
+        }
+
+        return ObjectList.of(a).disjoint(b);
     }
 
     /**
@@ -19977,7 +20050,21 @@ public final class N {
             return true;
         }
 
-        return Collections.disjoint(c1, c2);
+        if (c1 instanceof Set || (c2 instanceof Set == false && c1.size() > c2.size())) {
+            for (Object e : c2) {
+                if (c1.contains(e)) {
+                    return false;
+                }
+            }
+        } else {
+            for (Object e : c1) {
+                if (c2.contains(e)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public static <T> void forEach(final T[] a, final Consumer<? super T> action) {
@@ -27626,7 +27713,7 @@ public final class N {
      */
     public static boolean[] addAll(final boolean[] a, final boolean... b) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(b);
+            return N.isNullOrEmpty(b) ? N.EMPTY_BOOLEAN_ARRAY : b.clone();
         }
 
         final boolean[] newArray = new boolean[a.length + b.length];
@@ -27650,7 +27737,7 @@ public final class N {
      */
     public static char[] addAll(final char[] a, final char... b) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(b);
+            return N.isNullOrEmpty(b) ? N.EMPTY_CHAR_ARRAY : b.clone();
         }
 
         final char[] newArray = new char[a.length + b.length];
@@ -27674,7 +27761,7 @@ public final class N {
      */
     public static byte[] addAll(final byte[] a, final byte... b) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(b);
+            return N.isNullOrEmpty(b) ? N.EMPTY_BYTE_ARRAY : b.clone();
         }
 
         final byte[] newArray = new byte[a.length + b.length];
@@ -27698,7 +27785,7 @@ public final class N {
      */
     public static short[] addAll(final short[] a, final short... b) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(b);
+            return N.isNullOrEmpty(b) ? N.EMPTY_SHORT_ARRAY : b.clone();
         }
 
         final short[] newArray = new short[a.length + b.length];
@@ -27722,7 +27809,7 @@ public final class N {
      */
     public static int[] addAll(final int[] a, final int... b) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(b);
+            return N.isNullOrEmpty(b) ? N.EMPTY_INT_ARRAY : b.clone();
         }
 
         final int[] newArray = new int[a.length + b.length];
@@ -27746,7 +27833,7 @@ public final class N {
      */
     public static long[] addAll(final long[] a, final long... b) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(b);
+            return N.isNullOrEmpty(b) ? N.EMPTY_LONG_ARRAY : b.clone();
         }
 
         final long[] newArray = new long[a.length + b.length];
@@ -27770,7 +27857,7 @@ public final class N {
      */
     public static float[] addAll(final float[] a, final float... b) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(b);
+            return N.isNullOrEmpty(b) ? N.EMPTY_FLOAT_ARRAY : b.clone();
         }
 
         final float[] newArray = new float[a.length + b.length];
@@ -27794,7 +27881,7 @@ public final class N {
      */
     public static double[] addAll(final double[] a, final double... b) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(b);
+            return N.isNullOrEmpty(b) ? N.EMPTY_DOUBLE_ARRAY : b.clone();
         }
 
         final double[] newArray = new double[a.length + b.length];
@@ -27818,7 +27905,7 @@ public final class N {
      */
     public static <T> T[] addAll(final T[] a, final T... b) {
         if (N.isNullOrEmpty(a)) {
-            return N.asArray(b);
+            return N.isNullOrEmpty(b) ? b : b.clone();
         }
 
         final T[] newArray = (T[]) Array.newInstance(a.getClass().getComponentType(), a.length + b.length);
@@ -34032,280 +34119,190 @@ public final class N {
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
      */
-    public static Map<String, Character> distribution(final char[] sortedArray) {
+    public static Map<Percentage, Character> distribution(final char[] sortedArray) {
         if (N.isNullOrEmpty(sortedArray)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int len = sortedArray.length;
-        final Map<String, Character> m = new LinkedHashMap<>(10);
+        final Map<Percentage, Character> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedArray[(int) (len * 0.0001)]);
-        m.put("0.1%", sortedArray[(int) (len * 0.001)]);
-        m.put("1%", sortedArray[(int) (len * 0.01)]);
-        m.put("10%", sortedArray[(int) (len * 0.1)]);
-        m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("30%", sortedArray[(int) (len * 0.3)]);
-        m.put("50%", sortedArray[(int) (len * 0.5)]);
-        m.put("70%", sortedArray[(int) (len * 0.7)]);
-        m.put("80%", sortedArray[(int) (len * 0.8)]);
-        m.put("90%", sortedArray[(int) (len * 0.9)]);
-        m.put("99%", sortedArray[(int) (len * 0.99)]);
-        m.put("99.9%", sortedArray[(int) (len * 0.999)]);
-        m.put("99.99%", sortedArray[(int) (len * 0.9999)]);
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedArray[(int) (len * p.doubleValue())]);
+        }
 
         return m;
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
      */
-    public static Map<String, Byte> distribution(final byte[] sortedArray) {
+    public static Map<Percentage, Byte> distribution(final byte[] sortedArray) {
         if (N.isNullOrEmpty(sortedArray)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int len = sortedArray.length;
-        final Map<String, Byte> m = new LinkedHashMap<>(20);
+        final Map<Percentage, Byte> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedArray[(int) (len * 0.0001)]);
-        m.put("0.1%", sortedArray[(int) (len * 0.001)]);
-        m.put("1%", sortedArray[(int) (len * 0.01)]);
-        m.put("10%", sortedArray[(int) (len * 0.1)]);
-        m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("30%", sortedArray[(int) (len * 0.3)]);
-        m.put("50%", sortedArray[(int) (len * 0.5)]);
-        m.put("70%", sortedArray[(int) (len * 0.7)]);
-        m.put("80%", sortedArray[(int) (len * 0.8)]);
-        m.put("90%", sortedArray[(int) (len * 0.9)]);
-        m.put("99%", sortedArray[(int) (len * 0.99)]);
-        m.put("99.9%", sortedArray[(int) (len * 0.999)]);
-        m.put("99.99%", sortedArray[(int) (len * 0.9999)]);
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedArray[(int) (len * p.doubleValue())]);
+        }
 
         return m;
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
      */
-    public static Map<String, Short> distribution(final short[] sortedArray) {
+    public static Map<Percentage, Short> distribution(final short[] sortedArray) {
         if (N.isNullOrEmpty(sortedArray)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int len = sortedArray.length;
-        final Map<String, Short> m = new LinkedHashMap<>(20);
+        final Map<Percentage, Short> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedArray[(int) (len * 0.0001)]);
-        m.put("0.1%", sortedArray[(int) (len * 0.001)]);
-        m.put("1%", sortedArray[(int) (len * 0.01)]);
-        m.put("10%", sortedArray[(int) (len * 0.1)]);
-        m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("30%", sortedArray[(int) (len * 0.3)]);
-        m.put("50%", sortedArray[(int) (len * 0.5)]);
-        m.put("70%", sortedArray[(int) (len * 0.7)]);
-        m.put("80%", sortedArray[(int) (len * 0.8)]);
-        m.put("90%", sortedArray[(int) (len * 0.9)]);
-        m.put("99%", sortedArray[(int) (len * 0.99)]);
-        m.put("99.9%", sortedArray[(int) (len * 0.999)]);
-        m.put("99.99%", sortedArray[(int) (len * 0.9999)]);
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedArray[(int) (len * p.doubleValue())]);
+        }
 
         return m;
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
      */
-    public static Map<String, Integer> distribution(final int[] sortedArray) {
+    public static Map<Percentage, Integer> distribution(final int[] sortedArray) {
         if (N.isNullOrEmpty(sortedArray)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int len = sortedArray.length;
-        final Map<String, Integer> m = new LinkedHashMap<>(20);
+        final Map<Percentage, Integer> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedArray[(int) (len * 0.0001)]);
-        m.put("0.1%", sortedArray[(int) (len * 0.001)]);
-        m.put("1%", sortedArray[(int) (len * 0.01)]);
-        m.put("10%", sortedArray[(int) (len * 0.1)]);
-        m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("30%", sortedArray[(int) (len * 0.3)]);
-        m.put("50%", sortedArray[(int) (len * 0.5)]);
-        m.put("70%", sortedArray[(int) (len * 0.7)]);
-        m.put("80%", sortedArray[(int) (len * 0.8)]);
-        m.put("90%", sortedArray[(int) (len * 0.9)]);
-        m.put("99%", sortedArray[(int) (len * 0.99)]);
-        m.put("99.9%", sortedArray[(int) (len * 0.999)]);
-        m.put("99.99%", sortedArray[(int) (len * 0.9999)]);
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedArray[(int) (len * p.doubleValue())]);
+        }
 
         return m;
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
      */
-    public static Map<String, Long> distribution(final long[] sortedArray) {
+    public static Map<Percentage, Long> distribution(final long[] sortedArray) {
         if (N.isNullOrEmpty(sortedArray)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int len = sortedArray.length;
-        final Map<String, Long> m = new LinkedHashMap<>(20);
+        final Map<Percentage, Long> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedArray[(int) (len * 0.0001)]);
-        m.put("0.1%", sortedArray[(int) (len * 0.001)]);
-        m.put("1%", sortedArray[(int) (len * 0.01)]);
-        m.put("10%", sortedArray[(int) (len * 0.1)]);
-        m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("30%", sortedArray[(int) (len * 0.3)]);
-        m.put("50%", sortedArray[(int) (len * 0.5)]);
-        m.put("70%", sortedArray[(int) (len * 0.7)]);
-        m.put("80%", sortedArray[(int) (len * 0.8)]);
-        m.put("90%", sortedArray[(int) (len * 0.9)]);
-        m.put("99%", sortedArray[(int) (len * 0.99)]);
-        m.put("99.9%", sortedArray[(int) (len * 0.999)]);
-        m.put("99.99%", sortedArray[(int) (len * 0.9999)]);
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedArray[(int) (len * p.doubleValue())]);
+        }
 
         return m;
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
      */
-    public static Map<String, Float> distribution(final float[] sortedArray) {
+    public static Map<Percentage, Float> distribution(final float[] sortedArray) {
         if (N.isNullOrEmpty(sortedArray)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int len = sortedArray.length;
-        final Map<String, Float> m = new LinkedHashMap<>(20);
+        final Map<Percentage, Float> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedArray[(int) (len * 0.0001)]);
-        m.put("0.1%", sortedArray[(int) (len * 0.001)]);
-        m.put("1%", sortedArray[(int) (len * 0.01)]);
-        m.put("10%", sortedArray[(int) (len * 0.1)]);
-        m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("30%", sortedArray[(int) (len * 0.3)]);
-        m.put("50%", sortedArray[(int) (len * 0.5)]);
-        m.put("70%", sortedArray[(int) (len * 0.7)]);
-        m.put("80%", sortedArray[(int) (len * 0.8)]);
-        m.put("90%", sortedArray[(int) (len * 0.9)]);
-        m.put("99%", sortedArray[(int) (len * 0.99)]);
-        m.put("99.9%", sortedArray[(int) (len * 0.999)]);
-        m.put("99.99%", sortedArray[(int) (len * 0.9999)]);
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedArray[(int) (len * p.doubleValue())]);
+        }
 
         return m;
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
      */
-    public static Map<String, Double> distribution(final double[] sortedArray) {
+    public static Map<Percentage, Double> distribution(final double[] sortedArray) {
         if (N.isNullOrEmpty(sortedArray)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int len = sortedArray.length;
-        final Map<String, Double> m = new LinkedHashMap<>(20);
+        final Map<Percentage, Double> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedArray[(int) (len * 0.0001)]);
-        m.put("0.1%", sortedArray[(int) (len * 0.001)]);
-        m.put("1%", sortedArray[(int) (len * 0.01)]);
-        m.put("10%", sortedArray[(int) (len * 0.1)]);
-        m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("30%", sortedArray[(int) (len * 0.3)]);
-        m.put("50%", sortedArray[(int) (len * 0.5)]);
-        m.put("70%", sortedArray[(int) (len * 0.7)]);
-        m.put("80%", sortedArray[(int) (len * 0.8)]);
-        m.put("90%", sortedArray[(int) (len * 0.9)]);
-        m.put("99%", sortedArray[(int) (len * 0.99)]);
-        m.put("99.9%", sortedArray[(int) (len * 0.999)]);
-        m.put("99.99%", sortedArray[(int) (len * 0.9999)]);
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedArray[(int) (len * p.doubleValue())]);
+        }
 
         return m;
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified array.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
      * @param sortedArray
      * @return
      */
-    public static <T> Map<String, T> distribution(final T[] sortedArray) {
+    public static <T> Map<Percentage, T> distribution(final T[] sortedArray) {
         if (N.isNullOrEmpty(sortedArray)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int len = sortedArray.length;
-        final Map<String, T> m = new LinkedHashMap<>(20);
+        final Map<Percentage, T> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedArray[(int) (len * 0.0001)]);
-        m.put("0.1%", sortedArray[(int) (len * 0.001)]);
-        m.put("1%", sortedArray[(int) (len * 0.01)]);
-        m.put("10%", sortedArray[(int) (len * 0.1)]);
-        m.put("20%", sortedArray[(int) (len * 0.2)]);
-        m.put("30%", sortedArray[(int) (len * 0.3)]);
-        m.put("50%", sortedArray[(int) (len * 0.5)]);
-        m.put("70%", sortedArray[(int) (len * 0.7)]);
-        m.put("80%", sortedArray[(int) (len * 0.8)]);
-        m.put("90%", sortedArray[(int) (len * 0.9)]);
-        m.put("99%", sortedArray[(int) (len * 0.99)]);
-        m.put("99.9%", sortedArray[(int) (len * 0.999)]);
-        m.put("99.99%", sortedArray[(int) (len * 0.9999)]);
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedArray[(int) (len * p.doubleValue())]);
+        }
 
         return m;
     }
 
     /**
-     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * size of the specified list.
+     * Returns the elements at: <code>Percentage</code> * length of the specified array.
      * 
-     * @param sortedList
+     * @param sortedArray
      * @return
      */
-    public static <T> Map<String, T> distribution(final List<T> sortedList) {
+    public static <T> Map<Percentage, T> distribution(final List<T> sortedList) {
         if (N.isNullOrEmpty(sortedList)) {
             throw new IllegalArgumentException("The specified array is null or empty.");
         }
 
         final int size = sortedList.size();
-        final Map<String, T> m = new LinkedHashMap<>(20);
+        final Map<Percentage, T> m = new LinkedHashMap<>(32);
 
-        m.put("0.01%", sortedList.get((int) (size * 0.0001)));
-        m.put("0.1%", sortedList.get((int) (size * 0.001)));
-        m.put("1%", sortedList.get((int) (size * 0.01)));
-        m.put("10%", sortedList.get((int) (size * 0.1)));
-        m.put("20%", sortedList.get((int) (size * 0.2)));
-        m.put("30%", sortedList.get((int) (size * 0.3)));
-        m.put("50%", sortedList.get((int) (size * 0.5)));
-        m.put("70%", sortedList.get((int) (size * 0.7)));
-        m.put("80%", sortedList.get((int) (size * 0.8)));
-        m.put("90%", sortedList.get((int) (size * 0.9)));
-        m.put("99%", sortedList.get((int) (size * 0.99)));
-        m.put("99.9%", sortedList.get((int) (size * 0.999)));
-        m.put("99.99%", sortedList.get((int) (size * 0.9999)));
+        for (Percentage p : Percentage.values()) {
+            m.put(p, sortedList.get((int) (size * p.doubleValue())));
+        }
 
         return m;
     }

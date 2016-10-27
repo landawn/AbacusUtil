@@ -3937,7 +3937,7 @@ public final class Array {
      * @param key
      * @return
      */
-    static <T extends Comparable<T>> int binarySearch(final T[] a, final T key) {
+    static int binarySearch(final Object[] a, final Object key) {
         if (N.isNullOrEmpty(a)) {
             return N.INDEX_NOT_FOUND;
         }
@@ -3954,7 +3954,7 @@ public final class Array {
      * @param key
      * @return
      */
-    static <T extends Comparable<T>> int binarySearch(final T[] a, final int fromIndex, final int toIndex, final T key) {
+    static int binarySearch(final Object[] a, final int fromIndex, final int toIndex, final Object key) {
         if (N.isNullOrEmpty(a)) {
             return N.INDEX_NOT_FOUND;
         }

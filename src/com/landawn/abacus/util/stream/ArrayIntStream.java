@@ -18,7 +18,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1488,17 +1487,6 @@ final class ArrayIntStream extends AbstractIntStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Integer>> distribution() {
-        if (count() == 0) {
-            return Optional.empty();
-        }
-
-        final int[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

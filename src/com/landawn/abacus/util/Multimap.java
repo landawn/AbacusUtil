@@ -52,11 +52,19 @@ public final class Multimap<K, E, V extends Collection<E>> {
     private final Class<V> valueType;
     private final Class<V> concreteValueType;
 
-    Multimap() {
+    /**
+     * Returns a <code>Multimap<K, E, List<E>></code>
+     */
+    public Multimap() {
         this(HashMap.class, ArrayList.class);
     }
 
-    Multimap(int initialCapacity) {
+    /**
+     * Returns a <code>Multimap<K, E, List<E>></code>
+     * 
+     * @param initialCapacity
+     */
+    public Multimap(int initialCapacity) {
         this(new HashMap<K, V>(initialCapacity), ArrayList.class);
     }
 

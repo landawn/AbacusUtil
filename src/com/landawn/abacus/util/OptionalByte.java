@@ -119,10 +119,11 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * @see OptionalByte#isPresent()
      */
     public byte get() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     /**
@@ -143,8 +144,9 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * null
      */
     public void ifPresent(ByteConsumer consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -154,7 +156,7 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * @return the value, if present, otherwise {@code other}
      */
     public byte or(byte other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     /**
@@ -168,7 +170,7 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * null
      */
     public byte orGet(ByteSupplier other) {
-        return isPresent ? value : other.getAsByte();
+        return isPresent() ? value : other.getAsByte();
     }
 
     /**
@@ -188,7 +190,7 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> byte orThrow(Supplier<X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -201,7 +203,7 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * @return the value, if present, otherwise {@code 0}
      */
     public byte orZero() {
-        return isPresent ? value : 0;
+        return isPresent() ? value : 0;
     }
 
     @Override
@@ -236,12 +238,12 @@ public final class OptionalByte implements Comparable<OptionalByte> {
             return true;
         }
 
-        if (!(obj instanceof OptionalByte)) {
-            return false;
+        if (obj instanceof OptionalByte) {
+            OptionalByte other = (OptionalByte) obj;
+            return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
         }
 
-        OptionalByte other = (OptionalByte) obj;
-        return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
+        return false;
     }
 
     /**
@@ -252,7 +254,7 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      */
     @Override
     public int hashCode() {
-        return isPresent ? Byte.valueOf(value).hashCode() : 0;
+        return isPresent() ? Byte.valueOf(value).hashCode() : 0;
     }
 
     /**
@@ -270,6 +272,6 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("OptionalByte[%s]", value) : "OptionalByte.empty";
+        return isPresent() ? String.format("OptionalByte[%s]", value) : "OptionalByte.empty";
     }
 }

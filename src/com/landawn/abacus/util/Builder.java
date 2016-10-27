@@ -6,6 +6,7 @@ import java.util.Map;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedConsumer2;
+import com.landawn.abacus.util.function.Predicate;
 
 /**
  * <pre>
@@ -100,6 +101,10 @@ public class Builder<T> {
 
     public <R> Builder<R> map(final Function<? super T, R> mapper) {
         return of(mapper.apply(value));
+    }
+
+    public Builder<Optional<T>> filter(final Predicate<? super T> predicate) {
+        return predicate.test(value) ? of(Optional.of(value)) : of((Optional<T>) Optional.empty());
     }
 
     //    public static <T> CollectionBuilder<T, List<T>> list() {

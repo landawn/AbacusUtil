@@ -35,7 +35,7 @@ import com.landawn.abacus.util.stream.FloatStream;
  * 
  * @author Haiyang Li
  */
-public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
+public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
     private float[] elementData = N.EMPTY_FLOAT_ARRAY;
     private int size = 0;
 
@@ -294,15 +294,13 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return oldValue;
     }
 
-    public FloatList add(float e) {
+    public void add(float e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
-
-        return this;
     }
 
-    public FloatList add(int index, float e) {
+    public void add(int index, float e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -316,12 +314,10 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         elementData[index] = e;
 
         size++;
-
-        return this;
     }
 
     @Override
-    public FloatList addAll(FloatList c) {
+    public void addAll(FloatList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -329,12 +325,10 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
-
-        return this;
     }
 
     @Override
-    public FloatList addAll(int index, FloatList c) {
+    public void addAll(int index, FloatList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -350,8 +344,34 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+    }
 
-        return this;
+    @Override
+    public void addAll(float[] a) {
+        addAll(size(), a);
+    }
+
+    @Override
+    public void addAll(int index, float[] a) {
+        rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        int numNew = a.length;
+
+        ensureCapacityInternal(size + numNew); // Increments modCount
+
+        int numMoved = size - index;
+
+        if (numMoved > 0) {
+            N.copy(elementData, index, elementData, index + numNew, numMoved);
+        }
+
+        N.copy(a, 0, elementData, index, numNew);
+
+        size += numNew;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -417,6 +437,15 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return batchRemove(c, false) > 0;
     }
 
+    @Override
+    public boolean removeAll(float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return removeAll(of(a));
+    }
+
     public boolean retainAll(FloatList c) {
         return batchRemove(c, true) > 0;
     }
@@ -468,6 +497,21 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         return oldValue;
     }
 
+    @Override
+    public void deleteAll(int... indices) {
+        N.deleteAll(elementData, indices);
+    }
+
+    public void fill(final float val) {
+        fill(0, size(), val);
+    }
+
+    public void fill(final int fromIndex, final int toIndex, final float val) {
+        checkIndex(fromIndex, toIndex);
+
+        N.fill(elementData, fromIndex, toIndex, val);
+    }
+
     public boolean contains(float e) {
         return indexOf(e) >= 0;
     }
@@ -492,6 +536,83 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         }
 
         return true;
+    }
+
+    @Override
+    public boolean containsAll(float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
+        return containsAll(of(a));
+    }
+
+    public boolean joint(final FloatList c) {
+        final FloatList container = size() >= c.size() ? this : c;
+        final float[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Float> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean joint(final float[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return false;
+        }
+
+        return joint(of(b));
+    }
+
+    public boolean disjoint(final FloatList c) {
+        final FloatList container = size() >= c.size() ? this : c;
+        final float[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Float> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean disjoint(final float[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return true;
+        }
+
+        return disjoint(of(b));
+    }
+
+    public int occurrencesOf(final float objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     @Override
@@ -994,6 +1115,30 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
         }
     }
 
+    /**
+     * This List should be sorted first.
+     * 
+     * @param key
+     * @return
+     */
+    public int binarySearch(final float key) {
+        return N.binarySearch(elementData, key);
+    }
+
+    /**
+     * This List should be sorted first.
+     *
+     * @param fromIndex
+     * @param toIndex
+     * @param key
+     * @return
+     */
+    public int binarySearch(final int fromIndex, final int toIndex, final float key) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.binarySearch(elementData, fromIndex, toIndex, key);
+    }
+
     @Override
     public void reverse() {
         if (size > 1) {
@@ -1002,10 +1147,32 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
     }
 
     @Override
+    public void reverse(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (toIndex - fromIndex > 1) {
+            N.reverse(elementData, fromIndex, toIndex);
+        }
+    }
+
+    @Override
     public void rotate(int distance) {
         if (size > 1) {
             N.rotate(elementData, distance);
         }
+    }
+
+    @Override
+    public void shuffle() {
+        N.shuffle(elementData);
+    }
+
+    @Override
+    public void swap(int i, int j) {
+        rangeCheck(i);
+        rangeCheck(j);
+
+        set(i, set(j, elementData[i]));
     }
 
     @Override
@@ -1024,6 +1191,34 @@ public final class FloatList extends PrimitiveNumberList<FloatConsumer, FloatPre
 
         for (float[] a : list) {
             result.add(FloatList.of(a));
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<FloatList> split(int fromIndex, int toIndex, FloatPredicate predicate) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<FloatList> result = new ArrayList<>();
+        FloatList piece = null;
+
+        for (int i = fromIndex; i < toIndex;) {
+            if (piece == null) {
+                piece = FloatList.of(N.EMPTY_FLOAT_ARRAY);
+            }
+
+            if (predicate.test(elementData[i])) {
+                piece.add(elementData[i]);
+                i++;
+            } else {
+                result.add(piece);
+                piece = null;
+            }
+        }
+
+        if (piece != null) {
+            result.add(piece);
         }
 
         return result;

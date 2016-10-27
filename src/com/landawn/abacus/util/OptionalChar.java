@@ -119,10 +119,11 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @see OptionalChar#isPresent()
      */
     public char get() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     /**
@@ -143,8 +144,9 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * null
      */
     public void ifPresent(CharConsumer consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -154,7 +156,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @return the value, if present, otherwise {@code other}
      */
     public char or(char other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     /**
@@ -168,7 +170,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * null
      */
     public char orGet(CharSupplier other) {
-        return isPresent ? value : other.getAsChar();
+        return isPresent() ? value : other.getAsChar();
     }
 
     /**
@@ -188,7 +190,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> char orThrow(Supplier<X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -201,7 +203,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @return the value, if present, otherwise {@code 0}
      */
     public char orZero() {
-        return isPresent ? value : 0;
+        return isPresent() ? value : 0;
     }
 
     @Override
@@ -236,12 +238,12 @@ public final class OptionalChar implements Comparable<OptionalChar> {
             return true;
         }
 
-        if (!(obj instanceof OptionalChar)) {
-            return false;
+        if (obj instanceof OptionalChar) {
+            OptionalChar other = (OptionalChar) obj;
+            return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
         }
 
-        OptionalChar other = (OptionalChar) obj;
-        return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
+        return false;
     }
 
     /**
@@ -252,7 +254,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      */
     @Override
     public int hashCode() {
-        return isPresent ? Character.valueOf(value).hashCode() : 0;
+        return isPresent() ? Character.valueOf(value).hashCode() : 0;
     }
 
     /**
@@ -270,6 +272,6 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("OptionalChar[%s]", value) : "OptionalChar.empty";
+        return isPresent() ? String.format("OptionalChar[%s]", value) : "OptionalChar.empty";
     }
 }

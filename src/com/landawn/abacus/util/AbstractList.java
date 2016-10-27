@@ -65,14 +65,47 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      * 
      * @param l
      */
-    public abstract L addAll(L l);
+    public abstract void addAll(L l);
 
     /**
      * 
      * @param index
      * @param l
      */
-    public abstract L addAll(int index, L l);
+    public abstract void addAll(int index, L l);
+
+    /**
+     * 
+     * @param a
+     */
+    public abstract void addAll(A a);
+
+    /**
+     * 
+     * @param index
+     * @param a
+     */
+    public abstract void addAll(int index, A a);
+
+    /**
+     * 
+     * @param a
+     */
+    public abstract boolean removeAll(A a);
+
+    public abstract void deleteAll(int... indices);
+
+    // public abstract boolean containsAll(L l);
+
+    public abstract boolean containsAll(A a);
+
+    // public abstract boolean joint(L l);
+
+    public abstract boolean joint(A a);
+
+    // public abstract boolean disjoint(L l);
+
+    public abstract boolean disjoint(A a);
 
     /**
      * 
@@ -238,9 +271,18 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
 
     /**
      * 
+     */
+    public abstract void reverse(final int fromIndex, final int toIndex);
+
+    /**
+     * 
      * @param distance
      */
     public abstract void rotate(int distance);
+
+    public abstract void shuffle();
+
+    public abstract void swap(int i, int j);
 
     /**
      *
@@ -276,6 +318,35 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      * @return
      */
     public abstract List<L> split(final int fromIndex, final int toIndex, int size);
+
+    public List<L> split(P predicate) {
+        return split(0, size(), predicate);
+    }
+
+    /**
+     * Split the List by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * final MutableInt border = MutableInt.of(5);
+     * IntList.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
+     *     if (e <= border.intValue()) {
+     *         return true;
+     *     } else {
+     *         border.addAndGet(5);
+     *         return false;
+     *     }
+     * }).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param predicate
+     * @return
+     */
+    public abstract List<L> split(final int fromIndex, final int toIndex, P predicate);
 
     public String join() {
         return join(N.ELEMENT_SEPARATOR);

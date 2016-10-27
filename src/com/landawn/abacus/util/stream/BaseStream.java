@@ -224,8 +224,7 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
      * Here are the methods which are executed sequentially even in parallel Streams.  
      * <br></br>
      * <i>split, distinct, toArray, toObjectList, toList, toSet, toMultiset, toLongMultiset, kthLargest, 
-     * count, except(Collection c), intersect(Collection c), reduce(identity, accumulator), collect(supplier, accumulator)
-     * forEach(identity, accumulator, till)</i>
+     * count, except(Collection c), intersect(Collection c), forEach(identity, accumulator, till)</i>
      * 
      * @param maxThreadNum Default value is the number of cpu-cores. Steps/operations will be executed sequentially if <code>maxThreadNum</code> is 1.
      * @param splitter The target array is split by ranges for multiple threads if splitter is <code>Splitter.ARRAY</code> and target stream composed by array. It looks like:

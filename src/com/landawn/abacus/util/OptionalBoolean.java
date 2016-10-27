@@ -119,10 +119,11 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @see OptionalBoolean#isPresent()
      */
     public boolean get() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     /**
@@ -143,8 +144,9 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * null
      */
     public void ifPresent(BooleanConsumer consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -154,7 +156,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @return the value, if present, otherwise {@code other}
      */
     public boolean or(boolean other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     /**
@@ -168,7 +170,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * null
      */
     public boolean orGet(BooleanSupplier other) {
-        return isPresent ? value : other.getAsBoolean();
+        return isPresent() ? value : other.getAsBoolean();
     }
 
     /**
@@ -188,7 +190,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> boolean orThrow(Supplier<X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -201,7 +203,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @return the value, if present, otherwise {@code false}
      */
     public boolean orFalse() {
-        return isPresent ? value : false;
+        return isPresent() ? value : false;
     }
 
     @Override
@@ -236,12 +238,12 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
             return true;
         }
 
-        if (!(obj instanceof OptionalBoolean)) {
-            return false;
+        if (obj instanceof OptionalBoolean) {
+            OptionalBoolean other = (OptionalBoolean) obj;
+            return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
         }
 
-        OptionalBoolean other = (OptionalBoolean) obj;
-        return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
+        return false;
     }
 
     /**
@@ -252,7 +254,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      */
     @Override
     public int hashCode() {
-        return isPresent ? Boolean.valueOf(value).hashCode() : 0;
+        return isPresent() ? Boolean.valueOf(value).hashCode() : 0;
     }
 
     /**
@@ -270,6 +272,6 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("OptionalBoolean[%s]", value) : "OptionalBoolean.empty";
+        return isPresent() ? String.format("OptionalBoolean[%s]", value) : "OptionalBoolean.empty";
     }
 }

@@ -52,6 +52,8 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
@@ -659,7 +661,6 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -729,9 +730,11 @@ public abstract class ByteStream implements BaseStream<Byte, ByteStream> {
      */
     public abstract long count();
 
+    public abstract Optional<Map<Percentage, Byte>> distribution();
+
     public abstract ByteSummaryStatistics summarize();
 
-    public abstract Optional<Map<String, Byte>> distribution();
+    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarize2();
 
     /**
      * Returns whether any elements of this stream match the provided

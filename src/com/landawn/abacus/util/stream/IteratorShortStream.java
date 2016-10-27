@@ -18,7 +18,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.OptionalShort;
@@ -1065,17 +1064,6 @@ final class IteratorShortStream extends AbstractShortStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Short>> distribution() {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        }
-
-        final short[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

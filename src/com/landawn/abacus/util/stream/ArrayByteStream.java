@@ -17,7 +17,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -981,17 +980,6 @@ final class ArrayByteStream extends AbstractByteStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Byte>> distribution() {
-        if (count() == 0) {
-            return Optional.empty();
-        }
-
-        final byte[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

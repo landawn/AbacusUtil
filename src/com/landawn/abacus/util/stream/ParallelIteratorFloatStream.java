@@ -24,7 +24,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.OptionalNullable;
@@ -1143,11 +1142,8 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
-        if (Stream.logger.isWarnEnabled()) {
-            Stream.logger.warn("'collect' is sequentially executed in parallel stream");
-        }
-
-        return sequential().collect(supplier, accumulator);
+        final BiConsumer<R, R> combiner = Stream.collectingCombiner;
+        return collect(supplier, accumulator, combiner);
     }
 
     @Override
@@ -1225,17 +1221,6 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Float>> distribution() {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        }
-
-        final float[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

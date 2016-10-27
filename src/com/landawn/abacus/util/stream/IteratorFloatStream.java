@@ -19,7 +19,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.OptionalNullable;
@@ -1295,17 +1294,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Float>> distribution() {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        }
-
-        final float[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

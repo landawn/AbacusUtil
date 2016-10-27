@@ -31,7 +31,6 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.ShortIterator;
@@ -2219,28 +2218,6 @@ final class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper) {
         return collect(Collectors.summarizingDouble(mapper));
-    }
-
-    @Override
-    public Optional<Map<String, T>> distribution() {
-        if (count() == 0) {
-            return Optional.empty();
-        }
-
-        final Object[] a = sorted().toArray();
-
-        return Optional.of((Map<String, T>) N.distribution(a));
-    }
-
-    @Override
-    public Optional<Map<String, T>> distribution(Comparator<? super T> comparator) {
-        if (count() == 0) {
-            return Optional.empty();
-        }
-
-        final Object[] a = sorted(comparator).toArray();
-
-        return Optional.of((Map<String, T>) N.distribution(a));
     }
 
     @Override

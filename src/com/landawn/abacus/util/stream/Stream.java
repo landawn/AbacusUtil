@@ -65,14 +65,19 @@ import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiMap;
+import com.landawn.abacus.util.BooleanList;
 import com.landawn.abacus.util.ByteIterator;
+import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CharIterator;
+import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatIterator;
+import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
@@ -81,6 +86,7 @@ import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.LongIterator;
+import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
@@ -93,8 +99,12 @@ import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.RowIterator;
+import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.ShortIterator;
+import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -368,6 +378,178 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
             listSizeField.setAccessible(true);
         }
     }
+
+    static final Map<Class<?>, Integer> clsNum = new BiMap<>();
+    static {
+        int idx = 0;
+        clsNum.put(boolean[].class, idx++); // 0
+        clsNum.put(char[].class, idx++);
+        clsNum.put(byte[].class, idx++);
+        clsNum.put(short[].class, idx++);
+        clsNum.put(int[].class, idx++);
+        clsNum.put(long[].class, idx++);
+        clsNum.put(float[].class, idx++);
+        clsNum.put(double[].class, idx++); // 7
+        clsNum.put(BooleanList.class, idx++); // 8
+        clsNum.put(CharList.class, idx++);
+        clsNum.put(ByteList.class, idx++);
+        clsNum.put(ShortList.class, idx++);
+        clsNum.put(IntList.class, idx++);
+        clsNum.put(LongList.class, idx++);
+        clsNum.put(FloatList.class, idx++);
+        clsNum.put(DoubleList.class, idx++);
+        clsNum.put(ObjectList.class, idx++); // 16
+    }
+
+    @SuppressWarnings("rawtypes")
+    static final BinaryOperator reducingCombiner = new BinaryOperator() {
+        @Override
+        public Object apply(Object t, Object u) {
+            if (t instanceof Multiset) {
+                ((Multiset) t).addAll((Multiset) u);
+                return t;
+            } else if (t instanceof LongMultiset) {
+                ((LongMultiset) t).addAll((LongMultiset) u);
+                return t;
+            } else if (t instanceof Multimap) {
+                ((Multimap) t).putAll((Multimap) u);
+                return t;
+            } else if (t instanceof Collection) {
+                ((Collection) t).addAll((Collection) u);
+                return t;
+            } else if (t instanceof Map) {
+                ((Map) t).putAll((Map) u);
+                return t;
+            } else if (t instanceof Object[]) {
+                return N.concat((Object[]) t, (Object[]) u);
+            } else if (t instanceof Sheet) {
+                ((Sheet) t).putAll((Sheet) u);
+                return t;
+            } else {
+                final Class<?> cls = t.getClass();
+                final Integer num = clsNum.get(cls);
+
+                if (num == null) {
+                    throw new RuntimeException(cls.getCanonicalName()
+                            + " can't be combined by default. Only Map/Collection/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList/boolean[] ... Object[] are supported");
+                }
+
+                switch (num.intValue()) {
+                    case 0:
+                        return N.concat((boolean[]) t, (boolean[]) u);
+                    case 1:
+                        return N.concat((char[]) t, (char[]) u);
+                    case 2:
+                        return N.concat((byte[]) t, (byte[]) u);
+                    case 3:
+                        return N.concat((short[]) t, (short[]) u);
+                    case 4:
+                        return N.concat((int[]) t, (int[]) u);
+                    case 5:
+                        return N.concat((long[]) t, (long[]) u);
+                    case 6:
+                        return N.concat((float[]) t, (float[]) u);
+                    case 7:
+                        return N.concat((double[]) t, (double[]) u);
+                    case 8:
+                        ((BooleanList) t).addAll((BooleanList) u);
+                        return t;
+                    case 9:
+                        ((CharList) t).addAll((CharList) u);
+                        return t;
+                    case 10:
+                        ((ByteList) t).addAll((ByteList) u);
+                        return t;
+                    case 11:
+                        ((ShortList) t).addAll((ShortList) u);
+                        return t;
+                    case 12:
+                        ((IntList) t).addAll((IntList) u);
+                        return t;
+                    case 13:
+                        ((LongList) t).addAll((LongList) u);
+                        return t;
+                    case 14:
+                        ((FloatList) t).addAll((FloatList) u);
+                        return t;
+                    case 15:
+                        ((DoubleList) t).addAll((DoubleList) u);
+                        return t;
+                    case 16:
+                        ((ObjectList) t).addAll((ObjectList) u);
+                        return t;
+
+                    default:
+                        throw new RuntimeException(cls.getCanonicalName()
+                                + " can't be combined by default. Only Map/Collection/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList/boolean[] ... Object[] are supported");
+                }
+            }
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    static final BiConsumer collectingCombiner = new BiConsumer() {
+        @Override
+        public void accept(Object t, Object u) {
+            if (t instanceof Multiset) {
+                ((Multiset) t).addAll((Multiset) u);
+            } else if (t instanceof LongMultiset) {
+                ((LongMultiset) t).addAll((LongMultiset) u);
+            } else if (t instanceof Multimap) {
+                ((Multimap) t).putAll((Multimap) u);
+            } else if (t instanceof Map) {
+                ((Map) t).putAll((Map) u);
+            } else if (t instanceof Collection) {
+                ((Collection) t).addAll((Collection) u);
+            } else if (t instanceof Map) {
+                ((Map) t).putAll((Map) u);
+            } else if (t instanceof Sheet) {
+                ((Sheet) t).putAll((Sheet) u);
+            } else {
+                final Class<?> cls = t.getClass();
+                Integer num = clsNum.get(cls);
+
+                if (num == null) {
+                    throw new RuntimeException(cls.getCanonicalName()
+                            + " can't be combined by default. Only Map/Collection/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList are supported");
+                }
+
+                switch (num.intValue()) {
+                    case 8:
+                        ((BooleanList) t).addAll((BooleanList) u);
+                        break;
+                    case 9:
+                        ((CharList) t).addAll((CharList) u);
+                        break;
+                    case 10:
+                        ((ByteList) t).addAll((ByteList) u);
+                        break;
+                    case 11:
+                        ((ShortList) t).addAll((ShortList) u);
+                        break;
+                    case 12:
+                        ((IntList) t).addAll((IntList) u);
+                        break;
+                    case 13:
+                        ((LongList) t).addAll((LongList) u);
+                        break;
+                    case 14:
+                        ((FloatList) t).addAll((FloatList) u);
+                        break;
+                    case 15:
+                        ((DoubleList) t).addAll((DoubleList) u);
+                        break;
+                    case 16:
+                        ((ObjectList) t).addAll((ObjectList) u);
+                        break;
+
+                    default:
+                        throw new RuntimeException(cls.getCanonicalName()
+                                + " can't be combined by default. Only Map/Collection/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList are supported");
+                }
+            }
+        }
+    };
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -1278,7 +1460,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
 
     /**
-     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param identity
      * @param accumulator
@@ -1340,7 +1521,6 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -1469,6 +1649,10 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
      */
     public abstract long count();
 
+    public abstract Optional<Map<Percentage, T>> distribution();
+
+    public abstract Optional<Map<Percentage, T>> distribution(Comparator<? super T> comparator);
+
     public abstract CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper);
 
     public abstract ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper);
@@ -1483,13 +1667,23 @@ public abstract class Stream<T> implements BaseStream<T, Stream<T>> {
 
     public abstract DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper);
 
+    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizeChar2(ToCharFunction<? super T> mapper);
+
+    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeByte2(ToByteFunction<? super T> mapper);
+
+    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeShort2(ToShortFunction<? super T> mapper);
+
+    public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizeInt2(ToIntFunction<? super T> mapper);
+
+    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeLong2(ToLongFunction<? super T> mapper);
+
+    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeFloat2(ToFloatFunction<? super T> mapper);
+
+    public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeDouble2(ToDoubleFunction<? super T> mapper);
+
     public abstract String join(CharSequence delimiter);
 
     public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
-
-    public abstract Optional<Map<String, T>> distribution();
-
-    public abstract Optional<Map<String, T>> distribution(Comparator<? super T> comparator);
 
     /**
      * Returns whether any elements of this stream match the provided

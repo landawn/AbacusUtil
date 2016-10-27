@@ -31,7 +31,6 @@ import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
@@ -3668,11 +3667,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
-        if (Stream.logger.isWarnEnabled()) {
-            Stream.logger.warn("'reduce' is sequentially executed in parallel stream");
-        }
-
-        return sequential().reduce(identity, accumulator);
+        final BinaryOperator<U> combiner = reducingCombiner;
+        return reduce(identity, accumulator, combiner);
     }
 
     @Override
@@ -3767,11 +3763,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
-        if (Stream.logger.isWarnEnabled()) {
-            Stream.logger.warn("'collect' is sequentially executed in parallel stream");
-        }
-
-        return sequential().collect(supplier, accumulator);
+        final BiConsumer<R, R> combiner = collectingCombiner;
+        return collect(supplier, accumulator, combiner);
     }
 
     @Override
@@ -3970,28 +3963,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     @Override
     public DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper) {
         return collect(Collectors.summarizingDouble(mapper));
-    }
-
-    @Override
-    public Optional<Map<String, T>> distribution() {
-        if (count() == 0) {
-            return Optional.empty();
-        }
-
-        final Object[] a = sorted().toArray();
-
-        return Optional.of((Map<String, T>) N.distribution(a));
-    }
-
-    @Override
-    public Optional<Map<String, T>> distribution(Comparator<? super T> comparator) {
-        if (count() == 0) {
-            return Optional.empty();
-        }
-
-        final Object[] a = sorted(comparator).toArray();
-
-        return Optional.of((Map<String, T>) N.distribution(a));
     }
 
     @Override

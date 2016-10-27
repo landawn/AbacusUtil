@@ -19,7 +19,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -1044,17 +1043,6 @@ final class IteratorCharStream extends AbstractCharStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Character>> distribution() {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        }
-
-        final char[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

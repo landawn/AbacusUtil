@@ -50,6 +50,8 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
+import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
@@ -663,7 +665,6 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -729,9 +730,11 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract long count();
 
+    public abstract Optional<Map<Percentage, Short>> distribution();
+
     public abstract ShortSummaryStatistics summarize();
 
-    public abstract Optional<Map<String, Short>> distribution();
+    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarize2();
 
     /**
      * Returns whether any elements of this stream match the provided

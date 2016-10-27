@@ -35,7 +35,7 @@ import com.landawn.abacus.util.stream.ShortStream;
  * 
  * @author Haiyang Li
  */
-public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPredicate, Short, short[], ShortList> {
+public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPredicate, Short, short[], ShortList> {
     private short[] elementData = N.EMPTY_SHORT_ARRAY;
     private int size = 0;
 
@@ -262,15 +262,13 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return oldValue;
     }
 
-    public ShortList add(short e) {
+    public void add(short e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
-
-        return this;
     }
 
-    public ShortList add(int index, short e) {
+    public void add(int index, short e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -284,12 +282,10 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         elementData[index] = e;
 
         size++;
-
-        return this;
     }
 
     @Override
-    public ShortList addAll(ShortList c) {
+    public void addAll(ShortList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -297,12 +293,10 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
-
-        return this;
     }
 
     @Override
-    public ShortList addAll(int index, ShortList c) {
+    public void addAll(int index, ShortList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -318,8 +312,34 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+    }
 
-        return this;
+    @Override
+    public void addAll(short[] a) {
+        addAll(size(), a);
+    }
+
+    @Override
+    public void addAll(int index, short[] a) {
+        rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        int numNew = a.length;
+
+        ensureCapacityInternal(size + numNew); // Increments modCount
+
+        int numMoved = size - index;
+
+        if (numMoved > 0) {
+            N.copy(elementData, index, elementData, index + numNew, numMoved);
+        }
+
+        N.copy(a, 0, elementData, index, numNew);
+
+        size += numNew;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -385,6 +405,15 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return batchRemove(c, false) > 0;
     }
 
+    @Override
+    public boolean removeAll(short[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return removeAll(of(a));
+    }
+
     public boolean retainAll(ShortList c) {
         return batchRemove(c, true) > 0;
     }
@@ -436,6 +465,21 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         return oldValue;
     }
 
+    @Override
+    public void deleteAll(int... indices) {
+        N.deleteAll(elementData, indices);
+    }
+
+    public void fill(final short val) {
+        fill(0, size(), val);
+    }
+
+    public void fill(final int fromIndex, final int toIndex, final short val) {
+        checkIndex(fromIndex, toIndex);
+
+        N.fill(elementData, fromIndex, toIndex, val);
+    }
+
     public boolean contains(short e) {
         return indexOf(e) >= 0;
     }
@@ -460,6 +504,83 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         }
 
         return true;
+    }
+
+    @Override
+    public boolean containsAll(short[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
+        return containsAll(of(a));
+    }
+
+    public boolean joint(final ShortList c) {
+        final ShortList container = size() >= c.size() ? this : c;
+        final short[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Short> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean joint(final short[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return false;
+        }
+
+        return joint(of(b));
+    }
+
+    public boolean disjoint(final ShortList c) {
+        final ShortList container = size() >= c.size() ? this : c;
+        final short[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Short> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean disjoint(final short[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return true;
+        }
+
+        return disjoint(of(b));
+    }
+
+    public int occurrencesOf(final short objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     @Override
@@ -962,6 +1083,30 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
         }
     }
 
+    /**
+     * This List should be sorted first.
+     * 
+     * @param key
+     * @return
+     */
+    public int binarySearch(final short key) {
+        return N.binarySearch(elementData, key);
+    }
+
+    /**
+     * This List should be sorted first.
+     *
+     * @param fromIndex
+     * @param toIndex
+     * @param key
+     * @return
+     */
+    public int binarySearch(final int fromIndex, final int toIndex, final short key) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.binarySearch(elementData, fromIndex, toIndex, key);
+    }
+
     @Override
     public void reverse() {
         if (size > 1) {
@@ -970,10 +1115,32 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
     }
 
     @Override
+    public void reverse(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (toIndex - fromIndex > 1) {
+            N.reverse(elementData, fromIndex, toIndex);
+        }
+    }
+
+    @Override
     public void rotate(int distance) {
         if (size > 1) {
             N.rotate(elementData, distance);
         }
+    }
+
+    @Override
+    public void shuffle() {
+        N.shuffle(elementData);
+    }
+
+    @Override
+    public void swap(int i, int j) {
+        rangeCheck(i);
+        rangeCheck(j);
+
+        set(i, set(j, elementData[i]));
     }
 
     @Override
@@ -992,6 +1159,34 @@ public final class ShortList extends PrimitiveNumberList<ShortConsumer, ShortPre
 
         for (short[] a : list) {
             result.add(ShortList.of(a));
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<ShortList> split(int fromIndex, int toIndex, ShortPredicate predicate) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<ShortList> result = new ArrayList<>();
+        ShortList piece = null;
+
+        for (int i = fromIndex; i < toIndex;) {
+            if (piece == null) {
+                piece = ShortList.of(N.EMPTY_SHORT_ARRAY);
+            }
+
+            if (predicate.test(elementData[i])) {
+                piece.add(elementData[i]);
+                i++;
+            } else {
+                result.add(piece);
+                piece = null;
+            }
+        }
+
+        if (piece != null) {
+            result.add(piece);
         }
 
         return result;

@@ -1,3 +1,19 @@
+========Changes in 0.9.26=========================================================================
+
+1, Remove a few classes to reduce the size of the library for Android. 
+   The methods excluding generateEntity(...) and printClassMethod(...) won't work within libraries abacus-android-XXX .
+
+2, Remove the return type from add(...) and addAll(...) to reduce confusion in ObjectList/IntList/...
+
+3, Add shuffle/swap/deleteAll/removeAll(T[]/addAll(T[])/addAll(int, T[])/containsAll(T[])/disjoint/occurrencesOf/binarySearch/... to ObjectList/IntList/DoubleList/...
+
+4, Refactring distribution in N/Stream/IntStream/DoubleStream/...
+
+5, Add summarize2/summarizeChar2/... to Stream/IntStream/...
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.25=========================================================================
 
 1, merge AutoRetryIterator into AutoRetry.

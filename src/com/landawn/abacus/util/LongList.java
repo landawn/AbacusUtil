@@ -35,7 +35,7 @@ import com.landawn.abacus.util.stream.LongStream;
  * 
  * @author Haiyang Li
  */
-public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredicate, Long, long[], LongList> {
+public final class LongList extends AbstractNumberList<LongConsumer, LongPredicate, Long, long[], LongList> {
     private long[] elementData = N.EMPTY_LONG_ARRAY;
     private int size = 0;
 
@@ -306,15 +306,13 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return oldValue;
     }
 
-    public LongList add(long e) {
+    public void add(long e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
-
-        return this;
     }
 
-    public LongList add(int index, long e) {
+    public void add(int index, long e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -328,12 +326,10 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         elementData[index] = e;
 
         size++;
-
-        return this;
     }
 
     @Override
-    public LongList addAll(LongList c) {
+    public void addAll(LongList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -341,12 +337,10 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
-
-        return this;
     }
 
     @Override
-    public LongList addAll(int index, LongList c) {
+    public void addAll(int index, LongList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -362,8 +356,34 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+    }
 
-        return this;
+    @Override
+    public void addAll(long[] a) {
+        addAll(size(), a);
+    }
+
+    @Override
+    public void addAll(int index, long[] a) {
+        rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        int numNew = a.length;
+
+        ensureCapacityInternal(size + numNew); // Increments modCount
+
+        int numMoved = size - index;
+
+        if (numMoved > 0) {
+            N.copy(elementData, index, elementData, index + numNew, numMoved);
+        }
+
+        N.copy(a, 0, elementData, index, numNew);
+
+        size += numNew;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -429,6 +449,15 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return batchRemove(c, false) > 0;
     }
 
+    @Override
+    public boolean removeAll(long[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return removeAll(of(a));
+    }
+
     public boolean retainAll(LongList c) {
         return batchRemove(c, true) > 0;
     }
@@ -480,6 +509,21 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         return oldValue;
     }
 
+    @Override
+    public void deleteAll(int... indices) {
+        N.deleteAll(elementData, indices);
+    }
+
+    public void fill(final long val) {
+        fill(0, size(), val);
+    }
+
+    public void fill(final int fromIndex, final int toIndex, final long val) {
+        checkIndex(fromIndex, toIndex);
+
+        N.fill(elementData, fromIndex, toIndex, val);
+    }
+
     public boolean contains(long e) {
         return indexOf(e) >= 0;
     }
@@ -504,6 +548,83 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         }
 
         return true;
+    }
+
+    @Override
+    public boolean containsAll(long[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
+        return containsAll(of(a));
+    }
+
+    public boolean joint(final LongList c) {
+        final LongList container = size() >= c.size() ? this : c;
+        final long[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Long> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean joint(final long[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return false;
+        }
+
+        return joint(of(b));
+    }
+
+    public boolean disjoint(final LongList c) {
+        final LongList container = size() >= c.size() ? this : c;
+        final long[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Long> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean disjoint(final long[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return true;
+        }
+
+        return disjoint(of(b));
+    }
+
+    public int occurrencesOf(final long objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     @Override
@@ -1006,6 +1127,30 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
         }
     }
 
+    /**
+     * This List should be sorted first.
+     * 
+     * @param key
+     * @return
+     */
+    public int binarySearch(final long key) {
+        return N.binarySearch(elementData, key);
+    }
+
+    /**
+     * This List should be sorted first.
+     *
+     * @param fromIndex
+     * @param toIndex
+     * @param key
+     * @return
+     */
+    public int binarySearch(final int fromIndex, final int toIndex, final long key) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.binarySearch(elementData, fromIndex, toIndex, key);
+    }
+
     @Override
     public void reverse() {
         if (size > 1) {
@@ -1014,10 +1159,32 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
     }
 
     @Override
+    public void reverse(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (toIndex - fromIndex > 1) {
+            N.reverse(elementData, fromIndex, toIndex);
+        }
+    }
+
+    @Override
     public void rotate(int distance) {
         if (size > 1) {
             N.rotate(elementData, distance);
         }
+    }
+
+    @Override
+    public void shuffle() {
+        N.shuffle(elementData);
+    }
+
+    @Override
+    public void swap(int i, int j) {
+        rangeCheck(i);
+        rangeCheck(j);
+
+        set(i, set(j, elementData[i]));
     }
 
     @Override
@@ -1036,6 +1203,34 @@ public final class LongList extends PrimitiveNumberList<LongConsumer, LongPredic
 
         for (long[] a : list) {
             result.add(LongList.of(a));
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<LongList> split(int fromIndex, int toIndex, LongPredicate predicate) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<LongList> result = new ArrayList<>();
+        LongList piece = null;
+
+        for (int i = fromIndex; i < toIndex;) {
+            if (piece == null) {
+                piece = LongList.of(N.EMPTY_LONG_ARRAY);
+            }
+
+            if (predicate.test(elementData[i])) {
+                piece.add(elementData[i]);
+                i++;
+            } else {
+                result.add(piece);
+                piece = null;
+            }
+        }
+
+        if (piece != null) {
+            result.add(piece);
         }
 
         return result;

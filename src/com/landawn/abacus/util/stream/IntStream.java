@@ -52,6 +52,8 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
+import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -713,7 +715,6 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -804,9 +805,11 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract long count();
 
+    public abstract Optional<Map<Percentage, Integer>> distribution();
+
     public abstract IntSummaryStatistics summarize();
 
-    public abstract Optional<Map<String, Integer>> distribution();
+    public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarize2();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -1107,6 +1110,22 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             @Override
             public int getAsInt() {
                 return Stream.RAND.nextInt();
+            }
+        });
+    }
+
+    /**
+     * Returns random numbers between 0 (inclusive) and the specified value (exclusive).
+     * 
+     * @param bound
+     * @return
+     * @see java.util.Random#nextInt(int)
+     */
+    public static IntStream random(final int bound) {
+        return iterate(new IntSupplier() {
+            @Override
+            public int getAsInt() {
+                return Stream.RAND.nextInt(bound);
             }
         });
     }

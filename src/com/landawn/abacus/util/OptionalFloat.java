@@ -119,24 +119,27 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * @see OptionalFloat#isPresent()
      */
     public float get() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     public int getAsInt() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return (int) value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return (int) value;
     }
 
     public long getAsLong() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return (long) value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return (long) value;
     }
 
     /**
@@ -157,8 +160,9 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * null
      */
     public void ifPresent(FloatConsumer consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -168,15 +172,15 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * @return the value, if present, otherwise {@code other}
      */
     public float or(float other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     public int orInt(int other) {
-        return isPresent ? (int) value : other;
+        return isPresent() ? (int) value : other;
     }
 
     public long orLong(long other) {
-        return isPresent ? (long) value : other;
+        return isPresent() ? (long) value : other;
     }
 
     /**
@@ -190,7 +194,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * null
      */
     public float orGet(FloatSupplier other) {
-        return isPresent ? value : other.getAsFloat();
+        return isPresent() ? value : other.getAsFloat();
     }
 
     /**
@@ -210,7 +214,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> float orThrow(Supplier<X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -223,7 +227,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * @return the value, if present, otherwise {@code 0}
      */
     public float orZero() {
-        return isPresent ? value : 0f;
+        return isPresent() ? value : 0f;
     }
 
     @Override
@@ -258,12 +262,12 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
             return true;
         }
 
-        if (!(obj instanceof OptionalFloat)) {
-            return false;
+        if (obj instanceof OptionalFloat) {
+            OptionalFloat other = (OptionalFloat) obj;
+            return (isPresent && other.isPresent) ? Float.compare(value, other.value) == 0 : isPresent == other.isPresent;
         }
 
-        OptionalFloat other = (OptionalFloat) obj;
-        return (isPresent && other.isPresent) ? Float.compare(value, other.value) == 0 : isPresent == other.isPresent;
+        return false;
     }
 
     /**
@@ -274,7 +278,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      */
     @Override
     public int hashCode() {
-        return isPresent ? Float.valueOf(value).hashCode() : 0;
+        return isPresent() ? Float.valueOf(value).hashCode() : 0;
     }
 
     /**
@@ -292,6 +296,6 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("OptionalFloat[%s]", value) : "OptionalFloat.empty";
+        return isPresent() ? String.format("OptionalFloat[%s]", value) : "OptionalFloat.empty";
     }
 }

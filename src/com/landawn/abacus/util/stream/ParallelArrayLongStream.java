@@ -22,7 +22,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
@@ -1090,11 +1089,8 @@ final class ParallelArrayLongStream extends AbstractLongStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
-        if (Stream.logger.isWarnEnabled()) {
-            Stream.logger.warn("'collect' is sequentially executed in parallel stream");
-        }
-
-        return sequential().collect(supplier, accumulator);
+        final BiConsumer<R, R> combiner = Stream.collectingCombiner;
+        return collect(supplier, accumulator, combiner);
     }
 
     @Override
@@ -1306,17 +1302,6 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Long>> distribution() {
-        if (count() == 0) {
-            return Optional.empty();
-        }
-
-        final long[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

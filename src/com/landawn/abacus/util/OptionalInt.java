@@ -119,10 +119,11 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * @see OptionalInt#isPresent()
      */
     public int get() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     /**
@@ -143,8 +144,9 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * null
      */
     public void ifPresent(IntConsumer consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -154,7 +156,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * @return the value, if present, otherwise {@code other}
      */
     public int or(int other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     /**
@@ -168,7 +170,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * null
      */
     public int orGet(IntSupplier other) {
-        return isPresent ? value : other.getAsInt();
+        return isPresent() ? value : other.getAsInt();
     }
 
     /**
@@ -188,7 +190,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> int orThrow(Supplier<X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -201,7 +203,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * @return the value, if present, otherwise {@code 0}
      */
     public int orZero() {
-        return isPresent ? value : 0;
+        return isPresent() ? value : 0;
     }
 
     @Override
@@ -236,12 +238,12 @@ public final class OptionalInt implements Comparable<OptionalInt> {
             return true;
         }
 
-        if (!(obj instanceof OptionalInt)) {
-            return false;
+        if (obj instanceof OptionalInt) {
+            OptionalInt other = (OptionalInt) obj;
+            return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
         }
 
-        OptionalInt other = (OptionalInt) obj;
-        return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
+        return false;
     }
 
     /**
@@ -252,7 +254,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      */
     @Override
     public int hashCode() {
-        return isPresent ? Integer.valueOf(value).hashCode() : 0;
+        return isPresent() ? Integer.valueOf(value).hashCode() : 0;
     }
 
     /**
@@ -270,6 +272,6 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("OptionalInt[%s]", value) : "OptionalInt.empty";
+        return isPresent() ? String.format("OptionalInt[%s]", value) : "OptionalInt.empty";
     }
 }

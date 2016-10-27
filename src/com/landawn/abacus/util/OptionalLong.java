@@ -119,17 +119,19 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @see OptionalLong#isPresent()
      */
     public long get() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     public int getAsInt() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return (int) value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return (int) value;
     }
 
     /**
@@ -150,8 +152,9 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * null
      */
     public void ifPresent(LongConsumer consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -161,11 +164,11 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @return the value, if present, otherwise {@code other}
      */
     public long or(long other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     public int orInt(int other) {
-        return isPresent ? (int) value : other;
+        return isPresent() ? (int) value : other;
     }
 
     /**
@@ -179,7 +182,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * null
      */
     public long orGet(LongSupplier other) {
-        return isPresent ? value : other.getAsLong();
+        return isPresent() ? value : other.getAsLong();
     }
 
     /**
@@ -199,7 +202,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> long orThrow(Supplier<X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -212,7 +215,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @return the value, if present, otherwise {@code 0}
      */
     public long orZero() {
-        return isPresent ? value : 0L;
+        return isPresent() ? value : 0L;
     }
 
     @Override
@@ -247,12 +250,12 @@ public final class OptionalLong implements Comparable<OptionalLong> {
             return true;
         }
 
-        if (!(obj instanceof OptionalLong)) {
-            return false;
+        if (obj instanceof OptionalLong) {
+            OptionalLong other = (OptionalLong) obj;
+            return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
         }
 
-        OptionalLong other = (OptionalLong) obj;
-        return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
+        return false;
     }
 
     /**
@@ -263,7 +266,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      */
     @Override
     public int hashCode() {
-        return isPresent ? Long.valueOf(value).hashCode() : 0;
+        return isPresent() ? Long.valueOf(value).hashCode() : 0;
     }
 
     /**
@@ -281,6 +284,6 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("OptionalLong[%s]", value) : "OptionalLong.empty";
+        return isPresent() ? String.format("OptionalLong[%s]", value) : "OptionalLong.empty";
     }
 }

@@ -18,7 +18,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -1284,17 +1283,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Double>> distribution() {
-        if (count() == 0) {
-            return Optional.empty();
-        }
-
-        final double[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

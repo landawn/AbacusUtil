@@ -122,11 +122,11 @@ public final class OptionalNullable<T> {
      * @see OptionalNullable#isPresent()
      */
     public T get() {
-        if (isPresent == false) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-
-        return value;
     }
 
     /**
@@ -156,8 +156,9 @@ public final class OptionalNullable<T> {
      * null
      */
     public void ifPresent(Consumer<? super T> consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -169,8 +170,9 @@ public final class OptionalNullable<T> {
      * null
      */
     public void ifNotNull(Consumer<? super T> consumer) {
-        if (value != null)
+        if (isNotNull()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -187,10 +189,11 @@ public final class OptionalNullable<T> {
     public OptionalNullable<T> filter(Predicate<? super T> predicate) {
         N.requireNonNull(predicate);
 
-        if (!isPresent())
+        if (isPresent() && predicate.test(value)) {
             return this;
-        else
-            return predicate.test(value) ? this : (OptionalNullable<T>) empty();
+        } else {
+            return empty();
+        }
     }
 
     /**
@@ -223,10 +226,10 @@ public final class OptionalNullable<T> {
     public <U> OptionalNullable<U> map(Function<? super T, ? extends U> mapper) {
         N.requireNonNull(mapper);
 
-        if (!isPresent())
-            return empty();
-        else {
+        if (isPresent()) {
             return (OptionalNullable<U>) OptionalNullable.of(mapper.apply(value));
+        } else {
+            return empty();
         }
     }
 
@@ -250,10 +253,10 @@ public final class OptionalNullable<T> {
     public <U> OptionalNullable<U> flatMap(Function<? super T, OptionalNullable<U>> mapper) {
         N.requireNonNull(mapper);
 
-        if (!isPresent())
-            return empty();
-        else {
+        if (isPresent()) {
             return N.requireNonNull(mapper.apply(value));
+        } else {
+            return empty();
         }
     }
 
@@ -271,10 +274,11 @@ public final class OptionalNullable<T> {
     public OptionalNullable<T> filterIfNotNull(Predicate<? super T> predicate) {
         N.requireNonNull(predicate);
 
-        if (value == null)
+        if (isNotNull() && predicate.test(value)) {
             return this;
-        else
-            return predicate.test(value) ? this : (OptionalNullable<T>) empty();
+        } else {
+            return empty();
+        }
     }
 
     /**
@@ -307,10 +311,10 @@ public final class OptionalNullable<T> {
     public <U> OptionalNullable<U> mapIfNotNull(Function<? super T, ? extends U> mapper) {
         N.requireNonNull(mapper);
 
-        if (value == null)
-            return empty();
-        else {
+        if (isNotNull()) {
             return (OptionalNullable<U>) OptionalNullable.of(mapper.apply(value));
+        } else {
+            return empty();
         }
     }
 
@@ -334,10 +338,10 @@ public final class OptionalNullable<T> {
     public <U> OptionalNullable<U> flatMapIfNotNull(Function<? super T, OptionalNullable<U>> mapper) {
         N.requireNonNull(mapper);
 
-        if (value == null)
-            return empty();
-        else {
+        if (isNotNull()) {
             return N.requireNonNull(mapper.apply(value));
+        } else {
+            return empty();
         }
     }
 
@@ -348,7 +352,7 @@ public final class OptionalNullable<T> {
      * @return the value, if present, otherwise {@code other}
      */
     public T or(T other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     /**
@@ -360,7 +364,7 @@ public final class OptionalNullable<T> {
      * null
      */
     public T orGet(Supplier<? extends T> other) {
-        return isPresent ? value : other.get();
+        return isPresent() ? value : other.get();
     }
 
     /**
@@ -379,7 +383,7 @@ public final class OptionalNullable<T> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orThrow(Supplier<? extends X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -402,7 +406,7 @@ public final class OptionalNullable<T> {
      * @return the value, if not present or null, otherwise {@code other}
      */
     public T orIfNull(T other) {
-        return value == null ? other : value;
+        return isNotNull() ? value : other;
     }
 
     /**
@@ -413,7 +417,7 @@ public final class OptionalNullable<T> {
      * @throws NullPointerException if value is not present and {@code other} is null
      */
     public T orGetIfNull(Supplier<? extends T> other) {
-        return value == null ? other.get() : value;
+        return isNotNull() ? value : other.get();
     }
 
     /**
@@ -431,10 +435,10 @@ public final class OptionalNullable<T> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
-        if (value == null) {
-            throw exceptionSupplier.get();
-        } else {
+        if (isNotNull()) {
             return value;
+        } else {
+            throw exceptionSupplier.get();
         }
     }
 
@@ -456,13 +460,12 @@ public final class OptionalNullable<T> {
             return true;
         }
 
-        if (!(obj instanceof OptionalNullable)) {
-            return false;
+        if (obj instanceof OptionalNullable) {
+            final OptionalNullable<?> other = (OptionalNullable<?>) obj;
+            return N.equals(isPresent, other.isPresent) && N.equals(value, other.value);
         }
 
-        final OptionalNullable<?> other = (OptionalNullable<?>) obj;
-
-        return N.equals(isPresent, other.isPresent) && N.equals(value, other.value);
+        return false;
     }
 
     /**

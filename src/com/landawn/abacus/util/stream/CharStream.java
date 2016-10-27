@@ -52,6 +52,8 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
@@ -658,7 +660,6 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
     public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
-     * This method is always executed sequentially, even in parallel stream.
      * 
      * @param supplier
      * @param accumulator
@@ -724,9 +725,11 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      */
     public abstract long count();
 
+    public abstract Optional<Map<Percentage, Character>> distribution();
+
     public abstract CharSummaryStatistics summarize();
 
-    public abstract Optional<Map<String, Character>> distribution();
+    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarize2();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -1006,21 +1009,21 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
         return of(Array.repeat(element, n));
     }
 
-    public static CharStream random(final char from, final char to) {
-        if (from == to) {
+    public static CharStream random(final char startInclusive, final char endInclusive) {
+        if (startInclusive == endInclusive) {
             return iterate(new CharSupplier() {
                 @Override
                 public char getAsChar() {
-                    return from;
+                    return startInclusive;
                 }
             });
         } else {
             return iterate(new CharSupplier() {
-                final int mod = to - from;
+                final int mod = endInclusive - startInclusive + 1;
 
                 @Override
                 public char getAsChar() {
-                    return (char) (Math.abs(Stream.RAND.nextInt() % mod) + from);
+                    return (char) (Math.abs(Stream.RAND.nextInt() % mod) + startInclusive);
                 }
             });
         }

@@ -35,7 +35,7 @@ import com.landawn.abacus.util.stream.DoubleStream;
  * 
  * @author Haiyang Li
  */
-public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
+public final class DoubleList extends AbstractNumberList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
     private double[] elementData = N.EMPTY_DOUBLE_ARRAY;
     private int size = 0;
 
@@ -280,15 +280,13 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return oldValue;
     }
 
-    public DoubleList add(double e) {
+    public void add(double e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
-
-        return this;
     }
 
-    public DoubleList add(int index, double e) {
+    public void add(int index, double e) {
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);
@@ -302,12 +300,10 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         elementData[index] = e;
 
         size++;
-
-        return this;
     }
 
     @Override
-    public DoubleList addAll(DoubleList c) {
+    public void addAll(DoubleList c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -315,12 +311,10 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
-
-        return this;
     }
 
     @Override
-    public DoubleList addAll(int index, DoubleList c) {
+    public void addAll(int index, DoubleList c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -336,8 +330,34 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+    }
 
-        return this;
+    @Override
+    public void addAll(double[] a) {
+        addAll(size(), a);
+    }
+
+    @Override
+    public void addAll(int index, double[] a) {
+        rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        int numNew = a.length;
+
+        ensureCapacityInternal(size + numNew); // Increments modCount
+
+        int numMoved = size - index;
+
+        if (numMoved > 0) {
+            N.copy(elementData, index, elementData, index + numNew, numMoved);
+        }
+
+        N.copy(a, 0, elementData, index, numNew);
+
+        size += numNew;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -403,6 +423,15 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return batchRemove(c, false) > 0;
     }
 
+    @Override
+    public boolean removeAll(double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return removeAll(of(a));
+    }
+
     public boolean retainAll(DoubleList c) {
         return batchRemove(c, true) > 0;
     }
@@ -454,6 +483,21 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         return oldValue;
     }
 
+    @Override
+    public void deleteAll(int... indices) {
+        N.deleteAll(elementData, indices);
+    }
+
+    public void fill(final double val) {
+        fill(0, size(), val);
+    }
+
+    public void fill(final int fromIndex, final int toIndex, final double val) {
+        checkIndex(fromIndex, toIndex);
+
+        N.fill(elementData, fromIndex, toIndex, val);
+    }
+
     public boolean contains(double e) {
         return indexOf(e) >= 0;
     }
@@ -478,6 +522,83 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         }
 
         return true;
+    }
+
+    @Override
+    public boolean containsAll(double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
+        return containsAll(of(a));
+    }
+
+    public boolean joint(final DoubleList c) {
+        final DoubleList container = size() >= c.size() ? this : c;
+        final double[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Double> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean joint(final double[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return false;
+        }
+
+        return joint(of(b));
+    }
+
+    public boolean disjoint(final DoubleList c) {
+        final DoubleList container = size() >= c.size() ? this : c;
+        final double[] iterElements = size() >= c.size() ? c.array() : this.array();
+
+        if (c.size() > 3 && size() > 9) {
+            final Set<Double> set = container.toSet();
+
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (set.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        } else {
+            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+                if (container.contains(iterElements[i])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean disjoint(final double[] b) {
+        if (N.isNullOrEmpty(b)) {
+            return true;
+        }
+
+        return disjoint(of(b));
+    }
+
+    public int occurrencesOf(final double objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     @Override
@@ -980,6 +1101,30 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
         }
     }
 
+    /**
+     * This List should be sorted first.
+     * 
+     * @param key
+     * @return
+     */
+    public int binarySearch(final double key) {
+        return N.binarySearch(elementData, key);
+    }
+
+    /**
+     * This List should be sorted first.
+     *
+     * @param fromIndex
+     * @param toIndex
+     * @param key
+     * @return
+     */
+    public int binarySearch(final int fromIndex, final int toIndex, final double key) {
+        checkIndex(fromIndex, toIndex);
+
+        return N.binarySearch(elementData, fromIndex, toIndex, key);
+    }
+
     @Override
     public void reverse() {
         if (size > 1) {
@@ -988,10 +1133,32 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
     }
 
     @Override
+    public void reverse(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        if (toIndex - fromIndex > 1) {
+            N.reverse(elementData, fromIndex, toIndex);
+        }
+    }
+
+    @Override
     public void rotate(int distance) {
         if (size > 1) {
             N.rotate(elementData, distance);
         }
+    }
+
+    @Override
+    public void shuffle() {
+        N.shuffle(elementData);
+    }
+
+    @Override
+    public void swap(int i, int j) {
+        rangeCheck(i);
+        rangeCheck(j);
+
+        set(i, set(j, elementData[i]));
     }
 
     @Override
@@ -1010,6 +1177,34 @@ public final class DoubleList extends PrimitiveNumberList<DoubleConsumer, Double
 
         for (double[] a : list) {
             result.add(DoubleList.of(a));
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<DoubleList> split(int fromIndex, int toIndex, DoublePredicate predicate) {
+        checkIndex(fromIndex, toIndex);
+
+        final List<DoubleList> result = new ArrayList<>();
+        DoubleList piece = null;
+
+        for (int i = fromIndex; i < toIndex;) {
+            if (piece == null) {
+                piece = DoubleList.of(N.EMPTY_DOUBLE_ARRAY);
+            }
+
+            if (predicate.test(elementData[i])) {
+                piece.add(elementData[i]);
+                i++;
+            } else {
+                result.add(piece);
+                piece = null;
+            }
+        }
+
+        if (piece != null) {
+            result.add(piece);
         }
 
         return result;

@@ -23,7 +23,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -1055,11 +1054,8 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
-        if (Stream.logger.isWarnEnabled()) {
-            Stream.logger.warn("'collect' is sequentially executed in parallel stream");
-        }
-
-        return sequential().collect(supplier, accumulator);
+        final BiConsumer<R, R> combiner = Stream.collectingCombiner;
+        return collect(supplier, accumulator, combiner);
     }
 
     @Override
@@ -1147,17 +1143,6 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         }
 
         return result;
-    }
-
-    @Override
-    public Optional<Map<String, Character>> distribution() {
-        if (elements.hasNext() == false) {
-            return Optional.empty();
-        }
-
-        final char[] a = sorted().toArray();
-
-        return Optional.of(N.distribution(a));
     }
 
     @Override

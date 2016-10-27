@@ -119,10 +119,11 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * @see OptionalShort#isPresent()
      */
     public short get() {
-        if (!isPresent) {
+        if (isPresent()) {
+            return value;
+        } else {
             throw new NoSuchElementException("No value present");
         }
-        return value;
     }
 
     /**
@@ -143,8 +144,9 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * null
      */
     public void ifPresent(ShortConsumer consumer) {
-        if (isPresent)
+        if (isPresent()) {
             consumer.accept(value);
+        }
     }
 
     /**
@@ -154,7 +156,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * @return the value, if present, otherwise {@code other}
      */
     public short or(short other) {
-        return isPresent ? value : other;
+        return isPresent() ? value : other;
     }
 
     /**
@@ -168,7 +170,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * null
      */
     public short orGet(ShortSupplier other) {
-        return isPresent ? value : other.getAsShort();
+        return isPresent() ? value : other.getAsShort();
     }
 
     /**
@@ -188,7 +190,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * {@code exceptionSupplier} is null
      */
     public <X extends Throwable> short orThrow(Supplier<X> exceptionSupplier) throws X {
-        if (isPresent) {
+        if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
@@ -201,7 +203,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * @return the value, if present, otherwise {@code 0}
      */
     public short orZero() {
-        return isPresent ? value : 0;
+        return isPresent() ? value : 0;
     }
 
     @Override
@@ -236,12 +238,12 @@ public final class OptionalShort implements Comparable<OptionalShort> {
             return true;
         }
 
-        if (!(obj instanceof OptionalShort)) {
-            return false;
+        if (obj instanceof OptionalShort) {
+            OptionalShort other = (OptionalShort) obj;
+            return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
         }
 
-        OptionalShort other = (OptionalShort) obj;
-        return (isPresent && other.isPresent) ? value == other.value : isPresent == other.isPresent;
+        return false;
     }
 
     /**
@@ -252,7 +254,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      */
     @Override
     public int hashCode() {
-        return isPresent ? Short.valueOf(value).hashCode() : 0;
+        return isPresent() ? Short.valueOf(value).hashCode() : 0;
     }
 
     /**
@@ -270,6 +272,6 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      */
     @Override
     public String toString() {
-        return isPresent ? String.format("OptionalShort[%s]", value) : "OptionalShort.empty";
+        return isPresent() ? String.format("OptionalShort[%s]", value) : "OptionalShort.empty";
     }
 }
