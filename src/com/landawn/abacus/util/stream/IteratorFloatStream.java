@@ -18,14 +18,12 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -557,7 +555,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream top(int n) {
-        return top(n, Stream.FLOAT_COMPARATOR);
+        return top(n, FLOAT_COMPARATOR);
     }
 
     @Override
@@ -1189,7 +1187,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
             return OptionalFloat.empty();
         }
 
-        final OptionalNullable<Float> optional = boxed().kthLargest(k, Stream.FLOAT_COMPARATOR);
+        final OptionalNullable<Float> optional = boxed().kthLargest(k, FLOAT_COMPARATOR);
 
         return optional.isPresent() ? OptionalFloat.of(optional.get()) : OptionalFloat.empty();
     }
@@ -1465,17 +1463,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<Float> boxed() {
-        return new IteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? Stream.FLOAT_COMPARATOR : null);
-    }
-
-    @Override
-    public FloatStream append(FloatStream stream) {
-        return FloatStream.concat(this, stream);
-    }
-
-    @Override
-    public FloatStream merge(FloatStream b, FloatBiFunction<Nth> nextSelector) {
-        return FloatStream.merge(this, b, nextSelector);
+        return new IteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? FLOAT_COMPARATOR : null);
     }
 
     @Override

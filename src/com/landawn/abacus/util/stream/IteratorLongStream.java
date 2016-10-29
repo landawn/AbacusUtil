@@ -18,14 +18,12 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -557,7 +555,7 @@ final class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream top(int n) {
-        return top(n, Stream.LONG_COMPARATOR);
+        return top(n, LONG_COMPARATOR);
     }
 
     @Override
@@ -1189,7 +1187,7 @@ final class IteratorLongStream extends AbstractLongStream {
             return OptionalLong.empty();
         }
 
-        final OptionalNullable<Long> optional = boxed().kthLargest(k, Stream.LONG_COMPARATOR);
+        final OptionalNullable<Long> optional = boxed().kthLargest(k, LONG_COMPARATOR);
 
         return optional.isPresent() ? OptionalLong.of(optional.get()) : OptionalLong.empty();
     }
@@ -1432,17 +1430,7 @@ final class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Stream<Long> boxed() {
-        return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? Stream.LONG_COMPARATOR : null);
-    }
-
-    @Override
-    public LongStream append(LongStream stream) {
-        return LongStream.concat(this, stream);
-    }
-
-    @Override
-    public LongStream merge(LongStream b, LongBiFunction<Nth> nextSelector) {
-        return LongStream.merge(this, b, nextSelector);
+        return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? LONG_COMPARATOR : null);
     }
 
     @Override

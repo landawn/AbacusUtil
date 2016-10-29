@@ -15,7 +15,6 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortList;
@@ -24,7 +23,6 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ObjShortConsumer;
-import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -66,7 +64,7 @@ final class ArrayShortStream extends AbstractShortStream {
     ArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -81,7 +79,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream filter(final ShortPredicate predicate, final long max) {
-        // return new ArrayShortStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayShortStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
 
         return new IteratorShortStream(new ImmutableShortIterator() {
             private boolean hasNext = false;
@@ -125,7 +123,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate, final long max) {
-        //        final ShortList list = ShortList.of(new short[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //        final ShortList list = ShortList.of(new short[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
         //            if (predicate.test(elements[i])) {
@@ -185,7 +183,7 @@ final class ArrayShortStream extends AbstractShortStream {
         //            cursor++;
         //        }
         //
-        //        final ShortList list = ShortList.of(new short[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        final ShortList list = ShortList.of(new short[N.min(9, toInt(max), (toIndex - cursor))], 0);
         //        int cnt = 0;
         //
         //        while (cursor < toIndex && cnt < max) {
@@ -592,7 +590,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream top(int n) {
-        return top(n, Stream.SHORT_COMPARATOR);
+        return top(n, SHORT_COMPARATOR);
     }
 
     @Override
@@ -603,7 +601,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && Stream.isSameComparator(comparator, Stream.SHORT_COMPARATOR)) {
+        } else if (sorted && isSameComparator(comparator, SHORT_COMPARATOR)) {
             return new ArrayShortStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayShortStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -1172,17 +1170,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Stream<Short> boxed() {
-        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? Stream.SHORT_COMPARATOR : null);
-    }
-
-    @Override
-    public ShortStream append(ShortStream stream) {
-        return ShortStream.concat(this, stream);
-    }
-
-    @Override
-    public ShortStream merge(ShortStream b, ShortBiFunction<Nth> nextSelector) {
-        return ShortStream.merge(this, b, nextSelector);
+        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null);
     }
 
     @Override

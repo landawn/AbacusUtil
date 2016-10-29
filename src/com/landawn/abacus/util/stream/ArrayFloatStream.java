@@ -17,13 +17,11 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -68,7 +66,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
     ArrayFloatStream(float[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -83,7 +81,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream filter(final FloatPredicate predicate, final long max) {
-        // return new ArrayFloatStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayFloatStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
 
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private boolean hasNext = false;
@@ -127,7 +125,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream takeWhile(final FloatPredicate predicate, final long max) {
-        //        final FloatList list = FloatList.of(new float[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //        final FloatList list = FloatList.of(new float[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
         //            if (predicate.test(elements[i])) {
@@ -187,7 +185,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
         //            cursor++;
         //        }
         //
-        //        final FloatList list = FloatList.of(new float[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        final FloatList list = FloatList.of(new float[N.min(9, toInt(max), (toIndex - cursor))], 0);
         //        int cnt = 0;
         //        while (cursor < toIndex && cnt < max) {
         //            list.add(elements[cursor]);
@@ -781,7 +779,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream top(int n) {
-        return top(n, Stream.FLOAT_COMPARATOR);
+        return top(n, FLOAT_COMPARATOR);
     }
 
     @Override
@@ -792,7 +790,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && Stream.isSameComparator(comparator, Stream.FLOAT_COMPARATOR)) {
+        } else if (sorted && isSameComparator(comparator, FLOAT_COMPARATOR)) {
             return new ArrayFloatStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayFloatStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -1430,17 +1428,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<Float> boxed() {
-        return new IteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? Stream.FLOAT_COMPARATOR : null);
-    }
-
-    @Override
-    public FloatStream append(FloatStream stream) {
-        return FloatStream.concat(this, stream);
-    }
-
-    @Override
-    public FloatStream merge(FloatStream b, FloatBiFunction<Nth> nextSelector) {
-        return FloatStream.merge(this, b, nextSelector);
+        return new IteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? FLOAT_COMPARATOR : null);
     }
 
     @Override

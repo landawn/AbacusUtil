@@ -502,6 +502,24 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         N.deleteAll(elementData, indices);
     }
 
+    public int replaceAll(float oldVal, float newVal) {
+        if (size() == 0) {
+            return 0;
+        }
+
+        int result = 0;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (Float.compare(elementData[i], oldVal) == 0) {
+                elementData[i] = newVal;
+
+                result++;
+            }
+        }
+
+        return result;
+    }
+
     public void fill(final float val) {
         fill(0, size(), val);
     }
@@ -545,38 +563,6 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         }
 
         return containsAll(of(a));
-    }
-
-    public boolean joint(final FloatList c) {
-        final FloatList container = size() >= c.size() ? this : c;
-        final float[] iterElements = size() >= c.size() ? c.array() : this.array();
-
-        if (c.size() > 3 && size() > 9) {
-            final Set<Float> set = container.toSet();
-
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (set.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        } else {
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (container.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean joint(final float[] b) {
-        if (N.isNullOrEmpty(b)) {
-            return false;
-        }
-
-        return joint(of(b));
     }
 
     public boolean disjoint(final FloatList c) {

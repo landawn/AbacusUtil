@@ -11,10 +11,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.AbacusIOException;
@@ -29,6 +27,7 @@ import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
@@ -45,19 +44,16 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
  * @param <T>
  */
-abstract class AbstractStream<T> extends Stream<T> implements BaseStream<T, Stream<T>> {
-
-    final Set<Runnable> closeHandlers;
-
+abstract class AbstractStream<T> extends Stream<T> {
     AbstractStream(Collection<Runnable> closeHandlers) {
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
-                : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
+        super(closeHandlers);
     }
 
     @Override
@@ -183,6 +179,47 @@ abstract class AbstractStream<T> extends Stream<T> implements BaseStream<T, Stre
     }
 
     @Override
+    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+        throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
+        throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public Stream<T> append(final Stream<T> stream) {
+        return Stream.concat(this, stream);
+    }
+
+    @Override
+    public Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return Stream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public <T2, R> Stream<R> zipWith(Stream<T2> b, BiFunction<? super T, ? super T2, R> zipFunction) {
+        return Stream.zip(this, b, zipFunction);
+    }
+
+    @Override
+    public <T2, T3, R> Stream<R> zipWith(Stream<T2> b, Stream<T3> c, TriFunction<? super T, ? super T2, ? super T3, R> zipFunction) {
+        return Stream.zip(this, b, c, zipFunction);
+    }
+
+    @Override
+    public <T2, R> Stream<R> zipWith(Stream<T2> b, T valueForNoneA, T2 valueForNoneB, BiFunction<? super T, ? super T2, R> zipFunction) {
+        return Stream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
+    }
+
+    @Override
+    public <T2, T3, R> Stream<R> zipWith(Stream<T2> b, Stream<T3> c, T valueForNoneA, T2 valueForNoneB, T3 valueForNoneC,
+            TriFunction<? super T, ? super T2, ? super T3, R> zipFunction) {
+        return Stream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
+    @Override
     public long persist(File file, Function<? super T, String> toLine) {
         Writer writer = null;
 
@@ -279,28 +316,18 @@ abstract class AbstractStream<T> extends Stream<T> implements BaseStream<T, Stre
     }
 
     @Override
-    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
-        throw new UnsupportedOperationException("It's not supported parallel stream.");
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
-        throw new UnsupportedOperationException("It's not supported parallel stream.");
-    }
-
-    @Override
     public Stream<T> parallel() {
-        return parallel(Stream.DEFAULT_SPILTTER);
+        return parallel(DEFAULT_SPILTTER);
     }
 
     @Override
     public Stream<T> parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, Stream.DEFAULT_SPILTTER);
+        return parallel(maxThreadNum, DEFAULT_SPILTTER);
     }
 
     @Override
     public Stream<T> parallel(Splitter splitter) {
-        return parallel(Stream.DEFAULT_MAX_THREAD_NUM, splitter);
+        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
     }
 
     @Override
@@ -324,7 +351,7 @@ abstract class AbstractStream<T> extends Stream<T> implements BaseStream<T, Stre
         // throw new UnsupportedOperationException("It's not supported sequential stream.");
 
         // ignore, do nothing if it's sequential stream.
-        return Stream.DEFAULT_SPILTTER;
+        return DEFAULT_SPILTTER;
     }
 
     @Override
@@ -337,26 +364,6 @@ abstract class AbstractStream<T> extends Stream<T> implements BaseStream<T, Stre
 
     @Override
     public void close() {
-        Stream.close(closeHandlers);
-    }
-
-    static final class LocalLinkedHashSet<T> extends LinkedHashSet<T> {
-        private static final long serialVersionUID = -97425473105100734L;
-
-        public LocalLinkedHashSet() {
-            super();
-        }
-
-        public LocalLinkedHashSet(int initialCapacity) {
-            super(initialCapacity);
-        }
-
-        public LocalLinkedHashSet(int initialCapacity, float loadFactor) {
-            super(initialCapacity, loadFactor);
-        }
-
-        public LocalLinkedHashSet(Collection<? extends T> c) {
-            super(c);
-        }
+        close(closeHandlers);
     }
 }

@@ -16,13 +16,11 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
@@ -65,7 +63,7 @@ final class ArrayByteStream extends AbstractByteStream {
     ArrayByteStream(byte[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -80,7 +78,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream filter(final BytePredicate predicate, final long max) {
-        // return new ArrayByteStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayByteStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
 
         return new IteratorByteStream(new ImmutableByteIterator() {
             private boolean hasNext = false;
@@ -124,7 +122,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream takeWhile(final BytePredicate predicate, final long max) {
-        //        final ByteList list = ByteList.of(new byte[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //        final ByteList list = ByteList.of(new byte[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
         //            if (predicate.test(elements[i])) {
@@ -184,7 +182,7 @@ final class ArrayByteStream extends AbstractByteStream {
         //            cursor++;
         //        }
         //
-        //        final ByteList list = ByteList.of(new byte[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        final ByteList list = ByteList.of(new byte[N.min(9, toInt(max), (toIndex - cursor))], 0);
         //        int cnt = 0;
         //
         //        while (cursor < toIndex && cnt < max) {
@@ -1151,17 +1149,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Stream<Byte> boxed() {
-        return new IteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? Stream.BYTE_COMPARATOR : null);
-    }
-
-    @Override
-    public ByteStream append(ByteStream stream) {
-        return ByteStream.concat(this, stream);
-    }
-
-    @Override
-    public ByteStream merge(ByteStream b, ByteBiFunction<Nth> nextSelector) {
-        return ByteStream.merge(this, b, nextSelector);
+        return new IteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? BYTE_COMPARATOR : null);
     }
 
     @Override

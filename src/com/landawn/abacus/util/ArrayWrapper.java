@@ -24,7 +24,7 @@ import com.landawn.abacus.type.Type;
  * 
  * @author Haiyang Li
  */
-final class ArrayWrapper<T> {
+public final class ArrayWrapper<T> {
     private T value;
     private Type<Object> type;
     private int hashCode;

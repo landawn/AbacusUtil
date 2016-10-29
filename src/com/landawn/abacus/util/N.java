@@ -19993,42 +19993,6 @@ public final class N {
     //        return true;
     //    }
 
-    public static boolean joint(final Object[] a, final Object[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return false;
-        }
-
-        return ObjectList.of(a).joint(b);
-    }
-
-    /**
-     * 
-     * @param c1
-     * @param c2
-     * @return
-     */
-    public static boolean joint(final Collection<?> c1, final Collection<?> c2) {
-        if (N.isNullOrEmpty(c1) || N.isNullOrEmpty(c2)) {
-            return false;
-        }
-
-        if (c1 instanceof Set || (c2 instanceof Set == false && c1.size() > c2.size())) {
-            for (Object e : c2) {
-                if (c1.contains(e)) {
-                    return true;
-                }
-            }
-        } else {
-            for (Object e : c1) {
-                if (c2.contains(e)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     public static boolean disjoint(final Object[] a, final Object[] b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return true;
@@ -25628,141 +25592,141 @@ public final class N {
         return result;
     }
 
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param cmp
-     * @return
-     */
-    public static <T> T[] distinct(final T[] a, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            return a;
-        }
-
-        return distinct(a, 0, a.length, cmp);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param cmp
-     * @return
-     */
-    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return a;
-        }
-
-        final List<T> result = new ArrayList<>();
-        final Set<T> sortedSet = new TreeSet<T>(cmp);
-        boolean hasNull = false;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] == null) {
-                if (hasNull == false) {
-                    hasNull = true;
-                    result.add(a[i]);
-                }
-            } else {
-                if (sortedSet.add(a[i])) {
-                    result.add(a[i]);
-                }
-            }
-        }
-
-        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param cmp
-     * @return
-     */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
-        }
-
-        return distinct(c, 0, c.size(), cmp);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @param cmp
-     * @return
-     */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return new ArrayList<>();
-        }
-
-        final List<T> result = new ArrayList<>();
-        final Set<T> sortedSet = new TreeSet<T>(cmp);
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-            T e = null;
-            boolean hasNull = false;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                e = list.get(i);
-
-                if (e == null) {
-                    if (hasNull == false) {
-                        hasNull = true;
-                        result.add(e);
-                    }
-                } else {
-                    if (sortedSet.add(e)) {
-                        result.add(e);
-                    }
-                }
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-            T e = null;
-            boolean hasNull = false;
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                if (e == null) {
-                    if (hasNull == false) {
-                        hasNull = true;
-                        result.add(e);
-                    }
-                } else {
-                    if (sortedSet.add(e)) {
-                        result.add(e);
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param cmp
+    //     * @return
+    //     */
+    //    public static <T> T[] distinct(final T[] a, final Comparator<? super T> cmp) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return a;
+    //        }
+    //
+    //        return distinct(a, 0, a.length, cmp);
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param a
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param cmp
+    //     * @return
+    //     */
+    //    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    //
+    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+    //            return a;
+    //        }
+    //
+    //        final List<T> result = new ArrayList<>();
+    //        final Set<T> sortedSet = new TreeSet<T>(cmp);
+    //        boolean hasNull = false;
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            if (a[i] == null) {
+    //                if (hasNull == false) {
+    //                    hasNull = true;
+    //                    result.add(a[i]);
+    //                }
+    //            } else {
+    //                if (sortedSet.add(a[i])) {
+    //                    result.add(a[i]);
+    //                }
+    //            }
+    //        }
+    //
+    //        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param cmp
+    //     * @return
+    //     */
+    //    public static <T> List<T> distinct(final Collection<? extends T> c, final Comparator<? super T> cmp) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return new ArrayList<>();
+    //        }
+    //
+    //        return distinct(c, 0, c.size(), cmp);
+    //    }
+    //
+    //    /**
+    //     * Mostly it's designed for one-step operation to complete the operation in one step.
+    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+    //     * 
+    //     * @param c
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param cmp
+    //     * @return
+    //     */
+    //    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+    //
+    //        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+    //            return new ArrayList<>();
+    //        }
+    //
+    //        final List<T> result = new ArrayList<>();
+    //        final Set<T> sortedSet = new TreeSet<T>(cmp);
+    //
+    //        if (c instanceof List && c instanceof RandomAccess) {
+    //            final List<T> list = (List<T>) c;
+    //            T e = null;
+    //            boolean hasNull = false;
+    //
+    //            for (int i = fromIndex; i < toIndex; i++) {
+    //                e = list.get(i);
+    //
+    //                if (e == null) {
+    //                    if (hasNull == false) {
+    //                        hasNull = true;
+    //                        result.add(e);
+    //                    }
+    //                } else {
+    //                    if (sortedSet.add(e)) {
+    //                        result.add(e);
+    //                    }
+    //                }
+    //            }
+    //        } else {
+    //            final Iterator<? extends T> it = c.iterator();
+    //            T e = null;
+    //            boolean hasNull = false;
+    //
+    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+    //                e = it.next();
+    //
+    //                if (i < fromIndex) {
+    //                    continue;
+    //                }
+    //
+    //                if (e == null) {
+    //                    if (hasNull == false) {
+    //                        hasNull = true;
+    //                        result.add(e);
+    //                    }
+    //                } else {
+    //                    if (sortedSet.add(e)) {
+    //                        result.add(e);
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
 
     /**
      * Distinct by the value mapped from <code>keyMapper</code>.
@@ -27422,7 +27386,7 @@ public final class N {
         return result;
     }
 
-    public static <T> int replaceAll(final T[] a, final T oldVal, final T newVal) {
+    public static <T> int replaceAll(final T[] a, final Object oldVal, final T newVal) {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -27450,7 +27414,7 @@ public final class N {
         return result;
     }
 
-    public static <T> int replaceAll(final List<T> list, final T oldVal, final T newVal) {
+    public static <T> int replaceAll(final List<T> list, final Object oldVal, final T newVal) {
         if (N.isNullOrEmpty(list)) {
             return 0;
         }

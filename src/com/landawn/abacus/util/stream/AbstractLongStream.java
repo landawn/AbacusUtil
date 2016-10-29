@@ -2,27 +2,26 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.function.LongBiFunction;
+import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.stream.AbstractStream.LocalLinkedHashSet;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
 abstract class AbstractLongStream extends LongStream {
-    final Set<Runnable> closeHandlers;
 
     AbstractLongStream(Collection<Runnable> closeHandlers) {
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
-                : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
+        super(closeHandlers);
     }
 
     @Override
@@ -52,18 +51,48 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public LongStream append(LongStream stream) {
+        return LongStream.concat(this, stream);
+    }
+
+    @Override
+    public LongStream merge(LongStream b, LongBiFunction<Nth> nextSelector) {
+        return LongStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public LongStream zipWith(LongStream b, LongBiFunction<Long> zipFunction) {
+        return LongStream.zip(this, b, zipFunction);
+    }
+
+    @Override
+    public LongStream zipWith(LongStream b, LongStream c, LongTriFunction<Long> zipFunction) {
+        return LongStream.zip(this, b, c, zipFunction);
+    }
+
+    @Override
+    public LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBiFunction<Long> zipFunction) {
+        return LongStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
+    }
+
+    @Override
+    public LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC, LongTriFunction<Long> zipFunction) {
+        return LongStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
+    @Override
     public LongStream parallel() {
-        return parallel(Stream.DEFAULT_SPILTTER);
+        return parallel(DEFAULT_SPILTTER);
     }
 
     @Override
     public LongStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, Stream.DEFAULT_SPILTTER);
+        return parallel(maxThreadNum, DEFAULT_SPILTTER);
     }
 
     @Override
     public LongStream parallel(BaseStream.Splitter splitter) {
-        return parallel(Stream.DEFAULT_MAX_THREAD_NUM, splitter);
+        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
     }
 
     @Override
@@ -87,7 +116,7 @@ abstract class AbstractLongStream extends LongStream {
         // throw new UnsupportedOperationException("It's not supported sequential stream.");
 
         // ignore, do nothing if it's sequential stream.
-        return Stream.DEFAULT_SPILTTER;
+        return DEFAULT_SPILTTER;
     }
 
     @Override
@@ -100,6 +129,6 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public void close() {
-        Stream.close(closeHandlers);
+        close(closeHandlers);
     }
 }

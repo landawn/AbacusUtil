@@ -1,5 +1,7 @@
 package com.landawn.abacus.util.stream;
 
+import static com.landawn.abacus.util.stream.StreamBase.checkIndex;
+
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.N;
@@ -13,7 +15,7 @@ public abstract class ImmutableShortIterator implements ShortIterator {
     }
 
     public static ImmutableShortIterator of(final short[] a, final int fromIndex, final int toIndex) {
-        Stream.checkIndex(fromIndex, toIndex, a.length);
+        checkIndex(fromIndex, toIndex, a.length);
 
         return new ImmutableShortIterator() {
             int cursor = fromIndex;

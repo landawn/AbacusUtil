@@ -18,14 +18,12 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -996,7 +994,7 @@ final class IteratorCharStream extends AbstractCharStream {
             return OptionalChar.empty();
         }
 
-        final OptionalNullable<Character> optional = boxed().kthLargest(k, Stream.CHAR_COMPARATOR);
+        final OptionalNullable<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
 
         return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
     }
@@ -1214,17 +1212,7 @@ final class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Stream<Character> boxed() {
-        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? Stream.CHAR_COMPARATOR : null);
-    }
-
-    @Override
-    public CharStream append(CharStream stream) {
-        return CharStream.concat(this, stream);
-    }
-
-    @Override
-    public CharStream merge(CharStream b, CharBiFunction<Nth> nextSelector) {
-        return CharStream.merge(this, b, nextSelector);
+        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? CHAR_COMPARATOR : null);
     }
 
     @Override

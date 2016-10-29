@@ -514,6 +514,24 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         N.deleteAll(elementData, indices);
     }
 
+    public int replaceAll(long oldVal, long newVal) {
+        if (size() == 0) {
+            return 0;
+        }
+
+        int result = 0;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (elementData[i] == oldVal) {
+                elementData[i] = newVal;
+
+                result++;
+            }
+        }
+
+        return result;
+    }
+
     public void fill(final long val) {
         fill(0, size(), val);
     }
@@ -557,38 +575,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         }
 
         return containsAll(of(a));
-    }
-
-    public boolean joint(final LongList c) {
-        final LongList container = size() >= c.size() ? this : c;
-        final long[] iterElements = size() >= c.size() ? c.array() : this.array();
-
-        if (c.size() > 3 && size() > 9) {
-            final Set<Long> set = container.toSet();
-
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (set.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        } else {
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (container.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean joint(final long[] b) {
-        if (N.isNullOrEmpty(b)) {
-            return false;
-        }
-
-        return joint(of(b));
     }
 
     public boolean disjoint(final LongList c) {

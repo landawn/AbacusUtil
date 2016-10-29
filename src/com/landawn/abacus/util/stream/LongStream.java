@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.Array;
@@ -103,9 +102,13 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class LongStream implements BaseStream<Long, LongStream> {
+public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY);
+
+    LongStream(Collection<Runnable> closeHandlers) {
+        super(closeHandlers);
+    }
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -247,7 +250,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
      * the provided mapping function to each element.  Each mapped stream is
-     * {@link java.util.stream.BaseStream#close() closed} after its contents
+     * {@link java.util.stream.Baseclose() closed} after its contents
      * have been placed into this stream.  (If a mapped stream is {@code null}
      * an empty stream is used, instead.)
      *
@@ -691,7 +694,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
+     * @param zipFunction an <a href="package-summary.html#Associativity">associative</a>,
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
@@ -699,7 +702,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> zipFunction);
 
     /**
      * 
@@ -944,6 +947,15 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      */
     public abstract LongStream merge(final LongStream b, final LongBiFunction<Nth> nextSelector);
 
+    public abstract LongStream zipWith(LongStream b, LongBiFunction<Long> zipFunction);
+
+    public abstract LongStream zipWith(LongStream b, LongStream c, LongTriFunction<Long> zipFunction);
+
+    public abstract LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBiFunction<Long> zipFunction);
+
+    public abstract LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC,
+            LongTriFunction<Long> zipFunction);
+
     /**
      * Returns a {@code FloatStream} consisting of the elements of this stream,
      * converted to {@code double}.
@@ -1038,7 +1050,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
         return iterate(new LongSupplier() {
             @Override
             public long getAsLong() {
-                return Stream.RAND.nextLong();
+                return RAND.nextLong();
             }
         });
     }
@@ -1203,15 +1215,14 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
     /**
      * Generates the long value by the specified period.
      * 
-     * @param seedInMillis first time value in milliseconds.
-     * @param period
-     * @param periodUnit
+     * @param startTimeInMillis first time value in milliseconds.
+     * @param intervalInMillis use TimeUnit to convert interval to milliseconds.
      * @return
+     * @see java.util.concurrent.TimeUnit
      */
-    public static LongStream interval(final long seedInMillis, final long period, final TimeUnit periodUnit) {
+    public static LongStream interval(final long startTimeInMillis, final long intervalInMillis) {
         return of(new ImmutableLongIterator() {
-            private final long periodInMillis = periodUnit.toMillis(period);
-            private long next = seedInMillis;
+            private long next = startTimeInMillis;
 
             @Override
             public boolean hasNext() {
@@ -1228,7 +1239,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
 
                 final long current = next;
 
-                next += periodInMillis;
+                next += intervalInMillis;
 
                 return current;
             }
@@ -1353,13 +1364,13 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
 
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static LongStream zip(final long[] a, final long[] b, final LongBiFunction<Long> combiner) {
+    public static LongStream zip(final long[] a, final long[] b, final LongBiFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1367,18 +1378,18 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static LongStream zip(final long[] a, final long[] b, final long[] c, final LongTriFunction<Long> combiner) {
+    public static LongStream zip(final long[] a, final long[] b, final long[] c, final LongTriFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1386,18 +1397,18 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static LongStream zip(final LongStream a, final LongStream b, final LongBiFunction<Long> combiner) {
+    public static LongStream zip(final LongStream a, final LongStream b, final LongBiFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1405,18 +1416,18 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<Long> combiner) {
+    public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1424,18 +1435,18 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static LongStream zip(final LongIterator a, final LongIterator b, final LongBiFunction<Long> combiner) {
+    public static LongStream zip(final LongIterator a, final LongIterator b, final LongBiFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1443,18 +1454,18 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static LongStream zip(final LongIterator a, final LongIterator b, final LongIterator c, final LongTriFunction<Long> combiner) {
+    public static LongStream zip(final LongIterator a, final LongIterator b, final LongIterator c, final LongTriFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1462,18 +1473,18 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the iterators until one of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static LongStream zip(final Collection<? extends LongIterator> c, final LongNFunction<Long> combiner) {
+    public static LongStream zip(final Collection<? extends LongIterator> c, final LongNFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1481,22 +1492,22 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(c, combiner).mapToLong(mapper);
+        return Stream.zip(c, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static LongStream zip(final LongStream a, final LongStream b, final long valueForNoneA, final long valueForNoneB,
-            final LongBiFunction<Long> combiner) {
+            final LongBiFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1504,12 +1515,12 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1517,11 +1528,11 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final long valueForNoneA, final long valueForNoneB,
-            final long valueForNoneC, final LongTriFunction<Long> combiner) {
+            final long valueForNoneC, final LongTriFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1529,22 +1540,22 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static LongStream zip(final LongIterator a, final LongIterator b, final long valueForNoneA, final long valueForNoneB,
-            final LongBiFunction<Long> combiner) {
+            final LongBiFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1552,12 +1563,12 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1565,11 +1576,11 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static LongStream zip(final LongIterator a, final LongIterator b, final LongIterator c, final long valueForNoneA, final long valueForNoneB,
-            final long valueForNoneC, final LongTriFunction<Long> combiner) {
+            final long valueForNoneC, final LongTriFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1577,19 +1588,19 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToLong(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(mapper);
     }
 
     /**
      * Zip together the iterators until all of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
      * @param valuesForNone value to fill for any iterator runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static LongStream zip(final Collection<? extends LongIterator> c, final long[] valuesForNone, final LongNFunction<Long> combiner) {
+    public static LongStream zip(final Collection<? extends LongIterator> c, final long[] valuesForNone, final LongNFunction<Long> zipFunction) {
         final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
             @Override
             public long applyAsLong(Long value) {
@@ -1597,7 +1608,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
             }
         };
 
-        return Stream.zip(c, valuesForNone, combiner).mapToLong(mapper);
+        return Stream.zip(c, valuesForNone, zipFunction).mapToLong(mapper);
     }
 
     /**
@@ -1857,7 +1868,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @return
      */
     public static LongStream parallelMerge(final LongStream[] a, final LongBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1917,7 +1928,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @return
      */
     public static LongStream parallelMerge(final LongIterator[] a, final LongBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1950,7 +1961,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
      * @return
      */
     public static LongStream parallelMerge(final Collection<? extends LongIterator> c, final LongBiFunction<Nth> nextSelector) {
-        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1983,7 +1994,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     LongIterator a = null;
@@ -2010,7 +2021,7 @@ public abstract class LongStream implements BaseStream<Long, LongStream> {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));

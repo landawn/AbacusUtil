@@ -17,13 +17,11 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -68,7 +66,7 @@ final class ArrayLongStream extends AbstractLongStream {
     ArrayLongStream(long[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -83,7 +81,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream filter(final LongPredicate predicate, final long max) {
-        // return new ArrayLongStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayLongStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
 
         return new IteratorLongStream(new ImmutableLongIterator() {
             private boolean hasNext = false;
@@ -127,7 +125,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream takeWhile(final LongPredicate predicate, final long max) {
-        //        final LongList list = LongList.of(new long[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //        final LongList list = LongList.of(new long[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
         //            if (predicate.test(elements[i])) {
@@ -187,7 +185,7 @@ final class ArrayLongStream extends AbstractLongStream {
         //            cursor++;
         //        }
         //
-        //        final LongList list = LongList.of(new long[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        final LongList list = LongList.of(new long[N.min(9, toInt(max), (toIndex - cursor))], 0);
         //        int cnt = 0;
         //
         //        while (cursor < toIndex && cnt < max) {
@@ -782,7 +780,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream top(int n) {
-        return top(n, Stream.LONG_COMPARATOR);
+        return top(n, LONG_COMPARATOR);
     }
 
     @Override
@@ -793,7 +791,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && Stream.isSameComparator(comparator, Stream.LONG_COMPARATOR)) {
+        } else if (sorted && isSameComparator(comparator, LONG_COMPARATOR)) {
             return new ArrayLongStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayLongStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -1423,17 +1421,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Stream<Long> boxed() {
-        return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? Stream.LONG_COMPARATOR : null);
-    }
-
-    @Override
-    public LongStream append(LongStream stream) {
-        return LongStream.concat(this, stream);
-    }
-
-    @Override
-    public LongStream merge(LongStream b, LongBiFunction<Nth> nextSelector) {
-        return LongStream.merge(this, b, nextSelector);
+        return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? LONG_COMPARATOR : null);
     }
 
     @Override

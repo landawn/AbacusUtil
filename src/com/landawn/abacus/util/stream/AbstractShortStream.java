@@ -2,27 +2,26 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.ObjShortConsumer;
+import com.landawn.abacus.util.function.ShortBiFunction;
+import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.stream.AbstractStream.LocalLinkedHashSet;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
 abstract class AbstractShortStream extends ShortStream {
-    final Set<Runnable> closeHandlers;
 
     AbstractShortStream(Collection<Runnable> closeHandlers) {
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
-                : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
+        super(closeHandlers);
     }
 
     @Override
@@ -52,18 +51,49 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream append(ShortStream stream) {
+        return ShortStream.concat(this, stream);
+    }
+
+    @Override
+    public ShortStream merge(ShortStream b, ShortBiFunction<Nth> nextSelector) {
+        return ShortStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ShortStream zipWith(ShortStream b, ShortBiFunction<Short> zipFunction) {
+        return ShortStream.zip(this, b, zipFunction);
+    }
+
+    @Override
+    public ShortStream zipWith(ShortStream b, ShortStream c, ShortTriFunction<Short> zipFunction) {
+        return ShortStream.zip(this, b, c, zipFunction);
+    }
+
+    @Override
+    public ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBiFunction<Short> zipFunction) {
+        return ShortStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
+    }
+
+    @Override
+    public ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
+            ShortTriFunction<Short> zipFunction) {
+        return ShortStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
+    @Override
     public ShortStream parallel() {
-        return parallel(Stream.DEFAULT_SPILTTER);
+        return parallel(DEFAULT_SPILTTER);
     }
 
     @Override
     public ShortStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, Stream.DEFAULT_SPILTTER);
+        return parallel(maxThreadNum, DEFAULT_SPILTTER);
     }
 
     @Override
     public ShortStream parallel(BaseStream.Splitter splitter) {
-        return parallel(Stream.DEFAULT_MAX_THREAD_NUM, splitter);
+        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
     }
 
     @Override
@@ -87,7 +117,7 @@ abstract class AbstractShortStream extends ShortStream {
         // throw new UnsupportedOperationException("It's not supported sequential stream.");
 
         // ignore, do nothing if it's sequential stream.
-        return Stream.DEFAULT_SPILTTER;
+        return DEFAULT_SPILTTER;
     }
 
     @Override
@@ -100,6 +130,6 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public void close() {
-        Stream.close(closeHandlers);
+        close(closeHandlers);
     }
 }

@@ -2,27 +2,26 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.function.ByteBiFunction;
+import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.stream.AbstractStream.LocalLinkedHashSet;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
 abstract class AbstractByteStream extends ByteStream {
-    final Set<Runnable> closeHandlers;
 
     AbstractByteStream(Collection<Runnable> closeHandlers) {
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
-                : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
+        super(closeHandlers);
     }
 
     @Override
@@ -52,18 +51,48 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public ByteStream append(ByteStream stream) {
+        return ByteStream.concat(this, stream);
+    }
+
+    @Override
+    public ByteStream merge(ByteStream b, ByteBiFunction<Nth> nextSelector) {
+        return ByteStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public ByteStream zipWith(ByteStream b, ByteBiFunction<Byte> zipFunction) {
+        return ByteStream.zip(this, b, zipFunction);
+    }
+
+    @Override
+    public ByteStream zipWith(ByteStream b, ByteStream c, ByteTriFunction<Byte> zipFunction) {
+        return ByteStream.zip(this, b, c, zipFunction);
+    }
+
+    @Override
+    public ByteStream zipWith(ByteStream b, byte valueForNoneA, byte valueForNoneB, ByteBiFunction<Byte> zipFunction) {
+        return ByteStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
+    }
+
+    @Override
+    public ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTriFunction<Byte> zipFunction) {
+        return ByteStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
+    @Override
     public ByteStream parallel() {
-        return parallel(Stream.DEFAULT_SPILTTER);
+        return parallel(DEFAULT_SPILTTER);
     }
 
     @Override
     public ByteStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, Stream.DEFAULT_SPILTTER);
+        return parallel(maxThreadNum, DEFAULT_SPILTTER);
     }
 
     @Override
     public ByteStream parallel(BaseStream.Splitter splitter) {
-        return parallel(Stream.DEFAULT_MAX_THREAD_NUM, splitter);
+        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
     }
 
     @Override
@@ -87,7 +116,7 @@ abstract class AbstractByteStream extends ByteStream {
         // throw new UnsupportedOperationException("It's not supported sequential stream.");
 
         // ignore, do nothing if it's sequential stream.
-        return Stream.DEFAULT_SPILTTER;
+        return DEFAULT_SPILTTER;
     }
 
     @Override
@@ -100,6 +129,6 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public void close() {
-        Stream.close(closeHandlers);
+        close(closeHandlers);
     }
 }

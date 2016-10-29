@@ -100,9 +100,13 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class ShortStream implements BaseStream<Short, ShortStream> {
+public abstract class ShortStream extends StreamBase<Short, ShortStream> {
 
     private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY);
+
+    ShortStream(Collection<Runnable> closeHandlers) {
+        super(closeHandlers);
+    }
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -216,7 +220,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
      * the provided mapping function to each element.  Each mapped stream is
-     * {@link java.util.stream.BaseStream#close() closed} after its contents
+     * {@link java.util.stream.Baseclose() closed} after its contents
      * have been placed into this stream.  (If a mapped stream is {@code null}
      * an empty stream is used, instead.)
      *
@@ -654,7 +658,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      *                    <a href="package-summary.html#NonShorterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
+     * @param zipFunction an <a href="package-summary.html#Associativity">associative</a>,
      *                    <a href="package-summary.html#NonShorterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
@@ -662,7 +666,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> zipFunction);
 
     /**
      * 
@@ -882,6 +886,15 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      */
     public abstract ShortStream merge(final ShortStream b, final ShortBiFunction<Nth> nextSelector);
 
+    public abstract ShortStream zipWith(ShortStream b, ShortBiFunction<Short> zipFunction);
+
+    public abstract ShortStream zipWith(ShortStream b, ShortStream c, ShortTriFunction<Short> zipFunction);
+
+    public abstract ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBiFunction<Short> zipFunction);
+
+    public abstract ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
+            ShortTriFunction<Short> zipFunction);
+
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
@@ -972,7 +985,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
         return iterate(new ShortSupplier() {
             @Override
             public short getAsShort() {
-                return (short) Stream.RAND.nextInt();
+                return (short) RAND.nextInt();
             }
         });
     }
@@ -1252,13 +1265,13 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
 
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static ShortStream zip(final short[] a, final short[] b, final ShortBiFunction<Short> combiner) {
+    public static ShortStream zip(final short[] a, final short[] b, final ShortBiFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1266,18 +1279,18 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static ShortStream zip(final short[] a, final short[] b, final short[] c, final ShortTriFunction<Short> combiner) {
+    public static ShortStream zip(final short[] a, final short[] b, final short[] c, final ShortTriFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1285,18 +1298,18 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortBiFunction<Short> combiner) {
+    public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortBiFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1304,18 +1317,18 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortStream c, final ShortTriFunction<Short> combiner) {
+    public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortStream c, final ShortTriFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1323,18 +1336,18 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortBiFunction<Short> combiner) {
+    public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortBiFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1342,18 +1355,18 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final ShortTriFunction<Short> combiner) {
+    public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final ShortTriFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1361,18 +1374,18 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the iterators until one of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static ShortStream zip(final Collection<? extends ShortIterator> c, final ShortNFunction<Short> combiner) {
+    public static ShortStream zip(final Collection<? extends ShortIterator> c, final ShortNFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1380,22 +1393,22 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(c, combiner).mapToShort(mapper);
+        return Stream.zip(c, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static ShortStream zip(final ShortStream a, final ShortStream b, final short valueForNoneA, final short valueForNoneB,
-            final ShortBiFunction<Short> combiner) {
+            final ShortBiFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1403,12 +1416,12 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1416,11 +1429,11 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortStream c, final short valueForNoneA, final short valueForNoneB,
-            final short valueForNoneC, final ShortTriFunction<Short> combiner) {
+            final short valueForNoneC, final ShortTriFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1428,22 +1441,22 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static ShortStream zip(final ShortIterator a, final ShortIterator b, final short valueForNoneA, final short valueForNoneB,
-            final ShortBiFunction<Short> combiner) {
+            final ShortBiFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1451,12 +1464,12 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1464,11 +1477,11 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final short valueForNoneA, final short valueForNoneB,
-            final short valueForNoneC, final ShortTriFunction<Short> combiner) {
+            final short valueForNoneC, final ShortTriFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1476,19 +1489,19 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToShort(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToShort(mapper);
     }
 
     /**
      * Zip together the iterators until all of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
      * @param valuesForNone value to fill for any iterator runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static ShortStream zip(final Collection<? extends ShortIterator> c, final short[] valuesForNone, final ShortNFunction<Short> combiner) {
+    public static ShortStream zip(final Collection<? extends ShortIterator> c, final short[] valuesForNone, final ShortNFunction<Short> zipFunction) {
         final ToShortFunction<Short> mapper = new ToShortFunction<Short>() {
             @Override
             public short applyAsShort(Short value) {
@@ -1496,7 +1509,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
             }
         };
 
-        return Stream.zip(c, valuesForNone, combiner).mapToShort(mapper);
+        return Stream.zip(c, valuesForNone, zipFunction).mapToShort(mapper);
     }
 
     /**
@@ -1756,7 +1769,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return
      */
     public static ShortStream parallelMerge(final ShortStream[] a, final ShortBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1816,7 +1829,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return
      */
     public static ShortStream parallelMerge(final ShortIterator[] a, final ShortBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1849,7 +1862,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
      * @return
      */
     public static ShortStream parallelMerge(final Collection<? extends ShortIterator> c, final ShortBiFunction<Nth> nextSelector) {
-        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1882,7 +1895,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     ShortIterator a = null;
@@ -1909,7 +1922,7 @@ public abstract class ShortStream implements BaseStream<Short, ShortStream> {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));

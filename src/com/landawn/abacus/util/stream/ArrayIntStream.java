@@ -17,13 +17,11 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -71,7 +69,7 @@ final class ArrayIntStream extends AbstractIntStream {
     ArrayIntStream(int[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -86,7 +84,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public IntStream filter(final IntPredicate predicate, final long max) {
-        // return new ArrayIntStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayIntStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
 
         return new IteratorIntStream(new ImmutableIntIterator() {
             private boolean hasNext = false;
@@ -130,7 +128,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public IntStream takeWhile(final IntPredicate predicate, final long max) {
-        //        final IntList list = IntList.of(new int[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //        final IntList list = IntList.of(new int[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
         //            if (predicate.test(elements[i])) {
@@ -190,7 +188,7 @@ final class ArrayIntStream extends AbstractIntStream {
         //            cursor++;
         //        }
         //
-        //        final IntList list = IntList.of(new int[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        final IntList list = IntList.of(new int[N.min(9, toInt(max), (toIndex - cursor))], 0);
         //        int cnt = 0;
         //
         //        while (cursor < toIndex && cnt < max) {
@@ -1067,7 +1065,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public IntStream top(int n) {
-        return top(n, Stream.INT_COMPARATOR);
+        return top(n, INT_COMPARATOR);
     }
 
     @Override
@@ -1078,7 +1076,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && Stream.isSameComparator(comparator, Stream.INT_COMPARATOR)) {
+        } else if (sorted && isSameComparator(comparator, INT_COMPARATOR)) {
             return new ArrayIntStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayIntStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -1758,17 +1756,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public Stream<Integer> boxed() {
-        return new IteratorStream<Integer>(iterator(), closeHandlers, sorted, sorted ? Stream.INT_COMPARATOR : null);
-    }
-
-    @Override
-    public IntStream append(IntStream stream) {
-        return IntStream.concat(this, stream);
-    }
-
-    @Override
-    public IntStream merge(IntStream b, IntBiFunction<Nth> nextSelector) {
-        return IntStream.merge(this, b, nextSelector);
+        return new IteratorStream<Integer>(iterator(), closeHandlers, sorted, sorted ? INT_COMPARATOR : null);
     }
 
     @Override

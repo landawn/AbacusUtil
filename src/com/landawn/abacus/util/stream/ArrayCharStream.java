@@ -16,13 +16,11 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -65,7 +63,7 @@ final class ArrayCharStream extends AbstractCharStream {
     ArrayCharStream(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -80,7 +78,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public CharStream filter(final CharPredicate predicate, final long max) {
-        // return new ArrayCharStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayCharStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
 
         return new IteratorCharStream(new ImmutableCharIterator() {
             private boolean hasNext = false;
@@ -124,7 +122,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public CharStream takeWhile(final CharPredicate predicate, final long max) {
-        //        final CharList list = CharList.of(new char[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //        final CharList list = CharList.of(new char[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
         //            if (predicate.test(elements[i])) {
@@ -184,7 +182,7 @@ final class ArrayCharStream extends AbstractCharStream {
         //            cursor++;
         //        }
         //
-        //        final CharList list = CharList.of(new char[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        final CharList list = CharList.of(new char[N.min(9, toInt(max), (toIndex - cursor))], 0);
         //        int cnt = 0;
         //
         //        while (cursor < toIndex && cnt < max) {
@@ -1151,17 +1149,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Stream<Character> boxed() {
-        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? Stream.CHAR_COMPARATOR : null);
-    }
-
-    @Override
-    public CharStream append(CharStream stream) {
-        return CharStream.concat(this, stream);
-    }
-
-    @Override
-    public CharStream merge(CharStream b, CharBiFunction<Nth> nextSelector) {
-        return CharStream.merge(this, b, nextSelector);
+        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? CHAR_COMPARATOR : null);
     }
 
     @Override

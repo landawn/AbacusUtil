@@ -496,6 +496,24 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         N.deleteAll(elementData, indices);
     }
 
+    public int replaceAll(char oldVal, char newVal) {
+        if (size() == 0) {
+            return 0;
+        }
+
+        int result = 0;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (elementData[i] == oldVal) {
+                elementData[i] = newVal;
+
+                result++;
+            }
+        }
+
+        return result;
+    }
+
     public void fill(final char val) {
         fill(0, size(), val);
     }
@@ -539,38 +557,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         }
 
         return containsAll(of(a));
-    }
-
-    public boolean joint(final CharList c) {
-        final CharList container = size() >= c.size() ? this : c;
-        final char[] iterElements = size() >= c.size() ? c.array() : this.array();
-
-        if (c.size() > 3 && size() > 9) {
-            final Set<Character> set = container.toSet();
-
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (set.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        } else {
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (container.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean joint(final char[] b) {
-        if (N.isNullOrEmpty(b)) {
-            return false;
-        }
-
-        return joint(of(b));
     }
 
     public boolean disjoint(final CharList c) {

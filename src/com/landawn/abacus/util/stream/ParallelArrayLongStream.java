@@ -36,6 +36,7 @@ import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongToDoubleFunction;
 import com.landawn.abacus.util.function.LongToFloatFunction;
 import com.landawn.abacus.util.function.LongToIntFunction;
+import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -63,14 +64,14 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             Splitter splitter) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, Stream.THREAD_POOL_SIZE, toIndex - fromIndex);
-        this.splitter = splitter == null ? Stream.DEFAULT_SPILTTER : splitter;
+        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
+        this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
     }
 
     @Override
@@ -355,7 +356,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream top(int n) {
-        return top(n, Stream.LONG_COMPARATOR);
+        return top(n, LONG_COMPARATOR);
     }
 
     @Override
@@ -366,7 +367,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && Stream.isSameComparator(comparator, Stream.LONG_COMPARATOR)) {
+        } else if (sorted && isSameComparator(comparator, LONG_COMPARATOR)) {
             return new ParallelArrayLongStream(elements, toIndex - n, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
         } else {
             final long[] a = N.top(elements, fromIndex, toIndex, n, comparator);
@@ -438,7 +439,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -449,7 +450,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 action.accept(elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -458,7 +459,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         long next = 0;
@@ -476,7 +477,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 action.accept(next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -512,7 +513,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     //            for (int i = 0; i < maxThreadNum; i++) {
     //                final int sliceIndex = i;
     //
-    //                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+    //                futureList.add(asyncExecutor.execute(new Runnable() {
     //                    @Override
     //                    public void run() {
     //                        int cursor = fromIndex + sliceIndex * sliceSize;
@@ -526,7 +527,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     //                                }
     //                            }
     //                        } catch (Throwable e) {
-    //                            Stream.setError(eHolder, e);
+    //                            setError(eHolder, e);
     //                        }
     //                    }
     //                }));
@@ -535,7 +536,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     //            final MutableInt cursor = MutableInt.of(fromIndex);
     //
     //            for (int i = 0; i < maxThreadNum; i++) {
-    //                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+    //                futureList.add(asyncExecutor.execute(new Runnable() {
     //                    @Override
     //                    public void run() {
     //                        long next = 0;
@@ -556,7 +557,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     //                                }
     //                            }
     //                        } catch (Throwable e) {
-    //                            Stream.setError(eHolder, e);
+    //                            setError(eHolder, e);
     //                        }
     //                    }
     //                }));
@@ -819,7 +820,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Long>() {
+                futureList.add(asyncExecutor.execute(new Callable<Long>() {
                     @Override
                     public Long call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -832,7 +833,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 result = op.applyAsLong(result, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -843,7 +844,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Long>() {
+                futureList.add(asyncExecutor.execute(new Callable<Long>() {
                     @Override
                     public Long call() {
                         long result = identity;
@@ -862,7 +863,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 result = op.applyAsLong(result, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -907,7 +908,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Long>() {
+                futureList.add(asyncExecutor.execute(new Callable<Long>() {
                     @Override
                     public Long call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -924,7 +925,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 result = accumulator.applyAsLong(result, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -935,7 +936,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Long>() {
+                futureList.add(asyncExecutor.execute(new Callable<Long>() {
                     @Override
                     public Long call() {
                         long result = 0;
@@ -963,7 +964,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 result = accumulator.applyAsLong(result, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -1012,7 +1013,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<R>() {
+                futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1025,7 +1026,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 accumulator.accept(container, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return container;
@@ -1036,7 +1037,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<R>() {
+                futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
                         R container = supplier.get();
@@ -1055,7 +1056,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 accumulator.accept(container, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return container;
@@ -1068,13 +1069,13 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        R container = (R) Stream.NONE;
+        R container = (R) NONE;
 
         try {
             for (CompletableFuture<R> future : futureList) {
                 final R tmp = future.get();
 
-                if (container == Stream.NONE) {
+                if (container == NONE) {
                     container = tmp;
                 } else {
                     combiner.accept(container, tmp);
@@ -1084,12 +1085,12 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             throw N.toRuntimeException(e);
         }
 
-        return container == Stream.NONE ? supplier.get() : container;
+        return container == NONE ? supplier.get() : container;
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = Stream.collectingCombiner;
+        final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
     }
 
@@ -1109,7 +1110,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Long>() {
+            futureList.add(asyncExecutor.execute(new Callable<Long>() {
                 @Override
                 public Long call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1155,7 +1156,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Long>() {
+            futureList.add(asyncExecutor.execute(new Callable<Long>() {
                 @Override
                 public Long call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1209,7 +1210,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Long>() {
+            futureList.add(asyncExecutor.execute(new Callable<Long>() {
                 @Override
                 public Long call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1267,7 +1268,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<LongSummaryStatistics>() {
+            futureList.add(asyncExecutor.execute(new Callable<LongSummaryStatistics>() {
                 @Override
                 public LongSummaryStatistics call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1320,7 +1321,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1334,7 +1335,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1343,7 +1344,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         long next = 0;
@@ -1364,7 +1365,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1402,7 +1403,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1416,7 +1417,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1425,7 +1426,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         long next = 0;
@@ -1446,7 +1447,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1484,7 +1485,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1498,7 +1499,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1507,7 +1508,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         long next = 0;
@@ -1528,7 +1529,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1571,7 +1572,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, Long>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Long>>() {
                     @Override
                     public Pair<Integer, Long> call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1594,7 +1595,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -1605,7 +1606,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, Long>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Long>>() {
                     @Override
                     public Pair<Integer, Long> call() {
                         final Pair<Integer, Long> pair = new Pair<>();
@@ -1632,7 +1633,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -1681,7 +1682,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, Long>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Long>>() {
                     @Override
                     public Pair<Integer, Long> call() {
                         final int from = fromIndex + sliceIndex * sliceSize;
@@ -1704,7 +1705,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -1715,7 +1716,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(toIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, Long>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Long>>() {
                     @Override
                     public Pair<Integer, Long> call() {
                         final Pair<Integer, Long> pair = new Pair<>();
@@ -1742,7 +1743,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -1783,7 +1784,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
 
         final List<CompletableFuture<Object>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Object> resultHolder = Holder.of(Stream.NONE);
+        final Holder<Object> resultHolder = Holder.of(NONE);
 
         if (splitter == Splitter.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
@@ -1791,7 +1792,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Object>() {
+                futureList.add(asyncExecutor.execute(new Callable<Object>() {
                     @Override
                     public Object call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1804,7 +1805,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
 
                                 if (predicate.test(next)) {
                                     synchronized (resultHolder) {
-                                        if (resultHolder.value() == Stream.NONE) {
+                                        if (resultHolder.value() == NONE) {
                                             resultHolder.setValue(next);
                                         }
                                     }
@@ -1813,7 +1814,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return next;
@@ -1824,13 +1825,13 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Object>() {
+                futureList.add(asyncExecutor.execute(new Callable<Object>() {
                     @Override
                     public Object call() {
                         long next = 0;
 
                         try {
-                            while (resultHolder.value() == Stream.NONE && eHolder.value() == null) {
+                            while (resultHolder.value() == NONE && eHolder.value() == null) {
                                 synchronized (elements) {
                                     if (cursor.intValue() < toIndex) {
                                         next = elements[cursor.getAndIncrement()];
@@ -1841,7 +1842,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
 
                                 if (predicate.test(next)) {
                                     synchronized (resultHolder) {
-                                        if (resultHolder.value() == Stream.NONE) {
+                                        if (resultHolder.value() == NONE) {
                                             resultHolder.setValue(next);
                                         }
                                     }
@@ -1850,7 +1851,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return next;
@@ -1865,7 +1866,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
 
         try {
             for (CompletableFuture<Object> future : futureList) {
-                if (resultHolder.value() == Stream.NONE) {
+                if (resultHolder.value() == NONE) {
                     future.get();
                 } else {
                     break;
@@ -1875,7 +1876,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
             throw N.toRuntimeException(e);
         }
 
-        return resultHolder.value() == Stream.NONE ? OptionalLong.empty() : OptionalLong.of((Long) resultHolder.value());
+        return resultHolder.value() == NONE ? OptionalLong.empty() : OptionalLong.of((Long) resultHolder.value());
     }
 
     @Override
@@ -1993,7 +1994,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         Stream<Long> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? Stream.LONG_COMPARATOR : null, maxThreadNum, splitter);
+            tmp = new ParallelIteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? LONG_COMPARATOR : null, maxThreadNum, splitter);
             boxed = tmp;
         }
 
@@ -2008,6 +2009,27 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     @Override
     public LongStream merge(final LongStream b, final LongBiFunction<Nth> nextSelector) {
         return new ParallelIteratorLongStream(LongStream.merge(this, b, nextSelector), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public LongStream zipWith(LongStream b, LongBiFunction<Long> zipFunction) {
+        return new ParallelIteratorLongStream(LongStream.zip(this, b, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public LongStream zipWith(LongStream b, LongStream c, LongTriFunction<Long> zipFunction) {
+        return new ParallelIteratorLongStream(LongStream.zip(this, b, c, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBiFunction<Long> zipFunction) {
+        return new ParallelIteratorLongStream(LongStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC, LongTriFunction<Long> zipFunction) {
+        return new ParallelIteratorLongStream(LongStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false,
+                maxThreadNum, splitter);
     }
 
     @Override

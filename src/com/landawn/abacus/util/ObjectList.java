@@ -510,6 +510,34 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         N.deleteAll(elementData, indices);
     }
 
+    public int replaceAll(Object oldVal, T newVal) {
+        if (size() == 0) {
+            return 0;
+        }
+
+        int result = 0;
+
+        if (oldVal == null) {
+            for (int i = 0, len = size(); i < len; i++) {
+                if (elementData[i] == null) {
+                    elementData[i] = newVal;
+
+                    result++;
+                }
+            }
+        } else {
+            for (int i = 0, len = size(); i < len; i++) {
+                if (N.equals(elementData[i], oldVal)) {
+                    elementData[i] = newVal;
+
+                    result++;
+                }
+            }
+        }
+
+        return result;
+    }
+
     public void fill(final T val) {
         fill(0, size(), val);
     }
@@ -553,38 +581,6 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
 
         return containsAll(of(a));
-    }
-
-    public boolean joint(final ObjectList<?> c) {
-        final ObjectList<?> container = size() >= c.size() ? this : c;
-        final Object[] iterElements = size() >= c.size() ? c.array() : this.array();
-
-        if (c.size() > 3 && size() > 9) {
-            final Set<?> set = container.toSet();
-
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (set.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        } else {
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (container.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean joint(final Object[] b) {
-        if (N.isNullOrEmpty(b)) {
-            return false;
-        }
-
-        return joint(of(b));
     }
 
     public boolean disjoint(final ObjectList<?> c) {
@@ -1531,19 +1527,19 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
     }
 
-    public ObjectList<T> distinct(final Comparator<? super T> comparator) {
-        return distinct(0, size(), comparator);
-    }
-
-    public ObjectList<T> distinct(final int fromIndex, final int toIndex, final Comparator<? super T> comparator) {
-        checkIndex(fromIndex, toIndex);
-
-        if (toIndex - fromIndex > 1) {
-            return of(N.distinct(elementData, fromIndex, toIndex, comparator));
-        } else {
-            return of(N.copyOfRange(elementData, fromIndex, toIndex));
-        }
-    }
+    //    public ObjectList<T> distinct(final Comparator<? super T> comparator) {
+    //        return distinct(0, size(), comparator);
+    //    }
+    //
+    //    public ObjectList<T> distinct(final int fromIndex, final int toIndex, final Comparator<? super T> comparator) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        if (toIndex - fromIndex > 1) {
+    //            return of(N.distinct(elementData, fromIndex, toIndex, comparator));
+    //        } else {
+    //            return of(N.copyOfRange(elementData, fromIndex, toIndex));
+    //        }
+    //    }
 
     public ObjectList<T> distinct(final Function<? super T, ?> keyMapper) {
         return distinct(0, size(), keyMapper);

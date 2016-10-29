@@ -18,13 +18,11 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
@@ -556,7 +554,7 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream top(int n) {
-        return top(n, Stream.DOUBLE_COMPARATOR);
+        return top(n, DOUBLE_COMPARATOR);
     }
 
     @Override
@@ -1190,7 +1188,7 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
             return OptionalDouble.empty();
         }
 
-        final OptionalNullable<Double> optional = boxed().kthLargest(k, Stream.DOUBLE_COMPARATOR);
+        final OptionalNullable<Double> optional = boxed().kthLargest(k, DOUBLE_COMPARATOR);
 
         return optional.isPresent() ? OptionalDouble.of(optional.get()) : OptionalDouble.empty();
     }
@@ -1441,17 +1439,7 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<Double> boxed() {
-        return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? Stream.DOUBLE_COMPARATOR : null);
-    }
-
-    @Override
-    public DoubleStream append(DoubleStream stream) {
-        return DoubleStream.concat(this, stream);
-    }
-
-    @Override
-    public DoubleStream merge(DoubleStream b, DoubleBiFunction<Nth> nextSelector) {
-        return DoubleStream.merge(this, b, nextSelector);
+        return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? DOUBLE_COMPARATOR : null);
     }
 
     @Override

@@ -18,14 +18,12 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
@@ -995,7 +993,7 @@ final class IteratorByteStream extends AbstractByteStream {
             return OptionalByte.empty();
         }
 
-        final OptionalNullable<Byte> optional = boxed().kthLargest(k, Stream.BYTE_COMPARATOR);
+        final OptionalNullable<Byte> optional = boxed().kthLargest(k, BYTE_COMPARATOR);
 
         return optional.isPresent() ? OptionalByte.of(optional.get()) : OptionalByte.empty();
     }
@@ -1213,17 +1211,7 @@ final class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public Stream<Byte> boxed() {
-        return new IteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? Stream.BYTE_COMPARATOR : null);
-    }
-
-    @Override
-    public ByteStream append(ByteStream stream) {
-        return ByteStream.concat(this, stream);
-    }
-
-    @Override
-    public ByteStream merge(ByteStream b, ByteBiFunction<Nth> nextSelector) {
-        return ByteStream.merge(this, b, nextSelector);
+        return new IteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? BYTE_COMPARATOR : null);
     }
 
     @Override

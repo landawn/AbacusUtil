@@ -1,5 +1,7 @@
 package com.landawn.abacus.util.stream;
 
+import static com.landawn.abacus.util.stream.StreamBase.checkIndex;
+
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.LongIterator;
@@ -13,7 +15,7 @@ public abstract class ImmutableLongIterator implements LongIterator {
     }
 
     public static ImmutableLongIterator of(final long[] a, final int fromIndex, final int toIndex) {
-        Stream.checkIndex(fromIndex, toIndex, a.length);
+        checkIndex(fromIndex, toIndex, a.length);
 
         return new ImmutableLongIterator() {
             int cursor = fromIndex;

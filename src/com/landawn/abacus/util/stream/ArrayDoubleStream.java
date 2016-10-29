@@ -17,12 +17,10 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
@@ -67,7 +65,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     ArrayDoubleStream(double[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -82,7 +80,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream filter(final DoublePredicate predicate, final long max) {
-        // return new ArrayDoubleStream(N.filter(elements, fromIndex, toIndex, predicate, Stream.toInt(max)), closeHandlers, sorted);
+        // return new ArrayDoubleStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
 
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private boolean hasNext = false;
@@ -126,7 +124,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream takeWhile(final DoublePredicate predicate, final long max) {
-        //        final DoubleList list = DoubleList.of(new double[N.min(9, Stream.toInt(max), (toIndex - fromIndex))], 0);
+        //        final DoubleList list = DoubleList.of(new double[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
         //            if (predicate.test(elements[i])) {
@@ -186,7 +184,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
         //            cursor++;
         //        }
         //
-        //        final DoubleList list = DoubleList.of(new double[N.min(9, Stream.toInt(max), (toIndex - cursor))], 0);
+        //        final DoubleList list = DoubleList.of(new double[N.min(9, toInt(max), (toIndex - cursor))], 0);
         //        int cnt = 0;
         //
         //        while (cursor < toIndex && cnt < max) {
@@ -781,7 +779,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream top(int n) {
-        return top(n, Stream.DOUBLE_COMPARATOR);
+        return top(n, DOUBLE_COMPARATOR);
     }
 
     @Override
@@ -792,7 +790,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && Stream.isSameComparator(comparator, Stream.DOUBLE_COMPARATOR)) {
+        } else if (sorted && isSameComparator(comparator, DOUBLE_COMPARATOR)) {
             return new ArrayDoubleStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
         } else {
             return new ArrayDoubleStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
@@ -1404,17 +1402,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<Double> boxed() {
-        return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? Stream.DOUBLE_COMPARATOR : null);
-    }
-
-    @Override
-    public DoubleStream append(DoubleStream stream) {
-        return DoubleStream.concat(this, stream);
-    }
-
-    @Override
-    public DoubleStream merge(DoubleStream b, DoubleBiFunction<Nth> nextSelector) {
-        return DoubleStream.merge(this, b, nextSelector);
+        return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? DOUBLE_COMPARATOR : null);
     }
 
     @Override

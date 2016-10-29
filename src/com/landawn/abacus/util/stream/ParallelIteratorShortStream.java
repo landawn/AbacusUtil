@@ -39,6 +39,7 @@ import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortToIntFunction;
+import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToIntFunction;
@@ -61,17 +62,17 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
 
         this.elements = values;
         this.sorted = sorted;
-        this.maxThreadNum = N.min(maxThreadNum, Stream.THREAD_POOL_SIZE);
-        this.splitter = splitter == null ? Stream.DEFAULT_SPILTTER : splitter;
+        this.maxThreadNum = N.min(maxThreadNum, THREAD_POOL_SIZE);
+        this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
         this.sequential = new IteratorShortStream(this.elements, this.closeHandlers, this.sorted);
     }
 
     ParallelIteratorShortStream(ShortStream stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
-        this(stream.shortIterator(), Stream.mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
+        this(stream.shortIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
     }
 
     ParallelIteratorShortStream(Stream<Short> stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
-        this(Stream.shortIterator(stream.iterator()), Stream.mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
+        this(shortIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
     }
 
     @Override
@@ -333,7 +334,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream top(int n) {
-        return top(n, Stream.SHORT_COMPARATOR);
+        return top(n, SHORT_COMPARATOR);
     }
 
     @Override
@@ -567,7 +568,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     short next = 0;
@@ -585,7 +586,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             action.accept(next);
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));
@@ -615,7 +616,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     //        final MutableBoolean result = MutableBoolean.of(true);
     //
     //        for (int i = 0; i < maxThreadNum; i++) {
-    //            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+    //            futureList.add(asyncExecutor.execute(new Runnable() {
     //                @Override
     //                public void run() {
     //                    short next = 0;
@@ -636,7 +637,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     //                            }
     //                        }
     //                    } catch (Throwable e) {
-    //                        Stream.setError(eHolder, e);
+    //                        setError(eHolder, e);
     //                    }
     //                }
     //            }));
@@ -893,7 +894,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Short>() {
+            futureList.add(asyncExecutor.execute(new Callable<Short>() {
                 @Override
                 public Short call() {
                     short result = identity;
@@ -912,7 +913,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             result = op.applyAsShort(result, next);
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return result;
@@ -951,7 +952,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Short>() {
+            futureList.add(asyncExecutor.execute(new Callable<Short>() {
                 @Override
                 public Short call() {
                     short result = 0;
@@ -979,7 +980,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             result = accumulator.applyAsShort(result, next);
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return result;
@@ -1022,7 +1023,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<R>() {
+            futureList.add(asyncExecutor.execute(new Callable<R>() {
                 @Override
                 public R call() {
                     R container = supplier.get();
@@ -1041,7 +1042,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             accumulator.accept(container, next);
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return container;
@@ -1053,13 +1054,13 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        R container = (R) Stream.NONE;
+        R container = (R) NONE;
 
         try {
             for (CompletableFuture<R> future : futureList) {
                 final R tmp = future.get();
 
-                if (container == Stream.NONE) {
+                if (container == NONE) {
                     container = tmp;
                 } else {
                     combiner.accept(container, tmp);
@@ -1069,12 +1070,12 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
             throw N.toRuntimeException(e);
         }
 
-        return container == Stream.NONE ? supplier.get() : container;
+        return container == NONE ? supplier.get() : container;
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = Stream.collectingCombiner;
+        final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
     }
 
@@ -1124,7 +1125,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
             return OptionalShort.empty();
         }
 
-        final OptionalNullable<Short> optional = boxed().kthLargest(k, Stream.SHORT_COMPARATOR);
+        final OptionalNullable<Short> optional = boxed().kthLargest(k, SHORT_COMPARATOR);
 
         return optional.isPresent() ? OptionalShort.of(optional.get()) : OptionalShort.empty();
     }
@@ -1176,7 +1177,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final MutableBoolean result = MutableBoolean.of(false);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     short next = 0;
@@ -1197,7 +1198,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));
@@ -1229,7 +1230,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     short next = 0;
@@ -1250,7 +1251,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));
@@ -1282,7 +1283,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     short next = 0;
@@ -1303,7 +1304,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));
@@ -1341,7 +1342,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Long, Short>>() {
+            futureList.add(asyncExecutor.execute(new Callable<Pair<Long, Short>>() {
                 @Override
                 public Pair<Long, Short> call() {
                     final Pair<Long, Short> pair = new Pair<>();
@@ -1368,7 +1369,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return pair;
@@ -1412,7 +1413,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Long, Short>>() {
+            futureList.add(asyncExecutor.execute(new Callable<Pair<Long, Short>>() {
                 @Override
                 public Pair<Long, Short> call() {
                     final Pair<Long, Short> pair = new Pair<>();
@@ -1439,7 +1440,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return pair;
@@ -1479,16 +1480,16 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
 
         final List<CompletableFuture<Object>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Object> resultHolder = Holder.of(Stream.NONE);
+        final Holder<Object> resultHolder = Holder.of(NONE);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Object>() {
+            futureList.add(asyncExecutor.execute(new Callable<Object>() {
                 @Override
                 public Object call() {
                     short next = 0;
 
                     try {
-                        while (resultHolder.value() == Stream.NONE && eHolder.value() == null) {
+                        while (resultHolder.value() == NONE && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
                                     next = elements.next();
@@ -1499,7 +1500,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
 
                             if (predicate.test(next)) {
                                 synchronized (resultHolder) {
-                                    if (resultHolder.value() == Stream.NONE) {
+                                    if (resultHolder.value() == NONE) {
                                         resultHolder.setValue(next);
                                     }
                                 }
@@ -1508,7 +1509,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return next;
@@ -1522,7 +1523,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
 
         try {
             for (CompletableFuture<Object> future : futureList) {
-                if (resultHolder.value() == Stream.NONE) {
+                if (resultHolder.value() == NONE) {
                     future.get();
                 } else {
                     break;
@@ -1532,7 +1533,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
             throw N.toRuntimeException(e);
         }
 
-        return resultHolder.value() == Stream.NONE ? OptionalShort.empty() : OptionalShort.of((Short) resultHolder.value());
+        return resultHolder.value() == NONE ? OptionalShort.empty() : OptionalShort.of((Short) resultHolder.value());
     }
 
     @Override
@@ -1591,7 +1592,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         Stream<Short> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? Stream.SHORT_COMPARATOR : null, maxThreadNum, splitter);
+            tmp = new ParallelIteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null, maxThreadNum, splitter);
             boxed = tmp;
         }
 
@@ -1606,6 +1607,29 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     @Override
     public ShortStream merge(final ShortStream b, final ShortBiFunction<Nth> nextSelector) {
         return new ParallelIteratorShortStream(ShortStream.merge(this, b, nextSelector), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public ShortStream zipWith(ShortStream b, ShortBiFunction<Short> zipFunction) {
+        return new ParallelIteratorShortStream(ShortStream.zip(this, b, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public ShortStream zipWith(ShortStream b, ShortStream c, ShortTriFunction<Short> zipFunction) {
+        return new ParallelIteratorShortStream(ShortStream.zip(this, b, c, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBiFunction<Short> zipFunction) {
+        return new ParallelIteratorShortStream(ShortStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), closeHandlers, false, maxThreadNum,
+                splitter);
+    }
+
+    @Override
+    public ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
+            ShortTriFunction<Short> zipFunction) {
+        return new ParallelIteratorShortStream(ShortStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false,
+                maxThreadNum, splitter);
     }
 
     @Override

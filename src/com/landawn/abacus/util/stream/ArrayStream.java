@@ -29,7 +29,6 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -50,7 +49,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
-import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -87,7 +85,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     ArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -103,7 +101,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate, final long max) {
-        //        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(elements.getClass().getComponentType(), N.min(9, Stream.toInt(max), (toIndex - fromIndex))),
+        //        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(elements.getClass().getComponentType(), N.min(9, toInt(max), (toIndex - fromIndex))),
         //                0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
@@ -159,7 +157,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate, final long max) {
-        //        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(elements.getClass().getComponentType(), N.min(9, Stream.toInt(max), (toIndex - fromIndex))),
+        //        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(elements.getClass().getComponentType(), N.min(9, toInt(max), (toIndex - fromIndex))),
         //                0);
         //
         //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
@@ -220,7 +218,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
         //            index++;
         //        }
         //
-        //        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(elements.getClass().getComponentType(), N.min(9, Stream.toInt(max), (toIndex - index))), 0);
+        //        final ObjectList<T> list = ObjectList.of((T[]) N.newArray(elements.getClass().getComponentType(), N.min(9, toInt(max), (toIndex - index))), 0);
         //        int cnt = 0;
         //
         //        while (index < toIndex && cnt < max) {
@@ -1665,19 +1663,19 @@ final class ArrayStream<T> extends AbstractStream<T> {
         return new ArrayStream<T>(N.removeDuplicates(elements, fromIndex, toIndex, sorted && isSameComparator(null, cmp)), closeHandlers, sorted, cmp);
     }
 
-    @Override
-    public Stream<T> distinct(Comparator<? super T> comparator) {
-        if (sorted && Stream.isSameComparator(comparator, cmp)) {
-            return distinct();
-        }
+    //    @Override
+    //    public Stream<T> distinct(Comparator<? super T> comparator) {
+    //        if (sorted && isSameComparator(comparator, cmp)) {
+    //            return distinct();
+    //        }
+    //
+    //        final T[] a = N.distinct(elements, fromIndex, toIndex, comparator);
+    //        return new ArrayStream<T>(a, closeHandlers, sorted, cmp);
+    //    }
 
-        final T[] a = N.distinct(elements, fromIndex, toIndex, comparator);
-        return new ArrayStream<T>(a, closeHandlers, sorted, cmp);
-    }
-
     @Override
-    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
-        final T[] a = N.distinct(elements, fromIndex, toIndex, keyMapper);
+    public Stream<T> distinct(final Function<? super T, ?> classifier) {
+        final T[] a = N.distinct(elements, fromIndex, toIndex, classifier);
         return new ArrayStream<T>(a, closeHandlers, sorted, cmp);
     }
 
@@ -2121,7 +2119,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     public OptionalNullable<T> min(Comparator<? super T> comparator) {
         if (count() == 0) {
             return OptionalNullable.empty();
-        } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
+        } else if (sorted && isSameComparator(cmp, comparator)) {
             return OptionalNullable.of(elements[fromIndex]);
         }
 
@@ -2132,7 +2130,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     public OptionalNullable<T> max(Comparator<? super T> comparator) {
         if (count() == 0) {
             return OptionalNullable.empty();
-        } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
+        } else if (sorted && isSameComparator(cmp, comparator)) {
             return OptionalNullable.of(elements[toIndex - 1]);
         }
 
@@ -2143,7 +2141,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
         if (count() == 0 || k > toIndex - fromIndex) {
             return OptionalNullable.empty();
-        } else if (sorted && Stream.isSameComparator(cmp, comparator)) {
+        } else if (sorted && isSameComparator(cmp, comparator)) {
             return OptionalNullable.of(elements[toIndex - k]);
         }
 
@@ -2418,23 +2416,16 @@ final class ArrayStream<T> extends AbstractStream<T> {
      */
     @Override
     public Stream<T> queued(int queueSize) {
-        final Iterator<T> iter = iterator();
+        // Do nothing. No need for queue.
+        //        final Iterator<T> iter = iterator();
+        //
+        //        if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
+        //            return this;
+        //        } else {
+        //            return new IteratorStream<>(Stream.parallelConcat(Arrays.asList(iter), queueSize, asyncExecutor), closeHandlers, sorted, cmp);
+        //        }
 
-        if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
-            return this;
-        } else {
-            return new IteratorStream<>(Stream.parallelConcat(Arrays.asList(iter), queueSize, asyncExecutor), closeHandlers, sorted, cmp);
-        }
-    }
-
-    @Override
-    public Stream<T> append(final Stream<T> stream) {
-        return Stream.concat(this, stream);
-    }
-
-    @Override
-    public Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return Stream.merge(this, b, nextSelector);
+        return this;
     }
 
     @Override

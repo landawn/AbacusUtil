@@ -101,9 +101,13 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
+public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
 
     private static final DoubleStream EMPTY = new ArrayDoubleStream(N.EMPTY_DOUBLE_ARRAY);
+
+    DoubleStream(Collection<Runnable> closeHandlers) {
+        super(closeHandlers);
+    }
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -245,7 +249,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
      * the provided mapping function to each element.  Each mapped stream is
-     * {@link java.util.stream.BaseStream#close() closed} after its contents
+     * {@link java.util.stream.Baseclose() closed} after its contents
      * have been placed into this stream.  (If a mapped stream is {@code null}
      * an empty stream is used, instead.)
      *
@@ -694,7 +698,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
+     * @param zipFunction an <a href="package-summary.html#Associativity">associative</a>,
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
@@ -702,7 +706,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> zipFunction);
 
     /**
      * 
@@ -996,6 +1000,15 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      */
     public abstract DoubleStream merge(final DoubleStream b, final DoubleBiFunction<Nth> nextSelector);
 
+    public abstract DoubleStream zipWith(DoubleStream b, DoubleBiFunction<Double> zipFunction);
+
+    public abstract DoubleStream zipWith(DoubleStream b, DoubleStream c, DoubleTriFunction<Double> zipFunction);
+
+    public abstract DoubleStream zipWith(DoubleStream b, double valueForNoneA, double valueForNoneB, DoubleBiFunction<Double> zipFunction);
+
+    public abstract DoubleStream zipWith(DoubleStream b, DoubleStream c, double valueForNoneA, double valueForNoneB, double valueForNoneC,
+            DoubleTriFunction<Double> zipFunction);
+
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
      * boxed to {@code Double}.
@@ -1050,7 +1063,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
         return iterate(new DoubleSupplier() {
             @Override
             public double getAsDouble() {
-                return Stream.RAND.nextDouble();
+                return RAND.nextDouble();
             }
         });
     }
@@ -1330,13 +1343,13 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
 
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static DoubleStream zip(final double[] a, final double[] b, final DoubleBiFunction<Double> combiner) {
+    public static DoubleStream zip(final double[] a, final double[] b, final DoubleBiFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1344,18 +1357,18 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static DoubleStream zip(final double[] a, final double[] b, final double[] c, final DoubleTriFunction<Double> combiner) {
+    public static DoubleStream zip(final double[] a, final double[] b, final double[] c, final DoubleTriFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1363,18 +1376,18 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Double> combiner) {
+    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1382,18 +1395,18 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<Double> combiner) {
+    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1401,18 +1414,18 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleBiFunction<Double> combiner) {
+    public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleBiFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1420,18 +1433,18 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleTriFunction<Double> combiner) {
+    public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleTriFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1439,18 +1452,18 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the iterators until one of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static DoubleStream zip(final Collection<? extends DoubleIterator> c, final DoubleNFunction<Double> combiner) {
+    public static DoubleStream zip(final Collection<? extends DoubleIterator> c, final DoubleNFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1458,22 +1471,22 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(c, combiner).mapToDouble(mapper);
+        return Stream.zip(c, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final double valueForNoneA, final double valueForNoneB,
-            final DoubleBiFunction<Double> combiner) {
+            final DoubleBiFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1481,12 +1494,12 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1494,11 +1507,11 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final double valueForNoneA, final double valueForNoneB,
-            final double valueForNoneC, final DoubleTriFunction<Double> combiner) {
+            final double valueForNoneC, final DoubleTriFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1506,22 +1519,22 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final double valueForNoneA, final double valueForNoneB,
-            final DoubleBiFunction<Double> combiner) {
+            final DoubleBiFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1529,12 +1542,12 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1542,11 +1555,11 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final double valueForNoneA,
-            final double valueForNoneB, final double valueForNoneC, final DoubleTriFunction<Double> combiner) {
+            final double valueForNoneB, final double valueForNoneC, final DoubleTriFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1554,19 +1567,19 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToDouble(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(mapper);
     }
 
     /**
      * Zip together the iterators until all of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
      * @param valuesForNone value to fill for any iterator runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static DoubleStream zip(final Collection<? extends DoubleIterator> c, final double[] valuesForNone, final DoubleNFunction<Double> combiner) {
+    public static DoubleStream zip(final Collection<? extends DoubleIterator> c, final double[] valuesForNone, final DoubleNFunction<Double> zipFunction) {
         final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
             @Override
             public double applyAsDouble(Double value) {
@@ -1574,7 +1587,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
             }
         };
 
-        return Stream.zip(c, valuesForNone, combiner).mapToDouble(mapper);
+        return Stream.zip(c, valuesForNone, zipFunction).mapToDouble(mapper);
     }
 
     /**
@@ -1834,7 +1847,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream parallelMerge(final DoubleStream[] a, final DoubleBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1894,7 +1907,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream parallelMerge(final DoubleIterator[] a, final DoubleBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1927,7 +1940,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream parallelMerge(final Collection<? extends DoubleIterator> c, final DoubleBiFunction<Nth> nextSelector) {
-        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1960,7 +1973,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     DoubleIterator a = null;
@@ -1987,7 +2000,7 @@ public abstract class DoubleStream implements BaseStream<Double, DoubleStream> {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));

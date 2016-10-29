@@ -35,6 +35,7 @@ import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatToDoubleFunction;
 import com.landawn.abacus.util.function.FloatToIntFunction;
 import com.landawn.abacus.util.function.FloatToLongFunction;
+import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
@@ -63,14 +64,14 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             Splitter splitter) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
         this.sorted = sorted;
-        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, Stream.THREAD_POOL_SIZE, toIndex - fromIndex);
-        this.splitter = splitter == null ? Stream.DEFAULT_SPILTTER : splitter;
+        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
+        this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
     }
 
     @Override
@@ -355,7 +356,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream top(int n) {
-        return top(n, Stream.FLOAT_COMPARATOR);
+        return top(n, FLOAT_COMPARATOR);
     }
 
     @Override
@@ -366,7 +367,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && Stream.isSameComparator(comparator, Stream.FLOAT_COMPARATOR)) {
+        } else if (sorted && isSameComparator(comparator, FLOAT_COMPARATOR)) {
             return new ParallelArrayFloatStream(elements, toIndex - n, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
         } else {
             final float[] a = N.top(elements, fromIndex, toIndex, n, comparator);
@@ -437,7 +438,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -448,7 +449,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 action.accept(elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -457,7 +458,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         float next = 0;
@@ -475,7 +476,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 action.accept(next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -511,7 +512,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     //            for (int i = 0; i < maxThreadNum; i++) {
     //                final int sliceIndex = i;
     //
-    //                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+    //                futureList.add(asyncExecutor.execute(new Runnable() {
     //                    @Override
     //                    public void run() {
     //                        int cursor = fromIndex + sliceIndex * sliceSize;
@@ -525,7 +526,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     //                                }
     //                            }
     //                        } catch (Throwable e) {
-    //                            Stream.setError(eHolder, e);
+    //                            setError(eHolder, e);
     //                        }
     //                    }
     //                }));
@@ -534,7 +535,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     //            final MutableInt cursor = MutableInt.of(fromIndex);
     //
     //            for (int i = 0; i < maxThreadNum; i++) {
-    //                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+    //                futureList.add(asyncExecutor.execute(new Runnable() {
     //                    @Override
     //                    public void run() {
     //                        float next = 0;
@@ -555,7 +556,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     //                                }
     //                            }
     //                        } catch (Throwable e) {
-    //                            Stream.setError(eHolder, e);
+    //                            setError(eHolder, e);
     //                        }
     //                    }
     //                }));
@@ -818,7 +819,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Float>() {
+                futureList.add(asyncExecutor.execute(new Callable<Float>() {
                     @Override
                     public Float call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -831,7 +832,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 result = op.applyAsFloat(result, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -842,7 +843,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Float>() {
+                futureList.add(asyncExecutor.execute(new Callable<Float>() {
                     @Override
                     public Float call() {
                         float result = identity;
@@ -861,7 +862,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 result = op.applyAsFloat(result, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -906,7 +907,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Float>() {
+                futureList.add(asyncExecutor.execute(new Callable<Float>() {
                     @Override
                     public Float call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -923,7 +924,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 result = accumulator.applyAsFloat(result, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -934,7 +935,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Float>() {
+                futureList.add(asyncExecutor.execute(new Callable<Float>() {
                     @Override
                     public Float call() {
                         float result = 0;
@@ -962,7 +963,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 result = accumulator.applyAsFloat(result, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -1011,7 +1012,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<R>() {
+                futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1024,7 +1025,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 accumulator.accept(container, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return container;
@@ -1035,7 +1036,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<R>() {
+                futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
                         R container = supplier.get();
@@ -1054,7 +1055,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 accumulator.accept(container, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return container;
@@ -1067,13 +1068,13 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        R container = (R) Stream.NONE;
+        R container = (R) NONE;
 
         try {
             for (CompletableFuture<R> future : futureList) {
                 final R tmp = future.get();
 
-                if (container == Stream.NONE) {
+                if (container == NONE) {
                     container = tmp;
                 } else {
                     combiner.accept(container, tmp);
@@ -1083,12 +1084,12 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             throw N.toRuntimeException(e);
         }
 
-        return container == Stream.NONE ? supplier.get() : container;
+        return container == NONE ? supplier.get() : container;
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = Stream.collectingCombiner;
+        final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
     }
 
@@ -1108,7 +1109,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Float>() {
+            futureList.add(asyncExecutor.execute(new Callable<Float>() {
                 @Override
                 public Float call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1154,7 +1155,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Float>() {
+            futureList.add(asyncExecutor.execute(new Callable<Float>() {
                 @Override
                 public Float call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1232,7 +1233,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<double[]>() {
+            futureList.add(asyncExecutor.execute(new Callable<double[]>() {
                 @Override
                 public double[] call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1308,7 +1309,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<double[]>() {
+            futureList.add(asyncExecutor.execute(new Callable<double[]>() {
                 @Override
                 public double[] call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1363,7 +1364,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
 
-            futureList.add(Stream.asyncExecutor.execute(new Callable<FloatSummaryStatistics>() {
+            futureList.add(asyncExecutor.execute(new Callable<FloatSummaryStatistics>() {
                 @Override
                 public FloatSummaryStatistics call() {
                     int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1416,7 +1417,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1430,7 +1431,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1439,7 +1440,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         float next = 0;
@@ -1460,7 +1461,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1498,7 +1499,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1512,7 +1513,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1521,7 +1522,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         float next = 0;
@@ -1542,7 +1543,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1580,7 +1581,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1594,7 +1595,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1603,7 +1604,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         float next = 0;
@@ -1624,7 +1625,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -1667,7 +1668,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, Float>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Float>>() {
                     @Override
                     public Pair<Integer, Float> call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1690,7 +1691,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -1701,7 +1702,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, Float>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Float>>() {
                     @Override
                     public Pair<Integer, Float> call() {
                         final Pair<Integer, Float> pair = new Pair<>();
@@ -1728,7 +1729,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -1777,7 +1778,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, Float>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Float>>() {
                     @Override
                     public Pair<Integer, Float> call() {
                         final int from = fromIndex + sliceIndex * sliceSize;
@@ -1800,7 +1801,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -1811,7 +1812,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(toIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, Float>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Float>>() {
                     @Override
                     public Pair<Integer, Float> call() {
                         final Pair<Integer, Float> pair = new Pair<>();
@@ -1838,7 +1839,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -1879,7 +1880,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
         final List<CompletableFuture<Object>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Object> resultHolder = Holder.of(Stream.NONE);
+        final Holder<Object> resultHolder = Holder.of(NONE);
 
         if (splitter == Splitter.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
@@ -1887,7 +1888,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Object>() {
+                futureList.add(asyncExecutor.execute(new Callable<Object>() {
                     @Override
                     public Object call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -1900,7 +1901,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
                                 if (predicate.test(next)) {
                                     synchronized (resultHolder) {
-                                        if (resultHolder.value() == Stream.NONE) {
+                                        if (resultHolder.value() == NONE) {
                                             resultHolder.setValue(next);
                                         }
                                     }
@@ -1909,7 +1910,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return next;
@@ -1920,13 +1921,13 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Object>() {
+                futureList.add(asyncExecutor.execute(new Callable<Object>() {
                     @Override
                     public Object call() {
                         float next = 0;
 
                         try {
-                            while (resultHolder.value() == Stream.NONE && eHolder.value() == null) {
+                            while (resultHolder.value() == NONE && eHolder.value() == null) {
                                 synchronized (elements) {
                                     if (cursor.intValue() < toIndex) {
                                         next = elements[cursor.getAndIncrement()];
@@ -1937,7 +1938,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
                                 if (predicate.test(next)) {
                                     synchronized (resultHolder) {
-                                        if (resultHolder.value() == Stream.NONE) {
+                                        if (resultHolder.value() == NONE) {
                                             resultHolder.setValue(next);
                                         }
                                     }
@@ -1946,7 +1947,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return next;
@@ -1961,7 +1962,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
         try {
             for (CompletableFuture<Object> future : futureList) {
-                if (resultHolder.value() == Stream.NONE) {
+                if (resultHolder.value() == NONE) {
                     future.get();
                 } else {
                     break;
@@ -1971,7 +1972,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             throw N.toRuntimeException(e);
         }
 
-        return resultHolder.value() == Stream.NONE ? OptionalFloat.empty() : OptionalFloat.of((Float) resultHolder.value());
+        return resultHolder.value() == NONE ? OptionalFloat.empty() : OptionalFloat.of((Float) resultHolder.value());
     }
 
     @Override
@@ -2047,7 +2048,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         Stream<Float> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? Stream.FLOAT_COMPARATOR : null, maxThreadNum, splitter);
+            tmp = new ParallelIteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? FLOAT_COMPARATOR : null, maxThreadNum, splitter);
             boxed = tmp;
         }
 
@@ -2062,6 +2063,29 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream merge(final FloatStream b, final FloatBiFunction<Nth> nextSelector) {
         return new ParallelIteratorFloatStream(FloatStream.merge(this, b, nextSelector), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public FloatStream zipWith(FloatStream b, FloatBiFunction<Float> zipFunction) {
+        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public FloatStream zipWith(FloatStream b, FloatStream c, FloatTriFunction<Float> zipFunction) {
+        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, c, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public FloatStream zipWith(FloatStream b, float valueForNoneA, float valueForNoneB, FloatBiFunction<Float> zipFunction) {
+        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), closeHandlers, false, maxThreadNum,
+                splitter);
+    }
+
+    @Override
+    public FloatStream zipWith(FloatStream b, FloatStream c, float valueForNoneA, float valueForNoneB, float valueForNoneC,
+            FloatTriFunction<Float> zipFunction) {
+        return new ParallelIteratorFloatStream(FloatStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false,
+                maxThreadNum, splitter);
     }
 
     @Override

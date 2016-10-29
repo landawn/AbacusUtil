@@ -99,10 +99,6 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
 
     public abstract boolean containsAll(A a);
 
-    // public abstract boolean joint(L l);
-
-    public abstract boolean joint(A a);
-
     // public abstract boolean disjoint(L l);
 
     public abstract boolean disjoint(A a);

@@ -1,3 +1,18 @@
+========Changes in 0.9.27=========================================================================
+
+1, Remove joint(...) from ObjectList/IntList.../N because it's can be replace by !disjoint(...)
+
+2, Add replaceAll(...) to ObjectList/IntList...
+
+3, Refactoring groupBy/toMap/toMultimap/distinct methods in DataSet
+
+4, Refactoring distinct(...) methods in ObjectList/Stream
+
+5, Add zipWith(...) to Stream/IntStream/DoubleStream/...
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.26=========================================================================
 
 1, Remove a few classes to reduce the size of the library for Android. 

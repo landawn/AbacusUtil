@@ -2,27 +2,26 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.function.FloatBiFunction;
+import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.stream.AbstractStream.LocalLinkedHashSet;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
  */
 abstract class AbstractFloatStream extends FloatStream {
-    final Set<Runnable> closeHandlers;
 
     AbstractFloatStream(Collection<Runnable> closeHandlers) {
-        this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
-                : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
+        super(closeHandlers);
     }
 
     @Override
@@ -52,18 +51,49 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public FloatStream append(FloatStream stream) {
+        return FloatStream.concat(this, stream);
+    }
+
+    @Override
+    public FloatStream merge(FloatStream b, FloatBiFunction<Nth> nextSelector) {
+        return FloatStream.merge(this, b, nextSelector);
+    }
+
+    @Override
+    public FloatStream zipWith(FloatStream b, FloatBiFunction<Float> zipFunction) {
+        return FloatStream.zip(this, b, zipFunction);
+    }
+
+    @Override
+    public FloatStream zipWith(FloatStream b, FloatStream c, FloatTriFunction<Float> zipFunction) {
+        return FloatStream.zip(this, b, c, zipFunction);
+    }
+
+    @Override
+    public FloatStream zipWith(FloatStream b, float valueForNoneA, float valueForNoneB, FloatBiFunction<Float> zipFunction) {
+        return FloatStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
+    }
+
+    @Override
+    public FloatStream zipWith(FloatStream b, FloatStream c, float valueForNoneA, float valueForNoneB, float valueForNoneC,
+            FloatTriFunction<Float> zipFunction) {
+        return FloatStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
+    @Override
     public FloatStream parallel() {
-        return parallel(Stream.DEFAULT_SPILTTER);
+        return parallel(DEFAULT_SPILTTER);
     }
 
     @Override
     public FloatStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, Stream.DEFAULT_SPILTTER);
+        return parallel(maxThreadNum, DEFAULT_SPILTTER);
     }
 
     @Override
     public FloatStream parallel(BaseStream.Splitter splitter) {
-        return parallel(Stream.DEFAULT_MAX_THREAD_NUM, splitter);
+        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
     }
 
     @Override
@@ -87,7 +117,7 @@ abstract class AbstractFloatStream extends FloatStream {
         // throw new UnsupportedOperationException("It's not supported sequential stream.");
 
         // ignore, do nothing if it's sequential stream.
-        return Stream.DEFAULT_SPILTTER;
+        return DEFAULT_SPILTTER;
     }
 
     @Override
@@ -100,6 +130,6 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public void close() {
-        Stream.close(closeHandlers);
+        close(closeHandlers);
     }
 }

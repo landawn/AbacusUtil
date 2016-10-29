@@ -35,6 +35,7 @@ import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharToIntFunction;
+import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjCharConsumer;
@@ -60,17 +61,17 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
         this.elements = values;
         this.sorted = sorted;
-        this.maxThreadNum = N.min(maxThreadNum, Stream.THREAD_POOL_SIZE);
-        this.splitter = splitter == null ? Stream.DEFAULT_SPILTTER : splitter;
+        this.maxThreadNum = N.min(maxThreadNum, THREAD_POOL_SIZE);
+        this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
         this.sequential = new IteratorCharStream(this.elements, this.closeHandlers, this.sorted);
     }
 
     ParallelIteratorCharStream(CharStream stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
-        this(stream.charIterator(), Stream.mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
+        this(stream.charIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
     }
 
     ParallelIteratorCharStream(Stream<Character> stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
-        this(Stream.charIterator(stream.iterator()), Stream.mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
+        this(charIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
     }
 
     @Override
@@ -547,7 +548,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     char next = 0;
@@ -565,7 +566,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             action.accept(next);
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));
@@ -595,7 +596,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     //        final MutableBoolean result = MutableBoolean.of(true);
     //
     //        for (int i = 0; i < maxThreadNum; i++) {
-    //            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+    //            futureList.add(asyncExecutor.execute(new Runnable() {
     //                @Override
     //                public void run() {
     //                    char next = 0;
@@ -616,7 +617,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     //                            }
     //                        }
     //                    } catch (Throwable e) {
-    //                        Stream.setError(eHolder, e);
+    //                        setError(eHolder, e);
     //                    }
     //                }
     //            }));
@@ -873,7 +874,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Character>() {
+            futureList.add(asyncExecutor.execute(new Callable<Character>() {
                 @Override
                 public Character call() {
                     char result = identity;
@@ -892,7 +893,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             result = op.applyAsChar(result, next);
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return result;
@@ -931,7 +932,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Character>() {
+            futureList.add(asyncExecutor.execute(new Callable<Character>() {
                 @Override
                 public Character call() {
                     char result = 0;
@@ -959,7 +960,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             result = accumulator.applyAsChar(result, next);
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return result;
@@ -1002,7 +1003,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<R>() {
+            futureList.add(asyncExecutor.execute(new Callable<R>() {
                 @Override
                 public R call() {
                     R container = supplier.get();
@@ -1021,7 +1022,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             accumulator.accept(container, next);
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return container;
@@ -1033,13 +1034,13 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        R container = (R) Stream.NONE;
+        R container = (R) NONE;
 
         try {
             for (CompletableFuture<R> future : futureList) {
                 final R tmp = future.get();
 
-                if (container == Stream.NONE) {
+                if (container == NONE) {
                     container = tmp;
                 } else {
                     combiner.accept(container, tmp);
@@ -1049,12 +1050,12 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
             throw N.toRuntimeException(e);
         }
 
-        return container == Stream.NONE ? supplier.get() : container;
+        return container == NONE ? supplier.get() : container;
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = Stream.collectingCombiner;
+        final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
     }
 
@@ -1104,7 +1105,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
             return OptionalChar.empty();
         }
 
-        final OptionalNullable<Character> optional = boxed().kthLargest(k, Stream.CHAR_COMPARATOR);
+        final OptionalNullable<Character> optional = boxed().kthLargest(k, CHAR_COMPARATOR);
 
         return optional.isPresent() ? OptionalChar.of(optional.get()) : OptionalChar.empty();
     }
@@ -1156,7 +1157,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final MutableBoolean result = MutableBoolean.of(false);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     char next = 0;
@@ -1177,7 +1178,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));
@@ -1209,7 +1210,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     char next = 0;
@@ -1230,7 +1231,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));
@@ -1262,7 +1263,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     char next = 0;
@@ -1283,7 +1284,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));
@@ -1321,7 +1322,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Long, Character>>() {
+            futureList.add(asyncExecutor.execute(new Callable<Pair<Long, Character>>() {
                 @Override
                 public Pair<Long, Character> call() {
                     final Pair<Long, Character> pair = new Pair<>();
@@ -1348,7 +1349,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return pair;
@@ -1392,7 +1393,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Long, Character>>() {
+            futureList.add(asyncExecutor.execute(new Callable<Pair<Long, Character>>() {
                 @Override
                 public Pair<Long, Character> call() {
                     final Pair<Long, Character> pair = new Pair<>();
@@ -1419,7 +1420,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return pair;
@@ -1459,16 +1460,16 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
         final List<CompletableFuture<Object>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Object> resultHolder = Holder.of(Stream.NONE);
+        final Holder<Object> resultHolder = Holder.of(NONE);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Callable<Object>() {
+            futureList.add(asyncExecutor.execute(new Callable<Object>() {
                 @Override
                 public Object call() {
                     char next = 0;
 
                     try {
-                        while (resultHolder.value() == Stream.NONE && eHolder.value() == null) {
+                        while (resultHolder.value() == NONE && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
                                     next = elements.next();
@@ -1479,7 +1480,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
                             if (predicate.test(next)) {
                                 synchronized (resultHolder) {
-                                    if (resultHolder.value() == Stream.NONE) {
+                                    if (resultHolder.value() == NONE) {
                                         resultHolder.setValue(next);
                                     }
                                 }
@@ -1488,7 +1489,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
 
                     return next;
@@ -1502,7 +1503,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
         try {
             for (CompletableFuture<Object> future : futureList) {
-                if (resultHolder.value() == Stream.NONE) {
+                if (resultHolder.value() == NONE) {
                     future.get();
                 } else {
                     break;
@@ -1512,7 +1513,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
             throw N.toRuntimeException(e);
         }
 
-        return resultHolder.value() == Stream.NONE ? OptionalChar.empty() : OptionalChar.of((Character) resultHolder.value());
+        return resultHolder.value() == NONE ? OptionalChar.empty() : OptionalChar.of((Character) resultHolder.value());
     }
 
     @Override
@@ -1571,7 +1572,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         Stream<Character> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? Stream.CHAR_COMPARATOR : null, maxThreadNum, splitter);
+            tmp = new ParallelIteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? CHAR_COMPARATOR : null, maxThreadNum, splitter);
             boxed = tmp;
         }
 
@@ -1586,6 +1587,27 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     @Override
     public CharStream merge(final CharStream b, final CharBiFunction<Nth> nextSelector) {
         return new ParallelIteratorCharStream(CharStream.merge(this, b, nextSelector), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public CharStream zipWith(CharStream b, CharBiFunction<Character> zipFunction) {
+        return new ParallelIteratorCharStream(CharStream.zip(this, b, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public CharStream zipWith(CharStream b, CharStream c, CharTriFunction<Character> zipFunction) {
+        return new ParallelIteratorCharStream(CharStream.zip(this, b, c, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBiFunction<Character> zipFunction) {
+        return new ParallelIteratorCharStream(CharStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+    }
+
+    @Override
+    public CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTriFunction<Character> zipFunction) {
+        return new ParallelIteratorCharStream(CharStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false,
+                maxThreadNum, splitter);
     }
 
     @Override

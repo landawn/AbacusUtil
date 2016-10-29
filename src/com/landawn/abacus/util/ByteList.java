@@ -472,6 +472,24 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         N.deleteAll(elementData, indices);
     }
 
+    public int replaceAll(byte oldVal, byte newVal) {
+        if (size() == 0) {
+            return 0;
+        }
+
+        int result = 0;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (elementData[i] == oldVal) {
+                elementData[i] = newVal;
+
+                result++;
+            }
+        }
+
+        return result;
+    }
+
     public void fill(final byte val) {
         fill(0, size(), val);
     }
@@ -515,38 +533,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         }
 
         return containsAll(of(a));
-    }
-
-    public boolean joint(final ByteList c) {
-        final ByteList container = size() >= c.size() ? this : c;
-        final byte[] iterElements = size() >= c.size() ? c.array() : this.array();
-
-        if (c.size() > 3 && size() > 9) {
-            final Set<Byte> set = container.toSet();
-
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (set.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        } else {
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (container.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean joint(final byte[] b) {
-        if (N.isNullOrEmpty(b)) {
-            return false;
-        }
-
-        return joint(of(b));
     }
 
     public boolean disjoint(final ByteList c) {

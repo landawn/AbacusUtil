@@ -18,14 +18,12 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -710,7 +708,7 @@ final class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntStream top(int n) {
-        return top(n, Stream.INT_COMPARATOR);
+        return top(n, INT_COMPARATOR);
     }
 
     @Override
@@ -1342,7 +1340,7 @@ final class IteratorIntStream extends AbstractIntStream {
             return OptionalInt.empty();
         }
 
-        final OptionalNullable<Integer> optional = boxed().kthLargest(k, Stream.INT_COMPARATOR);
+        final OptionalNullable<Integer> optional = boxed().kthLargest(k, INT_COMPARATOR);
 
         return optional.isPresent() ? OptionalInt.of(optional.get()) : OptionalInt.empty();
     }
@@ -1610,17 +1608,7 @@ final class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public Stream<Integer> boxed() {
-        return new IteratorStream<Integer>(iterator(), closeHandlers, sorted, sorted ? Stream.INT_COMPARATOR : null);
-    }
-
-    @Override
-    public IntStream append(IntStream stream) {
-        return IntStream.concat(this, stream);
-    }
-
-    @Override
-    public IntStream merge(IntStream b, IntBiFunction<Nth> nextSelector) {
-        return IntStream.merge(this, b, nextSelector);
+        return new IteratorStream<Integer>(iterator(), closeHandlers, sorted, sorted ? INT_COMPARATOR : null);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.landawn.abacus.util.stream;
 
+import static com.landawn.abacus.util.stream.StreamBase.checkIndex;
+
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.CharIterator;
@@ -13,7 +15,7 @@ public abstract class ImmutableCharIterator implements CharIterator {
     }
 
     public static ImmutableCharIterator of(final char[] a, final int fromIndex, final int toIndex) {
-        Stream.checkIndex(fromIndex, toIndex, a.length);
+        checkIndex(fromIndex, toIndex, a.length);
 
         return new ImmutableCharIterator() {
             int cursor = fromIndex;

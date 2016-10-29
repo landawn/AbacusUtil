@@ -104,9 +104,13 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class IntStream implements BaseStream<Integer, IntStream> {
+public abstract class IntStream extends StreamBase<Integer, IntStream> {
 
     private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY);
+
+    IntStream(Collection<Runnable> closeHandlers) {
+        super(closeHandlers);
+    }
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -254,7 +258,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
      * the provided mapping function to each element.  Each mapped stream is
-     * {@link java.util.stream.BaseStream#close() closed} after its contents
+     * {@link java.util.stream.Baseclose() closed} after its contents
      * have been placed into this stream.  (If a mapped stream is {@code null}
      * an empty stream is used, instead.)
      *
@@ -704,7 +708,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
+     * @param zipFunction an <a href="package-summary.html#Associativity">associative</a>,
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
@@ -712,7 +716,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator, BiConsumer<R, R> zipFunction);
 
     /**
      * 
@@ -957,6 +961,14 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      */
     public abstract IntStream merge(final IntStream b, final IntBiFunction<Nth> nextSelector);
 
+    public abstract IntStream zipWith(IntStream b, IntBiFunction<Integer> zipFunction);
+
+    public abstract IntStream zipWith(IntStream b, IntStream c, IntTriFunction<Integer> zipFunction);
+
+    public abstract IntStream zipWith(IntStream b, int valueForNoneA, int valueForNoneB, IntBiFunction<Integer> zipFunction);
+
+    public abstract IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTriFunction<Integer> zipFunction);
+
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
@@ -1109,7 +1121,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         return iterate(new IntSupplier() {
             @Override
             public int getAsInt() {
-                return Stream.RAND.nextInt();
+                return RAND.nextInt();
             }
         });
     }
@@ -1125,7 +1137,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         return iterate(new IntSupplier() {
             @Override
             public int getAsInt() {
-                return Stream.RAND.nextInt(bound);
+                return RAND.nextInt(bound);
             }
         });
     }
@@ -1405,13 +1417,13 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
 
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static IntStream zip(final int[] a, final int[] b, final IntBiFunction<Integer> combiner) {
+    public static IntStream zip(final int[] a, final int[] b, final IntBiFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1419,18 +1431,18 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static IntStream zip(final int[] a, final int[] b, final int[] c, final IntTriFunction<Integer> combiner) {
+    public static IntStream zip(final int[] a, final int[] b, final int[] c, final IntTriFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1438,18 +1450,18 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static IntStream zip(final IntStream a, final IntStream b, final IntBiFunction<Integer> combiner) {
+    public static IntStream zip(final IntStream a, final IntStream b, final IntBiFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1457,18 +1469,18 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<Integer> combiner) {
+    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1476,18 +1488,18 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static IntStream zip(final IntIterator a, final IntIterator b, final IntBiFunction<Integer> combiner) {
+    public static IntStream zip(final IntIterator a, final IntIterator b, final IntBiFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1495,18 +1507,18 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final IntTriFunction<Integer> combiner) {
+    public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final IntTriFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1514,18 +1526,18 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the iterators until one of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static IntStream zip(final Collection<? extends IntIterator> c, final IntNFunction<Integer> combiner) {
+    public static IntStream zip(final Collection<? extends IntIterator> c, final IntNFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1533,21 +1545,22 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(c, combiner).mapToInt(mapper);
+        return Stream.zip(c, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static IntStream zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB, final IntBiFunction<Integer> combiner) {
+    public static IntStream zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB,
+            final IntBiFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1555,12 +1568,12 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1568,11 +1581,11 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
-            final int valueForNoneC, final IntTriFunction<Integer> combiner) {
+            final int valueForNoneC, final IntTriFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1580,22 +1593,22 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static IntStream zip(final IntIterator a, final IntIterator b, final int valueForNoneA, final int valueForNoneB,
-            final IntBiFunction<Integer> combiner) {
+            final IntBiFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1603,12 +1616,12 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1616,11 +1629,11 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final int valueForNoneA, final int valueForNoneB,
-            final int valueForNoneC, final IntTriFunction<Integer> combiner) {
+            final int valueForNoneC, final IntTriFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1628,19 +1641,19 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToInt(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(mapper);
     }
 
     /**
      * Zip together the iterators until all of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
      * @param valuesForNone value to fill for any iterator runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static IntStream zip(final Collection<? extends IntIterator> c, final int[] valuesForNone, final IntNFunction<Integer> combiner) {
+    public static IntStream zip(final Collection<? extends IntIterator> c, final int[] valuesForNone, final IntNFunction<Integer> zipFunction) {
         final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
             @Override
             public int applyAsInt(Integer value) {
@@ -1648,7 +1661,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
             }
         };
 
-        return Stream.zip(c, valuesForNone, combiner).mapToInt(mapper);
+        return Stream.zip(c, valuesForNone, zipFunction).mapToInt(mapper);
     }
 
     /**
@@ -1908,7 +1921,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return
      */
     public static IntStream parallelMerge(final IntStream[] a, final IntBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1968,7 +1981,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return
      */
     public static IntStream parallelMerge(final IntIterator[] a, final IntBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -2001,7 +2014,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
      * @return
      */
     public static IntStream parallelMerge(final Collection<? extends IntIterator> c, final IntBiFunction<Nth> nextSelector) {
-        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -2034,7 +2047,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     IntIterator a = null;
@@ -2061,7 +2074,7 @@ public abstract class IntStream implements BaseStream<Integer, IntStream> {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));

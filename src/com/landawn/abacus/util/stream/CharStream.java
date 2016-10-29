@@ -99,9 +99,13 @@ import com.landawn.abacus.util.function.ToCharFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class CharStream implements BaseStream<Character, CharStream> {
+public abstract class CharStream extends StreamBase<Character, CharStream> {
 
     private static final CharStream EMPTY = new ArrayCharStream(N.EMPTY_CHAR_ARRAY);
+
+    CharStream(Collection<Runnable> closeHandlers) {
+        super(closeHandlers);
+    }
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -219,7 +223,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
      * the provided mapping function to each element.  Each mapped stream is
-     * {@link java.util.stream.BaseStream#close() closed} after its contents
+     * {@link java.util.stream.Baseclose() closed} after its contents
      * have been placed into this stream.  (If a mapped stream is {@code null}
      * an empty stream is used, instead.)
      *
@@ -649,7 +653,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      *                    <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
-     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
+     * @param zipFunction an <a href="package-summary.html#Associativity">associative</a>,
      *                    <a href="package-summary.html#NonCharerference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
@@ -657,7 +661,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner);
+    public abstract <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> zipFunction);
 
     /**
      * 
@@ -877,6 +881,15 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      */
     public abstract CharStream merge(final CharStream b, final CharBiFunction<Nth> nextSelector);
 
+    public abstract CharStream zipWith(CharStream b, CharBiFunction<Character> zipFunction);
+
+    public abstract CharStream zipWith(CharStream b, CharStream c, CharTriFunction<Character> zipFunction);
+
+    public abstract CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBiFunction<Character> zipFunction);
+
+    public abstract CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC,
+            CharTriFunction<Character> zipFunction);
+
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
@@ -1023,7 +1036,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
 
                 @Override
                 public char getAsChar() {
-                    return (char) (Math.abs(Stream.RAND.nextInt() % mod) + startInclusive);
+                    return (char) (Math.abs(RAND.nextInt() % mod) + startInclusive);
                 }
             });
         }
@@ -1304,13 +1317,13 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
 
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static CharStream zip(final char[] a, final char[] b, final CharBiFunction<Character> combiner) {
+    public static CharStream zip(final char[] a, final char[] b, final CharBiFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1318,18 +1331,18 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static CharStream zip(final char[] a, final char[] b, final char[] c, final CharTriFunction<Character> combiner) {
+    public static CharStream zip(final char[] a, final char[] b, final char[] c, final CharTriFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1337,18 +1350,18 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static CharStream zip(final CharStream a, final CharStream b, final CharBiFunction<Character> combiner) {
+    public static CharStream zip(final CharStream a, final CharStream b, final CharBiFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1356,18 +1369,18 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static CharStream zip(final CharStream a, final CharStream b, final CharStream c, final CharTriFunction<Character> combiner) {
+    public static CharStream zip(final CharStream a, final CharStream b, final CharStream c, final CharTriFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1375,18 +1388,18 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static CharStream zip(final CharIterator a, final CharIterator b, final CharBiFunction<Character> combiner) {
+    public static CharStream zip(final CharIterator a, final CharIterator b, final CharBiFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1394,18 +1407,18 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static CharStream zip(final CharIterator a, final CharIterator b, final CharIterator c, final CharTriFunction<Character> combiner) {
+    public static CharStream zip(final CharIterator a, final CharIterator b, final CharIterator c, final CharTriFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1413,18 +1426,18 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, c, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the iterators until one of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static CharStream zip(final Collection<? extends CharIterator> c, final CharNFunction<Character> combiner) {
+    public static CharStream zip(final Collection<? extends CharIterator> c, final CharNFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1432,22 +1445,22 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(c, combiner).mapToChar(mapper);
+        return Stream.zip(c, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static CharStream zip(final CharStream a, final CharStream b, final char valueForNoneA, final char valueForNoneB,
-            final CharBiFunction<Character> combiner) {
+            final CharBiFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1455,12 +1468,12 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1468,11 +1481,11 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static CharStream zip(final CharStream a, final CharStream b, final CharStream c, final char valueForNoneA, final char valueForNoneB,
-            final char valueForNoneC, final CharTriFunction<Character> combiner) {
+            final char valueForNoneC, final CharTriFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1480,22 +1493,22 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a" and "b" iterators until all of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied combiner function.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @param valueForNoneA value to fill if "a" runs out of values first.
      * @param valueForNoneB value to fill if "b" runs out of values first.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static CharStream zip(final CharIterator a, final CharIterator b, final char valueForNoneA, final char valueForNoneB,
-            final CharBiFunction<Character> combiner) {
+            final CharBiFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1503,12 +1516,12 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied combiner function.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
@@ -1516,11 +1529,11 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @param valueForNoneA value to fill if "a" runs out of values.
      * @param valueForNoneB value to fill if "b" runs out of values.
      * @param valueForNoneC value to fill if "c" runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
     public static CharStream zip(final CharIterator a, final CharIterator b, final CharIterator c, final char valueForNoneA, final char valueForNoneB,
-            final char valueForNoneC, final CharTriFunction<Character> combiner) {
+            final char valueForNoneC, final CharTriFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1528,19 +1541,19 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, combiner).mapToChar(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToChar(mapper);
     }
 
     /**
      * Zip together the iterators until all of them runs out of values.
-     * Each array of values is combined into a single value using the supplied combiner function.
+     * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param c
      * @param valuesForNone value to fill for any iterator runs out of values.
-     * @param combiner
+     * @param zipFunction
      * @return
      */
-    public static CharStream zip(final Collection<? extends CharIterator> c, final char[] valuesForNone, final CharNFunction<Character> combiner) {
+    public static CharStream zip(final Collection<? extends CharIterator> c, final char[] valuesForNone, final CharNFunction<Character> zipFunction) {
         final ToCharFunction<Character> mapper = new ToCharFunction<Character>() {
             @Override
             public char applyAsChar(Character value) {
@@ -1548,7 +1561,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
             }
         };
 
-        return Stream.zip(c, valuesForNone, combiner).mapToChar(mapper);
+        return Stream.zip(c, valuesForNone, zipFunction).mapToChar(mapper);
     }
 
     /**
@@ -1808,7 +1821,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return
      */
     public static CharStream parallelMerge(final CharStream[] a, final CharBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1868,7 +1881,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return
      */
     public static CharStream parallelMerge(final CharIterator[] a, final CharBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1901,7 +1914,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
      * @return
      */
     public static CharStream parallelMerge(final Collection<? extends CharIterator> c, final CharBiFunction<Nth> nextSelector) {
-        return parallelMerge(c, nextSelector, Stream.DEFAULT_MAX_THREAD_NUM);
+        return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -1934,7 +1947,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
         for (int i = 0, n = N.min(maxThreadNum, c.size() / 2 + 1); i < n; i++) {
-            futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     CharIterator a = null;
@@ -1961,7 +1974,7 @@ public abstract class CharStream implements BaseStream<Character, CharStream> {
                             }
                         }
                     } catch (Throwable e) {
-                        Stream.setError(eHolder, e);
+                        setError(eHolder, e);
                     }
                 }
             }));

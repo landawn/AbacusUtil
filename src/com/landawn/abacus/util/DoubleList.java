@@ -488,6 +488,24 @@ public final class DoubleList extends AbstractNumberList<DoubleConsumer, DoubleP
         N.deleteAll(elementData, indices);
     }
 
+    public int replaceAll(double oldVal, double newVal) {
+        if (size() == 0) {
+            return 0;
+        }
+
+        int result = 0;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (Double.compare(elementData[i], oldVal) == 0) {
+                elementData[i] = newVal;
+
+                result++;
+            }
+        }
+
+        return result;
+    }
+
     public void fill(final double val) {
         fill(0, size(), val);
     }
@@ -531,38 +549,6 @@ public final class DoubleList extends AbstractNumberList<DoubleConsumer, DoubleP
         }
 
         return containsAll(of(a));
-    }
-
-    public boolean joint(final DoubleList c) {
-        final DoubleList container = size() >= c.size() ? this : c;
-        final double[] iterElements = size() >= c.size() ? c.array() : this.array();
-
-        if (c.size() > 3 && size() > 9) {
-            final Set<Double> set = container.toSet();
-
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (set.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        } else {
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (container.contains(iterElements[i])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean joint(final double[] b) {
-        if (N.isNullOrEmpty(b)) {
-            return false;
-        }
-
-        return joint(of(b));
     }
 
     public boolean disjoint(final DoubleList c) {

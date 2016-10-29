@@ -17,7 +17,6 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.OptionalShort;
@@ -27,7 +26,6 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ObjShortConsumer;
-import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -456,7 +454,7 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream top(int n) {
-        return top(n, Stream.SHORT_COMPARATOR);
+        return top(n, SHORT_COMPARATOR);
     }
 
     @Override
@@ -1017,7 +1015,7 @@ final class IteratorShortStream extends AbstractShortStream {
             return OptionalShort.empty();
         }
 
-        final OptionalNullable<Short> optional = boxed().kthLargest(k, Stream.SHORT_COMPARATOR);
+        final OptionalNullable<Short> optional = boxed().kthLargest(k, SHORT_COMPARATOR);
 
         return optional.isPresent() ? OptionalShort.of(optional.get()) : OptionalShort.empty();
     }
@@ -1235,17 +1233,7 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public Stream<Short> boxed() {
-        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? Stream.SHORT_COMPARATOR : null);
-    }
-
-    @Override
-    public ShortStream append(ShortStream stream) {
-        return ShortStream.concat(this, stream);
-    }
-
-    @Override
-    public ShortStream merge(ShortStream b, ShortBiFunction<Nth> nextSelector) {
-        return ShortStream.merge(this, b, nextSelector);
+        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null);
     }
 
     @Override

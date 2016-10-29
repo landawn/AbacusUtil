@@ -1,5 +1,7 @@
 package com.landawn.abacus.util.stream;
 
+import static com.landawn.abacus.util.stream.StreamBase.checkIndex;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -24,7 +26,19 @@ public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
     }
 
     public static <T> ImmutableIterator<T> of(final Collection<? extends T> c) {
-        return of(c.iterator());
+        final Iterator<? extends T> iter = c.iterator();
+
+        return new QueuedIterator<T>(Integer.MAX_VALUE) {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                return iter.next();
+            }
+        };
     }
 
     public static <T> ImmutableIterator<T> of(final T[] a) {
@@ -32,9 +46,9 @@ public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
     }
 
     public static <T> ImmutableIterator<T> of(final T[] a, final int fromIndex, final int toIndex) {
-        Stream.checkIndex(fromIndex, toIndex, a.length);
+        checkIndex(fromIndex, toIndex, a.length);
 
-        return new ImmutableIterator<T>() {
+        return new QueuedIterator<T>(Integer.MAX_VALUE) {
             int cursor = fromIndex;
 
             @Override

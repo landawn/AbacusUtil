@@ -50,7 +50,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
-import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
+import com.landawn.abacus.util.function.TriFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -71,14 +71,14 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             int maxThreadNum, Splitter splitter) {
         super(closeHandlers);
 
-        Stream.checkIndex(fromIndex, toIndex, values.length);
+        checkIndex(fromIndex, toIndex, values.length);
 
         if (maxThreadNum < 1) {
             throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
-        } else if (maxThreadNum > Stream.THREAD_POOL_SIZE) {
+        } else if (maxThreadNum > THREAD_POOL_SIZE) {
             if (logger.isWarnEnabled()) {
-                logger.warn("'maxThreaddNum' is bigger than max thread pool size: " + Stream.THREAD_POOL_SIZE + ". It will reduced to max thread pool size: "
-                        + Stream.THREAD_POOL_SIZE + " automatically");
+                logger.warn("'maxThreaddNum' is bigger than max thread pool size: " + THREAD_POOL_SIZE + ". It will reduced to max thread pool size: "
+                        + THREAD_POOL_SIZE + " automatically");
             }
         }
 
@@ -87,8 +87,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         this.toIndex = toIndex;
         this.sorted = sorted;
         this.cmp = comparator;
-        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, Stream.THREAD_POOL_SIZE, toIndex - fromIndex);
-        this.splitter = splitter == null ? Stream.DEFAULT_SPILTTER : splitter;
+        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
+        this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
     }
 
     @Override
@@ -361,11 +361,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<R>() {
-                    private Object next = Stream.NONE;
+                    private Object next = NONE;
 
                     @Override
                     public boolean hasNext() {
-                        if (next == Stream.NONE) {
+                        if (next == NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -373,17 +373,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
                         }
 
-                        return next != Stream.NONE;
+                        return next != NONE;
                     }
 
                     @Override
                     public R next() {
-                        if (next == Stream.NONE && hasNext() == false) {
+                        if (next == NONE && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
                         R result = mapper.apply((T) next);
-                        next = Stream.NONE;
+                        next = NONE;
                         return result;
                     }
                 });
@@ -430,11 +430,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Character>() {
-                    private Object next = Stream.NONE;
+                    private Object next = NONE;
 
                     @Override
                     public boolean hasNext() {
-                        if (next == Stream.NONE) {
+                        if (next == NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -442,17 +442,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
                         }
 
-                        return next != Stream.NONE;
+                        return next != NONE;
                     }
 
                     @Override
                     public Character next() {
-                        if (next == Stream.NONE && hasNext() == false) {
+                        if (next == NONE && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
                         Character result = mapper.applyAsChar((T) next);
-                        next = Stream.NONE;
+                        next = NONE;
                         return result;
                     }
                 });
@@ -499,11 +499,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Byte>() {
-                    private Object next = Stream.NONE;
+                    private Object next = NONE;
 
                     @Override
                     public boolean hasNext() {
-                        if (next == Stream.NONE) {
+                        if (next == NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -511,17 +511,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
                         }
 
-                        return next != Stream.NONE;
+                        return next != NONE;
                     }
 
                     @Override
                     public Byte next() {
-                        if (next == Stream.NONE && hasNext() == false) {
+                        if (next == NONE && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
                         Byte result = mapper.applyAsByte((T) next);
-                        next = Stream.NONE;
+                        next = NONE;
                         return result;
                     }
                 });
@@ -568,11 +568,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Short>() {
-                    private Object next = Stream.NONE;
+                    private Object next = NONE;
 
                     @Override
                     public boolean hasNext() {
-                        if (next == Stream.NONE) {
+                        if (next == NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -580,17 +580,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
                         }
 
-                        return next != Stream.NONE;
+                        return next != NONE;
                     }
 
                     @Override
                     public Short next() {
-                        if (next == Stream.NONE && hasNext() == false) {
+                        if (next == NONE && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
                         Short result = mapper.applyAsShort((T) next);
-                        next = Stream.NONE;
+                        next = NONE;
                         return result;
                     }
                 });
@@ -637,11 +637,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Integer>() {
-                    private Object next = Stream.NONE;
+                    private Object next = NONE;
 
                     @Override
                     public boolean hasNext() {
-                        if (next == Stream.NONE) {
+                        if (next == NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -649,17 +649,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
                         }
 
-                        return next != Stream.NONE;
+                        return next != NONE;
                     }
 
                     @Override
                     public Integer next() {
-                        if (next == Stream.NONE && hasNext() == false) {
+                        if (next == NONE && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
                         Integer result = mapper.applyAsInt((T) next);
-                        next = Stream.NONE;
+                        next = NONE;
                         return result;
                     }
                 });
@@ -706,11 +706,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Long>() {
-                    private Object next = Stream.NONE;
+                    private Object next = NONE;
 
                     @Override
                     public boolean hasNext() {
-                        if (next == Stream.NONE) {
+                        if (next == NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -718,17 +718,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
                         }
 
-                        return next != Stream.NONE;
+                        return next != NONE;
                     }
 
                     @Override
                     public Long next() {
-                        if (next == Stream.NONE && hasNext() == false) {
+                        if (next == NONE && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
                         Long result = mapper.applyAsLong((T) next);
-                        next = Stream.NONE;
+                        next = NONE;
                         return result;
                     }
                 });
@@ -775,11 +775,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Float>() {
-                    private Object next = Stream.NONE;
+                    private Object next = NONE;
 
                     @Override
                     public boolean hasNext() {
-                        if (next == Stream.NONE) {
+                        if (next == NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -787,17 +787,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
                         }
 
-                        return next != Stream.NONE;
+                        return next != NONE;
                     }
 
                     @Override
                     public Float next() {
-                        if (next == Stream.NONE && hasNext() == false) {
+                        if (next == NONE && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
                         Float result = mapper.applyAsFloat((T) next);
-                        next = Stream.NONE;
+                        next = NONE;
                         return result;
                     }
                 });
@@ -844,11 +844,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Double>() {
-                    private Object next = Stream.NONE;
+                    private Object next = NONE;
 
                     @Override
                     public boolean hasNext() {
-                        if (next == Stream.NONE) {
+                        if (next == NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -856,17 +856,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
                         }
 
-                        return next != Stream.NONE;
+                        return next != NONE;
                     }
 
                     @Override
                     public Double next() {
-                        if (next == Stream.NONE && hasNext() == false) {
+                        if (next == NONE && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
                         Double result = mapper.applyAsDouble((T) next);
-                        next = Stream.NONE;
+                        next = NONE;
                         return result;
                     }
                 });
@@ -940,12 +940,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != Stream.NONE) {
+                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1028,12 +1028,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1106,12 +1106,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1187,12 +1187,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != Stream.NONE) {
+                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1266,12 +1266,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1344,12 +1344,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1425,12 +1425,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != Stream.NONE) {
+                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1504,12 +1504,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1582,12 +1582,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1663,12 +1663,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != Stream.NONE) {
+                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1742,12 +1742,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1820,12 +1820,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1901,12 +1901,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != Stream.NONE) {
+                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -1980,12 +1980,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2058,12 +2058,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2139,12 +2139,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != Stream.NONE) {
+                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2218,12 +2218,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2296,12 +2296,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2377,12 +2377,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != Stream.NONE) {
+                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2456,12 +2456,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2534,12 +2534,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2615,12 +2615,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != Stream.NONE) {
+                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2694,12 +2694,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != Stream.NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
                                 } else {
-                                    next = (T) Stream.NONE;
+                                    next = (T) NONE;
                                     break;
                                 }
                             }
@@ -2958,29 +2958,29 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> distinct() {
-        final T[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted && Stream.isSameComparator(null, cmp));
+        final T[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted && isSameComparator(null, cmp));
         return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
     }
 
-    @Override
-    public Stream<T> distinct(final Comparator<? super T> comparator) {
-        if (sorted && Stream.isSameComparator(comparator, cmp)) {
-            return distinct();
-        }
+    //    @Override
+    //    public Stream<T> distinct(final Comparator<? super T> comparator) {
+    //        if (sorted && isSameComparator(comparator, cmp)) {
+    //            return distinct();
+    //        }
+    //
+    //        final T[] a = N.distinct(elements, fromIndex, toIndex, comparator);
+    //        return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
+    //    }
 
-        final T[] a = N.distinct(elements, fromIndex, toIndex, comparator);
-        return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
-    }
-
     @Override
-    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
-        final T[] a = N.distinct(elements, fromIndex, toIndex, keyMapper);
+    public Stream<T> distinct(final Function<? super T, ?> classifier) {
+        final T[] a = N.distinct(elements, fromIndex, toIndex, classifier);
         return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
     }
 
     @Override
     public Stream<T> top(int n) {
-        return top(n, Stream.OBJECT_COMPARATOR);
+        return top(n, OBJECT_COMPARATOR);
     }
 
     @Override
@@ -2991,7 +2991,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
         if (n >= toIndex - fromIndex) {
             return this;
-        } else if (sorted && Stream.isSameComparator(comparator, cmp)) {
+        } else if (sorted && isSameComparator(comparator, cmp)) {
             return new ParallelArrayStream<T>(elements, toIndex - n, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitter);
         } else {
             final T[] a = N.top(elements, fromIndex, toIndex, n, comparator);
@@ -3001,12 +3001,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> sorted() {
-        return sorted(Stream.OBJECT_COMPARATOR);
+        return sorted(OBJECT_COMPARATOR);
     }
 
     @Override
     public Stream<T> sorted(Comparator<? super T> comparator) {
-        if (sorted && Stream.isSameComparator(comparator, cmp)) {
+        if (sorted && isSameComparator(comparator, cmp)) {
             return this;
         }
 
@@ -3066,7 +3066,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -3077,7 +3077,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 action.accept(elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -3086,7 +3086,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         T next = null;
@@ -3104,7 +3104,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 action.accept(next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -3126,8 +3126,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> till) {
-        if (Stream.logger.isWarnEnabled()) {
-            Stream.logger.warn("'forEach' is sequentially executed in parallel stream");
+        if (logger.isWarnEnabled()) {
+            logger.warn("'forEach' is sequentially executed in parallel stream");
         }
 
         return sequential().forEach(identity, accumulator, till);
@@ -3149,7 +3149,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     //            for (int i = 0; i < maxThreadNum; i++) {
     //                final int sliceIndex = i;
     //
-    //                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+    //                futureList.add(asyncExecutor.execute(new Runnable() {
     //                    @Override
     //                    public void run() {
     //                        int cursor = fromIndex + sliceIndex * sliceSize;
@@ -3163,7 +3163,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     //                                }
     //                            }
     //                        } catch (Throwable e) {
-    //                            Stream.setError(eHolder, e);
+    //                            setError(eHolder, e);
     //                        }
     //                    }
     //                }));
@@ -3172,7 +3172,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     //            final MutableInt cursor = MutableInt.of(fromIndex);
     //
     //            for (int i = 0; i < maxThreadNum; i++) {
-    //                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+    //                futureList.add(asyncExecutor.execute(new Runnable() {
     //                    @Override
     //                    public void run() {
     //                        T next = null;
@@ -3193,7 +3193,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     //                                }
     //                            }
     //                        } catch (Throwable e) {
-    //                            Stream.setError(eHolder, e);
+    //                            setError(eHolder, e);
     //                        }
     //                    }
     //                }));
@@ -3397,7 +3397,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<T>() {
+                futureList.add(asyncExecutor.execute(new Callable<T>() {
                     @Override
                     public T call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -3410,7 +3410,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 result = accumulator.apply(result, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -3421,7 +3421,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<T>() {
+                futureList.add(asyncExecutor.execute(new Callable<T>() {
                     @Override
                     public T call() {
                         T result = identity;
@@ -3440,7 +3440,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 result = accumulator.apply(result, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -3453,11 +3453,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        T result = (T) Stream.NONE;
+        T result = (T) NONE;
 
         try {
             for (CompletableFuture<T> future : futureList) {
-                if (result == Stream.NONE) {
+                if (result == NONE) {
                     result = future.get();
                 } else {
                     result = accumulator.apply(result, future.get());
@@ -3467,7 +3467,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result == Stream.NONE ? identity : result;
+        return result == NONE ? identity : result;
     }
 
     @Override
@@ -3485,14 +3485,14 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<T>() {
+                futureList.add(asyncExecutor.execute(new Callable<T>() {
                     @Override
                     public T call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
                         if (cursor >= to) {
-                            return (T) Stream.NONE;
+                            return (T) NONE;
                         }
 
                         T result = elements[cursor++];
@@ -3502,7 +3502,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 result = accumulator.apply(result, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -3513,7 +3513,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<T>() {
+                futureList.add(asyncExecutor.execute(new Callable<T>() {
                     @Override
                     public T call() {
                         T result = null;
@@ -3522,7 +3522,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             if (cursor.intValue() < toIndex) {
                                 result = elements[cursor.getAndIncrement()];
                             } else {
-                                return (T) Stream.NONE;
+                                return (T) NONE;
                             }
                         }
 
@@ -3541,7 +3541,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 result = accumulator.apply(result, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -3554,15 +3554,15 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        T result = (T) Stream.NONE;
+        T result = (T) NONE;
 
         try {
             for (CompletableFuture<T> future : futureList) {
                 final T tmp = future.get();
 
-                if (tmp == Stream.NONE) {
+                if (tmp == NONE) {
                     continue;
-                } else if (result == Stream.NONE) {
+                } else if (result == NONE) {
                     result = tmp;
                 } else {
                     result = accumulator.apply(result, tmp);
@@ -3572,7 +3572,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result == Stream.NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(result);
+        return result == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(result);
     }
 
     @Override
@@ -3590,7 +3590,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<U>() {
+                futureList.add(asyncExecutor.execute(new Callable<U>() {
                     @Override
                     public U call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -3603,7 +3603,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 result = accumulator.apply(result, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -3614,7 +3614,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<U>() {
+                futureList.add(asyncExecutor.execute(new Callable<U>() {
                     @Override
                     public U call() {
                         U result = identity;
@@ -3633,7 +3633,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 result = accumulator.apply(result, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return result;
@@ -3646,13 +3646,13 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        U result = (U) Stream.NONE;
+        U result = (U) NONE;
 
         try {
             for (CompletableFuture<U> future : futureList) {
                 final U tmp = future.get();
 
-                if (result == Stream.NONE) {
+                if (result == NONE) {
                     result = tmp;
                 } else {
                     result = combiner.apply(result, tmp);
@@ -3662,7 +3662,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result == Stream.NONE ? identity : result;
+        return result == NONE ? identity : result;
     }
 
     @Override
@@ -3686,7 +3686,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<R>() {
+                futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -3699,7 +3699,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 accumulator.accept(container, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return container;
@@ -3710,7 +3710,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<R>() {
+                futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
                         R container = supplier.get();
@@ -3729,7 +3729,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 accumulator.accept(container, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return container;
@@ -3742,13 +3742,13 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        R container = (R) Stream.NONE;
+        R container = (R) NONE;
 
         try {
             for (CompletableFuture<R> future : futureList) {
                 final R tmp = future.get();
 
-                if (container == Stream.NONE) {
+                if (container == NONE) {
                     container = tmp;
                 } else {
                     combiner.accept(container, tmp);
@@ -3758,7 +3758,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return container == Stream.NONE ? supplier.get() : container;
+        return container == NONE ? supplier.get() : container;
     }
 
     @Override
@@ -3787,7 +3787,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<A>() {
+                futureList.add(asyncExecutor.execute(new Callable<A>() {
                     @Override
                     public A call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -3800,7 +3800,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 accumulator.accept(container, elements[cursor++]);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return container;
@@ -3811,7 +3811,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<A>() {
+                futureList.add(asyncExecutor.execute(new Callable<A>() {
                     @Override
                     public A call() {
                         A container = supplier.get();
@@ -3830,7 +3830,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 accumulator.accept(container, next);
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return container;
@@ -3843,13 +3843,13 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(eHolder.value());
         }
 
-        A container = (A) Stream.NONE;
+        A container = (A) NONE;
 
         try {
             for (CompletableFuture<A> future : futureList) {
                 final A tmp = future.get();
 
-                if (container == Stream.NONE) {
+                if (container == NONE) {
                     container = tmp;
                 } else {
                     combiner.apply(container, tmp);
@@ -3859,7 +3859,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return finisher.apply(container == Stream.NONE ? supplier.get() : container);
+        return finisher.apply(container == NONE ? supplier.get() : container);
     }
 
     @Override
@@ -3868,7 +3868,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             return OptionalNullable.empty();
         }
 
-        comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
+        comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
 
         return collect(Collectors.minBy(comparator));
     }
@@ -3879,7 +3879,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             return OptionalNullable.empty();
         }
 
-        comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
+        comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
 
         return collect(Collectors.maxBy(comparator));
     }
@@ -3890,7 +3890,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             return OptionalNullable.empty();
         }
 
-        comparator = comparator == null ? Stream.OBJECT_COMPARATOR : comparator;
+        comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
 
         return sequential().kthLargest(k, comparator);
     }
@@ -3981,7 +3981,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -3995,7 +3995,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -4004,7 +4004,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         T next = null;
@@ -4025,7 +4025,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -4063,7 +4063,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -4077,7 +4077,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -4086,7 +4086,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         T next = null;
@@ -4107,7 +4107,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -4145,7 +4145,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -4159,7 +4159,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -4168,7 +4168,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         T next = null;
@@ -4189,7 +4189,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -4227,7 +4227,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
                     @Override
                     public Pair<Integer, T> call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -4250,7 +4250,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -4261,7 +4261,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
                     @Override
                     public Pair<Integer, T> call() {
                         final Pair<Integer, T> pair = new Pair<>();
@@ -4288,7 +4288,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -4332,7 +4332,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
                     @Override
                     public Pair<Integer, T> call() {
                         final int from = fromIndex + sliceIndex * sliceSize;
@@ -4355,7 +4355,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -4366,7 +4366,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(toIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
+                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
                     @Override
                     public Pair<Integer, T> call() {
                         final Pair<Integer, T> pair = new Pair<>();
@@ -4393,7 +4393,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return pair;
@@ -4429,7 +4429,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
         final List<CompletableFuture<T>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<T> resultHolder = Holder.of((T) Stream.NONE);
+        final Holder<T> resultHolder = Holder.of((T) NONE);
 
         if (splitter == Splitter.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
@@ -4437,7 +4437,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Callable<T>() {
+                futureList.add(asyncExecutor.execute(new Callable<T>() {
                     @Override
                     public T call() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -4450,7 +4450,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                                 if (predicate.test(next)) {
                                     synchronized (resultHolder) {
-                                        if (resultHolder.value() == Stream.NONE) {
+                                        if (resultHolder.value() == NONE) {
                                             resultHolder.setValue(next);
                                         }
                                     }
@@ -4459,7 +4459,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return next;
@@ -4470,13 +4470,13 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Callable<T>() {
+                futureList.add(asyncExecutor.execute(new Callable<T>() {
                     @Override
                     public T call() {
                         T next = null;
 
                         try {
-                            while (resultHolder.value() == Stream.NONE && eHolder.value() == null) {
+                            while (resultHolder.value() == NONE && eHolder.value() == null) {
                                 synchronized (elements) {
                                     if (cursor.intValue() < toIndex) {
                                         next = elements[cursor.getAndIncrement()];
@@ -4487,7 +4487,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                                 if (predicate.test(next)) {
                                     synchronized (resultHolder) {
-                                        if (resultHolder.value() == Stream.NONE) {
+                                        if (resultHolder.value() == NONE) {
                                             resultHolder.setValue(next);
                                         }
                                     }
@@ -4496,7 +4496,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
 
                         return next;
@@ -4511,7 +4511,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
         try {
             for (CompletableFuture<T> future : futureList) {
-                if (resultHolder.value() == Stream.NONE) {
+                if (resultHolder.value() == NONE) {
                     future.get();
                 } else {
                     break;
@@ -4521,7 +4521,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return resultHolder.value() == Stream.NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value());
+        return resultHolder.value() == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value());
     }
 
     @Override
@@ -4756,14 +4756,17 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> queued(int queueSize) {
-        final Iterator<T> iter = iterator();
+        // Do nothing. No need for queue.
+        //        final Iterator<T> iter = iterator();
+        //
+        //        if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
+        //            return this;
+        //        } else {
+        //            return new ParallelIteratorStream<>(Stream.parallelConcat(Arrays.asList(iter), queueSize, asyncExecutor), closeHandlers, sorted, cmp, maxThreadNum,
+        //                    splitter);
+        //        }
 
-        if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
-            return this;
-        } else {
-            return new ParallelIteratorStream<>(Stream.parallelConcat(Arrays.asList(iter), queueSize, asyncExecutor), closeHandlers, sorted, cmp, maxThreadNum,
-                    splitter);
-        }
+        return this;
     }
 
     @Override
@@ -4779,6 +4782,28 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         return new ParallelIteratorStream<>(Stream.merge(this, b, nextSelector), closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public <T2, R> Stream<R> zipWith(Stream<T2> b, BiFunction<? super T, ? super T2, R> zipFunction) {
+        return new ParallelIteratorStream<>(Stream.zip(this, b, zipFunction), closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public <T2, T3, R> Stream<R> zipWith(Stream<T2> b, Stream<T3> c, TriFunction<? super T, ? super T2, ? super T3, R> zipFunction) {
+        return new ParallelIteratorStream<>(Stream.zip(this, b, c, zipFunction), closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public <T2, R> Stream<R> zipWith(Stream<T2> b, T valueForNoneA, T2 valueForNoneB, BiFunction<? super T, ? super T2, R> zipFunction) {
+        return new ParallelIteratorStream<>(Stream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public <T2, T3, R> Stream<R> zipWith(Stream<T2> b, Stream<T3> c, T valueForNoneA, T2 valueForNoneB, T3 valueForNoneC,
+            TriFunction<? super T, ? super T2, ? super T3, R> zipFunction) {
+        return new ParallelIteratorStream<>(Stream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false, null,
+                maxThreadNum, splitter);
     }
 
     @Override
@@ -4805,7 +4830,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
@@ -4834,7 +4859,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                             result.addAndGet(cnt);
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
@@ -4843,7 +4868,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(Stream.asyncExecutor.execute(new Runnable() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         long cnt = 0;
@@ -4879,7 +4904,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
                             result.addAndGet(cnt);
                         } catch (Throwable e) {
-                            Stream.setError(eHolder, e);
+                            setError(eHolder, e);
                         }
                     }
                 }));
