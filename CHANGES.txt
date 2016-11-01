@@ -1,3 +1,11 @@
+========Changes in 0.9.28=========================================================================
+
+1, Refactoring groupBy/toMap/toMultimap/distinct methods in DataSet
+
+2, copy StringEscapeUtil/DigestUtil from Apache commons Lang and Codec under Apache License, Version 2.0
+
+6, Improvements and bug fix.
+
 ========Changes in 0.9.27=========================================================================
 
 1, Remove joint(...) from ObjectList/IntList.../N because it's can be replace by !disjoint(...)

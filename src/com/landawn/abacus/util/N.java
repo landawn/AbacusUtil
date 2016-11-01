@@ -625,6 +625,13 @@ public final class N {
         dataTypeFactory = temp;
     }
 
+    public static final IntFunction<List<Object>> LIST_SUPPLIER = DataSet.LIST_SUPPLIER;
+    public static final IntFunction<LinkedList<Object>> LINKED_LIST_SUPPLIER = DataSet.LINKED_LIST_SUPPLIER;
+    public static final IntFunction<Set<Object>> SET_SUPPLIER = DataSet.SET_SUPPLIER;
+    public static final IntFunction<LinkedHashSet<Object>> LINKED_HASH_SET_SUPPLIER = DataSet.LINKED_HASH_SET_SUPPLIER;
+    public static final IntFunction<Map<String, Object>> MAP_SUPPLIER = DataSet.MAP_SUPPLIER;
+    public static final IntFunction<LinkedHashMap<String, Object>> LINKED_HASH_MAP_SUPPLIER = DataSet.LINKED_HASH_MAP_SUPPLIER;
+
     // ...
     public static final Object NULL_MASK = new NullMask();
 
@@ -6435,11 +6442,11 @@ public final class N {
      */
     @SuppressWarnings("unchecked")
     public static <T> T copy(final T entity) {
-        return (T) copy(entity.getClass(), entity);
+        return copy((Class<T>) entity.getClass(), entity);
     }
 
     public static <T> T copy(final T entity, final Set<String> selectPropNames) {
-        return (T) copy(entity.getClass(), entity, selectPropNames);
+        return copy((Class<T>) entity.getClass(), entity, selectPropNames);
     }
 
     public static <T> T copy(final Class<T> targetClass, final Object entity) {
@@ -6462,11 +6469,11 @@ public final class N {
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
     public static <T> T copy(final Class<T> targetClass, final Object entity, final Set<String> selectPropNames) {
-        Object copy = null;
+        T copy = null;
 
         if (selectPropNames == null && kryoParser != null && targetClass.equals(entity.getClass())) {
             try {
-                copy = kryoParser.copy(entity);
+                copy = (T) kryoParser.copy(entity);
             } catch (Exception e) {
                 // ignore
             }
@@ -6516,7 +6523,68 @@ public final class N {
             setDirtyMarker(entity, copy);
         }
 
-        return (T) copy;
+        return copy;
+    }
+
+    public static <T> T copy(final T entity, final boolean ignoreUnknownProperty, final Set<String> ignorePropNames) {
+        return copy((Class<T>) entity.getClass(), entity, ignoreUnknownProperty, ignorePropNames);
+    }
+
+    @SuppressWarnings({ "unchecked", "deprecation" })
+    public static <T> T copy(final Class<T> targetClass, final T entity, final boolean ignoreUnknownProperty, final Set<String> ignorePropNames) {
+        T copy = null;
+
+        if (ignorePropNames == null && kryoParser != null && targetClass.equals(entity.getClass())) {
+            try {
+                copy = kryoParser.copy(entity);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        if (copy == null) {
+            Class<?> srcCls = entity.getClass();
+            copy = newInstance(targetClass);
+
+            if (entity instanceof DirtyMarker) {
+                Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
+
+                if (signedPropNames.size() == 0) {
+                    // logger.warn("no property is signed in the specified source entity: "
+                    // + toString(entity));
+                } else {
+                    try {
+                        Method srcPropGetMethod = null;
+
+                        for (String propName : signedPropNames) {
+                            if (ignorePropNames == null || ignorePropNames.contains(propName) == false) {
+                                srcPropGetMethod = getPropGetMethod(srcCls, propName);
+
+                                setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
+                            }
+                        }
+                    } catch (Exception e) {
+                        throw new AbacusException(e);
+                    }
+                }
+            } else {
+                Map<String, Method> srcGetterMethodList = checkPropGetMethodList(srcCls);
+
+                try {
+                    for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
+                        if (ignorePropNames == null || ignorePropNames.contains(entry.getKey()) == false) {
+                            setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new AbacusException(e);
+                }
+            }
+
+            setDirtyMarker(entity, copy);
+        }
+
+        return copy;
     }
 
     private static Map<String, Method> checkPropGetMethodList(final Class<?> cls) {
