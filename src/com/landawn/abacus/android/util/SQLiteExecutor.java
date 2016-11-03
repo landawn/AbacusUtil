@@ -450,15 +450,13 @@ public final class SQLiteExecutor {
      */
     public <T> T get(Class<T> targetClass, long id, Collection<String> selectPropNames) {
         final Condition whereClause = L.eq(ID, id);
-        final List<T> resultList = find(targetClass, selectPropNames, whereClause, null, 0, 2);
+        final List<T> entities = find(targetClass, selectPropNames, whereClause, null, 0, 2);
 
-        if (N.isNullOrEmpty(resultList)) {
-            return null;
-        } else if (resultList.size() > 1) {
+        if (entities.size() > 1) {
             throw new NonUniqueResultException("More than one records found by condition: " + whereClause.toString());
-        } else {
-            return resultList.get(0);
         }
+
+        return (entities.size() > 0) ? entities.get(0) : null;
     }
 
     @SuppressWarnings("deprecation")
@@ -1139,15 +1137,13 @@ public final class SQLiteExecutor {
     @Deprecated
     <T> T get(Class<T> targetClass, EntityId entityId, Collection<String> selectPropNames) {
         final Condition whereClause = EntityManagerUtil.entityId2Condition(entityId);
-        final List<T> resultList = find(targetClass, selectPropNames, whereClause, null, 0, 2);
+        final List<T> entities = find(targetClass, selectPropNames, whereClause, null, 0, 2);
 
-        if (N.isNullOrEmpty(resultList)) {
-            return null;
-        } else if (resultList.size() > 1) {
+        if (entities.size() > 1) {
             throw new NonUniqueResultException("More than one records found by condition: " + whereClause.toString());
-        } else {
-            return resultList.get(0);
         }
+
+        return (entities.size() > 0) ? entities.get(0) : null;
     }
 
     /**

@@ -34515,6 +34515,15 @@ public final class N {
         IOUtil.parse(iter, offset, count, processThreadNumber, queueSize, elementParser);
     }
 
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final Consumer<? super T> elementParser) {
+        IOUtil.parse(iterators, elementParser);
+    }
+
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
+            final Consumer<? super T> elementParser) {
+        IOUtil.parse(iterators, offset, count, elementParser);
+    }
+
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNumber, final int processThreadNumber,
             final int queueSize, final Consumer<? super T> elementParser) {
         IOUtil.parse(iterators, readThreadNumber, processThreadNumber, queueSize, elementParser);

@@ -1,3 +1,17 @@
+========Changes in 0.9.29=========================================================================
+
+1, Refactoring JdbcUtil/CSVUtil/IOUtil.
+
+2, Add iterate to SQLExecutor.
+
+3, Add Stream to SQLExecutor/CassandraExecutor/CouchbaseExecutor/MongoDBExecutor
+
+4, Remove parse(...final int processThreadNumber, final int queueSize...) from IOUtil/JdbcUtil.
+
+5, Add get(...) to SQLExecutor
+
+6, Improvements and bug fix.
+
 ========Changes in 0.9.28=========================================================================
 
 1, Refactoring groupBy/toMap/toMultimap/distinct methods in DataSet

@@ -2561,22 +2561,8 @@ public final class IOUtil {
             return;
         }
 
-        RuntimeException ex = null;
-
         for (Closeable closeable : c) {
-            try {
-                closeQuietly(closeable);
-            } catch (RuntimeException e) {
-                if (ex == null) {
-                    ex = e;
-                } else {
-                    ex.addSuppressed(e);
-                }
-            }
-        }
-
-        if (ex != null) {
-            throw ex;
+            closeQuietly(closeable);
         }
     }
 
@@ -3764,7 +3750,7 @@ public final class IOUtil {
      * @param lineParser always remember to handle line <code>null</code>
      */
     public static void parse(final File file, final Consumer<String> lineParser) {
-        parse(file, 0, 0, lineParser);
+        parse(file, 0, Long.MAX_VALUE, lineParser);
     }
 
     /**
@@ -3818,7 +3804,7 @@ public final class IOUtil {
      * @param lineParser always remember to handle line <code>null</code>
      */
     public static void parse(final List<File> files, final Consumer<String> lineParser) {
-        parse(files, 0, 0, lineParser);
+        parse(files, 0, Long.MAX_VALUE, lineParser);
     }
 
     /**
@@ -3996,7 +3982,7 @@ public final class IOUtil {
      * @param lineParser always remember to handle line <code>null</code>
      */
     public static void parse(final InputStream is, final Consumer<String> lineParser) {
-        parse(is, 0, 0, lineParser);
+        parse(is, 0, Long.MAX_VALUE, lineParser);
     }
 
     /**
@@ -4056,7 +4042,7 @@ public final class IOUtil {
      * @param lineParser always remember to handle line <code>null</code>
      */
     public static void parse(final Reader reader, final Consumer<String> lineParser) {
-        parse(reader, 0, 0, lineParser);
+        parse(reader, 0, Long.MAX_VALUE, lineParser);
     }
 
     /**
@@ -4068,7 +4054,8 @@ public final class IOUtil {
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param lineParser always remember to handle line <code>null</code>
      */
-    public static void parse(final Reader reader, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
+    @Deprecated
+    static void parse(final Reader reader, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
         parse(reader, 0, Long.MAX_VALUE, processThreadNumber, queueSize, lineParser);
     }
 
@@ -4231,7 +4218,7 @@ public final class IOUtil {
     //    }
 
     public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
-        parse(iter, 0, 0, elementParser);
+        parse(iter, 0, Long.MAX_VALUE, elementParser);
     }
 
     @Deprecated
@@ -4256,6 +4243,15 @@ public final class IOUtil {
     public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<? super T> elementParser) {
         parseII(N.asList(iter), offset, count, 1, processThreadNumber, queueSize, elementParser);
+    }
+
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final Consumer<? super T> elementParser) {
+        parse(iterators, 0, Long.MAX_VALUE, elementParser);
+    }
+
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
+            final Consumer<? super T> elementParser) {
+        parse(iterators, offset, count, 0, 0, 0, elementParser);
     }
 
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNumber, final int processThreadNumber,

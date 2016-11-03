@@ -68,8 +68,8 @@ public final class PropertiesUtil {
     private static final ResultSetExtractor<ConfigEntity> CONFIG_ENTITY_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<ConfigEntity>() {
         @Override
         public ConfigEntity extractData(Class<?> cls, NamedSQL namedSQL, ResultSet rs, JdbcSettings jdbcSettings) throws SQLException {
-            int offset = jdbcSettings.getOffset();
-            int count = jdbcSettings.getCount();
+            long offset = jdbcSettings.getOffset();
+            long count = jdbcSettings.getCount();
 
             while ((offset-- > 0) && rs.next()) {
             }

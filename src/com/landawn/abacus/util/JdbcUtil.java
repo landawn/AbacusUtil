@@ -657,48 +657,68 @@ public final class JdbcUtil {
     }
 
     public static PreparedStatement prepareStatement(final Connection conn, final String sql, final Object... parameters) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement(sql);
+        final NamedSQL namedSQL = NamedSQL.parse(sql);
+        final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
 
         if (N.notNullOrEmpty(parameters)) {
-            for (int i = 0; i < parameters.length; i++) {
-                stmt.setObject(i + 1, parameters[i]);
-            }
+            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
         }
 
         return stmt;
     }
 
-    public static PreparedStatement prepareStatement(final Connection conn, final String sql, final List<?> parameters) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement(sql);
-
-        if (N.notNullOrEmpty(parameters)) {
-            for (int i = 0; i < parameters.size(); i++) {
-                stmt.setObject(i + 1, parameters.get(i));
-            }
-        }
-
-        return stmt;
-    }
+    //    static PreparedStatement prepareStatement(final Connection conn, final String sql, final List<?> parameters) throws SQLException {
+    //        final NamedSQL namedSQL = NamedSQL.parse(sql);
+    //        final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
+    //
+    //        if (N.notNullOrEmpty(parameters)) {
+    //            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+    //        }
+    //
+    //        return stmt;
+    //    }
 
     public static CallableStatement prepareCall(final Connection conn, final String sql, final Object... parameters) throws SQLException {
-        CallableStatement stmt = conn.prepareCall(sql);
+        final NamedSQL namedSQL = NamedSQL.parse(sql);
+        final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
 
         if (N.notNullOrEmpty(parameters)) {
-            for (int i = 0; i < parameters.length; i++) {
-                stmt.setObject(i + 1, parameters[i]);
-            }
+            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
         }
 
         return stmt;
     }
 
-    public static CallableStatement prepareCall(final Connection conn, final String sql, final List<?> parameters) throws SQLException {
-        CallableStatement stmt = conn.prepareCall(sql);
+    //    static CallableStatement prepareCall(final Connection conn, final String sql, final List<?> parameters) throws SQLException {
+    //        final NamedSQL namedSQL = NamedSQL.parse(sql);
+    //        final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
+    //
+    //        if (N.notNullOrEmpty(parameters)) {
+    //            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+    //        }
+    //
+    //        return stmt;
+    //    }
 
-        if (N.notNullOrEmpty(parameters)) {
-            for (int i = 0; i < parameters.size(); i++) {
-                stmt.setObject(i + 1, parameters.get(i));
-            }
+    public static PreparedStatement batchPrepareStatement(final Connection conn, final String sql, final List<?> parametersList) throws SQLException {
+        final NamedSQL namedSQL = NamedSQL.parse(sql);
+        final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
+
+        for (Object parameters : parametersList) {
+            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+            stmt.addBatch();
+        }
+
+        return stmt;
+    }
+
+    public static CallableStatement batchPrepareCall(final Connection conn, final String sql, final List<?> parametersList) throws SQLException {
+        final NamedSQL namedSQL = NamedSQL.parse(sql);
+        final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
+
+        for (Object parameters : parametersList) {
+            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+            stmt.addBatch();
         }
 
         return stmt;
@@ -720,21 +740,21 @@ public final class JdbcUtil {
         }
     }
 
-    public static DataSet executeQuery(final Connection conn, final String sql, final List<?> parameters) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            stmt = prepareStatement(conn, sql, parameters);
-            rs = stmt.executeQuery();
-
-            return extractData(rs);
-        } catch (SQLException e) {
-            throw new AbacusSQLException(e);
-        } finally {
-            closeQuietly(rs, stmt);
-        }
-    }
+    //    static DataSet executeQuery(final Connection conn, final String sql, final List<?> parameters) {
+    //        PreparedStatement stmt = null;
+    //        ResultSet rs = null;
+    //
+    //        try {
+    //            stmt = prepareStatement(conn, sql, parameters);
+    //            rs = stmt.executeQuery();
+    //
+    //            return extractData(rs);
+    //        } catch (SQLException e) {
+    //            throw new AbacusSQLException(e);
+    //        } finally {
+    //            closeQuietly(rs, stmt);
+    //        }
+    //    }
 
     public static DataSet executeQuery(final PreparedStatement stmt) {
         ResultSet rs = null;
@@ -764,19 +784,19 @@ public final class JdbcUtil {
         }
     }
 
-    public static int executeUpdate(final Connection conn, final String sql, final List<?> parameters) {
-        PreparedStatement stmt = null;
-
-        try {
-            stmt = prepareStatement(conn, sql, parameters);
-
-            return stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new AbacusSQLException(e);
-        } finally {
-            closeQuietly(stmt);
-        }
-    }
+    //    static int executeUpdate(final Connection conn, final String sql, final List<?> parameters) {
+    //        PreparedStatement stmt = null;
+    //
+    //        try {
+    //            stmt = prepareStatement(conn, sql, parameters);
+    //
+    //            return stmt.executeUpdate();
+    //        } catch (SQLException e) {
+    //            throw new AbacusSQLException(e);
+    //        } finally {
+    //            closeQuietly(stmt);
+    //        }
+    //    }
 
     public static int executeUpdate(final PreparedStatement stmt) {
         try {
@@ -800,19 +820,19 @@ public final class JdbcUtil {
         }
     }
 
-    public static boolean execute(final Connection conn, final String sql, final List<?> parameters) {
-        PreparedStatement stmt = null;
-
-        try {
-            stmt = prepareStatement(conn, sql, parameters);
-
-            return stmt.execute();
-        } catch (SQLException e) {
-            throw new AbacusSQLException(e);
-        } finally {
-            closeQuietly(stmt);
-        }
-    }
+    //    static boolean execute(final Connection conn, final String sql, final List<?> parameters) {
+    //        PreparedStatement stmt = null;
+    //
+    //        try {
+    //            stmt = prepareStatement(conn, sql, parameters);
+    //
+    //            return stmt.execute();
+    //        } catch (SQLException e) {
+    //            throw new AbacusSQLException(e);
+    //        } finally {
+    //            closeQuietly(stmt);
+    //        }
+    //    }
 
     public static boolean execute(final PreparedStatement stmt) {
         try {
@@ -843,10 +863,10 @@ public final class JdbcUtil {
     }
 
     public static DataSet extractData(final ResultSet rs, final int offset, final int count, final boolean closeResultSet) {
-        return extractData(rs, offset, count, closeResultSet, null);
+        return extractData(rs, offset, count, null, closeResultSet);
     }
 
-    public static DataSet extractData(final ResultSet rs, int offset, int count, final boolean closeResultSet, final Predicate<ResultSet> filter) {
+    public static DataSet extractData(final ResultSet rs, int offset, int count, final Predicate<ResultSet> filter, final boolean closeResultSet) {
         try {
             // TODO [performance improvement]. it will improve performance a lot if MetaData is cached.
             final ResultSetMetaData metaData = rs.getMetaData();
@@ -915,7 +935,7 @@ public final class JdbcUtil {
      * </code></pre> 
      * @return
      */
-    public static int importData(final DataSet dataset, final List<String> selectColumnNames, final Connection conn, final String insertSQL) {
+    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final Connection conn, final String insertSQL) {
         return importData(dataset, selectColumnNames, 0, dataset.size(), conn, insertSQL);
     }
 
@@ -935,7 +955,7 @@ public final class JdbcUtil {
      * </code></pre>
      * @return
      */
-    public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final Connection conn,
+    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count, final Connection conn,
             final String insertSQL) {
         return importData(dataset, selectColumnNames, offset, count, conn, insertSQL, 200, 0);
     }
@@ -958,9 +978,9 @@ public final class JdbcUtil {
      * @param batchInterval
      * @return
      */
-    public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final Connection conn,
+    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count, final Connection conn,
             final String insertSQL, final int batchSize, final int batchInterval) {
-        return importData(dataset, selectColumnNames, offset, count, conn, insertSQL, batchSize, batchInterval, null);
+        return importData(dataset, selectColumnNames, offset, count, null, conn, insertSQL, batchSize, batchInterval);
     }
 
     /**
@@ -970,6 +990,7 @@ public final class JdbcUtil {
      * @param selectColumnNames
      * @param offset
      * @param count
+     * @param filter
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
@@ -979,17 +1000,16 @@ public final class JdbcUtil {
      * </code></pre>
      * @param batchSize
      * @param batchInterval
-     * @param filter
      * @return
      */
-    public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final Connection conn,
-            final String insertSQL, final int batchSize, final int batchInterval, final Predicate<Object[]> filter) {
+    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
+            final Predicate<Object[]> filter, final Connection conn, final String insertSQL, final int batchSize, final int batchInterval) {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(insertSQL);
+            stmt = prepareStatement(conn, insertSQL);
 
-            return importData(dataset, selectColumnNames, offset, count, stmt, batchSize, batchInterval, filter);
+            return importData(dataset, selectColumnNames, offset, count, filter, stmt, batchSize, batchInterval);
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {
@@ -1001,7 +1021,6 @@ public final class JdbcUtil {
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
@@ -1009,18 +1028,18 @@ public final class JdbcUtil {
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
+     * @param columnTypeMap
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final Map<String, ? extends Type> columnTypeMap, final Connection conn, final String insertSQL) {
-        return importData(dataset, columnTypeMap, 0, dataset.size(), conn, insertSQL);
+    public static int importData(final DataSet dataset, final Connection conn, final String insertSQL, final Map<String, ? extends Type> columnTypeMap) {
+        return importData(dataset, 0, dataset.size(), conn, insertSQL, columnTypeMap);
     }
 
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param offset
      * @param count
      * @param conn
@@ -1030,19 +1049,19 @@ public final class JdbcUtil {
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
+     * @param columnTypeMap
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final Map<String, ? extends Type> columnTypeMap, final int offset, final int count,
-            final Connection conn, final String insertSQL) {
-        return importData(dataset, columnTypeMap, offset, count, conn, insertSQL, 200, 0);
+    public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL,
+            final Map<String, ? extends Type> columnTypeMap) {
+        return importData(dataset, offset, count, conn, insertSQL, columnTypeMap, 200, 0);
     }
 
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param offset
      * @param count
      * @param conn
@@ -1052,44 +1071,45 @@ public final class JdbcUtil {
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
+     * @param columnTypeMap
      * @param batchSize
      * @param batchInterval
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final Map<String, ? extends Type> columnTypeMap, final int offset, final int count,
-            final Connection conn, final String insertSQL, final int batchSize, final int batchInterval) {
-        return importData(dataset, columnTypeMap, offset, count, conn, insertSQL, batchSize, batchInterval, null);
+    public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL,
+            final Map<String, ? extends Type> columnTypeMap, final int batchSize, final int batchInterval) {
+        return importData(dataset, offset, count, null, conn, insertSQL, columnTypeMap, batchSize, batchInterval);
     }
 
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param offset
      * @param count
-     * @param conn
-     * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
-     * <pre><code>
-        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
-        columnNameList.retainAll(yourSelectColumnNames);        
-        String sql = RE.insert(columnNameList).into(tableName).sql();  
-     * </code></pre>
-     * @param batchSize
-     * @param batchInterval
      * @param filter
+     * @param conn
+     * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
+     * <pre><code>
+        List<String> columnNameList = new ArrayList<>(dataset.columnNameList());
+        columnNameList.retainAll(yourSelectColumnNames);        
+        String sql = RE.insert(columnNameList).into(tableName).sql();  
+     * </code></pre>
+     * @param columnTypeMap
+     * @param batchSize
+     * @param batchInterval
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final Map<String, ? extends Type> columnTypeMap, final int offset, final int count,
-            final Connection conn, final String insertSQL, final int batchSize, final int batchInterval, final Predicate<Object[]> filter) {
+    public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final Connection conn,
+            final String insertSQL, final Map<String, ? extends Type> columnTypeMap, final int batchSize, final int batchInterval) {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(insertSQL);
+            stmt = prepareStatement(conn, insertSQL);
 
-            return importData(dataset, columnTypeMap, offset, count, stmt, batchSize, batchInterval, filter);
+            return importData(dataset, offset, count, filter, stmt, batchSize, batchInterval, columnTypeMap);
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {
@@ -1157,7 +1177,7 @@ public final class JdbcUtil {
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL, final int batchSize,
             final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
-        return importData(dataset, offset, count, conn, insertSQL, batchSize, batchInterval, null, stmtSetter);
+        return importData(dataset, offset, count, null, conn, insertSQL, batchSize, batchInterval, stmtSetter);
     }
 
     /**
@@ -1166,6 +1186,7 @@ public final class JdbcUtil {
      * @param dataset
      * @param offset
      * @param count
+     * @param filter
      * @param conn
      * @param insertSQL the column order in the sql must be consistent with the column order in the DataSet. Here is sample about how to create the sql:
      * <pre><code>
@@ -1175,18 +1196,17 @@ public final class JdbcUtil {
      * </code></pre>
      * @param batchSize
      * @param batchInterval
-     * @param filter
      * @param stmtSetter
      * @return
      */
-    public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL, final int batchSize,
-            final int batchInterval, final Predicate<Object[]> filter, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+    public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final Connection conn,
+            final String insertSQL, final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(insertSQL);
+            stmt = prepareStatement(conn, insertSQL);
 
-            return importData(dataset, offset, count, stmt, batchSize, batchInterval, filter, stmtSetter);
+            return importData(dataset, offset, count, filter, stmt, batchSize, batchInterval, stmtSetter);
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {
@@ -1213,7 +1233,7 @@ public final class JdbcUtil {
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
      * @return
      */
-    public static int importData(final DataSet dataset, final List<String> selectColumnNames, final PreparedStatement stmt) {
+    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final PreparedStatement stmt) {
         return importData(dataset, selectColumnNames, 0, dataset.size(), stmt);
     }
 
@@ -1227,7 +1247,8 @@ public final class JdbcUtil {
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
      * @return
      */
-    public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final PreparedStatement stmt) {
+    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
+            final PreparedStatement stmt) {
         return importData(dataset, selectColumnNames, offset, count, stmt, 200, 0);
     }
 
@@ -1241,9 +1262,9 @@ public final class JdbcUtil {
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
      * @return
      */
-    public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final PreparedStatement stmt,
-            final int batchSize, final int batchInterval) {
-        return importData(dataset, selectColumnNames, offset, count, stmt, batchSize, batchInterval, null);
+    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
+            final PreparedStatement stmt, final int batchSize, final int batchInterval) {
+        return importData(dataset, selectColumnNames, offset, count, null, stmt, batchSize, batchInterval);
     }
 
     /**
@@ -1258,8 +1279,8 @@ public final class JdbcUtil {
      * @param batchInterval
      * @return
      */
-    public static int importData(final DataSet dataset, final List<String> selectColumnNames, final int offset, final int count, final PreparedStatement stmt,
-            final int batchSize, final int batchInterval, final Predicate<Object[]> filter) {
+    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
+            final Predicate<Object[]> filter, final PreparedStatement stmt, final int batchSize, final int batchInterval) {
         final Type<?> objType = N.typeOf(Object.class);
         final Map<String, Type<?>> columnTypeMap = new HashMap<>();
 
@@ -1267,71 +1288,71 @@ public final class JdbcUtil {
             columnTypeMap.put(propName, objType);
         }
 
-        return importData(dataset, columnTypeMap, offset, count, stmt, batchSize, batchInterval, filter);
+        return importData(dataset, offset, count, filter, stmt, batchSize, batchInterval, columnTypeMap);
     }
 
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
+     * @param columnTypeMap
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final Map<String, ? extends Type> columnTypeMap, final PreparedStatement stmt) {
-        return importData(dataset, columnTypeMap, 0, dataset.size(), stmt);
+    public static int importData(final DataSet dataset, final PreparedStatement stmt, final Map<String, ? extends Type> columnTypeMap) {
+        return importData(dataset, 0, dataset.size(), stmt, columnTypeMap);
     }
 
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param offset
      * @param count
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
+     * @param columnTypeMap
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final Map<String, ? extends Type> columnTypeMap, final int offset, final int count,
-            final PreparedStatement stmt) {
-        return importData(dataset, columnTypeMap, offset, count, stmt, 200, 0);
+    public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt,
+            final Map<String, ? extends Type> columnTypeMap) {
+        return importData(dataset, offset, count, stmt, 200, 0, columnTypeMap);
     }
 
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param offset
      * @param count
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
+     * @param columnTypeMap
      * @param filter
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final Map<String, ? extends Type> columnTypeMap, final int offset, final int count,
-            final PreparedStatement stmt, final int batchSize, final int batchInterval) {
-        return importData(dataset, columnTypeMap, offset, count, stmt, batchSize, batchInterval, null);
+    public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt, final int batchSize,
+            final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
+        return importData(dataset, offset, count, null, stmt, batchSize, batchInterval, columnTypeMap);
     }
 
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param offset
      * @param count
+     * @param filter
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
      * @param batchSize
      * @param batchInterval
-     * @param filter
+     * @param columnTypeMap
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final Map<String, ? extends Type> columnTypeMap, final int offset, final int count,
-            final PreparedStatement stmt, final int batchSize, final int batchInterval, final Predicate<Object[]> filter) {
+    public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final PreparedStatement stmt,
+            final int batchSize, final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
         if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
             throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
         }
@@ -1440,25 +1461,25 @@ public final class JdbcUtil {
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt, final int batchSize,
             final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
-        return importData(dataset, offset, count, stmt, batchSize, batchInterval, null, stmtSetter);
+        return importData(dataset, offset, count, null, stmt, batchSize, batchInterval, stmtSetter);
     }
 
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
      * @param dataset
-     * @param columnTypeMap
      * @param offset
      * @param count
+     * @param filter
      * @param stmt the column order in the sql must be consistent with the column order in the DataSet.
      * @param batchSize
      * @param batchInterval
-     * @param filter
      * @param stmtSetter
+     * @param columnTypeMap
      * @return
      */
-    public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final Predicate<Object[]> filter, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+    public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final PreparedStatement stmt,
+            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
         if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
             throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
         }
@@ -1513,7 +1534,7 @@ public final class JdbcUtil {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(insertSQL);
+            stmt = prepareStatement(conn, insertSQL);
 
             return importData(file, offset, count, stmt, batchSize, batchInterval, func);
         } catch (SQLException e) {
@@ -1563,7 +1584,7 @@ public final class JdbcUtil {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(insertSQL);
+            stmt = prepareStatement(conn, insertSQL);
 
             return importData(is, offset, count, stmt, batchSize, batchInterval, func);
         } catch (SQLException e) {
@@ -1605,7 +1626,7 @@ public final class JdbcUtil {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(insertSQL);
+            stmt = prepareStatement(conn, insertSQL);
 
             return importData(reader, offset, count, stmt, batchSize, batchInterval, func);
         } catch (SQLException e) {
@@ -1690,7 +1711,7 @@ public final class JdbcUtil {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(insertSQL);
+            stmt = prepareStatement(conn, insertSQL);
 
             return importData(iter, offset, count, stmt, batchSize, batchInterval, func);
         } catch (SQLException e) {
@@ -1768,12 +1789,30 @@ public final class JdbcUtil {
 
     public static <T> long importData(final Iterator<T> iter, final long offset, final long count, final Connection conn, final String insertSQL,
             final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+        return importData(iter, offset, count, null, conn, insertSQL, batchSize, batchInterval, stmtSetter);
+    }
+
+    /**
+     * 
+     * @param iter
+     * @param offset
+     * @param count
+     * @param filter
+     * @param conn
+     * @param insertSQL
+     * @param batchSize
+     * @param batchInterval
+     * @param stmtSetter
+     * @return
+     */
+    public static <T> long importData(final Iterator<T> iter, final long offset, final long count, final Predicate<? super T> filter, final Connection conn,
+            final String insertSQL, final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(insertSQL);
+            stmt = prepareStatement(conn, insertSQL);
 
-            return importData(iter, offset, count, stmt, batchSize, batchInterval, stmtSetter);
+            return importData(iter, offset, count, filter, stmt, batchSize, batchInterval, stmtSetter);
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {
@@ -1785,29 +1824,41 @@ public final class JdbcUtil {
         return importData(iter, 0, Long.MAX_VALUE, stmt, 200, 0, stmtSetter);
     }
 
+    public static <T> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt, final int batchSize,
+            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+        return importData(iter, offset, count, null, stmt, batchSize, batchInterval, stmtSetter);
+    }
+
     /**
      * Imports the data from Iterator to database.
      * 
      * @param iter
      * @param offset
      * @param count
+     * @param filter
      * @param stmt
      * @param batchSize
      * @param batchInterval
      * @param func convert element to the parameters for record insert. Returns a <code>null</code> array to skip the line. 
      * @return
      */
-    public static <T> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+    public static <T> long importData(final Iterator<T> iter, long offset, final long count, final Predicate<? super T> filter, final PreparedStatement stmt,
+            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
         long result = 0;
 
         try {
             while (offset-- > 0 && iter.hasNext()) {
                 iter.next();
             }
-
+            T next = null;
             while (result < count && iter.hasNext()) {
-                stmtSetter.accept(stmt, iter.next());
+                next = iter.next();
+
+                if (filter != null && filter.test(next) == false) {
+                    continue;
+                }
+
+                stmtSetter.accept(stmt, next);
                 stmt.addBatch();
 
                 if ((++result % batchSize) == 0) {
@@ -1840,21 +1891,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final Connection conn, final String sql, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, 0, 0, rowParser);
-    }
-
-    /**
-     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param conn
-     * @param sql
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
-     */
-    public static void parse(final Connection conn, final String sql, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+        parse(conn, sql, 0, Long.MAX_VALUE, rowParser);
     }
 
     /**
@@ -1871,6 +1908,21 @@ public final class JdbcUtil {
         parse(conn, sql, offset, count, 0, 0, rowParser);
     }
 
+    //    /**
+    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
+    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
+    //     * 
+    //     * @param conn
+    //     * @param sql
+    //     * @param processThreadNumber thread number used to parse/process the lines/records
+    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+    //     * @param rowParser always remember to handle row <code>null</code>
+    //     */
+    //    @Deprecated
+    //    static void parse(final Connection conn, final String sql, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+    //        parse(conn, sql, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+    //    }
+
     /**
      * Parse the ResultSet obtained by executing query with the specified Connection and sql.
      * The last row will always be null to identity the ending of row set even offset/count is specified.
@@ -1885,79 +1937,9 @@ public final class JdbcUtil {
      */
     public static void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
-        parse(conn, sql, null, offset, count, processThreadNumber, queueSize, rowParser);
-    }
-
-    /**
-     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param conn
-     * @param sql
-     * @param parameters
-     * @param rowParser always remember to handle row <code>null</code>
-     */
-    public static void parse(final Connection conn, final String sql, final List<?> parameters, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, parameters, 0, 0, rowParser);
-    }
-
-    /**
-     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param conn
-     * @param sql
-     * @param parameters
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
-     */
-    public static void parse(final Connection conn, final String sql, final List<?> parameters, final int processThreadNumber, final int queueSize,
-            final Consumer<Object[]> rowParser) {
-        parse(conn, sql, parameters, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
-    }
-
-    /**
-     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param conn
-     * @param sql
-     * @param parameters
-     * @param offset
-     * @param count
-     * @param rowParser always remember to handle row <code>null</code>
-     */
-    public static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count,
-            final Consumer<Object[]> rowParser) {
-        parse(conn, sql, parameters, offset, count, 0, 0, rowParser);
-    }
-
-    /**
-     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param conn
-     * @param sql
-     * @param parameters
-     * @param offset
-     * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
-     */
-    public static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count,
-            final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
         PreparedStatement stmt = null;
-
         try {
-            stmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
-            if (N.notNullOrEmpty(parameters)) {
-                for (int i = 0; i < parameters.size(); i++) {
-                    stmt.setObject(i + 1, parameters.get(i));
-                }
-            }
+            stmt = prepareStatement(conn, sql);
 
             stmt.setFetchSize(200);
 
@@ -1969,6 +1951,82 @@ public final class JdbcUtil {
         }
     }
 
+    //    /**
+    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
+    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
+    //     * 
+    //     * @param conn
+    //     * @param sql
+    //     * @param parameters
+    //     * @param rowParser always remember to handle row <code>null</code>
+    //     */
+    //    static void parse(final Connection conn, final String sql, final List<?> parameters, final Consumer<Object[]> rowParser) {
+    //        parse(conn, sql, parameters, 0, Long.MAX_VALUE, rowParser);
+    //    }
+    //
+    //    /**
+    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
+    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
+    //     * 
+    //     * @param conn
+    //     * @param sql
+    //     * @param parameters
+    //     * @param offset
+    //     * @param count
+    //     * @param rowParser always remember to handle row <code>null</code>
+    //     */
+    //    static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count,
+    //            final Consumer<Object[]> rowParser) {
+    //        parse(conn, sql, parameters, offset, count, 0, 0, rowParser);
+    //    }
+    //
+    //    /**
+    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
+    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
+    //     * 
+    //     * @param conn
+    //     * @param sql
+    //     * @param parameters
+    //     * @param processThreadNumber thread number used to parse/process the lines/records
+    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+    //     * @param rowParser always remember to handle row <code>null</code>
+    //     */
+    //    @Deprecated
+    //    static void parse(final Connection conn, final String sql, final List<?> parameters, final int processThreadNumber, final int queueSize,
+    //            final Consumer<Object[]> rowParser) {
+    //        parse(conn, sql, parameters, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+    //    }
+    //
+    //    /**
+    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
+    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
+    //     * 
+    //     * @param conn
+    //     * @param sql
+    //     * @param parameters
+    //     * @param offset
+    //     * @param count
+    //     * @param processThreadNumber thread number used to parse/process the lines/records
+    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+    //     * @param rowParser always remember to handle row <code>null</code>
+    //     */
+    //    static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count, final int processThreadNumber,
+    //            final int queueSize, final Consumer<Object[]> rowParser) {
+    //        PreparedStatement stmt = null;
+    //
+    //        try {
+    //            stmt = prepareStatement(conn, sql, parameters);
+    //
+    //            stmt.setFetchSize(200);
+    //
+    //            parse(stmt, offset, count, processThreadNumber, queueSize, rowParser);
+    //        } catch (SQLException e) {
+    //            throw new AbacusSQLException(e);
+    //        } finally {
+    //            closeQuietly(stmt);
+    //        }
+    //    }
+
     /**
      * Parse the ResultSet obtained by executing query with the specified PreparedStatement.
      * The last row will always be null to identity the ending of row set even offset/count is specified.
@@ -1977,20 +2035,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final PreparedStatement stmt, final Consumer<Object[]> rowParser) {
-        parse(stmt, 0, 0, rowParser);
-    }
-
-    /**
-     * Parse the ResultSet obtained by executing query with the specified PreparedStatement.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param stmt
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
-     */
-    public static void parse(final PreparedStatement stmt, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
-        parse(stmt, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+        parse(stmt, 0, Long.MAX_VALUE, rowParser);
     }
 
     /**
@@ -2005,6 +2050,20 @@ public final class JdbcUtil {
     public static void parse(final PreparedStatement stmt, final long offset, final long count, final Consumer<Object[]> rowParser) {
         parse(stmt, offset, count, 0, 0, rowParser);
     }
+
+    //    /**
+    //     * Parse the ResultSet obtained by executing query with the specified PreparedStatement.
+    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
+    //     * 
+    //     * @param stmt
+    //     * @param processThreadNumber thread number used to parse/process the lines/records
+    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+    //     * @param rowParser always remember to handle row <code>null</code>
+    //     */
+    //    @Deprecated
+    //    static void parse(final PreparedStatement stmt, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+    //        parse(stmt, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+    //    }
 
     /**
      * Parse the ResultSet obtained by executing query with the specified PreparedStatement.
@@ -2040,20 +2099,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final ResultSet rs, final Consumer<Object[]> rowParser) {
-        parse(rs, 0, 0, rowParser);
-    }
-
-    /**
-     * Parse the specified ResultSet.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param rs
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
-     */
-    public static void parse(final ResultSet rs, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
-        parse(rs, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+        parse(rs, 0, Long.MAX_VALUE, rowParser);
     }
 
     /**
@@ -2068,6 +2114,20 @@ public final class JdbcUtil {
     public static void parse(final ResultSet rs, long offset, long count, final Consumer<Object[]> rowParser) {
         parse(rs, offset, count, 0, 0, rowParser);
     }
+
+    //    /**
+    //     * Parse the specified ResultSet.
+    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
+    //     * 
+    //     * @param rs
+    //     * @param processThreadNumber thread number used to parse/process the lines/records
+    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+    //     * @param rowParser always remember to handle row <code>null</code>
+    //     */
+    //    @Deprecated
+    //    static void parse(final ResultSet rs, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+    //        parse(rs, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+    //    }
 
     /**
      * Parse the specified ResultSet.
@@ -2093,20 +2153,7 @@ public final class JdbcUtil {
      * @param rowParser always remember to handle row <code>null</code>
      */
     public static void parse(final RowIterator iter, final Consumer<Object[]> rowParser) {
-        parse(iter, 0, 0, rowParser);
-    }
-
-    /**
-     * Parse the specified ResultSet.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
-     */
-    public static void parse(final RowIterator iter, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
-        parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+        parse(iter, 0, Long.MAX_VALUE, rowParser);
     }
 
     /**
@@ -2122,6 +2169,20 @@ public final class JdbcUtil {
         parse(iter, offset, count, 0, 0, rowParser);
     }
 
+    //    /**
+    //     * Parse the specified ResultSet.
+    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
+    //     * 
+    //     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
+    //     * @param processThreadNumber thread number used to parse/process the lines/records
+    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+    //     * @param rowParser always remember to handle row <code>null</code>
+    //     */
+    //    @Deprecated
+    //    static void parse(final RowIterator iter, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
+    //        parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
+    //    }
+
     /**
      * Parse the specified ResultSet.
      * The last row will always be null to identity the ending of row set even offset/count is specified.
@@ -2136,6 +2197,22 @@ public final class JdbcUtil {
     public static void parse(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
         parseII(iter, offset, count, processThreadNumber, queueSize, rowParser);
+    }
+
+    public static void parse(final Collection<? extends RowIterator> iterators, final Consumer<Object[]> elementParser) {
+        if (N.isNullOrEmpty(iterators)) {
+            return;
+        }
+
+        parse(iterators, 0, Long.MAX_VALUE, elementParser);
+    }
+
+    public static void parse(final Collection<? extends RowIterator> iterators, final long offset, final long count, final Consumer<Object[]> elementParser) {
+        if (N.isNullOrEmpty(iterators)) {
+            return;
+        }
+
+        parse(iterators, offset, count, 0, 0, 0, elementParser);
     }
 
     public static void parse(final Collection<? extends RowIterator> iterators, final int readThreadNumber, final int processThreadNumber, final int queueSize,
@@ -2403,17 +2480,17 @@ public final class JdbcUtil {
         return columnNameList;
     }
 
-    static boolean isTableNotExistsException(final SQLException e) {
-        if (e.getSQLState() != null && sqlStateForTableNotExists.contains(e.getSQLState())) {
-            return true;
-        }
+    static boolean isTableNotExistsException(final Throwable e) {
+        if (e instanceof SQLException) {
+            SQLException sqlException = (SQLException) e;
 
-        String msg = e.getMessage();
-        return N.notNullOrEmpty(msg) && (msg.contains("not exist") || msg.contains("doesn't exist") || msg.contains("not found"));
-    }
+            if (sqlException.getSQLState() != null && sqlStateForTableNotExists.contains(sqlException.getSQLState())) {
+                return true;
+            }
 
-    static boolean isTableNotExistsException(final RuntimeException e) {
-        if (e instanceof AbacusSQLException) {
+            String msg = e.getMessage();
+            return N.notNullOrEmpty(msg) && (msg.contains("not exist") || msg.contains("doesn't exist") || msg.contains("not found"));
+        } else if (e instanceof AbacusSQLException) {
             AbacusSQLException sqlException = (AbacusSQLException) e;
 
             if (sqlException.getSQLState() != null && sqlStateForTableNotExists.contains(sqlException.getSQLState())) {
