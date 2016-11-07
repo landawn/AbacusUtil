@@ -2957,6 +2957,105 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <U> Stream<Stream<T>> split(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
+        return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>();
+
+                while (cursor < toIndex) {
+                    if (predicate.apply(elements[cursor], identifier)) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return Stream.of(result);
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public <U> Stream<List<T>> splitIntoList(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
+        return new ParallelIteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public List<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>();
+
+                while (cursor < toIndex) {
+                    if (predicate.apply(elements[cursor], identifier)) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public <U> Stream<Set<T>> splitIntoSet(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
+        return new ParallelIteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Set<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final Set<T> result = new HashSet<>();
+
+                while (cursor < toIndex) {
+                    if (predicate.apply(elements[cursor], identifier)) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public Stream<T> distinct() {
         final T[] a = N.distinct(elements, fromIndex, toIndex);
         return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);

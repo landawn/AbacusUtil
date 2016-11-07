@@ -649,6 +649,84 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract Stream<Set<T>> splitIntoSet(Predicate<? super T> predicate);
 
     /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(MutableInt.of(5), (e, border) -> {
+     *     if (e <= border.intValue()) {
+     *         return true;
+     *     } else {
+     *         border.addAndGet(5);
+     *         return false;
+     *     }
+     * }).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param identifier
+     * @param predicate
+     * @return
+     */
+    public abstract <U> Stream<Stream<T>> split(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, border) -> {
+     *     if (e <= border.intValue()) {
+     *         return true;
+     *     } else {
+     *         border.addAndGet(5);
+     *         return false;
+     *     }
+     * }).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param identifier
+     * @param predicate
+     * @return
+     */
+    public abstract <U> Stream<List<T>> splitIntoList(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoSet(MutableInt.of(5), (e, border) -> {
+     *     if (e <= border.intValue()) {
+     *         return true;
+     *     } else {
+     *         border.addAndGet(5);
+     *         return false;
+     *     }
+     * }).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param identifier
+     * @param predicate
+     * @return
+     */
+    public abstract <U> Stream<Set<T>> splitIntoSet(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate);
+
+    /**
      * Returns a stream consisting of the distinct elements (according to
      * {@link Object#equals(Object)}) of this stream.
      *
