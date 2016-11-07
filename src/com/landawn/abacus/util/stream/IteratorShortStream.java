@@ -26,6 +26,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ObjShortConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -418,38 +419,53 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream distinct() {
-        return new IteratorShortStream(new ImmutableShortIterator() {
-            private Iterator<Short> distinctIter;
+        final Set<Short> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final short[] a = new short[set.size()];
+        final Iterator<Short> iter = set.iterator();
 
-            @Override
-            public short next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ArrayShortStream(a, closeHandlers, sorted);
 
-            private void removeDuplicated() {
-                final Set<Short> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted);
+        //        return new IteratorShortStream(new ImmutableShortIterator() {
+        //            private Iterator<Short> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public short next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Short> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1192,6 +1208,28 @@ final class IteratorShortStream extends AbstractShortStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public ShortStream xor(Collection<Short> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new ShortPredicate() {
+            @Override
+            public boolean test(short value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Short>() {
+            @Override
+            public boolean test(Short value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToShort(new ToShortFunction<Short>() {
+            @Override
+            public short applyAsShort(Short value) {
+                return value.shortValue();
+            }
+        }));
     }
 
     //    @Override

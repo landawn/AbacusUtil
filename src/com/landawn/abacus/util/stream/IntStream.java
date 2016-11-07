@@ -40,6 +40,7 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
@@ -936,6 +937,13 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      */
     public abstract IntStream intersect(Collection<?> c);
 
+    /**
+     * @param c
+     * @return
+     * @see IntList#xor(IntList)
+     */
+    public abstract IntStream xor(Collection<Integer> c);
+
     //    /**
     //     * Skill All the elements in the specified collection.
     //     * 
@@ -1016,6 +1024,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * each boxed to an {@code Integer}
      */
     public abstract Stream<Integer> boxed();
+
+    public abstract Stream<IndexedInt> indexed();
 
     @Override
     public abstract ImmutableIterator<Integer> iterator();

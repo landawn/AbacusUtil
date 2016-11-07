@@ -43,6 +43,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -975,6 +976,13 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      */
     public abstract DoubleStream intersect(Collection<?> c);
 
+    /**
+     * @param c
+     * @return
+     * @see IntList#xor(IntList)
+     */
+    public abstract DoubleStream xor(Collection<Double> c);
+
     //    /**
     //     * Skill All the elements in the specified collection.
     //     * 
@@ -1020,6 +1028,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * each boxed to a {@code Double}
      */
     public abstract Stream<Double> boxed();
+
+    public abstract Stream<IndexedDouble> indexed();
 
     @Override
     public abstract ImmutableIterator<Double> iterator();

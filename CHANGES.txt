@@ -1,3 +1,15 @@
+========Changes in 0.9.30=========================================================================
+
+1, Add xor to Stream/IntStream/LongStream/DoubleStream/...
+
+2, Remove copy(int, int) from ObjectList/IntList/..., it can be replaced by subList(int, int).
+
+3, Add indexed() to stream/IntStream/DoubleStream/...
+
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.29=========================================================================
 
 1, Refactoring JdbcUtil/CSVUtil/IOUtil.

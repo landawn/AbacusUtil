@@ -490,7 +490,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         final BooleanList container = size() >= c.size() ? this : c;
         final boolean[] iterElements = size() >= c.size() ? c.array() : this.array();
 
-        if (c.size() > 3 && size() > 9) {
+        if (iterElements.length > 3 && container.size() > 9) {
             final Set<Boolean> set = container.toSet();
 
             for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
@@ -576,11 +576,33 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * @see IntList#xor(IntList)
      */
     public BooleanList xor(BooleanList b) {
-        final BooleanList result = this.except(b);
+        //        final BooleanList result = this.except(b);
+        //
+        //        result.addAll(b.except(this));
+        //
+        //        return result;
 
-        result.addAll(b.except(this));
+        final Multiset<Boolean> bOccurrences = b.toMultiset();
 
-        return result;
+        final BooleanList c = new BooleanList(N.max(9, Math.abs(size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(b.elementData[i]) > 0) {
+                c.add(b.elementData[i]);
+            }
+
+            if (bOccurrences.isEmpty()) {
+                break;
+            }
+        }
+
+        return c;
     }
 
     public int indexOf(boolean e) {
@@ -927,7 +949,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
+            return of(N.distinct(elementData, fromIndex, toIndex));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
@@ -991,11 +1013,16 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
-    public BooleanList copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
+    public BooleanList copy() {
+        return new BooleanList(N.copyOfRange(elementData, 0, size));
     }
+
+    //    @Override
+    //    public BooleanList copy(final int fromIndex, final int toIndex) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
+    //    }
 
     @Override
     public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {

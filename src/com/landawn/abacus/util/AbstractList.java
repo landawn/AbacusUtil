@@ -280,21 +280,27 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
 
     public abstract void swap(int i, int j);
 
-    /**
-     *
-     * @return a copy of this List
-     */
-    public L copy() {
-        return copy(0, size());
-    }
+    //    /**
+    //     *
+    //     * @return a copy of this List
+    //     */
+    //    public L copy() {
+    //        return copy(0, size());
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @return
+    //     */
+    //    public abstract L copy(final int fromIndex, final int toIndex);
 
     /**
      * 
-     * @param fromIndex
-     * @param toIndex
-     * @return
+     * @return a copy of this List
      */
-    public abstract L copy(final int fromIndex, final int toIndex);
+    public abstract L copy();
 
     /**
      * Returns consecutive sub lists of this list, each of the same size (the final list may be smaller),

@@ -31,7 +31,9 @@ import com.landawn.abacus.util.function.FloatToIntFunction;
 import com.landawn.abacus.util.function.FloatToLongFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToFloatFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -1362,6 +1364,28 @@ final class ArrayFloatStream extends AbstractFloatStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public FloatStream xor(Collection<Float> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new FloatPredicate() {
+            @Override
+            public boolean test(float value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Float>() {
+            @Override
+            public boolean test(Float value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToFloat(new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        }));
     }
 
     //    @Override

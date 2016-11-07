@@ -28,7 +28,9 @@ import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteToIntFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.ObjByteConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToByteFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -1083,6 +1085,28 @@ final class ArrayByteStream extends AbstractByteStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public ByteStream xor(Collection<Byte> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new BytePredicate() {
+            @Override
+            public boolean test(byte value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Byte>() {
+            @Override
+            public boolean test(Byte value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToByte(new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        }));
     }
 
     //    @Override

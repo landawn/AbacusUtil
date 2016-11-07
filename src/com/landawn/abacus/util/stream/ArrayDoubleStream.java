@@ -30,7 +30,9 @@ import com.landawn.abacus.util.function.DoubleToIntFunction;
 import com.landawn.abacus.util.function.DoubleToLongFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.ObjDoubleConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToDoubleFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -1386,6 +1388,28 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public DoubleStream xor(Collection<Double> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new DoublePredicate() {
+            @Override
+            public boolean test(double value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Double>() {
+            @Override
+            public boolean test(Double value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToDouble(new ToDoubleFunction<Double>() {
+            @Override
+            public double applyAsDouble(Double value) {
+                return value.doubleValue();
+            }
+        }));
     }
 
     //    @Override

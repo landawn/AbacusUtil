@@ -31,7 +31,9 @@ import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteToIntFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.ObjByteConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToByteFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -415,38 +417,53 @@ final class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream distinct() {
-        return new IteratorByteStream(new ImmutableByteIterator() {
-            private Iterator<Byte> distinctIter;
+        final Set<Byte> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final byte[] a = new byte[set.size()];
+        final Iterator<Byte> iter = set.iterator();
 
-            @Override
-            public byte next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ArrayByteStream(a, closeHandlers, sorted);
 
-            private void removeDuplicated() {
-                final Set<Byte> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted);
+        //        return new IteratorByteStream(new ImmutableByteIterator() {
+        //            private Iterator<Byte> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public byte next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Byte> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1170,6 +1187,28 @@ final class IteratorByteStream extends AbstractByteStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public ByteStream xor(Collection<Byte> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new BytePredicate() {
+            @Override
+            public boolean test(byte value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Byte>() {
+            @Override
+            public boolean test(Byte value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToByte(new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        }));
     }
 
     //    @Override

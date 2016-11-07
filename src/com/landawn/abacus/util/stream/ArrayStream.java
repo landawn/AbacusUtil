@@ -1660,22 +1660,12 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> distinct() {
-        return new ArrayStream<T>(N.removeDuplicates(elements, fromIndex, toIndex, sorted && isSameComparator(null, cmp)), closeHandlers, sorted, cmp);
+        return new ArrayStream<T>(N.distinct(elements, fromIndex, toIndex), closeHandlers, sorted, cmp);
     }
 
-    //    @Override
-    //    public Stream<T> distinct(Comparator<? super T> comparator) {
-    //        if (sorted && isSameComparator(comparator, cmp)) {
-    //            return distinct();
-    //        }
-    //
-    //        final T[] a = N.distinct(elements, fromIndex, toIndex, comparator);
-    //        return new ArrayStream<T>(a, closeHandlers, sorted, cmp);
-    //    }
-
     @Override
-    public Stream<T> distinct(final Function<? super T, ?> classifier) {
-        final T[] a = N.distinct(elements, fromIndex, toIndex, classifier);
+    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
+        final T[] a = N.distinct(elements, fromIndex, toIndex, keyMapper);
         return new ArrayStream<T>(a, closeHandlers, sorted, cmp);
     }
 
@@ -2345,6 +2335,23 @@ final class ArrayStream<T> extends AbstractStream<T> {
                 return multiset.getAndRemove(mapper.apply(value)) > 0;
             }
         });
+    }
+
+    @Override
+    public Stream<T> xor(final Collection<? extends T> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append((Stream<T>) Stream.of(c).filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }));
     }
 
     //    @Override

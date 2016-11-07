@@ -32,6 +32,7 @@ import com.landawn.abacus.util.function.DoubleToIntFunction;
 import com.landawn.abacus.util.function.DoubleToLongFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.ObjDoubleConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 
@@ -518,38 +519,53 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream distinct() {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
-            private Iterator<Double> distinctIter;
+        final Set<Double> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final double[] a = new double[set.size()];
+        final Iterator<Double> iter = set.iterator();
 
-            @Override
-            public double next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ArrayDoubleStream(a, closeHandlers, sorted);
 
-            private void removeDuplicated() {
-                final Set<Double> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted);
+        //        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        //            private Iterator<Double> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public double next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Double> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1423,6 +1439,28 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public DoubleStream xor(Collection<Double> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new DoublePredicate() {
+            @Override
+            public boolean test(double value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Double>() {
+            @Override
+            public boolean test(Double value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToDouble(new ToDoubleFunction<Double>() {
+            @Override
+            public double applyAsDouble(Double value) {
+                return value.doubleValue();
+            }
+        }));
     }
 
     //    @Override

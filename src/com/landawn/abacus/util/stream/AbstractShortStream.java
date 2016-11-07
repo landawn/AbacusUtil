@@ -3,6 +3,8 @@ package com.landawn.abacus.util.stream;
 import java.util.Collection;
 import java.util.Map;
 
+import com.landawn.abacus.util.IndexedShort;
+import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
@@ -11,6 +13,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.ShortBiFunction;
+import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.Supplier;
 
@@ -48,6 +51,18 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
         throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public Stream<IndexedShort> indexed() {
+        final MutableLong idx = new MutableLong();
+
+        return mapToObj(new ShortFunction<IndexedShort>() {
+            @Override
+            public IndexedShort apply(short t) {
+                return IndexedShort.of(idx.getAndIncrement(), t);
+            }
+        });
     }
 
     @Override

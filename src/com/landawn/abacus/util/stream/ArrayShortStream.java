@@ -23,6 +23,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ObjShortConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -30,6 +31,7 @@ import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortToIntFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToShortFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -1104,6 +1106,28 @@ final class ArrayShortStream extends AbstractShortStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public ShortStream xor(Collection<Short> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new ShortPredicate() {
+            @Override
+            public boolean test(short value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Short>() {
+            @Override
+            public boolean test(Short value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToShort(new ToShortFunction<Short>() {
+            @Override
+            public short applyAsShort(Short value) {
+                return value.shortValue();
+            }
+        }));
     }
 
     //    @Override

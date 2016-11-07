@@ -3,13 +3,16 @@ package com.landawn.abacus.util.stream;
 import java.util.Collection;
 import java.util.Map;
 
+import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntSummaryStatistics;
+import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.IntBiFunction;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -48,6 +51,18 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator) {
         throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public Stream<IndexedInt> indexed() {
+        final MutableLong idx = new MutableLong();
+
+        return mapToObj(new IntFunction<IndexedInt>() {
+            @Override
+            public IndexedInt apply(int t) {
+                return IndexedInt.of(idx.getAndIncrement(), t);
+            }
+        });
     }
 
     @Override

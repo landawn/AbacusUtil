@@ -40,6 +40,7 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedShort;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -861,6 +862,13 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
      */
     public abstract ShortStream intersect(Collection<?> c);
 
+    /**
+     * @param c
+     * @return
+     * @see IntList#xor(IntList)
+     */
+    public abstract ShortStream xor(Collection<Short> c);
+
     //    /**
     //     * Skill All the elements in the specified collection.
     //     * 
@@ -918,6 +926,8 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
      * each boxed to an {@code Shorteger}
      */
     public abstract Stream<Short> boxed();
+
+    public abstract Stream<IndexedShort> indexed();
 
     @Override
     public abstract ImmutableIterator<Short> iterator();

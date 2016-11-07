@@ -4,12 +4,15 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.IndexedChar;
+import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.CharBiFunction;
+import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -49,6 +52,18 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
         throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public Stream<IndexedChar> indexed() {
+        final MutableLong idx = new MutableLong();
+
+        return mapToObj(new CharFunction<IndexedChar>() {
+            @Override
+            public IndexedChar apply(char t) {
+                return IndexedChar.of(idx.getAndIncrement(), t);
+            }
+        });
     }
 
     @Override

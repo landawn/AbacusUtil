@@ -297,38 +297,53 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream distinct() {
-        return new ParallelIteratorCharStream(new ImmutableCharIterator() {
-            private Iterator<Character> distinctIter;
+        final Set<Character> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final char[] a = new char[set.size()];
+        final Iterator<Character> iter = set.iterator();
 
-            @Override
-            public char next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
 
-            private void removeDuplicated() {
-                final Set<Character> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        //        return new ParallelIteratorCharStream(new ImmutableCharIterator() {
+        //            private Iterator<Character> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public char next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Character> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        },closeHandlers,sorted,maxThreadNum,splitter);
     }
 
     @Override
@@ -1524,6 +1539,11 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     @Override
     public CharStream intersect(final Collection<?> c) {
         return new ParallelIteratorCharStream(this.sequential().intersect(c).charIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public CharStream xor(final Collection<Character> c) {
+        return new ParallelIteratorCharStream(this.sequential().xor(c).charIterator(), closeHandlers, false, maxThreadNum, splitter);
     }
 
     //    @Override

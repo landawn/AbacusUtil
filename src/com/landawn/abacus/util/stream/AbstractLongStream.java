@@ -3,13 +3,16 @@ package com.landawn.abacus.util.stream;
 import java.util.Collection;
 import java.util.Map;
 
+import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongSummaryStatistics;
+import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.LongBiFunction;
+import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -48,6 +51,18 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
         throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public Stream<IndexedLong> indexed() {
+        final MutableLong idx = new MutableLong();
+
+        return mapToObj(new LongFunction<IndexedLong>() {
+            @Override
+            public IndexedLong apply(long t) {
+                return IndexedLong.of(idx.getAndIncrement(), t);
+            }
+        });
     }
 
     @Override

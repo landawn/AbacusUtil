@@ -4,12 +4,15 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.IndexedFloat;
+import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.FloatBiFunction;
+import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -48,6 +51,18 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
         throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public Stream<IndexedFloat> indexed() {
+        final MutableLong idx = new MutableLong();
+
+        return mapToObj(new FloatFunction<IndexedFloat>() {
+            @Override
+            public IndexedFloat apply(float t) {
+                return IndexedFloat.of(idx.getAndIncrement(), t);
+            }
+        });
     }
 
     @Override

@@ -28,7 +28,9 @@ import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharToIntFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.ObjCharConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToCharFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -1083,6 +1085,28 @@ final class ArrayCharStream extends AbstractCharStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public CharStream xor(Collection<Character> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Character>() {
+            @Override
+            public boolean test(Character value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToChar(new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        }));
     }
 
     //    @Override

@@ -31,7 +31,9 @@ import com.landawn.abacus.util.function.LongToFloatFunction;
 import com.landawn.abacus.util.function.LongToIntFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToLongFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -1305,6 +1307,28 @@ final class ArrayLongStream extends AbstractLongStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public LongStream xor(Collection<Long> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new LongPredicate() {
+            @Override
+            public boolean test(long value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Long>() {
+            @Override
+            public boolean test(Long value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToLong(new ToLongFunction<Long>() {
+            @Override
+            public long applyAsLong(Long value) {
+                return value.longValue();
+            }
+        }));
     }
 
     //    @Override

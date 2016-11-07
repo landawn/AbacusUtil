@@ -1821,6 +1821,11 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         return new ParallelIteratorShortStream(this.sequential().intersect(c).shortIterator(), closeHandlers, sorted, maxThreadNum, splitter);
     }
 
+    @Override
+    public ShortStream xor(final Collection<Short> c) {
+        return new ParallelIteratorShortStream(this.sequential().xor(c).shortIterator(), closeHandlers, false, maxThreadNum, splitter);
+    }
+
     //    @Override
     //    public ShortStream exclude(final Collection<?> c) {
     //        if (maxThreadNum <= 1) {

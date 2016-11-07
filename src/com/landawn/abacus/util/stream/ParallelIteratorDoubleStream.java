@@ -365,38 +365,53 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream distinct() {
-        return new ParallelIteratorDoubleStream(new ImmutableDoubleIterator() {
-            private Iterator<Double> distinctIter;
+        final Set<Double> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final double[] a = new double[set.size()];
+        final Iterator<Double> iter = set.iterator();
 
-            @Override
-            public double next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ParallelArrayDoubleStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
 
-            private void removeDuplicated() {
-                final Set<Double> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        //        return new ParallelIteratorDoubleStream(new ImmutableDoubleIterator() {
+        //            private Iterator<Double> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public double next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Double> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted, maxThreadNum, splitter);
     }
 
     @Override
@@ -1595,6 +1610,11 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream intersect(final Collection<?> c) {
         return new ParallelIteratorDoubleStream(this.sequential().intersect(c).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public DoubleStream xor(final Collection<Double> c) {
+        return new ParallelIteratorDoubleStream(this.sequential().xor(c).doubleIterator(), closeHandlers, false, maxThreadNum, splitter);
     }
 
     //    @Override

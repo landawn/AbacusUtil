@@ -36,6 +36,7 @@ import com.landawn.abacus.util.function.IntToLongFunction;
 import com.landawn.abacus.util.function.IntToShortFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToIntFunction;
 
@@ -672,38 +673,53 @@ final class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntStream distinct() {
-        return new IteratorIntStream(new ImmutableIntIterator() {
-            private Iterator<Integer> distinctIter;
+        final Set<Integer> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final int[] a = new int[set.size()];
+        final Iterator<Integer> iter = set.iterator();
 
-            @Override
-            public int next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ArrayIntStream(a, closeHandlers, sorted);
 
-            private void removeDuplicated() {
-                final Set<Integer> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted);
+        //        return new IteratorIntStream(new ImmutableIntIterator() {
+        //            private Iterator<Integer> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public int next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Integer> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1517,6 +1533,28 @@ final class IteratorIntStream extends AbstractIntStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public IntStream xor(Collection<Integer> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new IntPredicate() {
+            @Override
+            public boolean test(int value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Integer>() {
+            @Override
+            public boolean test(Integer value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToInt(new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        }));
     }
 
     //    @Override

@@ -298,38 +298,53 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream distinct() {
-        return new ParallelIteratorShortStream(new ImmutableShortIterator() {
-            private Iterator<Short> distinctIter;
+        final Set<Short> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final short[] a = new short[set.size()];
+        final Iterator<Short> iter = set.iterator();
 
-            @Override
-            public short next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ParallelArrayShortStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
 
-            private void removeDuplicated() {
-                final Set<Short> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        //        return new ParallelIteratorShortStream(new ImmutableShortIterator() {
+        //            private Iterator<Short> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public short next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Short> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted, maxThreadNum, splitter);
     }
 
     @Override
@@ -1544,6 +1559,11 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     @Override
     public ShortStream intersect(final Collection<?> c) {
         return new ParallelIteratorShortStream(this.sequential().intersect(c).shortIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public ShortStream xor(final Collection<Short> c) {
+        return new ParallelIteratorShortStream(this.sequential().xor(c).shortIterator(), closeHandlers, false, maxThreadNum, splitter);
     }
 
     //    @Override

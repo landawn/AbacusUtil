@@ -23,9 +23,11 @@ import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IOUtil;
+import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.LongSummaryStatistics;
+import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectFactory;
@@ -186,6 +188,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
         throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public Stream<Indexed<T>> indexed() {
+        final MutableLong idx = new MutableLong();
+
+        return map(new Function<T, Indexed<T>>() {
+            @Override
+            public Indexed<T> apply(T t) {
+                return Indexed.of(idx.getAndIncrement(), t);
+            }
+        });
     }
 
     @Override

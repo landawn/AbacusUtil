@@ -1984,6 +1984,11 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         return new ParallelIteratorDoubleStream(this.sequential().intersect(c).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitter);
     }
 
+    @Override
+    public DoubleStream xor(final Collection<Double> c) {
+        return new ParallelIteratorDoubleStream(this.sequential().xor(c).doubleIterator(), closeHandlers, false, maxThreadNum, splitter);
+    }
+
     //    @Override
     //    public DoubleStream exclude(final Collection<?> c) {
     //        if (maxThreadNum <= 1) {

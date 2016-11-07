@@ -1798,6 +1798,11 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         return new ParallelIteratorCharStream(this.sequential().intersect(c).charIterator(), closeHandlers, sorted, maxThreadNum, splitter);
     }
 
+    @Override
+    public CharStream xor(final Collection<Character> c) {
+        return new ParallelIteratorCharStream(this.sequential().xor(c).charIterator(), closeHandlers, false, maxThreadNum, splitter);
+    }
+
     //    @Override
     //    public CharStream exclude(final Collection<?> c) {
     //        if (maxThreadNum <= 1) {

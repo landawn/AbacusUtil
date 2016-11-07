@@ -2958,23 +2958,13 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> distinct() {
-        final T[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted && isSameComparator(null, cmp));
+        final T[] a = N.distinct(elements, fromIndex, toIndex);
         return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
     }
 
-    //    @Override
-    //    public Stream<T> distinct(final Comparator<? super T> comparator) {
-    //        if (sorted && isSameComparator(comparator, cmp)) {
-    //            return distinct();
-    //        }
-    //
-    //        final T[] a = N.distinct(elements, fromIndex, toIndex, comparator);
-    //        return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
-    //    }
-
     @Override
-    public Stream<T> distinct(final Function<? super T, ?> classifier) {
-        final T[] a = N.distinct(elements, fromIndex, toIndex, classifier);
+    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
+        final T[] a = N.distinct(elements, fromIndex, toIndex, keyMapper);
         return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
     }
 
@@ -4684,6 +4674,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 }
             }
         });
+    }
+
+    @Override
+    public Stream<T> xor(final Collection<? extends T> c) {
+        return new ParallelIteratorStream<>(this.sequential().xor(c).iterator(), closeHandlers, false, null, maxThreadNum, splitter);
     }
 
     //    @Override

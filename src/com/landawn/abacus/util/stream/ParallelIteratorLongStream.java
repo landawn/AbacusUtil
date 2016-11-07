@@ -366,38 +366,53 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream distinct() {
-        return new ParallelIteratorLongStream(new ImmutableLongIterator() {
-            private Iterator<Long> distinctIter;
+        final Set<Long> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final long[] a = new long[set.size()];
+        final Iterator<Long> iter = set.iterator();
 
-            @Override
-            public long next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ParallelArrayLongStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
 
-            private void removeDuplicated() {
-                final Set<Long> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        //        return new ParallelIteratorLongStream(new ImmutableLongIterator() {
+        //            private Iterator<Long> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public long next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Long> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted, maxThreadNum, splitter);
     }
 
     @Override
@@ -1612,6 +1627,11 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
     @Override
     public LongStream intersect(final Collection<?> c) {
         return new ParallelIteratorLongStream(this.sequential().intersect(c).longIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public LongStream xor(final Collection<Long> c) {
+        return new ParallelIteratorLongStream(this.sequential().xor(c).longIterator(), closeHandlers, false, maxThreadNum, splitter);
     }
 
     //    @Override

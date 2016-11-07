@@ -31,7 +31,9 @@ import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharToIntFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.ObjCharConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToCharFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -416,38 +418,53 @@ final class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream distinct() {
-        return new IteratorCharStream(new ImmutableCharIterator() {
-            private Iterator<Character> distinctIter;
+        final Set<Character> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final char[] a = new char[set.size()];
+        final Iterator<Character> iter = set.iterator();
 
-            @Override
-            public char next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ArrayCharStream(a, closeHandlers, sorted);
 
-            private void removeDuplicated() {
-                final Set<Character> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted);
+        //        return new IteratorCharStream(new ImmutableCharIterator() {
+        //            private Iterator<Character> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public char next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Character> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1171,6 +1188,28 @@ final class IteratorCharStream extends AbstractCharStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public CharStream xor(Collection<Character> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Character>() {
+            @Override
+            public boolean test(Character value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToChar(new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        }));
     }
 
     //    @Override

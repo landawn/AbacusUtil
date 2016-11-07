@@ -2017,6 +2017,11 @@ final class ParallelArrayIntStream extends AbstractIntStream {
         return new ParallelIteratorIntStream(this.sequential().intersect(c).intIterator(), closeHandlers, sorted, maxThreadNum, splitter);
     }
 
+    @Override
+    public IntStream xor(final Collection<Integer> c) {
+        return new ParallelIteratorIntStream(this.sequential().xor(c).intIterator(), closeHandlers, false, maxThreadNum, splitter);
+    }
+
     //    @Override
     //    public IntStream exclude(final Collection<?> c) {
     //        if (maxThreadNum <= 1) {

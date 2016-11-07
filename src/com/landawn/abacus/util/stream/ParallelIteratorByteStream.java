@@ -297,38 +297,53 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream distinct() {
-        return new ParallelIteratorByteStream(new ImmutableByteIterator() {
-            private Iterator<Byte> distinctIter;
+        final Set<Byte> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final byte[] a = new byte[set.size()];
+        final Iterator<Byte> iter = set.iterator();
 
-            @Override
-            public byte next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ParallelArrayByteStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
 
-            private void removeDuplicated() {
-                final Set<Byte> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        //        return new ParallelIteratorByteStream(new ImmutableByteIterator() {
+        //            private Iterator<Byte> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public byte next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Byte> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted, maxThreadNum, splitter);
     }
 
     @Override
@@ -1524,6 +1539,11 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     @Override
     public ByteStream intersect(final Collection<?> c) {
         return new ParallelIteratorByteStream(this.sequential().intersect(c).byteIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public ByteStream xor(final Collection<Byte> c) {
+        return new ParallelIteratorByteStream(this.sequential().xor(c).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
     }
 
     //    @Override

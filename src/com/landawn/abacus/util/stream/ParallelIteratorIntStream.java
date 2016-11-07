@@ -468,38 +468,53 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntStream distinct() {
-        return new ParallelIteratorIntStream(new ImmutableIntIterator() {
-            private Iterator<Integer> distinctIter;
+        final Set<Integer> set = new LinkedHashSet<>();
 
-            @Override
-            public boolean hasNext() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        while (elements.hasNext()) {
+            set.add(elements.next());
+        }
 
-                return distinctIter.hasNext();
-            }
+        final int[] a = new int[set.size()];
+        final Iterator<Integer> iter = set.iterator();
 
-            @Override
-            public int next() {
-                if (distinctIter == null) {
-                    removeDuplicated();
-                }
+        for (int i = 0, len = a.length; i < len; i++) {
+            a[i] = iter.next();
+        }
 
-                return distinctIter.next();
-            }
+        return new ParallelArrayIntStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
 
-            private void removeDuplicated() {
-                final Set<Integer> set = new LinkedHashSet<>();
-
-                while (elements.hasNext()) {
-                    set.add(elements.next());
-                }
-
-                distinctIter = set.iterator();
-            }
-
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        //        return new ParallelIteratorIntStream(new ImmutableIntIterator() {
+        //            private Iterator<Integer> distinctIter;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.hasNext();
+        //            }
+        //
+        //            @Override
+        //            public int next() {
+        //                if (distinctIter == null) {
+        //                    removeDuplicated();
+        //                }
+        //
+        //                return distinctIter.next();
+        //            }
+        //
+        //            private void removeDuplicated() {
+        //                final Set<Integer> set = new LinkedHashSet<>();
+        //
+        //                while (elements.hasNext()) {
+        //                    set.add(elements.next());
+        //                }
+        //
+        //                distinctIter = set.iterator();
+        //            }
+        //
+        //        }, closeHandlers, sorted, maxThreadNum, splitter);
     }
 
     @Override
@@ -1714,6 +1729,11 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
     @Override
     public IntStream intersect(final Collection<?> c) {
         return new ParallelIteratorIntStream(this.sequential().intersect(c).intIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+    }
+
+    @Override
+    public IntStream xor(final Collection<Integer> c) {
+        return new ParallelIteratorIntStream(this.sequential().xor(c).intIterator(), closeHandlers, false, maxThreadNum, splitter);
     }
 
     //    @Override

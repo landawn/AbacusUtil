@@ -42,6 +42,7 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -856,6 +857,13 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
      */
     public abstract CharStream intersect(Collection<?> c);
 
+    /**
+     * @param c
+     * @return
+     * @see IntList#xor(IntList)
+     */
+    public abstract CharStream xor(Collection<Character> c);
+
     //    /**
     //     * Skill All the elements in the specified collection.
     //     * 
@@ -913,6 +921,8 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
      * each boxed to an {@code Chareger}
      */
     public abstract Stream<Character> boxed();
+
+    public abstract Stream<IndexedChar> indexed();
 
     @Override
     public abstract ImmutableIterator<Character> iterator();

@@ -43,6 +43,7 @@ import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -985,6 +986,13 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
     public abstract FloatStream intersect(Collection<?> c);
 
     /**
+     * @param c
+     * @return
+     * @see IntList#xor(IntList)
+     */
+    public abstract FloatStream xor(Collection<Float> c);
+
+    /**
      * Append the specified stream to the tail of this stream.
      * @param stream
      * @return
@@ -1032,6 +1040,8 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
      * each boxed to a {@code Float}
      */
     public abstract Stream<Float> boxed();
+
+    public abstract Stream<IndexedFloat> indexed();
 
     @Override
     public abstract ImmutableIterator<Float> iterator();

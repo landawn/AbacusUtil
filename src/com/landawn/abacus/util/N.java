@@ -7279,6 +7279,20 @@ public final class N {
         return newString(cbuf, true);
     }
 
+    public static <T> List<T> repeat(Collection<? extends T> c, int repeat) {
+        if (repeat < 1) {
+            throw new IllegalArgumentException("The specified count must be greater than 0");
+        }
+
+        final List<T> result = new ArrayList<>(c.size() * repeat);
+
+        for (int i = 0; i < repeat; i++) {
+            result.addAll(c);
+        }
+
+        return result;
+    }
+
     public static char toLowerCase(final char ch) {
         return Character.toLowerCase(ch);
     }
@@ -15838,24 +15852,6 @@ public final class N {
     /**
      * Fill the properties of the entity with random values.
      * 
-     * @param entityClass entity class with getter/setter methods
-     * @return
-     */
-    public static <T> T fill(Class<T> entityClass) {
-        if (N.isEntity(entityClass) == false) {
-            throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
-        }
-
-        final T entity = N.newInstance(entityClass);
-
-        fill(entity);
-
-        return entity;
-    }
-
-    /**
-     * Fill the properties of the entity with random values.
-     * 
      * @param entity an entity object with getter/setter method
      */
     public static void fill(Object entity) {
@@ -15903,6 +15899,47 @@ public final class N {
 
             N.setPropValue(entity, method, propValue);
         }
+    }
+
+    /**
+     * Fill the properties of the entity with random values.
+     * 
+     * @param entityClass entity class with getter/setter methods
+     * @return
+     */
+    public static <T> T fill(Class<T> entityClass) {
+        if (N.isEntity(entityClass) == false) {
+            throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
+        }
+
+        final T entity = N.newInstance(entityClass);
+
+        fill(entity);
+
+        return entity;
+    }
+
+    /**
+     * Fill the properties of the entity with random values.
+     * 
+     * @param entityClass entity class with getter/setter methods
+     * @param len
+     * @return
+     */
+    public static <T> List<T> fill(Class<T> entityClass, int len) {
+        if (N.isEntity(entityClass) == false) {
+            throw new AbacusException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
+        }
+
+        final List<T> resultList = new ArrayList<>(len);
+
+        for (int i = 0; i < len; i++) {
+            final T entity = N.newInstance(entityClass);
+            fill(entity);
+            resultList.add(entity);
+        }
+
+        return resultList;
     }
 
     /**
@@ -25597,11 +25634,10 @@ public final class N {
         }
 
         final List<T> result = new ArrayList<>();
-        final Set<T> keySet = new HashSet<>();
+        final Set<Object> keySet = new HashSet<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
-
-            if (keySet.add(a[i])) {
+            if (keySet.add(getHashKey(a[i]))) {
                 result.add(a[i]);
             }
         }
@@ -25641,160 +25677,37 @@ public final class N {
         }
 
         final List<T> result = new ArrayList<>();
-        final Set<T> keySet = new HashSet<>();
-        final Iterator<? extends T> it = c.iterator();
+        final Set<Object> keySet = new HashSet<>();
         T e = null;
 
-        for (int i = 0; i < toIndex && it.hasNext(); i++) {
-            e = it.next();
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
 
-            if (i < fromIndex) {
-                continue;
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
+
+                if (keySet.add(getHashKey(e))) {
+                    result.add(e);
+                }
             }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
 
-            if (keySet.add(e)) {
-                result.add(e);
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                if (keySet.add(getHashKey(e))) {
+                    result.add(e);
+                }
             }
         }
 
         return result;
     }
-
-    //    /**
-    //     * Mostly it's designed for one-step operation to complete the operation in one step.
-    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-    //     * 
-    //     * @param a
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    public static <T> T[] distinct(final T[] a, final Comparator<? super T> cmp) {
-    //        if (N.isNullOrEmpty(a)) {
-    //            return a;
-    //        }
-    //
-    //        return distinct(a, 0, a.length, cmp);
-    //    }
-    //
-    //    /**
-    //     * Mostly it's designed for one-step operation to complete the operation in one step.
-    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-    //     * 
-    //     * @param a
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-    //        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-    //            return a;
-    //        }
-    //
-    //        final List<T> result = new ArrayList<>();
-    //        final Set<T> sortedSet = new TreeSet<T>(cmp);
-    //        boolean hasNull = false;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            if (a[i] == null) {
-    //                if (hasNull == false) {
-    //                    hasNull = true;
-    //                    result.add(a[i]);
-    //                }
-    //            } else {
-    //                if (sortedSet.add(a[i])) {
-    //                    result.add(a[i]);
-    //                }
-    //            }
-    //        }
-    //
-    //        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
-    //    }
-    //
-    //    /**
-    //     * Mostly it's designed for one-step operation to complete the operation in one step.
-    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-    //     * 
-    //     * @param c
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    public static <T> List<T> distinct(final Collection<? extends T> c, final Comparator<? super T> cmp) {
-    //        if (N.isNullOrEmpty(c)) {
-    //            return new ArrayList<>();
-    //        }
-    //
-    //        return distinct(c, 0, c.size(), cmp);
-    //    }
-    //
-    //    /**
-    //     * Mostly it's designed for one-step operation to complete the operation in one step.
-    //     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-    //     * 
-    //     * @param c
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-    //        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-    //
-    //        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-    //            return new ArrayList<>();
-    //        }
-    //
-    //        final List<T> result = new ArrayList<>();
-    //        final Set<T> sortedSet = new TreeSet<T>(cmp);
-    //
-    //        if (c instanceof List && c instanceof RandomAccess) {
-    //            final List<T> list = (List<T>) c;
-    //            T e = null;
-    //            boolean hasNull = false;
-    //
-    //            for (int i = fromIndex; i < toIndex; i++) {
-    //                e = list.get(i);
-    //
-    //                if (e == null) {
-    //                    if (hasNull == false) {
-    //                        hasNull = true;
-    //                        result.add(e);
-    //                    }
-    //                } else {
-    //                    if (sortedSet.add(e)) {
-    //                        result.add(e);
-    //                    }
-    //                }
-    //            }
-    //        } else {
-    //            final Iterator<? extends T> it = c.iterator();
-    //            T e = null;
-    //            boolean hasNull = false;
-    //
-    //            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-    //                e = it.next();
-    //
-    //                if (i < fromIndex) {
-    //                    continue;
-    //                }
-    //
-    //                if (e == null) {
-    //                    if (hasNull == false) {
-    //                        hasNull = true;
-    //                        result.add(e);
-    //                    }
-    //                } else {
-    //                    if (sortedSet.add(e)) {
-    //                        result.add(e);
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
-    //        return result;
-    //    }
 
     /**
      * Distinct by the value mapped from <code>keyMapper</code>.
@@ -25803,7 +25716,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
      * @param a
-     * @param keyMapper
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
     public static <T> T[] distinct(final T[] a, final Function<? super T, ?> keyMapper) {
@@ -25823,7 +25736,7 @@ public final class N {
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param keyMapper
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
     public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
@@ -25835,12 +25748,9 @@ public final class N {
 
         final List<T> result = new ArrayList<>();
         final Set<Object> keySet = new HashSet<>();
-        Object key = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            key = keyMapper.apply(a[i]);
-
-            if (keySet.add(key)) {
+            if (keySet.add(getHashKey(keyMapper.apply(a[i])))) {
                 result.add(a[i]);
             }
         }
@@ -25855,7 +25765,7 @@ public final class N {
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
      * @param c
-     * @param func
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyMapper) {
@@ -25875,7 +25785,7 @@ public final class N {
      * @param c
      * @param fromIndex
      * @param toIndex
-     * @param func
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
     public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
@@ -25887,25 +25797,20 @@ public final class N {
 
         final List<T> result = new ArrayList<>();
         final Set<Object> keySet = new HashSet<>();
+        T e = null;
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
-            Object key = null;
-            T e = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                key = keyMapper.apply(e);
-
-                if (keySet.add(key)) {
+                if (keySet.add(getHashKey(keyMapper.apply(e)))) {
                     result.add(e);
                 }
             }
         } else {
             final Iterator<? extends T> it = c.iterator();
-            Object key = null;
-            T e = null;
 
             for (int i = 0; i < toIndex && it.hasNext(); i++) {
                 e = it.next();
@@ -25914,15 +25819,17 @@ public final class N {
                     continue;
                 }
 
-                key = keyMapper.apply(e);
-
-                if (keySet.add(key)) {
+                if (keySet.add(getHashKey(keyMapper.apply(e)))) {
                     result.add(e);
                 }
             }
         }
 
         return result;
+    }
+
+    private static Object getHashKey(Object obj) {
+        return obj == null || obj.getClass().isArray() == false ? obj : ArrayWrapper.of(obj);
     }
 
     /**
@@ -27104,9 +27011,30 @@ public final class N {
             return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<T>(a);
         }
 
-        final List<T> result = except(a, b);
+        //        final List<T> result = except(a, b);
+        //
+        //        result.addAll(except(b, a));
+        //
+        //        return result;
 
-        result.addAll(except(b, a));
+        final Multiset<T> bOccurrences = Multiset.of(b);
+        final List<T> result = new ArrayList<>(N.max(9, Math.abs(a.size() - b.size())));
+
+        for (T e : a) {
+            if (bOccurrences.getAndRemove(e) < 1) {
+                result.add(e);
+            }
+        }
+
+        for (T e : b) {
+            if (bOccurrences.getAndRemove(e) > 0) {
+                result.add(e);
+            }
+
+            if (bOccurrences.isEmpty()) {
+                break;
+            }
+        }
 
         return result;
     }
@@ -30858,19 +30786,7 @@ public final class N {
 
             return idx == b.length ? b : N.copyOfRange(b, 0, idx);
         } else {
-            final Set<T> set = new LinkedHashSet<>(N.initHashCapacity(a.length));
-
-            for (int i = from; i < to; i++) {
-                set.add(a[i]);
-            }
-
-            if (set.size() == a.length) {
-                return a.clone();
-            } else {
-                final T[] result = N.newArray(a.getClass().getComponentType(), set.size());
-
-                return set.toArray(result);
-            }
+            return distinct(a, from, to);
         }
     }
 
@@ -30916,17 +30832,13 @@ public final class N {
 
             return hasDuplicates;
         } else {
-            final Set<Object> set = new LinkedHashSet<>(N.initHashCapacity(c.size()));
+            List<?> list = distinct(c);
 
-            for (Object e : c) {
-                set.add(e);
-            }
-
-            final boolean hasDuplicates = set.size() != c.size();
+            final boolean hasDuplicates = list.size() != c.size();
 
             if (hasDuplicates) {
                 c.clear();
-                c.addAll((Set) set);
+                c.addAll((List) list);
             }
 
             return hasDuplicates;
@@ -31228,10 +31140,10 @@ public final class N {
 
             return false;
         } else {
-            final Set<T> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Object> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
 
             for (int i = fromIndex; i < toIndex; i++) {
-                if (set.add(a[i]) == false) {
+                if (set.add(getHashKey(a[i])) == false) {
                     return true;
                 }
             }
@@ -31268,7 +31180,7 @@ public final class N {
             final Set<Object> set = new HashSet<>(initHashCapacity(c.size()));
 
             for (Object e : c) {
-                if (set.add(e) == false) {
+                if (set.add(getHashKey(e)) == false) {
                     return true;
                 }
             }

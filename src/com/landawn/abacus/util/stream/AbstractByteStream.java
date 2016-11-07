@@ -4,12 +4,15 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.IndexedByte;
+import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.ByteBiFunction;
+import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -48,6 +51,18 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator) {
         throw new UnsupportedOperationException("It's not supported parallel stream.");
+    }
+
+    @Override
+    public Stream<IndexedByte> indexed() {
+        final MutableLong idx = new MutableLong();
+
+        return mapToObj(new ByteFunction<IndexedByte>() {
+            @Override
+            public IndexedByte apply(byte t) {
+                return IndexedByte.of(idx.getAndIncrement(), t);
+            }
+        });
     }
 
     @Override

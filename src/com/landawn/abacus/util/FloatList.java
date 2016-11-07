@@ -569,7 +569,7 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         final FloatList container = size() >= c.size() ? this : c;
         final float[] iterElements = size() >= c.size() ? c.array() : this.array();
 
-        if (c.size() > 3 && size() > 9) {
+        if (iterElements.length > 3 && container.size() > 9) {
             final Set<Float> set = container.toSet();
 
             for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
@@ -655,11 +655,33 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
      * @see IntList#xor(IntList)
      */
     public FloatList xor(FloatList b) {
-        final FloatList result = this.except(b);
+        //        final FloatList result = this.except(b);
+        //
+        //        result.addAll(b.except(this));
+        //
+        //        return result;
 
-        result.addAll(b.except(this));
+        final Multiset<Float> bOccurrences = b.toMultiset();
 
-        return result;
+        final FloatList c = new FloatList(N.max(9, Math.abs(size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(b.elementData[i]) > 0) {
+                c.add(b.elementData[i]);
+            }
+
+            if (bOccurrences.isEmpty()) {
+                break;
+            }
+        }
+
+        return c;
     }
 
     public int indexOf(float e) {
@@ -1062,7 +1084,7 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
+            return of(N.distinct(elementData, fromIndex, toIndex));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
@@ -1162,11 +1184,16 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
     }
 
     @Override
-    public FloatList copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new FloatList(N.copyOfRange(elementData, fromIndex, toIndex));
+    public FloatList copy() {
+        return new FloatList(N.copyOfRange(elementData, 0, size));
     }
+
+    //    @Override
+    //    public FloatList copy(final int fromIndex, final int toIndex) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        return new FloatList(N.copyOfRange(elementData, fromIndex, toIndex));
+    //    }
 
     @Override
     public List<FloatList> split(final int fromIndex, final int toIndex, final int size) {

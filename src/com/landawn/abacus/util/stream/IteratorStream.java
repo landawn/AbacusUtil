@@ -1336,264 +1336,188 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> distinct() {
-        //        final Set<T> set = new LinkedHashSet<T>();
+        final Set<Object> set = new HashSet<>();
+        final List<T> list = new ArrayList<>();
+        T e = null;
+
+        while (elements.hasNext()) {
+            e = elements.next();
+
+            if (set.add(getHashKey(e))) {
+                list.add(e);
+            }
+        }
+
+        return new ArrayStream<T>((T[]) list.toArray(), closeHandlers, sorted, cmp);
+
+        //        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        //            T[] a = null;
+        //            int cursor = 0;
+        //            int toIndex;
         //
-        //        while (elements.hasNext()) {
-        //            set.add(elements.next());
-        //        }
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
         //
-        //        return new ArrayStream<T>((T[]) set.toArray(), closeHandlers);
-
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
-            T[] a = null;
-            int cursor = 0;
-            int toIndex;
-
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    getResult();
-                }
-
-                return cursor < toIndex;
-            }
-
-            @Override
-            public T next() {
-                if (a == null) {
-                    getResult();
-                }
-
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    getResult();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    getResult();
-                }
-
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
-            }
-
-            @Override
-            public <A> A[] toArray(A[] b) {
-                if (a == null) {
-                    getResult();
-                }
-
-                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
-
-                N.copy(a, cursor, b, 0, toIndex - cursor);
-
-                return b;
-            }
-
-            private void getResult() {
-                final Set<T> set = new HashSet<T>();
-                final List<T> list = new ArrayList<T>();
-                T element = null;
-
-                while (elements.hasNext()) {
-                    element = elements.next();
-                    if (set.add(element)) {
-                        list.add(element);
-                    }
-                }
-
-                a = (T[]) list.toArray();
-                toIndex = a.length;
-            }
-        }, closeHandlers, sorted, cmp);
+        //                return cursor < toIndex;
+        //            }
+        //
+        //            @Override
+        //            public T next() {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                if (cursor >= toIndex) {
+        //                    throw new NoSuchElementException();
+        //                }
+        //
+        //                return a[cursor++];
+        //            }
+        //
+        //            @Override
+        //            public long count() {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                return toIndex - cursor;
+        //            }
+        //
+        //            @Override
+        //            public void skip(long n) {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+        //            }
+        //
+        //            @Override
+        //            public <A> A[] toArray(A[] b) {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
+        //
+        //                N.copy(a, cursor, b, 0, toIndex - cursor);
+        //
+        //                return b;
+        //            }
+        //
+        //            private void getResult() {
+        //                final Set<Object> set = new HashSet<>();
+        //                final List<T> list = new ArrayList<>();
+        //                T e = null;
+        //
+        //                while (elements.hasNext()) {
+        //                    e = elements.next();
+        //
+        //                    if (set.add(getHashKey(e))) {
+        //                        list.add(e);
+        //                    }
+        //                }
+        //
+        //                a = (T[]) list.toArray();
+        //                toIndex = a.length;
+        //            }
+        //        }, closeHandlers, sorted, cmp);
     }
 
-    //    @Override
-    //    public Stream<T> distinct(final Comparator<? super T> comparator) {
-    //        //        final Set<T> set = new LinkedHashSet<T>();
-    //        //
-    //        //        while (elements.hasNext()) {
-    //        //            set.add(elements.next());
-    //        //        }
-    //        //
-    //        //        return new ArrayStream<T>((T[]) set.toArray(), closeHandlers);
-    //
-    //        if (comparator == null) {
-    //            return distinct();
-    //        }
-    //
-    //        return new IteratorStream<T>(new ImmutableIterator<T>() {
-    //            T[] a = null;
-    //            int cursor = 0;
-    //            int toIndex;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                if (a == null) {
-    //                    getResult();
-    //                }
-    //
-    //                return cursor < toIndex;
-    //            }
-    //
-    //            @Override
-    //            public T next() {
-    //                if (a == null) {
-    //                    getResult();
-    //                }
-    //
-    //                if (cursor >= toIndex) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                return a[cursor++];
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                if (a == null) {
-    //                    getResult();
-    //                }
-    //
-    //                return toIndex - cursor;
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                if (a == null) {
-    //                    getResult();
-    //                }
-    //
-    //                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
-    //            }
-    //
-    //            @Override
-    //            public <A> A[] toArray(A[] b) {
-    //                if (a == null) {
-    //                    getResult();
-    //                }
-    //
-    //                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
-    //
-    //                N.copy(a, cursor, b, 0, toIndex - cursor);
-    //
-    //                return b;
-    //            }
-    //
-    //            private void getResult() {
-    //                final Set<T> set = new TreeSet<T>(comparator);
-    //                final List<T> list = new ArrayList<T>();
-    //                T element = null;
-    //                boolean hasNull = false;
-    //
-    //                while (elements.hasNext()) {
-    //                    element = elements.next();
-    //                    if (element == null) {
-    //                        if (hasNull == false) {
-    //                            hasNull = true;
-    //                            list.add(element);
-    //                        }
-    //                    } else {
-    //                        if (set.add(element)) {
-    //                            list.add(element);
-    //                        }
-    //                    }
-    //                }
-    //
-    //                a = (T[]) list.toArray();
-    //                toIndex = a.length;
-    //            }
-    //        }, closeHandlers, sorted, cmp);
-    //    }
-
     @Override
-    public Stream<T> distinct(final Function<? super T, ?> classifier) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
-            T[] a = null;
-            int cursor = 0;
-            int toIndex;
+    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
+        final Set<Object> set = new HashSet<>();
+        final List<T> list = new ArrayList<>();
+        T e = null;
 
-            @Override
-            public boolean hasNext() {
-                if (a == null) {
-                    getResult();
-                }
+        while (elements.hasNext()) {
+            e = elements.next();
 
-                return cursor < toIndex;
+            if (set.add(getHashKey(keyMapper.apply(e)))) {
+                list.add(e);
             }
+        }
 
-            @Override
-            public T next() {
-                if (a == null) {
-                    getResult();
-                }
+        return new ArrayStream<T>((T[]) list.toArray(), closeHandlers, sorted, cmp);
 
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor++];
-            }
-
-            @Override
-            public long count() {
-                if (a == null) {
-                    getResult();
-                }
-
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                if (a == null) {
-                    getResult();
-                }
-
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
-            }
-
-            @Override
-            public <A> A[] toArray(A[] b) {
-                if (a == null) {
-                    getResult();
-                }
-
-                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
-
-                N.copy(a, cursor, b, 0, toIndex - cursor);
-
-                return b;
-            }
-
-            private void getResult() {
-                final Set<Object> set = new HashSet<>();
-                final List<T> list = new ArrayList<T>();
-                T element = null;
-
-                while (elements.hasNext()) {
-                    element = elements.next();
-                    if (set.add(classifier.apply(element))) {
-                        list.add(element);
-                    }
-                }
-
-                a = (T[]) list.toArray();
-                toIndex = a.length;
-            }
-        }, closeHandlers, sorted, cmp);
+        //        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        //            T[] a = null;
+        //            int cursor = 0;
+        //            int toIndex;
+        //
+        //            @Override
+        //            public boolean hasNext() {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                return cursor < toIndex;
+        //            }
+        //
+        //            @Override
+        //            public T next() {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                if (cursor >= toIndex) {
+        //                    throw new NoSuchElementException();
+        //                }
+        //
+        //                return a[cursor++];
+        //            }
+        //
+        //            @Override
+        //            public long count() {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                return toIndex - cursor;
+        //            }
+        //
+        //            @Override
+        //            public void skip(long n) {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+        //            }
+        //
+        //            @Override
+        //            public <A> A[] toArray(A[] b) {
+        //                if (a == null) {
+        //                    getResult();
+        //                }
+        //
+        //                b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
+        //
+        //                N.copy(a, cursor, b, 0, toIndex - cursor);
+        //
+        //                return b;
+        //            }
+        //
+        //            private void getResult() {
+        //                final Set<Object> set = new HashSet<>();
+        //                final List<T> list = new ArrayList<>();
+        //                T e = null;
+        //
+        //                while (elements.hasNext()) {
+        //                    e = elements.next();
+        //
+        //                    if (set.add(getHashKey(keyMapper.apply(e)))) {
+        //                        list.add(e);
+        //                    }
+        //                }
+        //
+        //                a = (T[]) list.toArray();
+        //                toIndex = a.length;
+        //            }
+        //        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -2719,6 +2643,23 @@ final class IteratorStream<T> extends AbstractStream<T> {
                 return multiset.getAndRemove(mapper.apply(value)) > 0;
             }
         });
+    }
+
+    @Override
+    public Stream<T> xor(final Collection<? extends T> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append((Stream<T>) Stream.of(c).filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }));
     }
 
     //    @Override

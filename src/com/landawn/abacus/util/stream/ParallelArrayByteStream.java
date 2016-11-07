@@ -1799,6 +1799,11 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         return new ParallelIteratorByteStream(this.sequential().intersect(c).byteIterator(), closeHandlers, sorted, maxThreadNum, splitter);
     }
 
+    @Override
+    public ByteStream xor(final Collection<Byte> c) {
+        return new ParallelIteratorByteStream(this.sequential().xor(c).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
+    }
+
     //    @Override
     //    public ByteStream exclude(final Collection<?> c) {
     //        if (maxThreadNum <= 1) {

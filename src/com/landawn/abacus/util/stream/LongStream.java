@@ -40,6 +40,7 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
@@ -922,6 +923,13 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      */
     public abstract LongStream intersect(Collection<?> c);
 
+    /**
+     * @param c
+     * @return
+     * @see IntList#xor(IntList)
+     */
+    public abstract LongStream xor(Collection<Long> c);
+
     //    /**
     //     * Skill All the elements in the specified collection.
     //     * 
@@ -991,6 +999,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * each boxed to {@code Long}
      */
     public abstract Stream<Long> boxed();
+
+    public abstract Stream<IndexedLong> indexed();
 
     @Override
     public abstract ImmutableIterator<Long> iterator();

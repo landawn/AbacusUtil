@@ -70,6 +70,7 @@ import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
+import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
@@ -681,10 +682,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     /**
      * Distinct by the value mapped from <code>keyMapper</code>
      * 
-     * @param classifier
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
-    public abstract Stream<T> distinct(Function<? super T, ?> classifier);
+    public abstract Stream<T> distinct(Function<? super T, ?> keyMapper);
 
     public abstract Stream<T> top(int n);
 
@@ -1524,6 +1525,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract Stream<T> intersect(Function<? super T, ?> mapper, Collection<?> c);
 
+    /**
+     * @param c
+     * @return
+     * @see IntList#xor(IntList)
+     */
+    public abstract Stream<T> xor(Collection<? extends T> c);
+
     //    /**
     //     * Skip all the elements in the specified collection.
     //     * 
@@ -1573,6 +1581,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     //     * @see ErrorBreakIterator
     //     */
     //    public abstract Stream<T> breakWhileError(int maxRetries, long retryInterval);
+
+    public abstract Stream<Indexed<T>> indexed();
 
     public abstract Stream<T> queued();
 

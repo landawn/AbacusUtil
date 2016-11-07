@@ -539,7 +539,7 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         final ByteList container = size() >= c.size() ? this : c;
         final byte[] iterElements = size() >= c.size() ? c.array() : this.array();
 
-        if (c.size() > 3 && size() > 9) {
+        if (iterElements.length > 3 && container.size() > 9) {
             final Set<Byte> set = container.toSet();
 
             for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
@@ -625,11 +625,33 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
      * @see IntList#xor(IntList)
      */
     public ByteList xor(ByteList b) {
-        final ByteList result = this.except(b);
+        //        final ByteList result = this.except(b);
+        //
+        //        result.addAll(b.except(this));
+        //
+        //        return result; 
 
-        result.addAll(b.except(this));
+        final Multiset<Byte> bOccurrences = b.toMultiset();
 
-        return result;
+        final ByteList c = new ByteList(N.max(9, Math.abs(size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(b.elementData[i]) > 0) {
+                c.add(b.elementData[i]);
+            }
+
+            if (bOccurrences.isEmpty()) {
+                break;
+            }
+        }
+
+        return c;
     }
 
     public int indexOf(byte e) {
@@ -1032,7 +1054,7 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         checkIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
-            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
+            return of(N.distinct(elementData, fromIndex, toIndex));
         } else {
             return of(N.copyOfRange(elementData, fromIndex, toIndex));
         }
@@ -1112,11 +1134,16 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
     }
 
     @Override
-    public ByteList copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
+    public ByteList copy() {
+        return new ByteList(N.copyOfRange(elementData, 0, size));
     }
+
+    //    @Override
+    //    public ByteList copy(final int fromIndex, final int toIndex) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
+    //    }
 
     @Override
     public List<ByteList> split(final int fromIndex, final int toIndex, final int size) {

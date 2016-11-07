@@ -910,7 +910,7 @@ public final class LongMultiset<E> implements Collection<E> {
      * 
      * @return a list with all elements, each of them is repeated with the occurrences in this <code>LongMultiset</code>   
      */
-    public List<E> flat() {
+    public List<E> flatten() {
         final long totalOccurrences = sumOfOccurrences().longValue();
 
         if (totalOccurrences > Integer.MAX_VALUE) {

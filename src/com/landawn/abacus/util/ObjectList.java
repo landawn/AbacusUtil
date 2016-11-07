@@ -587,7 +587,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         final ObjectList<?> container = size() >= c.size() ? this : c;
         final Object[] iterElements = size() >= c.size() ? c.array() : this.array();
 
-        if (c.size() > 3 && size() > 9) {
+        if (iterElements.length > 3 && container.size() > 9) {
             final Set<?> set = container.toSet();
 
             for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
@@ -673,11 +673,33 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @see IntList#xor(IntList)
      */
     public ObjectList<T> xor(ObjectList<T> b) {
-        final ObjectList<T> result = this.except(b);
+        //        final ObjectList<T> result = this.except(b);
+        //
+        //        result.addAll(b.except(this));
+        //
+        //        return result;
 
-        result.addAll(b.except(this));
+        final Multiset<T> bOccurrences = b.toMultiset();
 
-        return result;
+        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(getComponentType(), N.max(9, Math.abs(size() - b.size()))));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        for (int i = 0, len = b.size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(b.elementData[i]) > 0) {
+                c.add(b.elementData[i]);
+            }
+
+            if (bOccurrences.isEmpty()) {
+                break;
+            }
+        }
+
+        return c;
     }
 
     public int indexOf(Object e) {
@@ -1520,11 +1542,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public ObjectList<T> distinct(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        if (toIndex - fromIndex > 1) {
-            return of(N.removeDuplicates(elementData, fromIndex, toIndex, false));
-        } else {
-            return of(N.copyOfRange(elementData, fromIndex, toIndex));
-        }
+        return of(N.distinct(elementData, fromIndex, toIndex));
     }
 
     //    public ObjectList<T> distinct(final Comparator<? super T> comparator) {
@@ -1541,6 +1559,11 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     //        }
     //    }
 
+    /**
+     * 
+     * @param keyMapper don't change value of the input parameter.
+     * @return
+     */
     public ObjectList<T> distinct(final Function<? super T, ?> keyMapper) {
         return distinct(0, size(), keyMapper);
     }
@@ -1550,17 +1573,13 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * 
      * @param fromIndex
      * @param toIndex
-     * @param keyMapper
+     * @param keyMapper don't change value of the input parameter.
      * @return
      */
     public ObjectList<T> distinct(final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
         checkIndex(fromIndex, toIndex);
 
-        if (toIndex - fromIndex > 1) {
-            return of(N.distinct(elementData, fromIndex, toIndex, keyMapper));
-        } else {
-            return of(N.copyOfRange(elementData, fromIndex, toIndex));
-        }
+        return of(N.distinct(elementData, fromIndex, toIndex, keyMapper));
     }
 
     public ObjectList<T> top(final int n) {
@@ -1677,11 +1696,16 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     @Override
-    public ObjectList<T> copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new ObjectList<T>(N.copyOfRange(elementData, fromIndex, toIndex));
+    public ObjectList<T> copy() {
+        return new ObjectList<>(N.copyOfRange(elementData, 0, size));
     }
+
+    //    @Override
+    //    public ObjectList<T> copy(final int fromIndex, final int toIndex) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        return new ObjectList<T>(N.copyOfRange(elementData, fromIndex, toIndex));
+    //    }
 
     @Override
     public List<ObjectList<T>> split(final int fromIndex, final int toIndex, final int size) {

@@ -42,6 +42,7 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -861,6 +862,13 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      */
     public abstract ByteStream intersect(Collection<?> c);
 
+    /**
+     * @param c
+     * @return
+     * @see IntList#xor(IntList)
+     */
+    public abstract ByteStream xor(Collection<Byte> c);
+
     //    /**
     //     * Skill All the elements in the specified collection.
     //     * 
@@ -918,6 +926,8 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * each boxed to an {@code Byteeger}
      */
     public abstract Stream<Byte> boxed();
+
+    public abstract Stream<IndexedByte> indexed();
 
     @Override
     public abstract ImmutableIterator<Byte> iterator();

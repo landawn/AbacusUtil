@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.ArrayWrapper;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
@@ -612,6 +613,10 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
         }
 
         return newCloseHandlers;
+    }
+
+    static Object getHashKey(Object obj) {
+        return obj == null || obj.getClass().isArray() == false ? obj : ArrayWrapper.of(obj);
     }
 
     static final class LocalLinkedHashSet<T> extends LinkedHashSet<T> {

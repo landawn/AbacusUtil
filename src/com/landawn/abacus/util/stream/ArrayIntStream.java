@@ -34,7 +34,9 @@ import com.landawn.abacus.util.function.IntToLongFunction;
 import com.landawn.abacus.util.function.IntToShortFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToIntFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -1590,6 +1592,28 @@ final class ArrayIntStream extends AbstractIntStream {
                 return multiset.getAndRemove(value) > 0;
             }
         });
+    }
+
+    @Override
+    public IntStream xor(Collection<Integer> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new IntPredicate() {
+            @Override
+            public boolean test(int value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Integer>() {
+            @Override
+            public boolean test(Integer value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToInt(new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        }));
     }
 
     //    @Override

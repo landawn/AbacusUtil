@@ -1985,6 +1985,11 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         return new ParallelIteratorFloatStream(this.sequential().intersect(c).floatIterator(), closeHandlers, sorted, maxThreadNum, splitter);
     }
 
+    @Override
+    public FloatStream xor(final Collection<Float> c) {
+        return new ParallelIteratorFloatStream(this.sequential().xor(c).floatIterator(), closeHandlers, false, maxThreadNum, splitter);
+    }
+
     //    @Override
     //    public FloatStream exclude(final Collection<?> c) {
     //        if (maxThreadNum <= 1) {

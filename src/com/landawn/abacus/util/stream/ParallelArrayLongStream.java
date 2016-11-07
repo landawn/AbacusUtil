@@ -1889,6 +1889,11 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         return new ParallelIteratorLongStream(this.sequential().intersect(c).longIterator(), closeHandlers, sorted, maxThreadNum, splitter);
     }
 
+    @Override
+    public LongStream xor(final Collection<Long> c) {
+        return new ParallelIteratorLongStream(this.sequential().xor(c).longIterator(), closeHandlers, false, maxThreadNum, splitter);
+    }
+
     //    @Override
     //    public LongStream exclude(final Collection<?> c) {
     //        if (maxThreadNum <= 1) {
