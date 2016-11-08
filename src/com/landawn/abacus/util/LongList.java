@@ -152,25 +152,25 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         return of(elementData);
     }
 
-    public static LongList from(String... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static LongList from(String[] a, int startIndex, int endIndex) {
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        final long[] elementData = new long[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = N.asLong(a[i]);
-        }
-
-        return of(elementData);
-    }
+    //    public static LongList from(String... a) {
+    //        return a == null ? empty() : from(a, 0, a.length);
+    //    }
+    //
+    //    public static LongList from(String[] a, int startIndex, int endIndex) {
+    //        if (a == null && (startIndex == 0 && endIndex == 0)) {
+    //            return empty();
+    //        }
+    //
+    //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+    //
+    //        final long[] elementData = new long[endIndex - startIndex];
+    //
+    //        for (int i = startIndex; i < endIndex; i++) {
+    //            elementData[i - startIndex] = N.asLong(a[i]);
+    //        }
+    //
+    //        return of(elementData);
+    //    }
 
     static LongList from(List<String> c) {
         if (N.isNullOrEmpty(c)) {

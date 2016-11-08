@@ -26,7 +26,9 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBinaryOperator;
@@ -417,7 +419,8 @@ final class ParallelArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public Stream<IntStream> split(final IntPredicate predicate) {
+    public <U> Stream<IntStream> split(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<IntStream>(new ImmutableIterator<IntStream>() {
             private int cursor = fromIndex;
 
@@ -435,10 +438,13 @@ final class ParallelArrayIntStream extends AbstractIntStream {
                 final IntList result = IntList.of(N.EMPTY_INT_ARRAY);
 
                 while (cursor < toIndex) {
-                    if (predicate.test(elements[cursor])) {
+                    if (predicate.apply(elements[cursor], boundary)) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

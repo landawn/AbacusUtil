@@ -21,6 +21,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
@@ -742,7 +743,8 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public Stream<DoubleStream> split(final DoublePredicate predicate) {
+    public <U> Stream<DoubleStream> split(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
             private int cursor = fromIndex;
 
@@ -760,10 +762,13 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
                 final DoubleList result = DoubleList.of(N.EMPTY_DOUBLE_ARRAY);
 
                 while (cursor < toIndex) {
-                    if (predicate.test(elements[cursor])) {
+                    if (predicate.apply(elements[cursor], boundary)) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

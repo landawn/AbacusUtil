@@ -56,7 +56,9 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
@@ -282,31 +284,51 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      */
     public abstract Stream<DoubleStream> split(int size);
 
+    //    /**
+    //     * Split the stream by the specified predicate.
+    //     * 
+    //     * <pre>
+    //     * <code>
+    //     * // split the number sequence by window 5.
+    //     * final MutableInt border = MutableInt.of(5);
+    //     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
+    //     *     if (e <= border.intValue()) {
+    //     *         return true;
+    //     *     } else {
+    //     *         border.addAndGet(5);
+    //     *         return false;
+    //     *     }
+    //     * }).map(s -> s.toArray()).forEach(N::println);
+    //     * </code>
+    //     * </pre>
+    //     * 
+    //     * This stream should be sorted by value which is used to verify the border.
+    //     * This method only run sequentially, even in parallel stream.
+    //     * 
+    //     * @param predicate
+    //     * @return
+    //     */
+    //    public abstract Stream<DoubleStream> split(DoublePredicate predicate);
+
     /**
      * Split the stream by the specified predicate.
      * 
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * final MutableInt border = MutableInt.of(5);
-     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
-     *     if (e <= border.intValue()) {
-     *         return true;
-     *     } else {
-     *         border.addAndGet(5);
-     *         return false;
-     *     }
-     * }).map(s -> s.toArray()).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
      * This stream should be sorted by value which is used to verify the border.
      * This method only run sequentially, even in parallel stream.
      * 
+     * @param identifier
      * @param predicate
      * @return
      */
-    public abstract Stream<DoubleStream> split(DoublePredicate predicate);
+    public abstract <U> Stream<DoubleStream> split(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The

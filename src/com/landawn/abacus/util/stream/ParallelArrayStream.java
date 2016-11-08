@@ -2857,8 +2857,107 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }, closeHandlers, false, null, maxThreadNum, splitter);
     }
 
+    //    @Override
+    //    public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+    //        return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+    //            private int cursor = fromIndex;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public Stream<T> next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final List<T> result = new ArrayList<>();
+    //
+    //                while (cursor < toIndex) {
+    //                    if (predicate.test(elements[cursor])) {
+    //                        result.add(elements[cursor]);
+    //                        cursor++;
+    //                    } else {
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                return Stream.of(result);
+    //            }
+    //
+    //        }, closeHandlers, false, null, maxThreadNum, splitter);
+    //    }
+    //
+    //    @Override
+    //    public Stream<List<T>> splitIntoList(final Predicate<? super T> predicate) {
+    //        return new ParallelIteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+    //            private int cursor = fromIndex;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public List<T> next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final List<T> result = new ArrayList<>();
+    //
+    //                while (cursor < toIndex) {
+    //                    if (predicate.test(elements[cursor])) {
+    //                        result.add(elements[cursor]);
+    //                        cursor++;
+    //                    } else {
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                return result;
+    //            }
+    //
+    //        }, closeHandlers, false, null, maxThreadNum, splitter);
+    //    }
+    //
+    //    @Override
+    //    public Stream<Set<T>> splitIntoSet(final Predicate<? super T> predicate) {
+    //        return new ParallelIteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+    //            private int cursor = fromIndex;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public Set<T> next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final Set<T> result = new HashSet<>();
+    //
+    //                while (cursor < toIndex) {
+    //                    if (predicate.test(elements[cursor])) {
+    //                        result.add(elements[cursor]);
+    //                        cursor++;
+    //                    } else {
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                return result;
+    //            }
+    //
+    //        }, closeHandlers, false, null, maxThreadNum, splitter);
+    //    }
+
     @Override
-    public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
             private int cursor = fromIndex;
 
@@ -2876,10 +2975,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 final List<T> result = new ArrayList<>();
 
                 while (cursor < toIndex) {
-                    if (predicate.test(elements[cursor])) {
+                    if (predicate.apply(elements[cursor], boundary)) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
+                        if (boundaryUpdate != null) {boundaryUpdate.accept(boundary);}
                         break;
                     }
                 }
@@ -2891,7 +2991,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<List<T>> splitIntoList(final Predicate<? super T> predicate) {
+    public <U> Stream<List<T>> splitIntoList(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             private int cursor = fromIndex;
 
@@ -2909,10 +3010,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 final List<T> result = new ArrayList<>();
 
                 while (cursor < toIndex) {
-                    if (predicate.test(elements[cursor])) {
+                    if (predicate.apply(elements[cursor], boundary)) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
+                        if (boundaryUpdate != null) {boundaryUpdate.accept(boundary);}
                         break;
                     }
                 }
@@ -2924,7 +3026,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Set<T>> splitIntoSet(final Predicate<? super T> predicate) {
+    public <U> Stream<Set<T>> splitIntoSet(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
             private int cursor = fromIndex;
 
@@ -2942,109 +3045,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 final Set<T> result = new HashSet<>();
 
                 while (cursor < toIndex) {
-                    if (predicate.test(elements[cursor])) {
+                    if (predicate.apply(elements[cursor], boundary)) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        break;
-                    }
-                }
-
-                return result;
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <U> Stream<Stream<T>> split(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
-        return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final List<T> result = new ArrayList<>();
-
-                while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], identifier)) {
-                        result.add(elements[cursor]);
-                        cursor++;
-                    } else {
-                        break;
-                    }
-                }
-
-                return Stream.of(result);
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <U> Stream<List<T>> splitIntoList(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
-        return new ParallelIteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public List<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final List<T> result = new ArrayList<>();
-
-                while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], identifier)) {
-                        result.add(elements[cursor]);
-                        cursor++;
-                    } else {
-                        break;
-                    }
-                }
-
-                return result;
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <U> Stream<Set<T>> splitIntoSet(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
-        return new ParallelIteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public Set<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final Set<T> result = new HashSet<>();
-
-                while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], identifier)) {
-                        result.add(elements[cursor]);
-                        cursor++;
-                    } else {
+                        if (boundaryUpdate != null) {boundaryUpdate.accept(boundary);}
                         break;
                     }
                 }

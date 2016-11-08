@@ -108,25 +108,25 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         return of(elementData);
     }
 
-    public static ShortList from(String... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static ShortList from(String[] a, int startIndex, int endIndex) {
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        final short[] elementData = new short[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = N.asShort(a[i]);
-        }
-
-        return of(elementData);
-    }
+    //    public static ShortList from(String... a) {
+    //        return a == null ? empty() : from(a, 0, a.length);
+    //    }
+    //
+    //    public static ShortList from(String[] a, int startIndex, int endIndex) {
+    //        if (a == null && (startIndex == 0 && endIndex == 0)) {
+    //            return empty();
+    //        }
+    //
+    //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+    //
+    //        final short[] elementData = new short[endIndex - startIndex];
+    //
+    //        for (int i = startIndex; i < endIndex; i++) {
+    //            elementData[i - startIndex] = N.asShort(a[i]);
+    //        }
+    //
+    //        return of(elementData);
+    //    }
 
     static ShortList from(List<String> c) {
         if (N.isNullOrEmpty(c)) {

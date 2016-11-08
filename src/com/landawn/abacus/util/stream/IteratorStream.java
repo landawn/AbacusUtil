@@ -1222,8 +1222,120 @@ final class IteratorStream<T> extends AbstractStream<T> {
         }, closeHandlers);
     }
 
+    //    @Override
+    //    public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+    //        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+    //            private T next = (T) NONE;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return next != NONE || elements.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public Stream<T> next() {
+    //                if (hasNext() == false) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final List<T> result = new ArrayList<>();
+    //
+    //                if (next == NONE) {
+    //                    next = elements.next();
+    //                }
+    //
+    //                while (next != NONE) {
+    //                    if (predicate.test(next)) {
+    //                        result.add(next);
+    //                        next = elements.hasNext() ? elements.next() : (T) NONE;
+    //                    } else {
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                return Stream.of(result);
+    //            }
+    //
+    //        }, closeHandlers);
+    //    }
+    //
+    //    @Override
+    //    public Stream<List<T>> splitIntoList(final Predicate<? super T> predicate) {
+    //        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+    //            private T next = (T) NONE;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return next != NONE || elements.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public List<T> next() {
+    //                if (hasNext() == false) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final List<T> result = new ArrayList<>();
+    //
+    //                if (next == NONE) {
+    //                    next = elements.next();
+    //                }
+    //
+    //                while (next != NONE) {
+    //                    if (predicate.test(next)) {
+    //                        result.add(next);
+    //                        next = elements.hasNext() ? elements.next() : (T) NONE;
+    //                    } else {
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                return result;
+    //            }
+    //
+    //        }, closeHandlers);
+    //    }
+    //
+    //    @Override
+    //    public Stream<Set<T>> splitIntoSet(final Predicate<? super T> predicate) {
+    //        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+    //            private T next = (T) NONE;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return next != NONE || elements.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public Set<T> next() {
+    //                if (hasNext() == false) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final Set<T> result = new HashSet<>();
+    //
+    //                if (next == NONE) {
+    //                    next = elements.next();
+    //                }
+    //
+    //                while (next != NONE) {
+    //                    if (predicate.test(next)) {
+    //                        result.add(next);
+    //
+    //                        next = elements.hasNext() ? elements.next() : (T) NONE;
+    //                    } else {
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                return result;
+    //            }
+    //
+    //        }, closeHandlers);
+    //    }
+
     @Override
-    public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
             private T next = (T) NONE;
 
@@ -1245,10 +1357,13 @@ final class IteratorStream<T> extends AbstractStream<T> {
                 }
 
                 while (next != NONE) {
-                    if (predicate.test(next)) {
+                    if (predicate.apply(next, boundary)) {
                         result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }
@@ -1260,7 +1375,8 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<List<T>> splitIntoList(final Predicate<? super T> predicate) {
+    public <U> Stream<List<T>> splitIntoList(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             private T next = (T) NONE;
 
@@ -1282,10 +1398,13 @@ final class IteratorStream<T> extends AbstractStream<T> {
                 }
 
                 while (next != NONE) {
-                    if (predicate.test(next)) {
+                    if (predicate.apply(next, boundary)) {
                         result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }
@@ -1297,7 +1416,8 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Set<T>> splitIntoSet(final Predicate<? super T> predicate) {
+    public <U> Stream<Set<T>> splitIntoSet(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
             private T next = (T) NONE;
 
@@ -1319,123 +1439,14 @@ final class IteratorStream<T> extends AbstractStream<T> {
                 }
 
                 while (next != NONE) {
-                    if (predicate.test(next)) {
+                    if (predicate.apply(next, boundary)) {
                         result.add(next);
 
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {
-                        break;
-                    }
-                }
-
-                return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<Stream<T>> split(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
-        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-            private T next = (T) NONE;
-
-            @Override
-            public boolean hasNext() {
-                return next != NONE || elements.hasNext();
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final List<T> result = new ArrayList<>();
-
-                if (next == NONE) {
-                    next = elements.next();
-                }
-
-                while (next != NONE) {
-                    if (predicate.apply(next, identifier)) {
-                        result.add(next);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else {
-                        break;
-                    }
-                }
-
-                return Stream.of(result);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<List<T>> splitIntoList(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
-        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
-            private T next = (T) NONE;
-
-            @Override
-            public boolean hasNext() {
-                return next != NONE || elements.hasNext();
-            }
-
-            @Override
-            public List<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final List<T> result = new ArrayList<>();
-
-                if (next == NONE) {
-                    next = elements.next();
-                }
-
-                while (next != NONE) {
-                    if (predicate.apply(next, identifier)) {
-                        result.add(next);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else {
-                        break;
-                    }
-                }
-
-                return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<Set<T>> splitIntoSet(final U identifier, final BiFunction<? super T, ? super U, Boolean> predicate) {
-        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
-            private T next = (T) NONE;
-
-            @Override
-            public boolean hasNext() {
-                return next != NONE || elements.hasNext();
-            }
-
-            @Override
-            public Set<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final Set<T> result = new HashSet<>();
-
-                if (next == NONE) {
-                    next = elements.next();
-                }
-
-                while (next != NONE) {
-                    if (predicate.apply(next, identifier)) {
-                        result.add(next);
-
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

@@ -88,10 +88,6 @@ public class AsyncExecutor {
         });
     }
 
-    public CompletableFuture<Void> execute(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
-        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
-    }
-
     public CompletableFuture<Void> execute(final Runnable command) {
         final CompletableFuture<Void> future = new CompletableFuture<Void>(this, command, null);
 
@@ -128,8 +124,7 @@ public class AsyncExecutor {
         return results;
     }
 
-    public <T> CompletableFuture<T> execute(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
-            final long retryInterval) {
+    public CompletableFuture<Void> execute(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
         return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
     }
 
@@ -186,6 +181,11 @@ public class AsyncExecutor {
     //
     //        return future;
     //    }
+
+    public <T> CompletableFuture<T> execute(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
+            final long retryInterval) {
+        return execute(AutoRetry.of(action, ifRetry, retryTimes, retryInterval));
+    }
 
     ExecutorService getExecutorService() {
         if (executorService == null) {

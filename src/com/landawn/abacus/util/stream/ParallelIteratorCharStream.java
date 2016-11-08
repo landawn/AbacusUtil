@@ -28,6 +28,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBinaryOperator;
@@ -37,6 +38,7 @@ import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharToIntFunction;
 import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -257,7 +259,8 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public Stream<CharStream> split(final CharPredicate predicate) {
+    public <U> Stream<CharStream> split(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
             private char next;
             private boolean hasNext = false;
@@ -281,10 +284,13 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
                 }
 
                 while (hasNext) {
-                    if (predicate.test(next)) {
+                    if (predicate.apply(next, boundary)) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

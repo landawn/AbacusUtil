@@ -28,6 +28,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
@@ -37,6 +38,7 @@ import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteToIntFunction;
 import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -257,7 +259,8 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteStream> split(final BytePredicate predicate) {
+    public <U> Stream<ByteStream> split(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
             private byte next;
             private boolean hasNext = false;
@@ -281,10 +284,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                 }
 
                 while (hasNext) {
-                    if (predicate.test(next)) {
+                    if (predicate.apply(next, boundary)) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

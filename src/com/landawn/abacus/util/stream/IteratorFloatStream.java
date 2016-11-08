@@ -24,6 +24,7 @@ import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -480,7 +481,8 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public Stream<FloatStream> split(final FloatPredicate predicate) {
+    public <U> Stream<FloatStream> split(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
             private float next;
             private boolean hasNext = false;
@@ -504,10 +506,13 @@ final class IteratorFloatStream extends AbstractFloatStream {
                 }
 
                 while (hasNext) {
-                    if (predicate.test(next)) {
+                    if (predicate.apply(next, boundary)) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

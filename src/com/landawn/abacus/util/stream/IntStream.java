@@ -56,7 +56,9 @@ import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBinaryOperator;
@@ -297,31 +299,51 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      */
     public abstract Stream<IntStream> split(int size);
 
+    //    /**
+    //     * Split the stream by the specified predicate.
+    //     * 
+    //     * <pre>
+    //     * <code>
+    //     * // split the number sequence by window 5.
+    //     * final MutableInt border = MutableInt.of(5);
+    //     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
+    //     *     if (e <= border.intValue()) {
+    //     *         return true;
+    //     *     } else {
+    //     *         border.addAndGet(5);
+    //     *         return false;
+    //     *     }
+    //     * }).map(s -> s.toArray()).forEach(N::println);
+    //     * </code>
+    //     * </pre>
+    //     * 
+    //     * This stream should be sorted by value which is used to verify the border.
+    //     * This method only run sequentially, even in parallel stream.
+    //     * 
+    //     * @param predicate
+    //     * @return
+    //     */
+    //    public abstract Stream<IntStream> split(IntPredicate predicate);
+
     /**
      * Split the stream by the specified predicate.
      * 
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * final MutableInt border = MutableInt.of(5);
-     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
-     *     if (e <= border.intValue()) {
-     *         return true;
-     *     } else {
-     *         border.addAndGet(5);
-     *         return false;
-     *     }
-     * }).map(s -> s.toArray()).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
      * This stream should be sorted by value which is used to verify the border.
      * This method only run sequentially, even in parallel stream.
      * 
+     * @param identifier
      * @param predicate
      * @return
      */
-    public abstract Stream<IntStream> split(IntPredicate predicate);
+    public abstract <U> Stream<IntStream> split(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -1091,8 +1113,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     //     * @param str
     //     * @return
     //     */
-    //    public static IntStream from(final String str) {
-    //        return N.isNullOrEmpty(str) ? empty() : CharStream.from(str).asIntStream();
+    //    public static IntStream from(final CharSequence str) {
+    //        return N.isNullOrEmpty(str) ? empty() : from(str, 0, str.length());
     //    }
     //
     //    /**
@@ -1103,8 +1125,33 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     //     * @param endIndex
     //     * @return
     //     */
-    //    public static IntStream from(final String str, final int startIndex, final int endIndex) {
-    //        return N.isNullOrEmpty(str) && (startIndex == 0 && endIndex == 0) ? empty() : CharStream.from(str, startIndex, endIndex).asIntStream();
+    //    @SuppressWarnings("deprecation")
+    //    public static IntStream from(final CharSequence str, final int startIndex, final int endIndex) {
+    //        checkIndex(startIndex, endIndex, str == null ? 0 : str.length());
+    //
+    //        if (N.isNullOrEmpty(str)) {
+    //            return empty();
+    //        }
+    //
+    //        if (str instanceof String) {
+    //            from(N.getCharsForReadOnly((String) str), startIndex, endIndex);
+    //        }
+    //
+    //        final ImmutableIntIterator iter = new ImmutableIntIterator() {
+    //            private int cursor = startIndex;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < endIndex;
+    //            }
+    //
+    //            @Override
+    //            public int next() {
+    //                return str.charAt(cursor++);
+    //            }
+    //        };
+    //
+    //        return new IteratorIntStream(iter);
     //    }
 
     public static IntStream range(final int startInclusive, final int endExclusive) {

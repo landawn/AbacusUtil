@@ -107,31 +107,31 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return of(elementData);
     }
 
-    public static CharList from(String... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static CharList from(String[] a, int startIndex, int endIndex) {
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        final char[] elementData = new char[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (a[i] == null) {
-                elementData[i - startIndex] = 0;
-            } else if (a[i].length() == 1) {
-                elementData[i - startIndex] = a[i].charAt(0);
-            } else {
-                throw new IllegalArgumentException("Invalid char: " + a[i]);
-            }
-        }
-
-        return of(elementData);
-    }
+    //    public static CharList from(String... a) {
+    //        return a == null ? empty() : from(a, 0, a.length);
+    //    }
+    //
+    //    public static CharList from(String[] a, int startIndex, int endIndex) {
+    //        if (a == null && (startIndex == 0 && endIndex == 0)) {
+    //            return empty();
+    //        }
+    //
+    //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+    //
+    //        final char[] elementData = new char[endIndex - startIndex];
+    //
+    //        for (int i = startIndex; i < endIndex; i++) {
+    //            if (a[i] == null) {
+    //                elementData[i - startIndex] = 0;
+    //            } else if (a[i].length() == 1) {
+    //                elementData[i - startIndex] = a[i].charAt(0);
+    //            } else {
+    //                throw new IllegalArgumentException("Invalid char: " + a[i]);
+    //            }
+    //        }
+    //
+    //        return of(elementData);
+    //    }
 
     static CharList from(List<String> c) {
         if (N.isNullOrEmpty(c)) {

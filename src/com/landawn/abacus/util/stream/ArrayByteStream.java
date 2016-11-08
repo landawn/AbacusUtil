@@ -27,6 +27,7 @@ import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteToIntFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -552,7 +553,8 @@ final class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteStream> split(final BytePredicate predicate) {
+    public <U> Stream<ByteStream> split(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
             private int cursor = fromIndex;
 
@@ -570,10 +572,13 @@ final class ArrayByteStream extends AbstractByteStream {
                 final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
 
                 while (cursor < toIndex) {
-                    if (predicate.test(elements[cursor])) {
+                    if (predicate.apply(elements[cursor], boundary)) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

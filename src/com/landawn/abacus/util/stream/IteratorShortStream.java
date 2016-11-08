@@ -25,6 +25,7 @@ import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
@@ -379,7 +380,8 @@ final class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public Stream<ShortStream> split(final ShortPredicate predicate) {
+    public <U> Stream<ShortStream> split(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
             private short next;
             private boolean hasNext = false;
@@ -403,10 +405,13 @@ final class IteratorShortStream extends AbstractShortStream {
                 }
 
                 while (hasNext) {
-                    if (predicate.test(next)) {
+                    if (predicate.apply(next, boundary)) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

@@ -27,6 +27,7 @@ import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharToIntFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -552,7 +553,8 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public Stream<CharStream> split(final CharPredicate predicate) {
+    public <U> Stream<CharStream> split(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
             private int cursor = fromIndex;
 
@@ -570,10 +572,13 @@ final class ArrayCharStream extends AbstractCharStream {
                 final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
 
                 while (cursor < toIndex) {
-                    if (predicate.test(elements[cursor])) {
+                    if (predicate.apply(elements[cursor], boundary)) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }

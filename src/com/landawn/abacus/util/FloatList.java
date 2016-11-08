@@ -148,25 +148,25 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         return of(elementData);
     }
 
-    public static FloatList from(String... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static FloatList from(String[] a, int startIndex, int endIndex) {
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        final float[] elementData = new float[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = N.asFloat(a[i]);
-        }
-
-        return of(elementData);
-    }
+    //    public static FloatList from(String... a) {
+    //        return a == null ? empty() : from(a, 0, a.length);
+    //    }
+    //
+    //    public static FloatList from(String[] a, int startIndex, int endIndex) {
+    //        if (a == null && (startIndex == 0 && endIndex == 0)) {
+    //            return empty();
+    //        }
+    //
+    //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+    //
+    //        final float[] elementData = new float[endIndex - startIndex];
+    //
+    //        for (int i = startIndex; i < endIndex; i++) {
+    //            elementData[i - startIndex] = N.asFloat(a[i]);
+    //        }
+    //
+    //        return of(elementData);
+    //    }
 
     static FloatList from(List<String> c) {
         if (N.isNullOrEmpty(c)) {

@@ -6,6 +6,9 @@
 
 3, Add indexed() to stream/IntStream/DoubleStream/...
 
+4, refactoring split(...) in Stream/IntStream/DoubleStream
+
+5, rename flat to flattern in Multiset/LongMultiset.
 
 6, Improvements and bug fix.
 
