@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -721,7 +720,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
-     * @param zipFunction an <a href="package-summary.html#Associativity">associative</a>,
+     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
@@ -729,7 +728,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @return the result of the reduction
      * @see Stream#collect(Supplier, BiConsumer, BiConsumer)
      */
-    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> zipFunction);
+    public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * 
@@ -1998,8 +1997,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
             return merge(c, nextSelector);
         }
 
-        final Queue<DoubleIterator> queue = new LinkedList<>();
-        queue.addAll(c);
+        final Queue<DoubleIterator> queue = N.newLinkedList(c);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);

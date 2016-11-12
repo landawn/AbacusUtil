@@ -27040,200 +27040,343 @@ public final class N {
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    public static boolean[] concat(final boolean[] a, final boolean[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? N.EMPTY_BOOLEAN_ARRAY : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? N.EMPTY_BOOLEAN_ARRAY : a.clone();
+    public static boolean[] concat(final boolean[]... aa) {
+        if (N.isNullOrEmpty(aa)) {
+            return N.EMPTY_BOOLEAN_ARRAY;
+        } else if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? N.EMPTY_BOOLEAN_ARRAY : aa[0].clone();
         }
 
-        final boolean[] c = new boolean[a.length + b.length];
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (boolean[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final boolean[] c = new boolean[len];
+        int fromIndex = 0;
+
+        for (boolean[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    public static char[] concat(final char[] a, final char[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? N.EMPTY_CHAR_ARRAY : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? N.EMPTY_CHAR_ARRAY : a.clone();
+    public static char[] concat(final char[]... aa) {
+        if (N.isNullOrEmpty(aa)) {
+            return N.EMPTY_CHAR_ARRAY;
+        } else if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? N.EMPTY_CHAR_ARRAY : aa[0].clone();
         }
 
-        final char[] c = new char[a.length + b.length];
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (char[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final char[] c = new char[len];
+        int fromIndex = 0;
+
+        for (char[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    public static byte[] concat(final byte[] a, final byte[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? N.EMPTY_BYTE_ARRAY : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? N.EMPTY_BYTE_ARRAY : a.clone();
+    public static byte[] concat(final byte[]... aa) {
+        if (N.isNullOrEmpty(aa)) {
+            return N.EMPTY_BYTE_ARRAY;
+        } else if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? N.EMPTY_BYTE_ARRAY : aa[0].clone();
         }
 
-        final byte[] c = new byte[a.length + b.length];
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (byte[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final byte[] c = new byte[len];
+        int fromIndex = 0;
+
+        for (byte[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    public static short[] concat(final short[] a, final short[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? N.EMPTY_SHORT_ARRAY : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? N.EMPTY_SHORT_ARRAY : a.clone();
+    public static short[] concat(final short[]... aa) {
+        if (N.isNullOrEmpty(aa)) {
+            return N.EMPTY_SHORT_ARRAY;
+        } else if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? N.EMPTY_SHORT_ARRAY : aa[0].clone();
         }
 
-        final short[] c = new short[a.length + b.length];
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (short[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final short[] c = new short[len];
+        int fromIndex = 0;
+
+        for (short[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    public static int[] concat(final int[] a, final int[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? N.EMPTY_INT_ARRAY : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? N.EMPTY_INT_ARRAY : a.clone();
+    public static int[] concat(final int[]... aa) {
+        if (N.isNullOrEmpty(aa)) {
+            return N.EMPTY_INT_ARRAY;
+        } else if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? N.EMPTY_INT_ARRAY : aa[0].clone();
         }
 
-        final int[] c = new int[a.length + b.length];
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (int[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final int[] c = new int[len];
+        int fromIndex = 0;
+
+        for (int[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    public static long[] concat(final long[] a, final long[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? N.EMPTY_LONG_ARRAY : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? N.EMPTY_LONG_ARRAY : a.clone();
+    public static long[] concat(final long[]... aa) {
+        if (N.isNullOrEmpty(aa)) {
+            return N.EMPTY_LONG_ARRAY;
+        } else if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? N.EMPTY_LONG_ARRAY : aa[0].clone();
         }
 
-        final long[] c = new long[a.length + b.length];
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (long[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final long[] c = new long[len];
+        int fromIndex = 0;
+
+        for (long[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    public static float[] concat(final float[] a, final float[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? N.EMPTY_FLOAT_ARRAY : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? N.EMPTY_FLOAT_ARRAY : a.clone();
+    public static float[] concat(final float[]... aa) {
+        if (N.isNullOrEmpty(aa)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        } else if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? N.EMPTY_FLOAT_ARRAY : aa[0].clone();
         }
 
-        final float[] c = new float[a.length + b.length];
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (float[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final float[] c = new float[len];
+        int fromIndex = 0;
+
+        for (float[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    public static double[] concat(final double[] a, final double[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? N.EMPTY_DOUBLE_ARRAY : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? N.EMPTY_DOUBLE_ARRAY : a.clone();
+    public static double[] concat(final double[]... aa) {
+        if (N.isNullOrEmpty(aa)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        } else if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? N.EMPTY_DOUBLE_ARRAY : aa[0].clone();
         }
 
-        final double[] c = new double[a.length + b.length];
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (double[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final double[] c = new double[len];
+        int fromIndex = 0;
+
+        for (double[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
 
     /**
-     * Returns a new array combined by the two specified array {@code a} and {@code b}.
-     *
-     * @param a
-     * @param b
+     * 
+     * @param aa 
      * @return
      */
-    @SuppressWarnings("unchecked")
-    public static <T> T[] concat(final T[] a, final T[] b) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? a : b.clone();
-        } else if (N.isNullOrEmpty(b)) {
-            return a.clone();
+    public static <T> T[] concat(final T[]... aa) {
+        N.requireNonNull(aa, "aa");
+
+        if (aa.length == 1) {
+            return N.isNullOrEmpty(aa[0]) ? aa[0] : aa[0].clone();
         }
 
-        final T[] c = (T[]) newArray(a.getClass().getComponentType(), a.length + b.length);
+        int len = 0;
 
-        copy(a, 0, c, 0, a.length);
-        copy(b, 0, c, a.length, b.length);
+        for (T[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            len += a.length;
+        }
+
+        final T[] c = N.newArray(aa.getClass().getComponentType().getComponentType(), len);
+        int fromIndex = 0;
+
+        for (T[] a : aa) {
+            if (N.isNullOrEmpty(a)) {
+                continue;
+            }
+
+            System.arraycopy(a, 0, c, fromIndex, a.length);
+
+            fromIndex += a.length;
+        }
 
         return c;
     }
@@ -34259,11 +34402,59 @@ public final class N {
         return jsonParser.serialize(obj, config);
     }
 
+    public static void toJSON(final File file, final Object obj) {
+        jsonParser.serialize(file, obj);
+    }
+
+    public static void toJSON(final File file, final Object obj, final JSONSerializationConfig config) {
+        jsonParser.serialize(file, obj, config);
+    }
+
+    public static void toJSON(final OutputStream os, final Object obj) {
+        jsonParser.serialize(os, obj);
+    }
+
+    public static void toJSON(final OutputStream os, final Object obj, final JSONSerializationConfig config) {
+        jsonParser.serialize(os, obj, config);
+    }
+
+    public static void toJSON(final Writer writer, final Object obj) {
+        jsonParser.serialize(writer, obj);
+    }
+
+    public static void toJSON(final Writer writer, final Object obj, final JSONSerializationConfig config) {
+        jsonParser.serialize(writer, obj, config);
+    }
+
     public static <T> T fromJSON(final Class<T> targetClass, final String json) {
         return jsonParser.deserialize(targetClass, json);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final String json, final JSONDeserializationConfig config) {
+        return jsonParser.deserialize(targetClass, json, config);
+    }
+
+    public static <T> T fromJSON(final Class<T> targetClass, final File json) {
+        return jsonParser.deserialize(targetClass, json);
+    }
+
+    public static <T> T fromJSON(final Class<T> targetClass, final File json, final JSONDeserializationConfig config) {
+        return jsonParser.deserialize(targetClass, json, config);
+    }
+
+    public static <T> T fromJSON(final Class<T> targetClass, final InputStream json) {
+        return jsonParser.deserialize(targetClass, json);
+    }
+
+    public static <T> T fromJSON(final Class<T> targetClass, final InputStream json, final JSONDeserializationConfig config) {
+        return jsonParser.deserialize(targetClass, json, config);
+    }
+
+    public static <T> T fromJSON(final Class<T> targetClass, final Reader json) {
+        return jsonParser.deserialize(targetClass, json);
+    }
+
+    public static <T> T fromJSON(final Class<T> targetClass, final Reader json, final JSONDeserializationConfig config) {
         return jsonParser.deserialize(targetClass, json, config);
     }
 
@@ -34284,11 +34475,59 @@ public final class N {
         return xmlParser.serialize(obj, config);
     }
 
+    public static void toXML(final File file, final Object obj) {
+        xmlParser.serialize(file, obj);
+    }
+
+    public static void toXML(final File file, final Object obj, final XMLSerializationConfig config) {
+        xmlParser.serialize(file, obj, config);
+    }
+
+    public static void toXML(final OutputStream os, final Object obj) {
+        xmlParser.serialize(os, obj);
+    }
+
+    public static void toXML(final OutputStream os, final Object obj, final XMLSerializationConfig config) {
+        xmlParser.serialize(os, obj, config);
+    }
+
+    public static void toXML(final Writer writer, final Object obj) {
+        xmlParser.serialize(writer, obj);
+    }
+
+    public static void toXML(final Writer writer, final Object obj, final XMLSerializationConfig config) {
+        xmlParser.serialize(writer, obj, config);
+    }
+
     public static <T> T fromXML(final Class<T> targetClass, final String xml) {
         return xmlParser.deserialize(targetClass, xml);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final String xml, final XMLDeserializationConfig config) {
+        return xmlParser.deserialize(targetClass, xml, config);
+    }
+
+    public static <T> T fromXML(final Class<T> targetClass, final File xml) {
+        return xmlParser.deserialize(targetClass, xml);
+    }
+
+    public static <T> T fromXML(final Class<T> targetClass, final File xml, final XMLDeserializationConfig config) {
+        return xmlParser.deserialize(targetClass, xml, config);
+    }
+
+    public static <T> T fromXML(final Class<T> targetClass, final InputStream xml) {
+        return xmlParser.deserialize(targetClass, xml);
+    }
+
+    public static <T> T fromXML(final Class<T> targetClass, final InputStream xml, final XMLDeserializationConfig config) {
+        return xmlParser.deserialize(targetClass, xml, config);
+    }
+
+    public static <T> T fromXML(final Class<T> targetClass, final Reader xml) {
+        return xmlParser.deserialize(targetClass, xml);
+    }
+
+    public static <T> T fromXML(final Class<T> targetClass, final Reader xml, final XMLDeserializationConfig config) {
         return xmlParser.deserialize(targetClass, xml, config);
     }
 

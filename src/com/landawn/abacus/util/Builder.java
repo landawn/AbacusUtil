@@ -61,7 +61,7 @@ public class Builder<T> {
         return new DoubleListBuilder(l);
     }
 
-    public static final <T, L extends ObjectList<T>> ObjectListBuilder<T, L> of(L l) {
+    public static final <T> ObjectListBuilder<T> of(ObjectList<T> l) {
         return new ObjectListBuilder<>(l);
     }
 
@@ -103,8 +103,8 @@ public class Builder<T> {
         return of(mapper.apply(value));
     }
 
-    public Builder<Optional<T>> filter(final Predicate<? super T> predicate) {
-        return predicate.test(value) ? of(Optional.of(value)) : of((Optional<T>) Optional.empty());
+    public Optional<T> filter(final Predicate<? super T> predicate) {
+        return predicate.test(value) ? Optional.of(value) : (Optional<T>) Optional.empty();
     }
 
     //    public static <T> CollectionBuilder<T, List<T>> list() {
@@ -160,6 +160,13 @@ public class Builder<T> {
 
             return this;
         }
+
+        @Override
+        public BooleanListBuilder __(final Consumer<? super BooleanList> op) {
+            op.accept(value);
+
+            return this;
+        }
     }
 
     public static final class CharListBuilder extends Builder<CharList> {
@@ -193,6 +200,13 @@ public class Builder<T> {
 
         public CharListBuilder removeAll(CharList c) {
             value.removeAll(c);
+
+            return this;
+        }
+
+        @Override
+        public CharListBuilder __(final Consumer<? super CharList> op) {
+            op.accept(value);
 
             return this;
         }
@@ -232,6 +246,13 @@ public class Builder<T> {
 
             return this;
         }
+
+        @Override
+        public ByteListBuilder __(final Consumer<? super ByteList> op) {
+            op.accept(value);
+
+            return this;
+        }
     }
 
     public static final class ShortListBuilder extends Builder<ShortList> {
@@ -265,6 +286,13 @@ public class Builder<T> {
 
         public ShortListBuilder removeAll(ShortList c) {
             value.removeAll(c);
+
+            return this;
+        }
+
+        @Override
+        public ShortListBuilder __(final Consumer<? super ShortList> op) {
+            op.accept(value);
 
             return this;
         }
@@ -304,6 +332,13 @@ public class Builder<T> {
 
             return this;
         }
+
+        @Override
+        public IntListBuilder __(final Consumer<? super IntList> op) {
+            op.accept(value);
+
+            return this;
+        }
     }
 
     public static final class LongListBuilder extends Builder<LongList> {
@@ -337,6 +372,13 @@ public class Builder<T> {
 
         public LongListBuilder removeAll(LongList c) {
             value.removeAll(c);
+
+            return this;
+        }
+
+        @Override
+        public LongListBuilder __(final Consumer<? super LongList> op) {
+            op.accept(value);
 
             return this;
         }
@@ -376,6 +418,13 @@ public class Builder<T> {
 
             return this;
         }
+
+        @Override
+        public FloatListBuilder __(final Consumer<? super FloatList> op) {
+            op.accept(value);
+
+            return this;
+        }
     }
 
     public static final class DoubleListBuilder extends Builder<DoubleList> {
@@ -412,39 +461,53 @@ public class Builder<T> {
 
             return this;
         }
+
+        @Override
+        public DoubleListBuilder __(final Consumer<? super DoubleList> op) {
+            op.accept(value);
+
+            return this;
+        }
     }
 
-    public static final class ObjectListBuilder<T, L extends ObjectList<T>> extends Builder<L> {
-        ObjectListBuilder(L l) {
+    public static final class ObjectListBuilder<T> extends Builder<ObjectList<T>> {
+        ObjectListBuilder(ObjectList<T> l) {
             super(l);
         }
 
-        public ObjectListBuilder<T, L> add(T e) {
+        public ObjectListBuilder<T> add(T e) {
             value.add(e);
 
             return this;
         }
 
-        public ObjectListBuilder<T, L> addAll(ObjectList<T> c) {
+        public ObjectListBuilder<T> addAll(ObjectList<T> c) {
             value.addAll(c);
 
             return this;
         }
 
-        public ObjectListBuilder<T, L> remove(Object e) {
+        public ObjectListBuilder<T> remove(Object e) {
             value.remove(e);
 
             return this;
         }
 
-        //        public ObjListBuilder<T, L> removeAllOccurrences(Object e) {
+        //        public ObjListBuilder<T> removeAllOccurrences(Object e) {
         //            value.removeAllOccurrences(e);
         //
         //            return this;
         //        }
 
-        public ObjectListBuilder<T, L> removeAll(ObjectList<?> c) {
+        public ObjectListBuilder<T> removeAll(ObjectList<?> c) {
             value.removeAll(c);
+
+            return this;
+        }
+
+        @Override
+        public ObjectListBuilder<T> __(final Consumer<? super ObjectList<T>> op) {
+            op.accept(value);
 
             return this;
         }

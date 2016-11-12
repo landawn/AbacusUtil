@@ -1526,6 +1526,14 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         return IntStream.of(elementData, fromIndex, toIndex);
     }
 
+    //    public IntListBuilder __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public IntListBuilder __(Consumer<? super IntList> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());

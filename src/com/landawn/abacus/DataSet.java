@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.Builder;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
@@ -183,6 +184,10 @@ public interface DataSet extends Iterable<Object[]> {
      * @param func
      */
     void renameColumn(Collection<String> columnNames, Function<String, String> func);
+
+    void moveColumn(String columnName, int newPosition);
+
+    void moveColumn(Map<String, Integer> columnNameNewPositionMap);
 
     /**
      *
@@ -470,30 +475,6 @@ public interface DataSet extends Iterable<Object[]> {
     void removeColumnAll(Collection<String> columnNames);
 
     /**
-     * 
-     * @param row can be Object[]/List/Map/Entity with getter/setter methods
-     */
-    void addRow(Object row);
-
-    /**
-     * 
-     * @param row can be Object[]/List/Map/Entity with getter/setter methods
-     */
-    void addRow(int rowIndex, Object row);
-
-    /**
-     * 
-     * @param rowIndex
-     */
-    void removeRow(int rowIndex);
-
-    /**
-     * 
-     * @param indices
-     */
-    void removeRowAll(int... indices);
-
-    /**
      * convert the specified column to target type.
      *
      * @param columnName
@@ -536,10 +517,36 @@ public interface DataSet extends Iterable<Object[]> {
      *
      * @param columnNames
      * @param newColumnName
-     * @param newColumnClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
      * @return
      */
     void combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass);
+
+    void combineColumn(Collection<String> columnNames, String newColumnName, Function<? super Object[], ?> combineFunc);
+
+    /**
+     * 
+     * @param row can be Object[]/List/Map/Entity with getter/setter methods
+     */
+    void addRow(Object row);
+
+    /**
+     * 
+     * @param row can be Object[]/List/Map/Entity with getter/setter methods
+     */
+    void addRow(int rowIndex, Object row);
+
+    /**
+     * 
+     * @param rowIndex
+     */
+    void removeRow(int rowIndex);
+
+    /**
+     * 
+     * @param indices
+     */
+    void removeRowAll(int... indices);
 
     /**
      * Returns the current row number.
@@ -3004,7 +3011,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
      * @return a new DataSet
      */
     DataSet join(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
@@ -3015,8 +3022,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass
-     * @param collClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
+     * @param collClass it's for one-to-many join
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
@@ -3047,7 +3054,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
      * @return a new DataSet
      */
     DataSet leftJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
@@ -3058,8 +3065,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass
-     * @param collClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
+     * @param collClass it's for one-to-many join
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
@@ -3090,7 +3097,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
      * @return a new DataSet
      */
     DataSet rightJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
@@ -3101,8 +3108,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass
-     * @param collClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
+     * @param collClass it's for one-to-many join
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
@@ -3133,7 +3140,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
      * @return a new DataSet
      */
     DataSet fullJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
@@ -3144,8 +3151,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass
-     * @param collClass
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
+     * @param collClass it's for one-to-many join
      * @return a new DataSet
      */
     @SuppressWarnings("rawtypes")
@@ -3582,6 +3589,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @return
      */
     <T> __<T> __(IntFunction<? extends T> rowSupplier);
+
+    Builder<DataSet> __(Consumer<DataSet> func);
 
     // <E> __<List<E>> _2();
 

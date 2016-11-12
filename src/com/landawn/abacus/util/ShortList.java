@@ -1376,6 +1376,14 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         return ShortStream.of(elementData, fromIndex, toIndex);
     }
 
+    //    public ShortListBuilder __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public ShortListBuilder __(Consumer<? super ShortList> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());

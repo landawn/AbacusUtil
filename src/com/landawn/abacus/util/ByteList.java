@@ -1358,6 +1358,14 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         return ByteStream.of(elementData, fromIndex, toIndex);
     }
 
+    //    public ByteListBuilder __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public ByteListBuilder __(Consumer<? super ByteList> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());

@@ -1394,6 +1394,14 @@ public final class DoubleList extends AbstractNumberList<DoubleConsumer, DoubleP
         return DoubleStream.of(elementData, fromIndex, toIndex);
     }
 
+    //    public DoubleListBuilder __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public DoubleListBuilder __(Consumer<? super DoubleList> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());

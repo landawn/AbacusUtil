@@ -1225,6 +1225,14 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     //        return multimap;
     //    }
 
+    //    public BooleanListBuilder __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public BooleanListBuilder __(Consumer<? super BooleanList> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());

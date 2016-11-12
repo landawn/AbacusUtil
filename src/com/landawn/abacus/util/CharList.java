@@ -1386,6 +1386,14 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return CharStream.of(elementData, fromIndex, toIndex);
     }
 
+    //    public CharListBuilder __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public CharListBuilder __(Consumer<? super CharList> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());

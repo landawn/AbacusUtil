@@ -1420,6 +1420,14 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         return LongStream.of(elementData, fromIndex, toIndex);
     }
 
+    //    public LongListBuilder __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public LongListBuilder __(Consumer<? super LongList> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());

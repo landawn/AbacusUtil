@@ -42,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -1205,7 +1204,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
-     * @param zipFunction an <a href="package-summary.html#Associativity">associative</a>,
+     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
@@ -1214,7 +1213,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @see #reduce(BinaryOperator)
      * @see #reduce(Object, BinaryOperator)
      */
-    public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> zipFunction);
+    public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
 
     /**
      * 
@@ -1268,14 +1267,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for incorporating an additional element into a result
-     * @param zipFunction an <a href="package-summary.html#Associativity">associative</a>,
+     * @param combiner an <a href="package-summary.html#Associativity">associative</a>,
      *                    <a href="package-summary.html#NonInterference">non-interfering</a>,
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values, which must be
      *                    compatible with the accumulator function
      * @return the result of the reduction
      */
-    public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> zipFunction);
+    public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner);
 
     /**
      * 
@@ -7160,8 +7159,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                     nextSelector);
         }
 
-        final Queue<Iterator<? extends T>> queue = new LinkedList<>();
-        queue.addAll(c);
+        final Queue<Iterator<? extends T>> queue = N.newLinkedList(c);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
@@ -7218,7 +7216,11 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return Stream.of(queue.poll());
+        final Iterator<? extends T> a = queue.poll();
+        final Iterator<? extends T> b = queue.poll();
+
+        return merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iterator(), b instanceof QueuedIterator ? b : Stream.of(b).queued().iterator(),
+                nextSelector);
     }
 
     private static <B, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final AsyncExecutor asyncExecutor,

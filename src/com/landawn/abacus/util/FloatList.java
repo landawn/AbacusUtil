@@ -1408,6 +1408,14 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         return FloatStream.of(elementData, fromIndex, toIndex);
     }
 
+    //    public FloatListBuilder __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public FloatListBuilder __(Consumer<? super FloatList> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());

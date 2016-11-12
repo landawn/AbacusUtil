@@ -1,3 +1,19 @@
+
+========Changes in 0.9.31=========================================================================
+
+1, Add method __(...) to DataSet for Builder.
+
+2, Add combineColumn(Collection<String> columnNames, String newColumnName, Function<? super Object[], ?> combineFunc) and moveColumn to DataSet.
+
+3, Refactoring Difference.
+
+4, Add more toJSON/fromJSON/toXML/fromXML to N
+
+5, remove some classes under parse package to reduce the size of abacus-android*.jar
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.30=========================================================================
 
 1, Add xor to Stream/IntStream/LongStream/DoubleStream/...

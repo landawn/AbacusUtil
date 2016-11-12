@@ -1935,6 +1935,14 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return Stream.of(elementData, fromIndex, toIndex);
     }
 
+    //    public ObjectListBuilder<T> __() {
+    //        return Builder.of(this);
+    //    }
+    //
+    //    public ObjectListBuilder<T> __(Consumer<? super ObjectList<T>> func) {
+    //        return Builder.of(this).__(func);
+    //    }
+
     @Override
     public int hashCode() {
         return N.hashCode(elementData, 0, size());
