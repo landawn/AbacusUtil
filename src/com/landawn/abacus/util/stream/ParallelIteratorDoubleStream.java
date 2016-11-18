@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -56,17 +55,15 @@ import com.landawn.abacus.util.function.ToLongFunction;
  */
 final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     private final ImmutableDoubleIterator elements;
-    private final boolean sorted;
     private final int maxThreadNum;
     private final Splitter splitter;
     private volatile IteratorDoubleStream sequential;
     private volatile Stream<Double> boxed;
 
     ParallelIteratorDoubleStream(ImmutableDoubleIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         this.elements = values;
-        this.sorted = sorted;
         this.maxThreadNum = N.min(maxThreadNum, THREAD_POOL_SIZE);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
         this.sequential = new IteratorDoubleStream(this.elements, this.closeHandlers, this.sorted);
@@ -78,11 +75,6 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
     ParallelIteratorDoubleStream(Stream<Double> stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
         this(doubleIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
-    }
-
-    @Override
-    public DoubleStream filter(final DoublePredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -102,11 +94,6 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream takeWhile(final DoublePredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public DoubleStream takeWhile(final DoublePredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorDoubleStream(sequential().takeWhile(predicate, max).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitter);
@@ -120,11 +107,6 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
         }, max);
 
         return new ParallelIteratorDoubleStream(stream, closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public DoubleStream dropWhile(final DoublePredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -845,32 +827,6 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K> Map<K, List<Double>> toMap(DoubleFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Double>>>() {
-            @Override
-            public Map<K, List<Double>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Double>>> M toMap(DoubleFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Double, ?, List<Double>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -885,32 +841,6 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
     }
 
     @Override
@@ -935,16 +865,6 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
         };
 
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1159,12 +1079,6 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-        return collect(supplier, accumulator, combiner);
     }
 
     @Override

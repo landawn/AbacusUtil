@@ -44,7 +44,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
     static final Logger logger = LoggerFactory.getLogger(StreamBase.class);
 
     static final Object NONE = new Object();
-    static final int THREAD_POOL_SIZE = 512;
+    static final int THREAD_POOL_SIZE = 256;
     static final AsyncExecutor asyncExecutor = new AsyncExecutor(THREAD_POOL_SIZE, 300L, TimeUnit.SECONDS);
     static final int DEFAULT_MAX_THREAD_NUM = N.CPU_CORES;
     static final int DEFAULT_READING_THREAD_NUM = 8;
@@ -329,10 +329,56 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
     }
 
     final Set<Runnable> closeHandlers;
+    final boolean sorted;
+    final Comparator<? super T> cmp;
+    private boolean isClosed = false;
 
-    StreamBase(Collection<Runnable> closeHandlers) {
+    StreamBase(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
         this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
                 : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
+        this.sorted = sorted;
+        this.cmp = cmp;
+    }
+
+    @Override
+    public boolean isParallel() {
+        return false;
+    }
+
+    @Override
+    public S sequential() {
+        return (S) this;
+    }
+
+    @Override
+    public void close() {
+        if (isClosed) {
+            return;
+        }
+
+        try {
+            if (N.notNullOrEmpty(closeHandlers)) {
+                Throwable ex = null;
+
+                for (Runnable closeHandler : closeHandlers) {
+                    try {
+                        closeHandler.run();
+                    } catch (Throwable e) {
+                        if (ex == null) {
+                            ex = e;
+                        } else {
+                            ex.addSuppressed(e);
+                        }
+                    }
+                }
+
+                if (ex != null) {
+                    throw N.toRuntimeException(ex);
+                }
+            }
+        } finally {
+            isClosed = true;
+        }
     }
 
     static void setError(final Holder<Throwable> errorHolder, Throwable e, final MutableBoolean onGoing) {
@@ -573,28 +619,6 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
         };
 
         return doubleIter;
-    }
-
-    static void close(Collection<Runnable> closeHandlers) {
-        if (N.notNullOrEmpty(closeHandlers)) {
-            Throwable ex = null;
-
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (Throwable e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
-                }
-            }
-
-            if (ex != null) {
-                throw N.toRuntimeException(ex);
-            }
-        }
     }
 
     static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?> stream, Set<Runnable> closeHandlers) {

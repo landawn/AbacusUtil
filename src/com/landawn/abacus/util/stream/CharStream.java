@@ -35,7 +35,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
@@ -105,8 +104,8 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
 
     private static final CharStream EMPTY = new ArrayCharStream(N.EMPTY_CHAR_ARRAY);
 
-    CharStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    CharStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
+        super(closeHandlers, sorted, null);
     }
 
     /**
@@ -294,6 +293,10 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
      */
     public abstract <U> Stream<CharStream> split(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
+
+    public abstract Stream<CharStream> splitAt(int n);
+
+    public abstract CharStream reverse();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -1035,23 +1038,156 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
     }
 
     public static CharStream range(final char startInclusive, final char endExclusive) {
-        return of(Array.range(startInclusive, endExclusive));
+        if (startInclusive > endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endExclusive) {
+            return empty();
+        }
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private char next = startInclusive;
+            private int cnt = endExclusive * 1 - startInclusive;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public char next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
-    public static CharStream range(final char startInclusive, final char endExclusive, final char by) {
-        return of(Array.range(startInclusive, endExclusive, by));
+    public static CharStream range(final char startInclusive, final char endExclusive, final int by) {
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endExclusive == startInclusive) {
+            return empty();
+        }
+
+        if (endExclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private char next = startInclusive;
+            private int cnt = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public char next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                char result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
     public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
-        return of(Array.rangeClosed(startInclusive, endInclusive));
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endInclusive) {
+            return of(startInclusive);
+        }
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private char next = startInclusive;
+            private int cnt = endInclusive * 1 - startInclusive + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public char next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
-    public static CharStream rangeClosed(final char startInclusive, final char endInclusive, final char by) {
-        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+    public static CharStream rangeClosed(final char startInclusive, final char endInclusive, final int by) {
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endInclusive == startInclusive) {
+            return of(startInclusive);
+        }
+
+        if (endInclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private char next = startInclusive;
+            private int cnt = (endInclusive * 1 - startInclusive) / by + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public char next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                char result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
-    public static CharStream repeat(char element, int n) {
-        return of(Array.repeat(element, n));
+    public static CharStream repeat(final char element, final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative: " + n);
+        } else if (n == 0) {
+            return empty();
+        }
+
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < n;
+            }
+
+            @Override
+            public char next() {
+                if (cnt >= n) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                return element;
+            }
+        });
     }
 
     public static CharStream random(final char startInclusive, final char endInclusive) {

@@ -36,7 +36,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedInt;
@@ -110,8 +109,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
 
     private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY);
 
-    IntStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    IntStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
+        super(closeHandlers, sorted, null);
     }
 
     /**
@@ -343,6 +342,10 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      */
     public abstract <U> Stream<IntStream> split(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
+
+    public abstract Stream<IntStream> splitAt(int n);
+
+    public abstract IntStream reverse();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -1154,23 +1157,156 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     //    }
 
     public static IntStream range(final int startInclusive, final int endExclusive) {
-        return of(Array.range(startInclusive, endExclusive));
+        if (startInclusive > endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endExclusive) {
+            return empty();
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int next = startInclusive;
+            private long cnt = endExclusive * 1L - startInclusive;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public int next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
     public static IntStream range(final int startInclusive, final int endExclusive, final int by) {
-        return of(Array.range(startInclusive, endExclusive, by));
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endExclusive == startInclusive) {
+            return empty();
+        }
+
+        if (endExclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int next = startInclusive;
+            private long cnt = (endExclusive * 1L - startInclusive) / by + ((endExclusive * 1L - startInclusive) % by == 0 ? 0 : 1);
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public int next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                int result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
     public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
-        return of(Array.rangeClosed(startInclusive, endInclusive));
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endInclusive) {
+            return of(startInclusive);
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int next = startInclusive;
+            private long cnt = endInclusive * 1L - startInclusive + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public int next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
     public static IntStream rangeClosed(final int startInclusive, final int endInclusive, final int by) {
-        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endInclusive == startInclusive) {
+            return of(startInclusive);
+        }
+
+        if (endInclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int next = startInclusive;
+            private long cnt = (endInclusive * 1L - startInclusive) / by + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public int next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                int result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
-    public static IntStream repeat(int element, int n) {
-        return of(Array.repeat(element, n));
+    public static IntStream repeat(final int element, final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative: " + n);
+        } else if (n == 0) {
+            return empty();
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < n;
+            }
+
+            @Override
+            public int next() {
+                if (cnt >= n) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                return element;
+            }
+        });
     }
 
     public static IntStream random() {

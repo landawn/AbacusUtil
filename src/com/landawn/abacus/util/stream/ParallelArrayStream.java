@@ -9,21 +9,20 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.landawn.abacus.util.ByteSummaryStatistics;
-import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.ByteIterator;
+import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CompletableFuture;
-import com.landawn.abacus.util.DoubleSummaryStatistics;
-import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.IntSummaryStatistics;
+import com.landawn.abacus.util.IntIterator;
+import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
@@ -31,10 +30,10 @@ import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
-import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.PermutationIterator;
+import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -61,15 +60,13 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     private final T[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
-    private final Comparator<? super T> cmp;
     private final int maxThreadNum;
     private final Splitter splitter;
     private volatile ArrayStream<T> sequential;
 
     ParallelArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator,
             int maxThreadNum, Splitter splitter) {
-        super(closeHandlers);
+        super(closeHandlers, sorted, comparator);
 
         checkIndex(fromIndex, toIndex, values.length);
 
@@ -85,15 +82,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
-        this.cmp = comparator;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
-    }
-
-    @Override
-    public Stream<T> filter(Predicate<? super T> predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -190,11 +180,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> takeWhile(Predicate<? super T> predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate, final long max) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorStream<>(sequential().takeWhile(predicate, max).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitter);
@@ -244,11 +229,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public Stream<T> dropWhile(Predicate<? super T> predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -877,116 +857,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R> Stream<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
+    <R> Stream<R> flatMap4(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().flatMap(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitter);
+            return new ParallelIteratorStream<>(((ArrayStream<T>) sequential()).flatMap4(mapper).iterator(), closeHandlers, false, null, maxThreadNum,
+                    splitter);
         }
 
-        return flatMap4(new Function<T, Iterator<? extends R>>() {
-            @Override
-            public Iterator<? extends R> apply(T t) {
-                return mapper.apply(t).iterator();
-            }
-        });
-    }
-
-    @Override
-    public <R> Stream<R> flatMap2(final Function<? super T, ? extends R[]> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().flatMap2(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<R>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private R[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public R next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<R>() {
-                    private T next = null;
-                    private R[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public R next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <R> Stream<R> flatMap3(final Function<? super T, ? extends Collection<? extends R>> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().flatMap3(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-        }
-
-        return flatMap4(new Function<T, Iterator<? extends R>>() {
-            @Override
-            public Iterator<? extends R> apply(T t) {
-                return mapper.apply(t).iterator();
-            }
-        });
-    }
-
-    private <R> Stream<R> flatMap4(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitter == Splitter.ARRAY) {
@@ -1060,9 +936,10 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public CharStream flatMapToChar(final Function<? super T, ? extends CharStream> mapper) {
+    CharStream flatMapToChar4(final Function<? super T, CharIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().flatMapToChar(mapper).charIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorCharStream(((ArrayStream<T>) sequential()).flatMapToChar4(mapper).charIterator(), closeHandlers, false, maxThreadNum,
+                    splitter);
         }
 
         final List<Iterator<Character>> iters = new ArrayList<>(maxThreadNum);
@@ -1075,12 +952,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 iters.add(new ImmutableIterator<Character>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private ImmutableCharIterator cur = null;
+                    private CharIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).charIterator();
+                            cur = mapper.apply(elements[cursor++]);
                         }
 
                         return cur != null && cur.hasNext();
@@ -1102,7 +979,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Character>() {
                     private T next = null;
-                    private ImmutableCharIterator cur = null;
+                    private CharIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
@@ -1116,7 +993,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
 
-                            cur = mapper.apply(next).charIterator();
+                            cur = mapper.apply(next);
                         }
 
                         return cur != null && cur.hasNext();
@@ -1138,169 +1015,10 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public CharStream flatMapToChar2(final Function<? super T, char[]> mapper) {
+    ByteStream flatMapToByte4(final Function<? super T, ByteIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().flatMapToChar2(mapper).charIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Character>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Character>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private char[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Character next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Character>() {
-                    private T next = null;
-                    private char[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Character next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorCharStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public CharStream flatMapToChar3(final Function<? super T, ? extends Collection<Character>> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().flatMapToChar3(mapper).charIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Character>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Character>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private Iterator<Character> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Character next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Character>() {
-                    private T next = null;
-                    private Iterator<Character> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Character next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorCharStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().flatMapToByte(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorByteStream(((ArrayStream<T>) sequential()).flatMapToByte4(mapper).byteIterator(), closeHandlers, false, maxThreadNum,
+                    splitter);
         }
 
         final List<Iterator<Byte>> iters = new ArrayList<>(maxThreadNum);
@@ -1313,12 +1031,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 iters.add(new ImmutableIterator<Byte>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private ImmutableByteIterator cur = null;
+                    private ByteIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).byteIterator();
+                            cur = mapper.apply(elements[cursor++]);
                         }
 
                         return cur != null && cur.hasNext();
@@ -1340,7 +1058,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Byte>() {
                     private T next = null;
-                    private ImmutableByteIterator cur = null;
+                    private ByteIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
@@ -1354,7 +1072,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
 
-                            cur = mapper.apply(next).byteIterator();
+                            cur = mapper.apply(next);
                         }
 
                         return cur != null && cur.hasNext();
@@ -1376,169 +1094,10 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public ByteStream flatMapToByte2(final Function<? super T, byte[]> mapper) {
+    ShortStream flatMapToShort4(final Function<? super T, ShortIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().flatMapToByte2(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Byte>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Byte>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private byte[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Byte next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Byte>() {
-                    private T next = null;
-                    private byte[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Byte next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorByteStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public ByteStream flatMapToByte3(final Function<? super T, ? extends Collection<Byte>> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().flatMapToByte3(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Byte>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Byte>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private Iterator<Byte> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Byte next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Byte>() {
-                    private T next = null;
-                    private Iterator<Byte> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Byte next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorByteStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public ShortStream flatMapToShort(final Function<? super T, ? extends ShortStream> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().flatMapToShort(mapper).shortIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorShortStream(((ArrayStream<T>) sequential()).flatMapToShort4(mapper).shortIterator(), closeHandlers, false, maxThreadNum,
+                    splitter);
         }
 
         final List<Iterator<Short>> iters = new ArrayList<>(maxThreadNum);
@@ -1551,12 +1110,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 iters.add(new ImmutableIterator<Short>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private ImmutableShortIterator cur = null;
+                    private ShortIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).shortIterator();
+                            cur = mapper.apply(elements[cursor++]);
                         }
 
                         return cur != null && cur.hasNext();
@@ -1578,7 +1137,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Short>() {
                     private T next = null;
-                    private ImmutableShortIterator cur = null;
+                    private ShortIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
@@ -1592,7 +1151,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
 
-                            cur = mapper.apply(next).shortIterator();
+                            cur = mapper.apply(next);
                         }
 
                         return cur != null && cur.hasNext();
@@ -1614,169 +1173,10 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public ShortStream flatMapToShort2(final Function<? super T, short[]> mapper) {
+    IntStream flatMapToInt4(final Function<? super T, IntIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().flatMapToShort2(mapper).shortIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Short>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Short>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private short[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Short next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Short>() {
-                    private T next = null;
-                    private short[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Short next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorShortStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public ShortStream flatMapToShort3(final Function<? super T, ? extends Collection<Short>> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().flatMapToShort3(mapper).shortIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Short>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Short>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private Iterator<Short> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Short next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Short>() {
-                    private T next = null;
-                    private Iterator<Short> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Short next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorShortStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorIntStream(((ArrayStream<T>) sequential()).flatMapToInt4(mapper).intIterator(), closeHandlers, false, maxThreadNum,
+                    splitter);
         }
 
         final List<Iterator<Integer>> iters = new ArrayList<>(maxThreadNum);
@@ -1789,12 +1189,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 iters.add(new ImmutableIterator<Integer>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private ImmutableIntIterator cur = null;
+                    private IntIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).intIterator();
+                            cur = mapper.apply(elements[cursor++]);
                         }
 
                         return cur != null && cur.hasNext();
@@ -1816,7 +1216,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Integer>() {
                     private T next = null;
-                    private ImmutableIntIterator cur = null;
+                    private IntIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
@@ -1830,7 +1230,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
 
-                            cur = mapper.apply(next).intIterator();
+                            cur = mapper.apply(next);
                         }
 
                         return cur != null && cur.hasNext();
@@ -1852,169 +1252,10 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public IntStream flatMapToInt2(final Function<? super T, int[]> mapper) {
+    LongStream flatMapToLong4(final Function<? super T, LongIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().flatMapToInt2(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Integer>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Integer>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private int[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Integer next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Integer>() {
-                    private T next = null;
-                    private int[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Integer next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorIntStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public IntStream flatMapToInt3(final Function<? super T, ? extends Collection<Integer>> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().flatMapToInt3(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Integer>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Integer>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private Iterator<Integer> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Integer next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Integer>() {
-                    private T next = null;
-                    private Iterator<Integer> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Integer next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorIntStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public LongStream flatMapToLong(final Function<? super T, ? extends LongStream> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().flatMapToLong(mapper).longIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorLongStream(((ArrayStream<T>) sequential()).flatMapToLong4(mapper).longIterator(), closeHandlers, false, maxThreadNum,
+                    splitter);
         }
 
         final List<Iterator<Long>> iters = new ArrayList<>(maxThreadNum);
@@ -2027,12 +1268,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 iters.add(new ImmutableIterator<Long>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private ImmutableLongIterator cur = null;
+                    private LongIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).longIterator();
+                            cur = mapper.apply(elements[cursor++]);
                         }
 
                         return cur != null && cur.hasNext();
@@ -2054,7 +1295,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Long>() {
                     private T next = null;
-                    private ImmutableLongIterator cur = null;
+                    private LongIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
@@ -2068,7 +1309,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
 
-                            cur = mapper.apply(next).longIterator();
+                            cur = mapper.apply(next);
                         }
 
                         return cur != null && cur.hasNext();
@@ -2090,169 +1331,10 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public LongStream flatMapToLong2(final Function<? super T, long[]> mapper) {
+    FloatStream flatMapToFloat4(final Function<? super T, FloatIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().flatMapToLong2(mapper).longIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Long>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Long>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private long[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Long next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Long>() {
-                    private T next = null;
-                    private long[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Long next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorLongStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public LongStream flatMapToLong3(final Function<? super T, ? extends Collection<Long>> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().flatMapToLong3(mapper).longIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Long>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Long>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private Iterator<Long> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Long next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Long>() {
-                    private T next = null;
-                    private Iterator<Long> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Long next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorLongStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().flatMapToFloat(mapper).floatIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorFloatStream(((ArrayStream<T>) sequential()).flatMapToFloat4(mapper).floatIterator(), closeHandlers, false, maxThreadNum,
+                    splitter);
         }
 
         final List<Iterator<Float>> iters = new ArrayList<>(maxThreadNum);
@@ -2265,12 +1347,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 iters.add(new ImmutableIterator<Float>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private ImmutableFloatIterator cur = null;
+                    private FloatIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).floatIterator();
+                            cur = mapper.apply(elements[cursor++]);
                         }
 
                         return cur != null && cur.hasNext();
@@ -2292,7 +1374,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ImmutableIterator<Float>() {
                     private T next = null;
-                    private ImmutableFloatIterator cur = null;
+                    private FloatIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
@@ -2306,7 +1388,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                                 }
                             }
 
-                            cur = mapper.apply(next).floatIterator();
+                            cur = mapper.apply(next);
                         }
 
                         return cur != null && cur.hasNext();
@@ -2328,41 +1410,40 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public FloatStream flatMapToFloat2(final Function<? super T, float[]> mapper) {
+    DoubleStream flatMapToDouble4(final Function<? super T, DoubleIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().flatMapToFloat2(mapper).floatIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorDoubleStream(((ArrayStream<T>) sequential()).flatMapToDouble4(mapper).doubleIterator(), closeHandlers, false,
+                    maxThreadNum, splitter);
         }
 
-        final List<Iterator<Float>> iters = new ArrayList<>(maxThreadNum);
+        final List<Iterator<Double>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitter == Splitter.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Float>() {
+                iters.add(new ImmutableIterator<Double>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private float[] cur = null;
-                    private int curIndex = 0;
+                    private DoubleIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && cursor < to) {
+                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             cur = mapper.apply(elements[cursor++]);
-                            curIndex = 0;
                         }
 
-                        return cur != null && curIndex < cur.length;
+                        return cur != null && cur.hasNext();
                     }
 
                     @Override
-                    public Float next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
+                    public Double next() {
+                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                             throw new NoSuchElementException();
                         }
 
-                        return cur[curIndex++];
+                        return cur.next();
                     }
                 });
             }
@@ -2370,14 +1451,13 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Float>() {
+                iters.add(new ImmutableIterator<Double>() {
                     private T next = null;
-                    private float[] cur = null;
-                    private int curIndex = 0;
+                    private DoubleIterator cur = null;
 
                     @Override
                     public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
+                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
                             synchronized (elements) {
                                 if (cursor.intValue() < toIndex) {
                                     next = elements[cursor.getAndIncrement()];
@@ -2388,163 +1468,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                             }
 
                             cur = mapper.apply(next);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Float next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorFloatStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public FloatStream flatMapToFloat3(final Function<? super T, ? extends Collection<Float>> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().flatMapToFloat3(mapper).floatIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Float>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Float>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private Iterator<Float> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Float next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Float>() {
-                    private T next = null;
-                    private Iterator<Float> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Float next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorFloatStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().flatMapToDouble(mapper).doubleIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Double>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Double>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private ImmutableDoubleIterator cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).doubleIterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Double next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Double>() {
-                    private T next = null;
-                    private ImmutableDoubleIterator cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next).doubleIterator();
                         }
 
                         return cur != null && cur.hasNext();
@@ -2563,226 +1486,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public DoubleStream flatMapToDouble2(final Function<? super T, double[]> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().flatMapToDouble2(mapper).doubleIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Double>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Double>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private double[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Double next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Double>() {
-                    private T next = null;
-                    private double[] cur = null;
-                    private int curIndex = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || curIndex >= cur.length) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next);
-                            curIndex = 0;
-                        }
-
-                        return cur != null && curIndex < cur.length;
-                    }
-
-                    @Override
-                    public Double next() {
-                        if ((cur == null || curIndex >= cur.length) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur[curIndex++];
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public DoubleStream flatMapToDouble3(final Function<? super T, ? extends Collection<Double>> mapper) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().flatMapToDouble3(mapper).doubleIterator(), closeHandlers, false, maxThreadNum, splitter);
-        }
-
-        final List<Iterator<Double>> iters = new ArrayList<>(maxThreadNum);
-
-        if (splitter == Splitter.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                final int sliceIndex = i;
-                iters.add(new ImmutableIterator<Double>() {
-                    private int cursor = fromIndex + sliceIndex * sliceSize;
-                    private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-                    private Iterator<Double> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && cursor < to) {
-                            cur = mapper.apply(elements[cursor++]).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Double next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        } else {
-            final MutableInt cursor = MutableInt.of(fromIndex);
-
-            for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ImmutableIterator<Double>() {
-                    private T next = null;
-                    private Iterator<Double> cur = null;
-
-                    @Override
-                    public boolean hasNext() {
-                        while ((cur == null || cur.hasNext() == false) && next != NONE) {
-                            synchronized (elements) {
-                                if (cursor.intValue() < toIndex) {
-                                    next = elements[cursor.getAndIncrement()];
-                                } else {
-                                    next = (T) NONE;
-                                    break;
-                                }
-                            }
-
-                            cur = mapper.apply(next).iterator();
-                        }
-
-                        return cur != null && cur.hasNext();
-                    }
-
-                    @Override
-                    public Double next() {
-                        if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                            throw new NoSuchElementException();
-                        }
-
-                        return cur.next();
-                    }
-                });
-            }
-        }
-
-        return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
-        final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
-
-        return new ParallelIteratorStream<>(map.entrySet().iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier, Supplier<Map<K, List<T>>> mapFactory) {
-        final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier, mapFactory));
-
-        return new ParallelIteratorStream<>(map.entrySet().iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        final Map<K, D> map = collect(Collectors.groupingBy(classifier, downstream));
-
-        return new ParallelIteratorStream<>(map.entrySet().iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <K, D, A> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream,
-            Supplier<Map<K, D>> mapFactory) {
-        final Map<K, D> map = collect(Collectors.groupingBy(classifier, downstream, mapFactory));
-
-        return new ParallelIteratorStream<>(map.entrySet().iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper));
-
-        return new ParallelIteratorStream<>(map.entrySet().iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            Supplier<Map<K, U>> mapFactory) {
-        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mapFactory));
-
-        return new ParallelIteratorStream<>(map.entrySet().iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction) {
-        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction));
-
-        return new ParallelIteratorStream<>(map.entrySet().iterator(), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<Map<K, U>> mapFactory) {
-        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
-
-        return new ParallelIteratorStream<>(map.entrySet().iterator(), closeHandlers, false, null, maxThreadNum, splitter);
     }
 
     @Override
@@ -2979,7 +1682,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {boundaryUpdate.accept(boundary);}
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }
@@ -3014,7 +1719,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {boundaryUpdate.accept(boundary);}
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }
@@ -3049,7 +1756,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {boundaryUpdate.accept(boundary);}
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
                         break;
                     }
                 }
@@ -3423,51 +2132,15 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K> Map<K, List<T>> toMap(Function<? super T, ? extends K> classifier) {
-        return collect(Collectors.groupingBy(classifier));
-    }
-
-    @Override
-    public <K, M extends Map<K, List<T>>> M toMap(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
-        return collect(Collectors.groupingBy(classifier, mapFactory));
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        return collect(Collectors.groupingBy(classifier, downstream));
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
         return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-        return collect(Collectors.toMap(keyMapper, valueMapper));
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            Supplier<M> mapSupplier) {
-        return collect(Collectors.toMap(keyMapper, valueMapper, mapSupplier));
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction));
-    }
-
-    @Override
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier) {
         return collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapSupplier));
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-        return collect(Collectors.toMultimap(keyMapper, valueMapper));
     }
 
     @Override
@@ -3760,12 +2433,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
-        final BinaryOperator<U> combiner = reducingCombiner;
-        return reduce(identity, accumulator, combiner);
-    }
-
-    @Override
     public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator, final BiConsumer<R, R> combiner) {
         if (maxThreadNum <= 1) {
             return sequential().collect(supplier, accumulator, combiner);
@@ -3853,12 +2520,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         return container == NONE ? supplier.get() : container;
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-        return collect(supplier, accumulator, combiner);
     }
 
     @Override
@@ -3990,73 +2651,48 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Long sumInt(ToIntFunction<? super T> mapper) {
-        return collect(Collectors.summingInt(mapper));
-    }
-
-    @Override
-    public Long sumLong(ToLongFunction<? super T> mapper) {
-        return collect(Collectors.summingLong(mapper));
-    }
-
-    @Override
-    public Double sumDouble(ToDoubleFunction<? super T> mapper) {
-        return collect(Collectors.summingDouble(mapper));
-    }
-
-    @Override
-    public OptionalDouble averageInt(ToIntFunction<? super T> mapper) {
-        return collect(Collectors.averagingInt2(mapper));
-    }
-
-    @Override
-    public OptionalDouble averageLong(ToLongFunction<? super T> mapper) {
-        return collect(Collectors.averagingLong2(mapper));
-    }
-
-    @Override
-    public OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper) {
-        return collect(Collectors.averagingDouble2(mapper));
-    }
-
-    @Override
     public long count() {
         return toIndex - fromIndex;
     }
 
     @Override
-    public CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper) {
-        return collect(Collectors.summarizingChar(mapper));
+    public Stream<T> reverse() {
+        return new ParallelIteratorStream<>(new ImmutableIterator<T>() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[--cursor];
+            }
+        }, closeHandlers, false, null, maxThreadNum, splitter);
     }
 
     @Override
-    public ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper) {
-        return collect(Collectors.summarizingByte(mapper));
+    public Stream<List<T>> permutation() {
+        return new ParallelIteratorStream<>(PermutationIterator.of(toList()), closeHandlers, false, null, maxThreadNum, splitter);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public ShortSummaryStatistics summarizeShort(ToShortFunction<? super T> mapper) {
-        return collect(Collectors.summarizingShort(mapper));
+    public Stream<List<T>> orderedPermutation() {
+        final Iterator<List<T>> iter = PermutationIterator.ordered((List) toList());
+        return new ParallelIteratorStream<>(iter, closeHandlers, false, null, maxThreadNum, splitter);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper) {
-        return collect(Collectors.summarizingInt(mapper));
-    }
-
-    @Override
-    public LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper) {
-        return collect(Collectors.summarizingLong(mapper));
-    }
-
-    @Override
-    public FloatSummaryStatistics summarizeFloat(ToFloatFunction<? super T> mapper) {
-        return collect(Collectors.summarizingFloat(mapper));
-    }
-
-    @Override
-    public DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper) {
-        return collect(Collectors.summarizingDouble(mapper));
+    public Stream<List<T>> orderedPermutation(Comparator<? super T> comparator) {
+        return new ParallelIteratorStream<>(PermutationIterator.ordered((List) toList(), comparator == null ? OBJECT_COMPARATOR : comparator), closeHandlers,
+                false, null, maxThreadNum, splitter);
     }
 
     @Override

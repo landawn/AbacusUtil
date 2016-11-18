@@ -187,8 +187,16 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         return of(Array.range(startInclusive, endExclusive));
     }
 
+    public static ByteList range(byte startInclusive, final byte endExclusive, final byte by) {
+        return of(Array.range(startInclusive, endExclusive, by));
+    }
+
     public static ByteList rangeClosed(byte startInclusive, final byte endInclusive) {
         return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static ByteList rangeClosed(byte startInclusive, final byte endInclusive, final byte by) {
+        return of(Array.range(startInclusive, endInclusive, by));
     }
 
     public static ByteList repeat(byte element, final int len) {
@@ -878,6 +886,11 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
     }
 
     @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
+    }
+
+    @Override
     public int count(final int fromIndex, final int toIndex, BytePredicate filter) {
         checkIndex(fromIndex, toIndex);
 
@@ -1368,13 +1381,22 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
 
     @Override
     public int hashCode() {
-        return N.hashCode(elementData, 0, size());
+        return N.hashCode(elementData, 0, size);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || (obj instanceof ByteList && N.equals(elementData, 0, size(), ((ByteList) obj).elementData));
+        if (obj == this) {
+            return true;
+        }
 
+        if (obj instanceof ByteList) {
+            final ByteList other = (ByteList) obj;
+
+            return this.size == other.size && N.equals(this.elementData, 0, other.elementData, 0, this.size);
+        }
+
+        return false;
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,6 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     private final long[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
     private final int maxThreadNum;
     private final Splitter splitter;
     private volatile ArrayLongStream sequential;
@@ -64,21 +62,15 @@ final class ParallelArrayLongStream extends AbstractLongStream {
 
     ParallelArrayLongStream(long[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum,
             Splitter splitter) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
-    }
-
-    @Override
-    public LongStream filter(final LongPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -98,11 +90,6 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream takeWhile(final LongPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public LongStream takeWhile(final LongPredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorLongStream(sequential().takeWhile(predicate, max).longIterator(), closeHandlers, sorted, maxThreadNum, splitter);
@@ -116,11 +103,6 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }, max);
 
         return new ParallelIteratorLongStream(stream, closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public LongStream dropWhile(final LongPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -684,32 +666,6 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Long>>>() {
-            @Override
-            public Map<K, List<Long>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Long>>> M toMap(LongFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Long, ?, List<Long>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -724,32 +680,6 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
     }
 
     @Override
@@ -774,16 +704,6 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         };
 
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1095,12 +1015,6 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
     public OptionalLong min() {
         if (count() == 0) {
             return OptionalLong.empty();
@@ -1258,6 +1172,27 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public LongStream reverse() {
+        return new ParallelIteratorLongStream(new ImmutableLongIterator() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public long next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[--cursor];
+            }
+        }, closeHandlers, false, maxThreadNum, splitter);
     }
 
     @Override

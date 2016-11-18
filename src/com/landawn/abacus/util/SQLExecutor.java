@@ -2252,7 +2252,7 @@ public final class SQLExecutor implements Closeable {
     }
 
     /**
-     * Remember to close the returned <code>RowIterator</code> to close the underlying <code>ResultSet</code>.
+     * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
      * 
      * @param sql
      * @param statementSetter
@@ -2404,7 +2404,7 @@ public final class SQLExecutor implements Closeable {
     }
 
     /**
-     * Remember to close the returned <code>RowIterator</code> to close the underlying <code>ResultSet</code>.
+     * Remember to close the returned <code>Stream</code> to close the underlying <code>ResultSet</code>.
      * 
      * @param sql
      * @param statementSetter

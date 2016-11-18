@@ -438,7 +438,7 @@ public final class Array {
             return N.EMPTY_CHAR_ARRAY;
         }
 
-        final char[] a = new char[endExclusive - startInclusive];
+        final char[] a = new char[endExclusive * 1 - startInclusive];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;
@@ -452,7 +452,7 @@ public final class Array {
             return N.EMPTY_BYTE_ARRAY;
         }
 
-        final byte[] a = new byte[endExclusive - startInclusive];
+        final byte[] a = new byte[endExclusive * 1 - startInclusive];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;
@@ -466,7 +466,7 @@ public final class Array {
             return N.EMPTY_SHORT_ARRAY;
         }
 
-        final short[] a = new short[endExclusive - startInclusive];
+        final short[] a = new short[endExclusive * 1 - startInclusive];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;
@@ -480,6 +480,10 @@ public final class Array {
             return N.EMPTY_INT_ARRAY;
         }
 
+        if (endExclusive * 1L - startInclusive > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("overflow");
+        }
+
         final int[] a = new int[endExclusive - startInclusive];
 
         for (int i = 0, len = a.length; i < len; i++) {
@@ -490,8 +494,14 @@ public final class Array {
     }
 
     public static long[] range(long startInclusive, final long endExclusive) {
-        if (endExclusive == startInclusive) {
+        if (startInclusive > endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (endExclusive == startInclusive) {
             return N.EMPTY_LONG_ARRAY;
+        }
+
+        if (endExclusive - startInclusive < 0 || endExclusive - startInclusive > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("overflow");
         }
 
         final long[] a = new long[(int) (endExclusive - startInclusive)];
@@ -551,8 +561,7 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int tmp = (endExclusive - startInclusive) / by;
-        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
+        final int len = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
         final char[] a = new char[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -576,8 +585,7 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int tmp = (endExclusive - startInclusive) / by;
-        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
+        final int len = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
         final byte[] a = new byte[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -601,8 +609,7 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int tmp = (endExclusive - startInclusive) / by;
-        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
+        final int len = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
         final short[] a = new short[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -626,9 +633,13 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int tmp = (endExclusive - startInclusive) / by;
-        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
-        final int[] a = new int[len];
+        final long len = (endExclusive * 1L - startInclusive) / by + ((endExclusive * 1L - startInclusive) % by == 0 ? 0 : 1);
+
+        if (len > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("overflow");
+        }
+
+        final int[] a = new int[(int) len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
             a[i] = startInclusive;
@@ -651,9 +662,26 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int tmp = (int) ((endExclusive - startInclusive) / by);
-        final int len = startInclusive + (tmp * by) == endExclusive ? tmp : tmp + 1;
-        final long[] a = new long[len];
+        long len = 0;
+
+        if ((by > 0 && endExclusive - startInclusive < 0) || (by < 0 && startInclusive - endExclusive < 0)) {
+            final BigInteger m = BigInteger.valueOf(endExclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(by));
+
+            if (m.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
+                throw new IllegalArgumentException("overflow");
+            }
+
+            len = m.multiply(BigInteger.valueOf(by)).add(BigInteger.valueOf(startInclusive)).equals(BigInteger.valueOf(endExclusive)) ? m.longValue()
+                    : m.longValue() + 1;
+        } else {
+            len = (endExclusive - startInclusive) / by + ((endExclusive - startInclusive) % by == 0 ? 0 : 1);
+        }
+
+        if (len > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("overflow");
+        }
+
+        final long[] a = new long[(int) len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
             a[i] = startInclusive;
@@ -717,7 +745,7 @@ public final class Array {
     //    }
 
     public static char[] rangeClosed(char startInclusive, final char endInclusive) {
-        final char[] a = new char[endInclusive - startInclusive + 1];
+        final char[] a = new char[endInclusive * 1 - startInclusive + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;
@@ -727,7 +755,7 @@ public final class Array {
     }
 
     public static byte[] rangeClosed(byte startInclusive, final byte endInclusive) {
-        final byte[] a = new byte[endInclusive - startInclusive + 1];
+        final byte[] a = new byte[endInclusive * 1 - startInclusive + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;
@@ -737,7 +765,7 @@ public final class Array {
     }
 
     public static short[] rangeClosed(short startInclusive, final short endInclusive) {
-        final short[] a = new short[endInclusive - startInclusive + 1];
+        final short[] a = new short[endInclusive * 1 - startInclusive + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;
@@ -747,6 +775,10 @@ public final class Array {
     }
 
     public static int[] rangeClosed(int startInclusive, final int endInclusive) {
+        if (endInclusive * 1L - startInclusive + 1 > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("overflow");
+        }
+
         final int[] a = new int[endInclusive - startInclusive + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
@@ -757,7 +789,13 @@ public final class Array {
     }
 
     public static long[] rangeClosed(long startInclusive, final long endInclusive) {
-        final long[] a = new long[(int) (endInclusive - startInclusive) + 1];
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+        } else if (endInclusive - startInclusive + 1 <= 0 || endInclusive - startInclusive + 1 > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("overflow");
+        }
+
+        final long[] a = new long[(int) (endInclusive - startInclusive + 1)];
 
         for (int i = 0, len = a.length; i < len; i++) {
             a[i] = startInclusive++;
@@ -804,7 +842,7 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (endInclusive - startInclusive) / by + 1;
+        final int len = (endInclusive * 1 - startInclusive) / by + 1;
         final char[] a = new char[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -828,7 +866,7 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (endInclusive - startInclusive) / by + 1;
+        final int len = (endInclusive * 1 - startInclusive) / by + 1;
         final byte[] a = new byte[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -852,7 +890,7 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (endInclusive - startInclusive) / by + 1;
+        final int len = (endInclusive * 1 - startInclusive) / by + 1;
         final short[] a = new short[len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
@@ -876,8 +914,13 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (endInclusive - startInclusive) / by + 1;
-        final int[] a = new int[len];
+        final long len = (endInclusive * 1L - startInclusive) / by + 1;
+
+        if (len > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("overflow");
+        }
+
+        final int[] a = new int[(int) len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
             a[i] = startInclusive;
@@ -900,8 +943,25 @@ public final class Array {
                     "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
         }
 
-        final int len = (int) ((endInclusive - startInclusive) / by) + 1;
-        final long[] a = new long[len];
+        long len = 0;
+
+        if ((by > 0 && endInclusive - startInclusive < 0) || (by < 0 && startInclusive - endInclusive < 0) || ((endInclusive - startInclusive) / by + 1 <= 0)) {
+            final BigInteger m = BigInteger.valueOf(endInclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(by));
+
+            if (m.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
+                throw new IllegalArgumentException("overflow");
+            }
+
+            len = m.longValue() + 1;
+        } else {
+            len = (endInclusive - startInclusive) / by + 1;
+        }
+
+        if (len > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("overflow");
+        }
+
+        final long[] a = new long[(int) len];
 
         for (int i = 0; i < len; i++, startInclusive += by) {
             a[i] = startInclusive;

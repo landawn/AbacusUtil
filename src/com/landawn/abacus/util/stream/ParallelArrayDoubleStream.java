@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +54,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     private final double[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
     private final int maxThreadNum;
     private final Splitter splitter;
     private volatile ArrayDoubleStream sequential;
@@ -63,21 +61,15 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     ParallelArrayDoubleStream(double[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum,
             Splitter splitter) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
-    }
-
-    @Override
-    public DoubleStream filter(final DoublePredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -97,11 +89,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream takeWhile(final DoublePredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public DoubleStream takeWhile(final DoublePredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorDoubleStream(sequential().takeWhile(predicate, max).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitter);
@@ -115,11 +102,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         }, max);
 
         return new ParallelIteratorDoubleStream(stream, closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public DoubleStream dropWhile(final DoublePredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -682,32 +664,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K> Map<K, List<Double>> toMap(DoubleFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Double>>>() {
-            @Override
-            public Map<K, List<Double>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Double>>> M toMap(DoubleFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Double, ?, List<Double>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -722,32 +678,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
     }
 
     @Override
@@ -772,16 +702,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         };
 
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1093,12 +1013,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
     public OptionalDouble min() {
         if (count() == 0) {
             return OptionalDouble.empty();
@@ -1353,6 +1267,27 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public DoubleStream reverse() {
+        return new ParallelIteratorDoubleStream(new ImmutableDoubleIterator() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public double next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[--cursor];
+            }
+        }, closeHandlers, false, maxThreadNum, splitter);
     }
 
     @Override

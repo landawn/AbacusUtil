@@ -232,8 +232,16 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         return of(Array.range(startInclusive, endExclusive));
     }
 
+    public static LongList range(long startInclusive, final long endExclusive, final long by) {
+        return of(Array.range(startInclusive, endExclusive, by));
+    }
+
     public static LongList rangeClosed(long startInclusive, final long endInclusive) {
         return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static LongList rangeClosed(long startInclusive, final long endInclusive, final long by) {
+        return of(Array.range(startInclusive, endInclusive, by));
     }
 
     public static LongList repeat(long element, final int len) {
@@ -920,6 +928,11 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
     }
 
     @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
+    }
+
+    @Override
     public int count(final int fromIndex, final int toIndex, LongPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
@@ -1430,13 +1443,22 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
 
     @Override
     public int hashCode() {
-        return N.hashCode(elementData, 0, size());
+        return N.hashCode(elementData, 0, size);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || (obj instanceof LongList && N.equals(elementData, 0, size(), ((LongList) obj).elementData));
+        if (obj == this) {
+            return true;
+        }
 
+        if (obj instanceof LongList) {
+            final LongList other = (LongList) obj;
+
+            return this.size == other.size && N.equals(this.elementData, 0, other.elementData, 0, this.size);
+        }
+
+        return false;
     }
 
     @Override

@@ -1,21 +1,32 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.CharIterator;
+import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.IndexedChar;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharFunction;
+import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.ObjCharConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToCharFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -23,8 +34,174 @@ import com.landawn.abacus.util.function.Supplier;
  */
 abstract class AbstractCharStream extends CharStream {
 
-    AbstractCharStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    AbstractCharStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
+        super(closeHandlers, sorted);
+    }
+
+    @Override
+    public CharStream filter(final CharPredicate predicate) {
+        return filter(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public CharStream takeWhile(final CharPredicate predicate) {
+        return takeWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public CharStream dropWhile(final CharPredicate predicate) {
+        return dropWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<Character>>>() {
+            @Override
+            public Map<K, List<Character>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<Character>>> M toMap(CharFunction<? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<Character, ?, List<Character>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public CharStream except(Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        });
+    }
+
+    @Override
+    public CharStream intersect(Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        });
+    }
+
+    @Override
+    public CharStream xor(Collection<Character> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append(Stream.of(c).filter(new Predicate<Character>() {
+            @Override
+            public boolean test(Character value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }).mapToChar(new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        }));
+    }
+
+    @Override
+    public Stream<CharStream> splitAt(final int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative");
+        }
+
+        final CharIterator iter = this.charIterator();
+        final CharList list = new CharList();
+
+        while (list.size() < n && iter.hasNext()) {
+            list.add(iter.next());
+        }
+
+        final CharStream[] a = new CharStream[] { new ArrayCharStream(list.array(), 0, list.size(), null, sorted),
+                new IteratorCharStream(iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public char next() {
+                        return iter.next();
+                    }
+
+                }, null, sorted) };
+
+        if (this.isParallel()) {
+            return new ParallelArrayStream<CharStream>(a, 0, a.length, closeHandlers, false, null, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayStream<CharStream>(a, closeHandlers);
+        }
+    }
+
+    @Override
+    public CharStream reverse() {
+        final char[] a = toArray();
+
+        N.reverse(a);
+
+        return newStream(a, false);
     }
 
     @Override
@@ -51,7 +228,8 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
-        throw new UnsupportedOperationException("It's not supported parallel stream.");
+        final BiConsumer<R, R> combiner = collectingCombiner;
+        return collect(supplier, accumulator, combiner);
     }
 
     @Override
@@ -143,8 +321,43 @@ abstract class AbstractCharStream extends CharStream {
         return this;
     }
 
-    @Override
-    public void close() {
-        close(closeHandlers);
+    protected CharStream newStream(final char[] a, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayCharStream(a, closeHandlers, sorted);
+        }
+    }
+
+    protected CharStream newStream(final CharIterator iter, final boolean sorted) {
+        if (this.isParallel()) {
+            final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public char next() {
+                    return iter.next();
+                }
+            };
+
+            return new ParallelIteratorCharStream(charIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public char next() {
+                    return iter.next();
+                }
+            };
+
+            return new IteratorCharStream(charIter, closeHandlers, sorted);
+        }
     }
 }

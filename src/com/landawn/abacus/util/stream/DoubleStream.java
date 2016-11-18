@@ -36,7 +36,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
@@ -107,8 +106,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
 
     private static final DoubleStream EMPTY = new ArrayDoubleStream(N.EMPTY_DOUBLE_ARRAY);
 
-    DoubleStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    DoubleStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
+        super(closeHandlers, sorted, null);
     }
 
     /**
@@ -328,6 +327,10 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      */
     public abstract <U> Stream<DoubleStream> split(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
+
+    public abstract Stream<DoubleStream> splitAt(int n);
+
+    public abstract DoubleStream reverse();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -1086,8 +1089,31 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
                 });
     }
 
-    public static DoubleStream repeat(double element, int n) {
-        return of(Array.repeat(element, n));
+    public static DoubleStream repeat(final double element, final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative: " + n);
+        } else if (n == 0) {
+            return empty();
+        }
+
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < n;
+            }
+
+            @Override
+            public double next() {
+                if (cnt >= n) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                return element;
+            }
+        });
     }
 
     public static DoubleStream random() {

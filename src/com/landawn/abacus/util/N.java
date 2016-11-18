@@ -6936,18 +6936,230 @@ public final class N {
         return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : cmp.compare(a, b));
     }
 
-    public static int compare(final Object[] a, final Object[] b) {
-        int rt = 0;
+    public static int compare(final boolean[] a, final boolean[] b) {
+        return compare(a, b, false);
+    }
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            rt = (a[i] == null) ? ((b[i] == null) ? 0 : -1) : ((b[i] == null) ? 1 : ((Comparable<Object>) a[i]).compareTo(b[i]));
+    public static int compare(final boolean[] a, final boolean[] b, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
 
-            if (rt != 0) {
-                return rt;
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] ? 1 : -1;
             }
         }
 
-        return rt;
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static int compare(final char[] a, final char[] b) {
+        return compare(a, b, false);
+    }
+
+    public static int compare(final char[] a, final char[] b, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static int compare(final byte[] a, final byte[] b) {
+        return compare(a, b, false);
+    }
+
+    public static int compare(final byte[] a, final byte[] b, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static int compare(final short[] a, final short[] b) {
+        return compare(a, b, false);
+    }
+
+    public static int compare(final short[] a, final short[] b, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static int compare(final int[] a, final int[] b) {
+        return compare(a, b, false);
+    }
+
+    public static int compare(final int[] a, final int[] b, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static int compare(final long[] a, final long[] b) {
+        return compare(a, b, false);
+    }
+
+    public static int compare(final long[] a, final long[] b, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if (a[i] != b[i]) {
+                return a[i] > b[i] ? 1 : -1;
+            }
+        }
+
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static int compare(final float[] a, final float[] b) {
+        return compare(a, b, false);
+    }
+
+    public static int compare(final float[] a, final float[] b, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        int value = 0;
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if ((value = Float.compare(a[i], b[i])) != 0) {
+                return value;
+            }
+        }
+
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static int compare(final double[] a, final double[] b) {
+        return compare(a, b, false);
+    }
+
+    public static int compare(final double[] a, final double[] b, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        int value = 0;
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if ((value = Double.compare(a[i], b[i])) != 0) {
+                return value;
+            }
+        }
+
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static int compare(final Object[] a, final Object[] b) {
+        return compare(a, b, false);
+    }
+
+    public static int compare(final Object[] a, final Object[] b, boolean nullIsBigger) {
+        return compare(a, b, nullIsBigger ? N.NULL_MAX_COMPARATOR : N.NULL_MIN_COMPARATOR, nullIsBigger);
+    }
+
+    public static <T> int compare(final T[] a, final T[] b, Comparator<? super T> cmp) {
+        return compare(a, b, cmp, false);
+    }
+
+    public static <T> int compare(final T[] a, final T[] b, Comparator<? super T> cmp, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        int value = 0;
+
+        for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
+            if ((value = cmp.compare(a[i], b[i])) != 0) {
+                return value;
+            }
+        }
+
+        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+    }
+
+    public static <T extends Comparable<? super T>> int compare(final Collection<T> a, final Collection<T> b) {
+        return compare(a, b, false);
+    }
+
+    public static <T extends Comparable<? super T>> int compare(final Collection<T> a, final Collection<T> b, boolean nullIsBigger) {
+        return compare(a, b, nullIsBigger ? N.NULL_MAX_COMPARATOR : N.NULL_MIN_COMPARATOR, nullIsBigger);
+    }
+
+    public static <T> int compare(final Collection<T> a, final Collection<T> b, Comparator<? super T> cmp) {
+        return compare(a, b, cmp, false);
+    }
+
+    public static <T> int compare(final Collection<T> a, final Collection<T> b, Comparator<? super T> cmp, boolean nullIsBigger) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+        } else if (N.isNullOrEmpty(b)) {
+            return nullIsBigger ? -1 : 1;
+        }
+
+        final Iterator<T> iterA = a.iterator();
+        final Iterator<T> iterB = b.iterator();
+        int value = 0;
+
+        for (int i = 0, minLen = min(a.size(), b.size()); i < minLen; i++) {
+            if ((value = cmp.compare(iterA.next(), iterB.next())) != 0) {
+                return value;
+            }
+        }
+
+        return a.size() == b.size() ? 0 : (nullIsBigger ? (a.size() > b.size() ? -1 : 1) : (a.size() > b.size() ? 1 : -1));
     }
 
     // Abbreviating
@@ -13403,20 +13615,32 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final boolean[] a, final boolean[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final boolean[] a, final int fromIndex, final int toIndex, final boolean[] b) {
-        if (a == b) {
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final boolean[] a, final int fromIndexA, final boolean[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
+        }
+
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
-            return false;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] != b[i]) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
                 return false;
             }
         }
@@ -13432,20 +13656,32 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final char[] a, final char[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final char[] a, final int fromIndex, final int toIndex, final char[] b) {
-        if (a == b) {
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final char[] a, final int fromIndexA, final char[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
+        }
+
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
-            return false;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] != b[i]) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
                 return false;
             }
         }
@@ -13461,20 +13697,32 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final byte[] a, final byte[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final byte[] a, final int fromIndex, final int toIndex, final byte[] b) {
-        if (a == b) {
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final byte[] a, final int fromIndexA, final byte[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
+        }
+
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
-            return false;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] != b[i]) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
                 return false;
             }
         }
@@ -13484,25 +13732,38 @@ public final class N {
 
     /**
      * @see Arrays#equals(short[], short[])
+     *
      * @param a
      * @param b
-     * @return
+     * @return boolean
      */
     public static boolean equals(final short[] a, final short[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final short[] a, final int fromIndex, final int toIndex, final short[] b) {
-        if (a == b) {
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final short[] a, final int fromIndexA, final short[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
+        }
+
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
-            return false;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] != b[i]) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
                 return false;
             }
         }
@@ -13518,20 +13779,32 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final int[] a, final int[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final int[] a, final int fromIndex, final int toIndex, final int[] b) {
-        if (a == b) {
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final int[] a, final int fromIndexA, final int[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
+        }
+
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
-            return false;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] != b[i]) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
                 return false;
             }
         }
@@ -13547,20 +13820,32 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final long[] a, final long[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final long[] a, final int fromIndex, final int toIndex, final long[] b) {
-        if (a == b) {
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final long[] a, final int fromIndexA, final long[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
+        }
+
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
-            return false;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (a[i] != b[i]) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (a[i] != b[j]) {
                 return false;
             }
         }
@@ -13576,20 +13861,32 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final float[] a, final float[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final float[] a, final int fromIndex, final int toIndex, final float[] b) {
-        if (a == b) {
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final float[] a, final int fromIndexA, final float[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
+        }
+
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
-            return false;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (Float.compare(a[i], b[i]) != 0) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (Float.compare(a[i], b[j]) != 0) {
                 return false;
             }
         }
@@ -13605,20 +13902,32 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final double[] a, final double[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final double[] a, final int fromIndex, final int toIndex, final double[] b) {
-        if (a == b) {
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final double[] a, final int fromIndexA, final double[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
+        }
+
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
-            return false;
-        }
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (Double.compare(a[i], b[i]) != 0) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (Double.compare(a[i], b[j]) != 0) {
                 return false;
             }
         }
@@ -13628,25 +13937,40 @@ public final class N {
 
     /**
      * @see Arrays#equals(Object[], Object[])
+     *
      * @param a
      * @param b
      * @return boolean
      */
     public static boolean equals(final Object[] a, final Object[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
-    public static boolean equals(final Object[] a, final int fromIndex, final int toIndex, final Object[] b) {
-        if (a == b) {
-            return true;
+    /**
+     * 
+     * @param a
+     * @param fromIndexA
+     * @param b
+     * @param fromIndexB
+     * @param len
+     * @return
+     */
+    public static boolean equals(final Object[] a, final int fromIndexA, final Object[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return true;
+        } else if (a.getClass().equals(b.getClass()) == false) {
             return false;
         }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!(a[i] == null ? b[i] == null : a[i].equals(b[i]))) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (N.equals(a[i], b[j]) == false) {
                 return false;
             }
         }
@@ -13661,20 +13985,25 @@ public final class N {
      * @return
      */
     public static boolean deepEquals(final Object[] a, final Object[] b) {
-        return (a == null) ? b == null : (b == null ? false : deepEquals(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && deepEquals(a, 0, b, 0, a.length));
     }
 
-    public static boolean deepEquals(final Object[] a, final int fromIndex, final int toIndex, final Object[] b) {
-        if (a == b) {
-            return true;
+    public static boolean deepEquals(final Object[] a, final int fromIndexA, final Object[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return true;
+        } else if (a.getClass().equals(b.getClass()) == false) {
             return false;
         }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!(a[i] == null ? b[i] == null : N.deepEquals(a[i], b[i]))) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (N.deepEquals(a[i], b[j]) == false) {
                 return false;
             }
         }
@@ -13683,25 +14012,34 @@ public final class N {
     }
 
     public static boolean equalsIgnoreCase(final String[] a, final String[] b) {
-        return (a == null) ? b == null : (b == null ? false : equalsIgnoreCase(a, 0, a.length, b));
+        return (a == null || b == null) ? a == b : (a.length == b.length && equalsIgnoreCase(a, 0, b, 0, a.length));
     }
 
     /**
+     * 
      * @param a
+     * @param fromIndexA
      * @param b
+     * @param fromIndexB
+     * @param len
      * @return
      */
-    public static boolean equalsIgnoreCase(final String[] a, final int fromIndex, final int toIndex, final String[] b) {
-        if (a == b) {
-            return true;
+    public static boolean equalsIgnoreCase(final String[] a, final int fromIndexA, final String[] b, final int fromIndexB, final int len) {
+        if (len < 0) {
+            throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        if ((a == null && b != null) || (a != null && b == null) || a.length < toIndex || b.length < toIndex) {
+        N.checkIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
+        N.checkIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+
+        if ((fromIndexA == fromIndexB && a == b) || len == 0) {
+            return true;
+        } else if (a.getClass().equals(b.getClass()) == false) {
             return false;
         }
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (!(a[i] == null ? b[i] == null : a[i].equalsIgnoreCase(b[i]))) {
+        for (int i = fromIndexA, j = fromIndexB, k = 0; k < len; i++, j++, k++) {
+            if (((a[i] == null || b[j] == null) ? a == b : a[i].equalsIgnoreCase(b[j])) == false) {
                 return false;
             }
         }
@@ -17679,7 +18017,7 @@ public final class N {
     /**
      * {@link Collections#binarySearch(List, Object)}
      *
-     * @param list
+     * @param items
      * @param key
      * @return
      */
@@ -27040,6 +27378,27 @@ public final class N {
     }
 
     /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static boolean[] concat(final boolean[] a, final boolean[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_BOOLEAN_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_BOOLEAN_ARRAY : a.clone();
+        }
+
+        final boolean[] c = new boolean[a.length + b.length];
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
+
+        return c;
+    }
+
+    /**
      * 
      * @param aa 
      * @return
@@ -27073,6 +27432,27 @@ public final class N {
 
             fromIndex += a.length;
         }
+
+        return c;
+    }
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static char[] concat(final char[] a, final char[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_CHAR_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_CHAR_ARRAY : a.clone();
+        }
+
+        final char[] c = new char[a.length + b.length];
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
 
         return c;
     }
@@ -27116,6 +27496,27 @@ public final class N {
     }
 
     /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static byte[] concat(final byte[] a, final byte[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_BYTE_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_BYTE_ARRAY : a.clone();
+        }
+
+        final byte[] c = new byte[a.length + b.length];
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
+
+        return c;
+    }
+
+    /**
      * 
      * @param aa 
      * @return
@@ -27149,6 +27550,27 @@ public final class N {
 
             fromIndex += a.length;
         }
+
+        return c;
+    }
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static short[] concat(final short[] a, final short[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_SHORT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_SHORT_ARRAY : a.clone();
+        }
+
+        final short[] c = new short[a.length + b.length];
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
 
         return c;
     }
@@ -27192,6 +27614,27 @@ public final class N {
     }
 
     /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static int[] concat(final int[] a, final int[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_INT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_INT_ARRAY : a.clone();
+        }
+
+        final int[] c = new int[a.length + b.length];
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
+
+        return c;
+    }
+
+    /**
      * 
      * @param aa 
      * @return
@@ -27225,6 +27668,27 @@ public final class N {
 
             fromIndex += a.length;
         }
+
+        return c;
+    }
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static long[] concat(final long[] a, final long[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_LONG_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_LONG_ARRAY : a.clone();
+        }
+
+        final long[] c = new long[a.length + b.length];
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
 
         return c;
     }
@@ -27268,6 +27732,27 @@ public final class N {
     }
 
     /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static float[] concat(final float[] a, final float[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_FLOAT_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_FLOAT_ARRAY : a.clone();
+        }
+
+        final float[] c = new float[a.length + b.length];
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
+
+        return c;
+    }
+
+    /**
      * 
      * @param aa 
      * @return
@@ -27306,6 +27791,27 @@ public final class N {
     }
 
     /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static double[] concat(final double[] a, final double[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_DOUBLE_ARRAY : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? N.EMPTY_DOUBLE_ARRAY : a.clone();
+        }
+
+        final double[] c = new double[a.length + b.length];
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
+
+        return c;
+    }
+
+    /**
      * 
      * @param aa 
      * @return
@@ -27339,6 +27845,28 @@ public final class N {
 
             fromIndex += a.length;
         }
+
+        return c;
+    }
+
+    /**
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] concat(final T[] a, final T[] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? a : b.clone();
+        } else if (N.isNullOrEmpty(b)) {
+            return a.clone();
+        }
+
+        final T[] c = (T[]) newArray(a.getClass().getComponentType(), a.length + b.length);
+
+        copy(a, 0, c, 0, a.length);
+        copy(b, 0, c, a.length, b.length);
 
         return c;
     }
@@ -31004,8 +31532,14 @@ public final class N {
     }
 
     static boolean hasDuplicates(final char[] a, final int fromIndex, final int toIndex, final boolean isSorted) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 2) {
             return false;
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1];
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
         if (isSorted) {
@@ -31017,7 +31551,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Character> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Character> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -31042,8 +31576,14 @@ public final class N {
     }
 
     static boolean hasDuplicates(final byte[] a, final int fromIndex, final int toIndex, final boolean isSorted) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 2) {
             return false;
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1];
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
         if (isSorted) {
@@ -31055,7 +31595,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Byte> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Byte> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -31080,8 +31620,14 @@ public final class N {
     }
 
     static boolean hasDuplicates(final short[] a, final int fromIndex, final int toIndex, final boolean isSorted) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 2) {
             return false;
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1];
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
         if (isSorted) {
@@ -31093,7 +31639,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Short> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Short> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -31118,8 +31664,14 @@ public final class N {
     }
 
     static boolean hasDuplicates(final int[] a, final int fromIndex, final int toIndex, final boolean isSorted) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 2) {
             return false;
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1];
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
         if (isSorted) {
@@ -31131,7 +31683,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Integer> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Integer> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -31156,8 +31708,14 @@ public final class N {
     }
 
     static boolean hasDuplicates(final long[] a, final int fromIndex, final int toIndex, final boolean isSorted) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 2) {
             return false;
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1];
+        } else if (toIndex - fromIndex == 2) {
+            return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
         if (isSorted) {
@@ -31169,7 +31727,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Long> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Long> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -31194,8 +31752,14 @@ public final class N {
     }
 
     static boolean hasDuplicates(final float[] a, final int fromIndex, final int toIndex, final boolean isSorted) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 2) {
             return false;
+        } else if (toIndex - fromIndex == 2) {
+            return N.equals(a[fromIndex], a[fromIndex + 1]);
+        } else if (toIndex - fromIndex == 2) {
+            return N.equals(a[fromIndex], a[fromIndex + 1]) || N.equals(a[fromIndex], a[fromIndex + 2]) || N.equals(a[fromIndex + 1], a[fromIndex + 2]);
         }
 
         if (isSorted) {
@@ -31207,7 +31771,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Float> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Float> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -31232,8 +31796,14 @@ public final class N {
     }
 
     static boolean hasDuplicates(final double[] a, final int fromIndex, final int toIndex, final boolean isSorted) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 2) {
             return false;
+        } else if (toIndex - fromIndex == 2) {
+            return N.equals(a[fromIndex], a[fromIndex + 1]);
+        } else if (toIndex - fromIndex == 2) {
+            return N.equals(a[fromIndex], a[fromIndex + 1]) || N.equals(a[fromIndex], a[fromIndex + 2]) || N.equals(a[fromIndex + 1], a[fromIndex + 2]);
         }
 
         if (isSorted) {
@@ -31245,7 +31815,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Double> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Double> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(a[i]) == false) {
@@ -31270,8 +31840,14 @@ public final class N {
     }
 
     static <T> boolean hasDuplicates(final T[] a, final int fromIndex, final int toIndex, final boolean isSorted) {
+        N.checkIndex(fromIndex, toIndex, a.length);
+
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 2) {
             return false;
+        } else if (toIndex - fromIndex == 2) {
+            return N.equals(a[fromIndex], a[fromIndex + 1]);
+        } else if (toIndex - fromIndex == 2) {
+            return N.equals(a[fromIndex], a[fromIndex + 1]) || N.equals(a[fromIndex], a[fromIndex + 2]) || N.equals(a[fromIndex + 1], a[fromIndex + 2]);
         }
 
         if (isSorted) {
@@ -31283,7 +31859,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Object> set = new HashSet<>(initHashCapacity(toIndex - fromIndex));
+            final Set<Object> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (set.add(getHashKey(a[i])) == false) {
@@ -31320,7 +31896,7 @@ public final class N {
 
             return false;
         } else {
-            final Set<Object> set = new HashSet<>(initHashCapacity(c.size()));
+            final Set<Object> set = new HashSet<>(min(9, initHashCapacity(c.size())));
 
             for (Object e : c) {
                 if (set.add(getHashKey(e)) == false) {

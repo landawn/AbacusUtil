@@ -36,7 +36,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
@@ -108,8 +107,8 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
 
     private static final FloatStream EMPTY = new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY);
 
-    FloatStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    FloatStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
+        super(closeHandlers, sorted, null);
     }
 
     /**
@@ -329,6 +328,10 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
      */
     public abstract <U> Stream<FloatStream> split(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
+
+    public abstract Stream<FloatStream> splitAt(int n);
+
+    public abstract FloatStream reverse();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -1098,8 +1101,31 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
                 });
     }
 
-    public static FloatStream repeat(float element, int n) {
-        return of(Array.repeat(element, n));
+    public static FloatStream repeat(final float element, final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative: " + n);
+        } else if (n == 0) {
+            return empty();
+        }
+
+        return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < n;
+            }
+
+            @Override
+            public float next() {
+                if (cnt >= n) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                return element;
+            }
+        });
     }
 
     public static FloatStream random() {

@@ -188,8 +188,16 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         return of(Array.range(startInclusive, endExclusive));
     }
 
+    public static ShortList range(short startInclusive, final short endExclusive, final short by) {
+        return of(Array.range(startInclusive, endExclusive, by));
+    }
+
     public static ShortList rangeClosed(short startInclusive, final short endInclusive) {
         return of(Array.rangeClosed(startInclusive, endInclusive));
+    }
+
+    public static ShortList rangeClosed(short startInclusive, final short endInclusive, final short by) {
+        return of(Array.range(startInclusive, endInclusive, by));
     }
 
     public static ShortList repeat(short element, final int len) {
@@ -876,6 +884,11 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
     }
 
     @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
+    }
+
+    @Override
     public int count(final int fromIndex, final int toIndex, ShortPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
@@ -1386,13 +1399,22 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
 
     @Override
     public int hashCode() {
-        return N.hashCode(elementData, 0, size());
+        return N.hashCode(elementData, 0, size);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || (obj instanceof ShortList && N.equals(elementData, 0, size(), ((ShortList) obj).elementData));
+        if (obj == this) {
+            return true;
+        }
 
+        if (obj instanceof ShortList) {
+            final ShortList other = (ShortList) obj;
+
+            return this.size == other.size && N.equals(this.elementData, 0, other.elementData, 0, this.size);
+        }
+
+        return false;
     }
 
     @Override

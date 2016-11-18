@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -32,9 +31,7 @@ import com.landawn.abacus.util.function.CharToIntFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.ObjCharConsumer;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToCharFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -42,7 +39,6 @@ import com.landawn.abacus.util.function.ToCharFunction;
  */
 final class IteratorCharStream extends AbstractCharStream {
     private final ImmutableCharIterator elements;
-    private final boolean sorted;
 
     IteratorCharStream(ImmutableCharIterator values) {
         this(values, null);
@@ -53,15 +49,9 @@ final class IteratorCharStream extends AbstractCharStream {
     }
 
     IteratorCharStream(ImmutableCharIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         this.elements = values;
-        this.sorted = sorted;
-    }
-
-    @Override
-    public CharStream filter(CharPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -99,11 +89,6 @@ final class IteratorCharStream extends AbstractCharStream {
                 return next;
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public CharStream takeWhile(CharPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -145,11 +130,6 @@ final class IteratorCharStream extends AbstractCharStream {
             }
 
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public CharStream dropWhile(CharPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -795,32 +775,6 @@ final class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Character>>>() {
-            @Override
-            public Map<K, List<Character>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Character>>> M toMap(CharFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Character, ?, List<Character>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -857,32 +811,6 @@ final class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
@@ -895,16 +823,6 @@ final class IteratorCharStream extends AbstractCharStream {
         }
 
         return result;
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -950,17 +868,6 @@ final class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
         final R result = supplier.get();
 
         while (elements.hasNext()) {
@@ -1171,52 +1078,6 @@ final class IteratorCharStream extends AbstractCharStream {
         return OptionalChar.empty();
     }
 
-    @Override
-    public CharStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new CharPredicate() {
-            @Override
-            public boolean test(char value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        });
-    }
-
-    @Override
-    public CharStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new CharPredicate() {
-            @Override
-            public boolean test(char value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        });
-    }
-
-    @Override
-    public CharStream xor(Collection<Character> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new CharPredicate() {
-            @Override
-            public boolean test(char value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).append(Stream.of(c).filter(new Predicate<Character>() {
-            @Override
-            public boolean test(Character value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        }).mapToChar(new ToCharFunction<Character>() {
-            @Override
-            public char applyAsChar(Character value) {
-                return value.charValue();
-            }
-        }));
-    }
-
     //    @Override
     //    public CharStream exclude(Collection<?> c) {
     //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
@@ -1287,16 +1148,6 @@ final class IteratorCharStream extends AbstractCharStream {
     @Override
     public ImmutableCharIterator charIterator() {
         return elements;
-    }
-
-    @Override
-    public boolean isParallel() {
-        return false;
-    }
-
-    @Override
-    public CharStream sequential() {
-        return this;
     }
 
     @Override

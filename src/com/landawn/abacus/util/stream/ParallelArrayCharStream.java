@@ -2,7 +2,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +50,6 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     private final char[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
     private final int maxThreadNum;
     private final Splitter splitter;
     private volatile ArrayCharStream sequential;
@@ -59,21 +57,15 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
     ParallelArrayCharStream(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum,
             Splitter splitter) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
-    }
-
-    @Override
-    public CharStream filter(final CharPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -93,11 +85,6 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream takeWhile(final CharPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public CharStream takeWhile(final CharPredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorCharStream(sequential().takeWhile(predicate, max).charIterator(), closeHandlers, sorted, maxThreadNum, splitter);
@@ -111,11 +98,6 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         }, max);
 
         return new ParallelIteratorCharStream(stream, closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public CharStream dropWhile(final CharPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -593,32 +575,6 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Character>>>() {
-            @Override
-            public Map<K, List<Character>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Character>>> M toMap(CharFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Character, ?, List<Character>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -633,32 +589,6 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
     }
 
     @Override
@@ -683,16 +613,6 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         };
 
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1004,12 +924,6 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
     public OptionalChar min() {
         if (count() == 0) {
             return OptionalChar.empty();
@@ -1167,6 +1081,27 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public CharStream reverse() {
+        return new ParallelIteratorCharStream(new ImmutableCharIterator() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public char next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[--cursor];
+            }
+        }, closeHandlers, false, maxThreadNum, splitter);
     }
 
     @Override

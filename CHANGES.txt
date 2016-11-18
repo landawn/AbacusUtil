@@ -1,4 +1,21 @@
 
+========Changes in 0.9.32=========================================================================
+
+1, Add Fast.java, a simple wrapper for FastJson, the fastest json parser in the world.
+
+2, Add combineColumn(Predicate<String> columnNameFilter ...) to DataSet.
+
+3, Add permutation and orderedPermutation to Stream, the implementation is copied from Google Guava.
+
+4, Add hasDuplicates to Stream/ObjectList/IntList...
+
+5, Add reverse/splitAt to Stream/IntStream/DoubleStream/...
+
+6, Refactoring equals/compare in N.
+
+7, Improvements and bug fix.
+
+
 ========Changes in 0.9.31=========================================================================
 
 1, Add method __(...) to DataSet for Builder.

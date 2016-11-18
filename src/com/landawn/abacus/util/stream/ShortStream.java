@@ -36,7 +36,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedShort;
@@ -106,8 +105,8 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
 
     private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY);
 
-    ShortStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    ShortStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
+        super(closeHandlers, sorted, null);
     }
 
     /**
@@ -295,6 +294,10 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
      */
     public abstract <U> Stream<ShortStream> split(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
+
+    public abstract Stream<ShortStream> splitAt(int n);
+
+    public abstract ShortStream reverse();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -993,23 +996,156 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
     }
 
     public static ShortStream range(final short startInclusive, final short endExclusive) {
-        return of(Array.range(startInclusive, endExclusive));
+        if (startInclusive > endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endExclusive) {
+            return empty();
+        }
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private short next = startInclusive;
+            private int cnt = endExclusive * 1 - startInclusive;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public short next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
     public static ShortStream range(final short startInclusive, final short endExclusive, final short by) {
-        return of(Array.range(startInclusive, endExclusive, by));
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endExclusive == startInclusive) {
+            return empty();
+        }
+
+        if (endExclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private short next = startInclusive;
+            private int cnt = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public short next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                short result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
     public static ShortStream rangeClosed(final short startInclusive, final short endInclusive) {
-        return of(Array.rangeClosed(startInclusive, endInclusive));
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endInclusive) {
+            return of(startInclusive);
+        }
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private short next = startInclusive;
+            private int cnt = endInclusive * 1 - startInclusive + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public short next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
     public static ShortStream rangeClosed(final short startInclusive, final short endInclusive, final short by) {
-        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endInclusive == startInclusive) {
+            return of(startInclusive);
+        }
+
+        if (endInclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private short next = startInclusive;
+            private int cnt = (endInclusive * 1 - startInclusive) / by + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public short next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                short result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
-    public static ShortStream repeat(short element, int n) {
-        return of(Array.repeat(element, n));
+    public static ShortStream repeat(final short element, final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative: " + n);
+        } else if (n == 0) {
+            return empty();
+        }
+
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < n;
+            }
+
+            @Override
+            public short next() {
+                if (cnt >= n) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                return element;
+            }
+        });
     }
 
     public static ShortStream random() {

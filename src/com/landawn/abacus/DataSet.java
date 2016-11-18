@@ -120,6 +120,13 @@ public interface DataSet extends Iterable<Object[]> {
     List<String> columnNameList();
 
     /**
+     * Return the column name list filtered by specified <code>filter</code>.
+     * 
+     * @param filter
+     */
+    List<String> columnNames(Predicate<String> filter);
+
+    /**
      * Method getColumnName.
      *
      * @param columnIndex
@@ -523,6 +530,10 @@ public interface DataSet extends Iterable<Object[]> {
     void combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass);
 
     void combineColumn(Collection<String> columnNames, String newColumnName, Function<? super Object[], ?> combineFunc);
+
+    void combineColumn(Predicate<String> columnNameFilter, String newColumnName, Class<?> newColumnClass);
+
+    void combineColumn(Predicate<String> columnNameFilter, String newColumnName, Function<? super Object[], ?> combineFunc);
 
     /**
      * 

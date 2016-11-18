@@ -24,6 +24,7 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +37,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
@@ -108,8 +108,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY);
 
-    LongStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    LongStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
+        super(closeHandlers, sorted, null);
     }
 
     /**
@@ -329,6 +329,10 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      */
     public abstract <U> Stream<LongStream> split(final U boundary, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
+
+    public abstract Stream<LongStream> splitAt(int n);
+
+    public abstract LongStream reverse();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -1058,23 +1062,188 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {
-        return of(Array.range(startInclusive, endExclusive));
+        if (startInclusive > endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endExclusive) {
+            return empty();
+        } else if (endExclusive - startInclusive < 0) {
+            final long m = BigInteger.valueOf(endExclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
+            return concat(range(startInclusive, startInclusive + m), range(startInclusive + m, (startInclusive + m) + m),
+                    range((startInclusive + m) + m, endExclusive));
+        }
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long next = startInclusive;
+            private long cnt = endExclusive - startInclusive;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public long next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive, final long by) {
-        return of(Array.range(startInclusive, endExclusive, by));
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endExclusive == startInclusive) {
+            return empty();
+        }
+
+        if (endExclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        if ((by > 0 && endExclusive - startInclusive < 0) || (by < 0 && startInclusive - endExclusive < 0)) {
+            long m = BigInteger.valueOf(endExclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
+
+            if ((by > 0 && by > m) || (by < 0 && by < m)) {
+                return concat(range(startInclusive, startInclusive + by), range(startInclusive + by, endExclusive));
+            } else {
+                m = m > 0 ? m - m % by : m + m % by;
+                return concat(range(startInclusive, startInclusive + m, by), range(startInclusive + m, (startInclusive + m) + m, by),
+                        range((startInclusive + m) + m, endExclusive, by));
+            }
+        }
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long next = startInclusive;
+            private long cnt = (endExclusive - startInclusive) / by + ((endExclusive - startInclusive) % by == 0 ? 0 : 1);
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public long next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                long result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
     public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
-        return of(Array.rangeClosed(startInclusive, endInclusive));
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+        } else if (endInclusive - startInclusive + 1 <= 0) {
+            final long m = BigInteger.valueOf(endInclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
+            return concat(range(startInclusive, startInclusive + m), range(startInclusive + m, (startInclusive + m) + m),
+                    rangeClosed((startInclusive + m) + m, endInclusive));
+        } else if (startInclusive == endInclusive) {
+            return of(startInclusive);
+        }
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long next = startInclusive;
+            private long cnt = endInclusive - startInclusive + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public long next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
     public static LongStream rangeClosed(final long startInclusive, final long endInclusive, final long by) {
-        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endInclusive == startInclusive) {
+            return of(startInclusive);
+        }
+
+        if (endInclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        if ((by > 0 && endInclusive - startInclusive < 0) || (by < 0 && startInclusive - endInclusive < 0) || ((endInclusive - startInclusive) / by + 1 <= 0)) {
+            long m = BigInteger.valueOf(endInclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
+
+            if ((by > 0 && by > m) || (by < 0 && by < m)) {
+                return concat(range(startInclusive, startInclusive + by), rangeClosed(startInclusive + by, endInclusive));
+            } else {
+                m = m > 0 ? m - m % by : m + m % by;
+                return concat(range(startInclusive, startInclusive + m, by), range(startInclusive + m, (startInclusive + m) + m, by),
+                        rangeClosed((startInclusive + m) + m, endInclusive, by));
+            }
+        }
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long next = startInclusive;
+            private long cnt = (endInclusive - startInclusive) / by + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public long next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                long result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
-    public static LongStream repeat(long element, int n) {
-        return of(Array.repeat(element, n));
+    public static LongStream repeat(final long element, final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative: " + n);
+        } else if (n == 0) {
+            return empty();
+        }
+
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < n;
+            }
+
+            @Override
+            public long next() {
+                if (cnt >= n) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                return element;
+            }
+        });
     }
 
     public static LongStream random() {

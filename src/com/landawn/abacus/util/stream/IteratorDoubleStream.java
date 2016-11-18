@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -33,7 +32,6 @@ import com.landawn.abacus.util.function.DoubleToIntFunction;
 import com.landawn.abacus.util.function.DoubleToLongFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.ObjDoubleConsumer;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 
@@ -43,7 +41,6 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  */
 final class IteratorDoubleStream extends AbstractDoubleStream {
     private final ImmutableDoubleIterator elements;
-    private final boolean sorted;
 
     IteratorDoubleStream(ImmutableDoubleIterator values) {
         this(values, null);
@@ -54,15 +51,9 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     IteratorDoubleStream(ImmutableDoubleIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         this.elements = values;
-        this.sorted = sorted;
-    }
-
-    @Override
-    public DoubleStream filter(DoublePredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -100,11 +91,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
                 return next;
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public DoubleStream takeWhile(DoublePredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -146,11 +132,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
             }
 
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public DoubleStream dropWhile(DoublePredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -988,32 +969,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K> Map<K, List<Double>> toMap(DoubleFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Double>>>() {
-            @Override
-            public Map<K, List<Double>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Double>>> M toMap(DoubleFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Double, ?, List<Double>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -1050,32 +1005,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
@@ -1088,16 +1017,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
         }
 
         return result;
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1143,17 +1062,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator) {
         final R result = supplier.get();
 
         while (elements.hasNext()) {
@@ -1212,92 +1120,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
         final OptionalNullable<Double> optional = boxed().kthLargest(k, DOUBLE_COMPARATOR);
 
         return optional.isPresent() ? OptionalDouble.of(optional.get()) : OptionalDouble.empty();
-    }
-
-    @Override
-    public Double sum() {
-        //        double result = 0d;
-        //
-        //        while (elements.hasNext()) {
-        //            result += elements.next();
-        //        }
-        //
-        //        return result;
-
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[3];
-            }
-        };
-
-        final ObjDoubleConsumer<double[]> accumulator = new ObjDoubleConsumer<double[]>() {
-            @Override
-            public void accept(double[] ll, double d) {
-                Collectors.sumWithCompensation(ll, d);
-                ll[2] += d;
-            }
-        };
-
-        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
-            @Override
-            public void accept(double[] ll, double[] rr) {
-                Collectors.sumWithCompensation(ll, rr[0]);
-                Collectors.sumWithCompensation(ll, rr[1]);
-                ll[2] += rr[2];
-            }
-        };
-
-        final double[] summation = collect(supplier, accumulator, combiner);
-
-        return Collectors.computeFinalSum(summation);
-    }
-
-    @Override
-    public OptionalDouble average() {
-        //        if (elements.hasNext() == false) {
-        //            return OptionalDouble.empty();
-        //        }
-        //    
-        //        double result = 0d;
-        //        long count = 0;
-        //    
-        //        while (elements.hasNext()) {
-        //            result += elements.next();
-        //            count++;
-        //        }
-        //    
-        //        return OptionalDouble.of(result / count);
-
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[4];
-            }
-        };
-
-        final ObjDoubleConsumer<double[]> accumulator = new ObjDoubleConsumer<double[]>() {
-            @Override
-            public void accept(double[] ll, double d) {
-                ll[2]++;
-                Collectors.sumWithCompensation(ll, d);
-                ll[3] += d;
-            }
-        };
-
-        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
-            @Override
-            public void accept(double[] ll, double[] rr) {
-                Collectors.sumWithCompensation(ll, rr[0]);
-                Collectors.sumWithCompensation(ll, rr[1]);
-                ll[2] += rr[2];
-                ll[3] += rr[3];
-            }
-        };
-
-        final double[] avg = collect(supplier, accumulator, combiner);
-
-        return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
     }
 
     @Override
@@ -1422,52 +1244,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
         return OptionalDouble.empty();
     }
 
-    @Override
-    public DoubleStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new DoublePredicate() {
-            @Override
-            public boolean test(double value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        });
-    }
-
-    @Override
-    public DoubleStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new DoublePredicate() {
-            @Override
-            public boolean test(double value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        });
-    }
-
-    @Override
-    public DoubleStream xor(Collection<Double> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new DoublePredicate() {
-            @Override
-            public boolean test(double value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).append(Stream.of(c).filter(new Predicate<Double>() {
-            @Override
-            public boolean test(Double value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        }).mapToDouble(new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        }));
-    }
-
     //    @Override
     //    public DoubleStream exclude(Collection<?> c) {
     //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
@@ -1513,16 +1289,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public ImmutableDoubleIterator doubleIterator() {
         return elements;
-    }
-
-    @Override
-    public boolean isParallel() {
-        return false;
-    }
-
-    @Override
-    public DoubleStream sequential() {
-        return this;
     }
 
     @Override

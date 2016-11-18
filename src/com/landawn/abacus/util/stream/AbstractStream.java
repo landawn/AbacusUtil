@@ -8,36 +8,53 @@ import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.exception.AbacusSQLException;
 import com.landawn.abacus.util.BufferedWriter;
+import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.JdbcUtil;
+import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongSummaryStatistics;
+import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
@@ -54,8 +71,644 @@ import com.landawn.abacus.util.function.TriFunction;
  * @param <T>
  */
 abstract class AbstractStream<T> extends Stream<T> {
-    AbstractStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+
+    AbstractStream(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
+        super(closeHandlers, sorted, cmp);
+    }
+
+    @Override
+    public Stream<T> filter(final Predicate<? super T> predicate) {
+        return filter(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public Stream<T> takeWhile(final Predicate<? super T> predicate) {
+        return takeWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public Stream<T> dropWhile(final Predicate<? super T> predicate) {
+        return dropWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public <R> Stream<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
+        return flatMap4(new Function<T, Iterator<? extends R>>() {
+            @Override
+            public Iterator<? extends R> apply(T t) {
+                return mapper.apply(t).iterator();
+            }
+        });
+    }
+
+    @Override
+    public <R> Stream<R> flatMap2(final Function<? super T, ? extends R[]> mapper) {
+        return flatMap4(new Function<T, Iterator<? extends R>>() {
+            @Override
+            public Iterator<? extends R> apply(T t) {
+                return ImmutableIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public <R> Stream<R> flatMap3(final Function<? super T, ? extends Collection<? extends R>> mapper) {
+        return flatMap4(new Function<T, Iterator<? extends R>>() {
+            @Override
+            public Iterator<? extends R> apply(T t) {
+                return mapper.apply(t).iterator();
+            }
+        });
+    }
+
+    @Override
+    public CharStream flatMapToChar(final Function<? super T, ? extends CharStream> mapper) {
+        return flatMapToChar4(new Function<T, CharIterator>() {
+            @Override
+            public CharIterator apply(T t) {
+                return mapper.apply(t).charIterator();
+            }
+        });
+    }
+
+    @Override
+    public CharStream flatMapToChar2(final Function<? super T, char[]> mapper) {
+        return flatMapToChar4(new Function<T, CharIterator>() {
+            @Override
+            public CharIterator apply(T t) {
+                return ImmutableCharIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public CharStream flatMapToChar3(final Function<? super T, ? extends Collection<Character>> mapper) {
+        return flatMapToChar4(new Function<T, CharIterator>() {
+            @Override
+            public CharIterator apply(T t) {
+                final Iterator<Character> iter = mapper.apply(t).iterator();
+
+                return new ImmutableCharIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public char next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    @Override
+    public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
+        return flatMapToByte4(new Function<T, ByteIterator>() {
+            @Override
+            public ByteIterator apply(T t) {
+                return mapper.apply(t).byteIterator();
+            }
+        });
+    }
+
+    @Override
+    public ByteStream flatMapToByte2(final Function<? super T, byte[]> mapper) {
+        return flatMapToByte4(new Function<T, ByteIterator>() {
+            @Override
+            public ByteIterator apply(T t) {
+                return ImmutableByteIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public ByteStream flatMapToByte3(final Function<? super T, ? extends Collection<Byte>> mapper) {
+        return flatMapToByte4(new Function<T, ByteIterator>() {
+            @Override
+            public ByteIterator apply(T t) {
+                final Iterator<Byte> iter = mapper.apply(t).iterator();
+
+                return new ImmutableByteIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public byte next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    @Override
+    public ShortStream flatMapToShort(final Function<? super T, ? extends ShortStream> mapper) {
+        return flatMapToShort4(new Function<T, ShortIterator>() {
+            @Override
+            public ShortIterator apply(T t) {
+                return mapper.apply(t).shortIterator();
+            }
+        });
+    }
+
+    @Override
+    public ShortStream flatMapToShort2(final Function<? super T, short[]> mapper) {
+        return flatMapToShort4(new Function<T, ShortIterator>() {
+            @Override
+            public ShortIterator apply(T t) {
+                return ImmutableShortIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public ShortStream flatMapToShort3(final Function<? super T, ? extends Collection<Short>> mapper) {
+        return flatMapToShort4(new Function<T, ShortIterator>() {
+            @Override
+            public ShortIterator apply(T t) {
+                final Iterator<Short> iter = mapper.apply(t).iterator();
+
+                return new ImmutableShortIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public short next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    @Override
+    public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
+        return flatMapToInt4(new Function<T, IntIterator>() {
+            @Override
+            public IntIterator apply(T t) {
+                return mapper.apply(t).intIterator();
+            }
+        });
+    }
+
+    @Override
+    public IntStream flatMapToInt2(final Function<? super T, int[]> mapper) {
+        return flatMapToInt4(new Function<T, IntIterator>() {
+            @Override
+            public IntIterator apply(T t) {
+                return ImmutableIntIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public IntStream flatMapToInt3(final Function<? super T, ? extends Collection<Integer>> mapper) {
+        return flatMapToInt4(new Function<T, IntIterator>() {
+            @Override
+            public IntIterator apply(T t) {
+                final Iterator<Integer> iter = mapper.apply(t).iterator();
+
+                return new ImmutableIntIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public int next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    @Override
+    public LongStream flatMapToLong(final Function<? super T, ? extends LongStream> mapper) {
+        return flatMapToLong4(new Function<T, LongIterator>() {
+            @Override
+            public LongIterator apply(T t) {
+                return mapper.apply(t).longIterator();
+            }
+        });
+    }
+
+    @Override
+    public LongStream flatMapToLong2(final Function<? super T, long[]> mapper) {
+        return flatMapToLong4(new Function<T, LongIterator>() {
+            @Override
+            public LongIterator apply(T t) {
+                return ImmutableLongIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public LongStream flatMapToLong3(final Function<? super T, ? extends Collection<Long>> mapper) {
+        return flatMapToLong4(new Function<T, LongIterator>() {
+            @Override
+            public LongIterator apply(T t) {
+                final Iterator<Long> iter = mapper.apply(t).iterator();
+
+                return new ImmutableLongIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public long next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    @Override
+    public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
+        return flatMapToFloat4(new Function<T, FloatIterator>() {
+            @Override
+            public FloatIterator apply(T t) {
+                return mapper.apply(t).floatIterator();
+            }
+        });
+    }
+
+    @Override
+    public FloatStream flatMapToFloat2(final Function<? super T, float[]> mapper) {
+        return flatMapToFloat4(new Function<T, FloatIterator>() {
+            @Override
+            public FloatIterator apply(T t) {
+                return ImmutableFloatIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public FloatStream flatMapToFloat3(final Function<? super T, ? extends Collection<Float>> mapper) {
+        return flatMapToFloat4(new Function<T, FloatIterator>() {
+            @Override
+            public FloatIterator apply(T t) {
+                final Iterator<Float> iter = mapper.apply(t).iterator();
+
+                return new ImmutableFloatIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public float next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
+        return flatMapToDouble4(new Function<T, DoubleIterator>() {
+            @Override
+            public DoubleIterator apply(T t) {
+                return mapper.apply(t).doubleIterator();
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream flatMapToDouble2(final Function<? super T, double[]> mapper) {
+        return flatMapToDouble4(new Function<T, DoubleIterator>() {
+            @Override
+            public DoubleIterator apply(T t) {
+                return ImmutableDoubleIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream flatMapToDouble3(final Function<? super T, ? extends Collection<Double>> mapper) {
+        return flatMapToDouble4(new Function<T, DoubleIterator>() {
+            @Override
+            public DoubleIterator apply(T t) {
+                final Iterator<Double> iter = mapper.apply(t).iterator();
+
+                return new ImmutableDoubleIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public double next() {
+                        return iter.next();
+                    }
+                };
+            }
+        });
+    }
+
+    abstract <R> Stream<R> flatMap4(final Function<? super T, ? extends Iterator<? extends R>> mapper);
+
+    abstract CharStream flatMapToChar4(Function<? super T, CharIterator> function);
+
+    abstract ByteStream flatMapToByte4(Function<? super T, ByteIterator> function);
+
+    abstract ShortStream flatMapToShort4(Function<? super T, ShortIterator> function);
+
+    abstract IntStream flatMapToInt4(Function<? super T, IntIterator> function);
+
+    abstract LongStream flatMapToLong4(Function<? super T, LongIterator> function);
+
+    abstract FloatStream flatMapToFloat4(Function<? super T, FloatIterator> function);
+
+    abstract DoubleStream flatMapToDouble4(Function<? super T, DoubleIterator> function);
+
+    @Override
+    public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
+        final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier, Supplier<Map<K, List<T>>> mapFactory) {
+        final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier, mapFactory));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
+        final Map<K, D> map = collect(Collectors.groupingBy(classifier, downstream));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <K, D, A> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream,
+            Supplier<Map<K, D>> mapFactory) {
+        final Map<K, D> map = collect(Collectors.groupingBy(classifier, downstream, mapFactory));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
+        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            Supplier<Map<K, U>> mapFactory) {
+        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mapFactory));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction) {
+        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<Map<K, U>> mapFactory) {
+        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <K> Map<K, List<T>> toMap(Function<? super T, ? extends K> classifier) {
+        return toMap(classifier, new Supplier<Map<K, List<T>>>() {
+            @Override
+            public Map<K, List<T>> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, M extends Map<K, List<T>>> M toMap(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
+        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
+            @Override
+            public Map<K, D> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            Supplier<M> mapSupplier) {
+        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    @Override
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
+            @Override
+            public Map<K, U> get() {
+                return new HashMap<>();
+            }
+        });
+    }
+
+    @Override
+    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+            @Override
+            public Multimap<K, U, List<U>> get() {
+                return N.newListMultimap();
+            }
+        });
+    }
+
+    @Override
+    public Long sumInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.summingInt(mapper));
+    }
+
+    @Override
+    public Long sumLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.summingLong(mapper));
+    }
+
+    @Override
+    public Double sumDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.summingDouble(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.averagingInt2(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.averagingLong2(mapper));
+    }
+
+    @Override
+    public OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.averagingDouble2(mapper));
+    }
+
+    @Override
+    public CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper) {
+        return collect(Collectors.summarizingChar(mapper));
+    }
+
+    @Override
+    public ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper) {
+        return collect(Collectors.summarizingByte(mapper));
+    }
+
+    @Override
+    public ShortSummaryStatistics summarizeShort(ToShortFunction<? super T> mapper) {
+        return collect(Collectors.summarizingShort(mapper));
+    }
+
+    @Override
+    public IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper) {
+        return collect(Collectors.summarizingInt(mapper));
+    }
+
+    @Override
+    public LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper) {
+        return collect(Collectors.summarizingLong(mapper));
+    }
+
+    @Override
+    public FloatSummaryStatistics summarizeFloat(ToFloatFunction<? super T> mapper) {
+        return collect(Collectors.summarizingFloat(mapper));
+    }
+
+    @Override
+    public DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper) {
+        return collect(Collectors.summarizingDouble(mapper));
+    }
+
+    @Override
+    public Stream<T> except(Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> except(final Function<? super T, ?> mapper, final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(mapper.apply(value)) < 1;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> intersect(Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> intersect(final Function<? super T, ?> mapper, final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(mapper.apply(value)) > 0;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> xor(final Collection<? extends T> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).append((Stream<T>) Stream.of(c).filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) > 0;
+            }
+        }));
+    }
+
+    @Override
+    public Stream<Stream<T>> splitAt(final int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative");
+        }
+
+        final Iterator<T> iter = this.iterator();
+        final List<T> list = new ArrayList<>();
+
+        while (list.size() < n && iter.hasNext()) {
+            list.add(iter.next());
+        }
+
+        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
+
+        return newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<T> reverse() {
+        final Object[] a = toArray();
+
+        N.reverse(a);
+
+        return newStream((T[]) a, false, null);
     }
 
     @Override
@@ -181,13 +834,29 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public boolean hasDuplicates() {
+        final Set<T> set = new HashSet<>();
+        final Iterator<T> iter = iterator();
+
+        while (iter.hasNext()) {
+            if (set.add(iter.next()) == false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
     public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
-        throw new UnsupportedOperationException("It's not supported parallel stream.");
+        final BinaryOperator<U> combiner = reducingCombiner;
+        return reduce(identity, accumulator, combiner);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
-        throw new UnsupportedOperationException("It's not supported parallel stream.");
+        final BiConsumer<R, R> combiner = collectingCombiner;
+        return collect(supplier, accumulator, combiner);
     }
 
     @Override
@@ -376,8 +1045,19 @@ abstract class AbstractStream<T> extends Stream<T> {
         return this;
     }
 
-    @Override
-    public void close() {
-        close(closeHandlers);
+    protected <E> Stream<E> newStream(final E[] a, final boolean sorted, final Comparator<? super E> comparator) {
+        if (this.isParallel()) {
+            return new ParallelArrayStream<E>(a, 0, a.length, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayStream<E>(a, closeHandlers, sorted, comparator);
+        }
+    }
+
+    protected <E> Stream<E> newStream(final Iterator<E> iter, final boolean sorted, final Comparator<? super E> comparator) {
+        if (this.isParallel()) {
+            return new ParallelIteratorStream<E>(iter, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitter());
+        } else {
+            return new IteratorStream<E>(iter, closeHandlers, sorted, comparator);
+        }
     }
 }

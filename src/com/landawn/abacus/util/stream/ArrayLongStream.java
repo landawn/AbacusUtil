@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -32,9 +31,7 @@ import com.landawn.abacus.util.function.LongToFloatFunction;
 import com.landawn.abacus.util.function.LongToIntFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToLongFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -44,7 +41,6 @@ final class ArrayLongStream extends AbstractLongStream {
     private final long[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
 
     ArrayLongStream(long[] values) {
         this(values, null);
@@ -67,19 +63,13 @@ final class ArrayLongStream extends AbstractLongStream {
     }
 
     ArrayLongStream(long[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
-    }
-
-    @Override
-    public LongStream filter(final LongPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -119,11 +109,6 @@ final class ArrayLongStream extends AbstractLongStream {
                 return elements[cursor++];
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public LongStream takeWhile(final LongPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -174,11 +159,6 @@ final class ArrayLongStream extends AbstractLongStream {
                 return elements[cursor++];
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public LongStream dropWhile(final LongPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -980,32 +960,6 @@ final class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Long>>>() {
-            @Override
-            public Map<K, List<Long>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Long>>> M toMap(LongFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Long, ?, List<Long>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -1039,32 +993,6 @@ final class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
@@ -1074,16 +1002,6 @@ final class ArrayLongStream extends AbstractLongStream {
         }
 
         return result;
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1126,17 +1044,6 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            accumulator.accept(result, elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
         final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -1196,6 +1103,26 @@ final class ArrayLongStream extends AbstractLongStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public LongStream reverse() {
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public long next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+                return elements[--cursor];
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -1288,52 +1215,6 @@ final class ArrayLongStream extends AbstractLongStream {
         }
 
         return OptionalLong.empty();
-    }
-
-    @Override
-    public LongStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new LongPredicate() {
-            @Override
-            public boolean test(long value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        });
-    }
-
-    @Override
-    public LongStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new LongPredicate() {
-            @Override
-            public boolean test(long value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        });
-    }
-
-    @Override
-    public LongStream xor(Collection<Long> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new LongPredicate() {
-            @Override
-            public boolean test(long value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).append(Stream.of(c).filter(new Predicate<Long>() {
-            @Override
-            public boolean test(Long value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        }).mapToLong(new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        }));
     }
 
     //    @Override
@@ -1529,16 +1410,6 @@ final class ArrayLongStream extends AbstractLongStream {
                 return N.copyOfRange(elements, cursor, toIndex);
             }
         };
-    }
-
-    @Override
-    public boolean isParallel() {
-        return false;
-    }
-
-    @Override
-    public LongStream sequential() {
-        return this;
     }
 
     @Override

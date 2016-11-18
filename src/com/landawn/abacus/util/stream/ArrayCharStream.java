@@ -2,7 +2,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -29,9 +28,7 @@ import com.landawn.abacus.util.function.CharToIntFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.ObjCharConsumer;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToCharFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -41,7 +38,6 @@ final class ArrayCharStream extends AbstractCharStream {
     private final char[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
 
     ArrayCharStream(char[] values) {
         this(values, null);
@@ -64,19 +60,13 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     ArrayCharStream(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
-    }
-
-    @Override
-    public CharStream filter(final CharPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -116,11 +106,6 @@ final class ArrayCharStream extends AbstractCharStream {
                 return elements[cursor++];
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public CharStream takeWhile(final CharPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -171,11 +156,6 @@ final class ArrayCharStream extends AbstractCharStream {
                 return elements[cursor++];
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public CharStream dropWhile(final CharPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -758,32 +738,6 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Character>>>() {
-            @Override
-            public Map<K, List<Character>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Character>>> M toMap(CharFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Character, ?, List<Character>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -817,32 +771,6 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
@@ -852,16 +780,6 @@ final class ArrayCharStream extends AbstractCharStream {
         }
 
         return result;
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -904,17 +822,6 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            accumulator.accept(result, elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
         final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -974,6 +881,26 @@ final class ArrayCharStream extends AbstractCharStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public CharStream reverse() {
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public char next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+                return elements[--cursor];
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -1066,52 +993,6 @@ final class ArrayCharStream extends AbstractCharStream {
         }
 
         return OptionalChar.empty();
-    }
-
-    @Override
-    public CharStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new CharPredicate() {
-            @Override
-            public boolean test(char value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        });
-    }
-
-    @Override
-    public CharStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new CharPredicate() {
-            @Override
-            public boolean test(char value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        });
-    }
-
-    @Override
-    public CharStream xor(Collection<Character> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new CharPredicate() {
-            @Override
-            public boolean test(char value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).append(Stream.of(c).filter(new Predicate<Character>() {
-            @Override
-            public boolean test(Character value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        }).mapToChar(new ToCharFunction<Character>() {
-            @Override
-            public char applyAsChar(Character value) {
-                return value.charValue();
-            }
-        }));
     }
 
     //    @Override
@@ -1257,16 +1138,6 @@ final class ArrayCharStream extends AbstractCharStream {
                 return N.copyOfRange(elements, cursor, toIndex);
             }
         };
-    }
-
-    @Override
-    public boolean isParallel() {
-        return false;
-    }
-
-    @Override
-    public CharStream sequential() {
-        return this;
     }
 
     @Override

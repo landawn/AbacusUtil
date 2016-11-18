@@ -56,7 +56,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.AbacusIOException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteSummaryStatistics;
@@ -243,8 +242,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY);
 
-    Stream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    Stream(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
+        super(closeHandlers, sorted, cmp);
     }
 
     /**
@@ -706,6 +705,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract <U> Stream<Set<T>> splitIntoSet(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
+
+    public abstract Stream<Stream<T>> splitAt(int n);
+
+    public abstract Stream<T> reverse();
 
     /**
      * Returns a stream consisting of the distinct elements (according to
@@ -1409,6 +1412,12 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract Optional<Map<Percentage, T>> distribution(Comparator<? super T> comparator);
 
+    public abstract Stream<List<T>> permutation();
+
+    public abstract Stream<List<T>> orderedPermutation();
+
+    public abstract Stream<List<T>> orderedPermutation(Comparator<? super T> comparator);
+
     public abstract CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper);
 
     public abstract ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper);
@@ -1440,6 +1449,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract String join(CharSequence delimiter);
 
     public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
+
+    public abstract boolean hasDuplicates();
 
     /**
      * Returns whether any elements of this stream match the provided
@@ -1931,8 +1942,31 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         return DoubleStream.of(a, fromIndex, toIndex).boxed();
     }
 
-    public static <T> Stream<T> repeat(T element, int n) {
-        return of(Array.repeat(element, n));
+    public static <T> Stream<T> repeat(final T element, final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative: " + n);
+        } else if (n == 0) {
+            return empty();
+        }
+
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < n;
+            }
+
+            @Override
+            public T next() {
+                if (cnt >= n) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                return element;
+            }
+        });
     }
 
     public static <T> Stream<T> iterate(final Supplier<Boolean> hasNext, final Supplier<? extends T> next) {

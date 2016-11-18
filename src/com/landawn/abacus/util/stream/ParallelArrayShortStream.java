@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     private final short[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
     private final int maxThreadNum;
     private final Splitter splitter;
     private volatile ArrayShortStream sequential;
@@ -60,21 +58,15 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     ParallelArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum,
             Splitter splitter) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
-    }
-
-    @Override
-    public ShortStream filter(final ShortPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -94,11 +86,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream takeWhile(final ShortPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public ShortStream takeWhile(final ShortPredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorShortStream(sequential().takeWhile(predicate, max).shortIterator(), closeHandlers, sorted, maxThreadNum, splitter);
@@ -112,11 +99,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         }, max);
 
         return new ParallelIteratorShortStream(stream, closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public ShortStream dropWhile(final ShortPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -616,32 +598,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K> Map<K, List<Short>> toMap(ShortFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Short>>>() {
-            @Override
-            public Map<K, List<Short>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Short>>> M toMap(ShortFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Short, ?, List<Short>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -656,32 +612,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
     }
 
     @Override
@@ -706,16 +636,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         };
 
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1027,12 +947,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
     public OptionalShort min() {
         if (count() == 0) {
             return OptionalShort.empty();
@@ -1190,6 +1104,27 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public ShortStream reverse() {
+        return new ParallelIteratorShortStream(new ImmutableShortIterator() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public short next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[--cursor];
+            }
+        }, closeHandlers, false, maxThreadNum, splitter);
     }
 
     @Override

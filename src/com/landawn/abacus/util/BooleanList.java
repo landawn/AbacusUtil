@@ -772,6 +772,17 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
+    public boolean hasDuplicates() {
+        if (size < 2) {
+            return false;
+        } else if (size == 2) {
+            return elementData[0] == elementData[1];
+        } else {
+            return true;
+        }
+    }
+
+    @Override
     public int count(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
@@ -1235,13 +1246,22 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public int hashCode() {
-        return N.hashCode(elementData, 0, size());
+        return N.hashCode(elementData, 0, size);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || (obj instanceof BooleanList && N.equals(elementData, 0, size(), ((BooleanList) obj).elementData));
+        if (obj == this) {
+            return true;
+        }
 
+        if (obj instanceof BooleanList) {
+            final BooleanList other = (BooleanList) obj;
+
+            return this.size == other.size && N.equals(this.elementData, 0, other.elementData, 0, this.size);
+        }
+
+        return false;
     }
 
     @Override

@@ -908,6 +908,11 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
     }
 
     @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
+    }
+
+    @Override
     public int count(final int fromIndex, final int toIndex, FloatPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
@@ -1418,13 +1423,22 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
 
     @Override
     public int hashCode() {
-        return N.hashCode(elementData, 0, size());
+        return N.hashCode(elementData, 0, size);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || (obj instanceof FloatList && N.equals(elementData, 0, size(), ((FloatList) obj).elementData));
+        if (obj == this) {
+            return true;
+        }
 
+        if (obj instanceof FloatList) {
+            final FloatList other = (FloatList) obj;
+
+            return this.size == other.size && N.equals(this.elementData, 0, other.elementData, 0, this.size);
+        }
+
+        return false;
     }
 
     @Override

@@ -35,7 +35,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
@@ -105,8 +104,8 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
 
     private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY);
 
-    ByteStream(Collection<Runnable> closeHandlers) {
-        super(closeHandlers);
+    ByteStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
+        super(closeHandlers, sorted, null);
     }
 
     /**
@@ -295,6 +294,10 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      */
     public abstract <U> Stream<ByteStream> split(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
+
+    public abstract Stream<ByteStream> splitAt(int n);
+
+    public abstract ByteStream reverse();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -993,23 +996,156 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
     }
 
     public static ByteStream range(final byte startInclusive, final byte endExclusive) {
-        return of(Array.range(startInclusive, endExclusive));
+        if (startInclusive > endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endExclusive) {
+            return empty();
+        }
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private byte next = startInclusive;
+            private int cnt = endExclusive * 1 - startInclusive;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public byte next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
     public static ByteStream range(final byte startInclusive, final byte endExclusive, final byte by) {
-        return of(Array.range(startInclusive, endExclusive, by));
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endExclusive == startInclusive) {
+            return empty();
+        }
+
+        if (endExclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private byte next = startInclusive;
+            private int cnt = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public byte next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                byte result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
     public static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive) {
-        return of(Array.rangeClosed(startInclusive, endInclusive));
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+        } else if (startInclusive == endInclusive) {
+            return of(startInclusive);
+        }
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private byte next = startInclusive;
+            private int cnt = endInclusive * 1 - startInclusive + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public byte next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return next++;
+            }
+        });
     }
 
     public static ByteStream rangeClosed(final byte startInclusive, final byte endInclusive, final byte by) {
-        return of(Array.rangeClosed(startInclusive, endInclusive, by));
+        if (by == 0) {
+            throw new IllegalArgumentException("'by' can't be zero");
+        }
+
+        if (endInclusive == startInclusive) {
+            return of(startInclusive);
+        }
+
+        if (endInclusive > startInclusive != by > 0) {
+            throw new IllegalArgumentException(
+                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        }
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private byte next = startInclusive;
+            private int cnt = (endInclusive * 1 - startInclusive) / by + 1;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public byte next() {
+                if (cnt-- <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                byte result = next;
+                next += by;
+                return result;
+            }
+        });
     }
 
-    public static ByteStream repeat(byte element, int n) {
-        return of(Array.repeat(element, n));
+    public static ByteStream repeat(final byte element, final long n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative: " + n);
+        } else if (n == 0) {
+            return empty();
+        }
+
+        return new IteratorByteStream(new ImmutableByteIterator() {
+            private long cnt = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cnt < n;
+            }
+
+            @Override
+            public byte next() {
+                if (cnt >= n) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt++;
+                return element;
+            }
+        });
     }
 
     public static ByteStream random() {

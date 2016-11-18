@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -24,7 +23,6 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.ObjShortConsumer;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -32,7 +30,6 @@ import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortToIntFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToShortFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -42,7 +39,6 @@ final class ArrayShortStream extends AbstractShortStream {
     private final short[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
 
     ArrayShortStream(short[] values) {
         this(values, null);
@@ -65,19 +61,13 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     ArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
-    }
-
-    @Override
-    public ShortStream filter(final ShortPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -117,11 +107,6 @@ final class ArrayShortStream extends AbstractShortStream {
                 return elements[cursor++];
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public ShortStream takeWhile(final ShortPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -172,11 +157,6 @@ final class ArrayShortStream extends AbstractShortStream {
                 return elements[cursor++];
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public ShortStream dropWhile(final ShortPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -779,32 +759,6 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K> Map<K, List<Short>> toMap(ShortFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Short>>>() {
-            @Override
-            public Map<K, List<Short>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Short>>> M toMap(ShortFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Short, ?, List<Short>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -838,32 +792,6 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
@@ -873,16 +801,6 @@ final class ArrayShortStream extends AbstractShortStream {
         }
 
         return result;
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -925,17 +843,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            accumulator.accept(result, elements[i]);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
         final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -995,6 +902,26 @@ final class ArrayShortStream extends AbstractShortStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public ShortStream reverse() {
+        return new IteratorShortStream(new ImmutableShortIterator() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public short next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+                return elements[--cursor];
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -1087,52 +1014,6 @@ final class ArrayShortStream extends AbstractShortStream {
         }
 
         return OptionalShort.empty();
-    }
-
-    @Override
-    public ShortStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new ShortPredicate() {
-            @Override
-            public boolean test(short value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        });
-    }
-
-    @Override
-    public ShortStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new ShortPredicate() {
-            @Override
-            public boolean test(short value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        });
-    }
-
-    @Override
-    public ShortStream xor(Collection<Short> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new ShortPredicate() {
-            @Override
-            public boolean test(short value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).append(Stream.of(c).filter(new Predicate<Short>() {
-            @Override
-            public boolean test(Short value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        }).mapToShort(new ToShortFunction<Short>() {
-            @Override
-            public short applyAsShort(Short value) {
-                return value.shortValue();
-            }
-        }));
     }
 
     //    @Override
@@ -1278,16 +1159,6 @@ final class ArrayShortStream extends AbstractShortStream {
                 return N.copyOfRange(elements, cursor, toIndex);
             }
         };
-    }
-
-    @Override
-    public boolean isParallel() {
-        return false;
-    }
-
-    @Override
-    public ShortStream sequential() {
-        return this;
     }
 
     @Override

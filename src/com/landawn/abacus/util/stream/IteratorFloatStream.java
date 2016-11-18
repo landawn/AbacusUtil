@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -18,7 +17,6 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -34,7 +32,6 @@ import com.landawn.abacus.util.function.FloatToIntFunction;
 import com.landawn.abacus.util.function.FloatToLongFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToFloatFunction;
 
@@ -44,7 +41,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  */
 final class IteratorFloatStream extends AbstractFloatStream {
     private final ImmutableFloatIterator elements;
-    private final boolean sorted;
 
     IteratorFloatStream(ImmutableFloatIterator values) {
         this(values, null);
@@ -55,15 +51,9 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     IteratorFloatStream(ImmutableFloatIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         this.elements = values;
-        this.sorted = sorted;
-    }
-
-    @Override
-    public FloatStream filter(FloatPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -101,11 +91,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
                 return next;
             }
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public FloatStream takeWhile(FloatPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -147,11 +132,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
             }
 
         }, closeHandlers, sorted);
-    }
-
-    @Override
-    public FloatStream dropWhile(FloatPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -987,32 +967,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Float>>>() {
-            @Override
-            public Map<K, List<Float>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Float>>> M toMap(FloatFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Float, ?, List<Float>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -1049,32 +1003,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
@@ -1087,16 +1015,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
         }
 
         return result;
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1142,17 +1060,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator, BiConsumer<R, R> combiner) {
-        final R result = supplier.get();
-
-        while (elements.hasNext()) {
-            accumulator.accept(result, elements.next());
-        }
-
-        return result;
-    }
-
-    @Override
-    public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
         final R result = supplier.get();
 
         while (elements.hasNext()) {
@@ -1211,92 +1118,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
         final OptionalNullable<Float> optional = boxed().kthLargest(k, FLOAT_COMPARATOR);
 
         return optional.isPresent() ? OptionalFloat.of(optional.get()) : OptionalFloat.empty();
-    }
-
-    @Override
-    public Double sum() {
-        //        double result = 0d;
-        //    
-        //        while (elements.hasNext()) {
-        //            result += elements.next();
-        //        }
-        //    
-        //        return result;
-
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[3];
-            }
-        };
-
-        final ObjFloatConsumer<double[]> accumulator = new ObjFloatConsumer<double[]>() {
-            @Override
-            public void accept(double[] ll, float f) {
-                Collectors.sumWithCompensation(ll, f);
-                ll[2] += f;
-            }
-        };
-
-        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
-            @Override
-            public void accept(double[] ll, double[] rr) {
-                Collectors.sumWithCompensation(ll, rr[0]);
-                Collectors.sumWithCompensation(ll, rr[1]);
-                ll[2] += rr[2];
-            }
-        };
-
-        final double[] summation = collect(supplier, accumulator, combiner);
-
-        return Collectors.computeFinalSum(summation);
-    }
-
-    @Override
-    public OptionalDouble average() {
-        //        if (elements.hasNext() == false) {
-        //            return OptionalDouble.empty();
-        //        }
-        //
-        //        double result = 0d;
-        //        long count = 0;
-        //
-        //        while (elements.hasNext()) {
-        //            result += elements.next();
-        //            count++;
-        //        }
-        //
-        //        return OptionalDouble.of(result / count);
-
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[4];
-            }
-        };
-
-        final ObjFloatConsumer<double[]> accumulator = new ObjFloatConsumer<double[]>() {
-            @Override
-            public void accept(double[] ll, float f) {
-                ll[2]++;
-                Collectors.sumWithCompensation(ll, f);
-                ll[3] += f;
-            }
-        };
-
-        final BiConsumer<double[], double[]> combiner = new BiConsumer<double[], double[]>() {
-            @Override
-            public void accept(double[] ll, double[] rr) {
-                Collectors.sumWithCompensation(ll, rr[0]);
-                Collectors.sumWithCompensation(ll, rr[1]);
-                ll[2] += rr[2];
-                ll[3] += rr[3];
-            }
-        };
-
-        final double[] avg = collect(supplier, accumulator, combiner);
-
-        return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
     }
 
     @Override
@@ -1421,52 +1242,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
         return OptionalFloat.empty();
     }
 
-    @Override
-    public FloatStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new FloatPredicate() {
-            @Override
-            public boolean test(float value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        });
-    }
-
-    @Override
-    public FloatStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new FloatPredicate() {
-            @Override
-            public boolean test(float value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        });
-    }
-
-    @Override
-    public FloatStream xor(Collection<Float> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return filter(new FloatPredicate() {
-            @Override
-            public boolean test(float value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).append(Stream.of(c).filter(new Predicate<Float>() {
-            @Override
-            public boolean test(Float value) {
-                return multiset.getAndRemove(value) > 0;
-            }
-        }).mapToFloat(new ToFloatFunction<Float>() {
-            @Override
-            public float applyAsFloat(Float value) {
-                return value.floatValue();
-            }
-        }));
-    }
-
     //    @Override
     //    public FloatStream exclude(Collection<?> c) {
     //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
@@ -1537,16 +1312,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public ImmutableFloatIterator floatIterator() {
         return elements;
-    }
-
-    @Override
-    public boolean isParallel() {
-        return false;
-    }
-
-    @Override
-    public FloatStream sequential() {
-        return this;
     }
 
     @Override

@@ -185,6 +185,8 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      */
     public abstract boolean noneMatch(final int fromIndex, final int toIndex, P filter);
 
+    public abstract boolean hasDuplicates();
+
     /**
      * 
      * @param filter

@@ -3,7 +3,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     private final float[] elements;
     private final int fromIndex;
     private final int toIndex;
-    private final boolean sorted;
     private final int maxThreadNum;
     private final Splitter splitter;
     private volatile ArrayFloatStream sequential;
@@ -64,21 +62,15 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     ParallelArrayFloatStream(float[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum,
             Splitter splitter) {
-        super(closeHandlers);
+        super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.sorted = sorted;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
-    }
-
-    @Override
-    public FloatStream filter(final FloatPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -98,11 +90,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream takeWhile(final FloatPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public FloatStream takeWhile(final FloatPredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorFloatStream(sequential().takeWhile(predicate, max).floatIterator(), closeHandlers, sorted, maxThreadNum, splitter);
@@ -116,11 +103,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         }, max);
 
         return new ParallelIteratorFloatStream(stream, closeHandlers, false, maxThreadNum, splitter);
-    }
-
-    @Override
-    public FloatStream dropWhile(final FloatPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -683,32 +665,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Float>>>() {
-            @Override
-            public Map<K, List<Float>> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Float>>> M toMap(FloatFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Float, ?, List<Float>> downstream = Collectors.toList();
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
     public <K, D, A, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -723,32 +679,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
     }
 
     @Override
@@ -773,16 +703,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         };
 
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapSupplier);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override
@@ -1094,12 +1014,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
-        final BiConsumer<R, R> combiner = collectingCombiner;
-        return collect(supplier, accumulator, combiner);
-    }
-
-    @Override
     public OptionalFloat min() {
         if (count() == 0) {
             return OptionalFloat.empty();
@@ -1354,6 +1268,27 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     @Override
     public long count() {
         return toIndex - fromIndex;
+    }
+
+    @Override
+    public FloatStream reverse() {
+        return new ParallelIteratorFloatStream(new ImmutableFloatIterator() {
+            private int cursor = toIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > fromIndex;
+            }
+
+            @Override
+            public float next() {
+                if (cursor <= fromIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return elements[--cursor];
+            }
+        }, closeHandlers, false, maxThreadNum, splitter);
     }
 
     @Override
