@@ -7,6 +7,20 @@ import com.landawn.abacus.util.N;
  */
 public interface FloatPredicate {
 
+    public static final FloatPredicate ALWAYS_TRUE = new FloatPredicate() {
+        @Override
+        public boolean test(float value) {
+            return true;
+        }
+    };
+
+    public static final FloatPredicate ALWAYS_FALSE = new FloatPredicate() {
+        @Override
+        public boolean test(float value) {
+            return false;
+        }
+    };
+
     boolean test(float value);
 
     default FloatPredicate and(FloatPredicate other) {

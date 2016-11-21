@@ -15,6 +15,7 @@ import com.landawn.abacus.parser.XMLParser;
 import com.landawn.abacus.test.entity.Account;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Splitter.Splitter0;
 
 /**
  * Refer to HelloAbacusUtil for more tests: http://landawn.com/download.html
@@ -35,7 +36,7 @@ public class HelloAbacusUtil {
         String str = N.join(c);
         N.println(str);
 
-        char[] d = N.string2Array(char[].class, str);
+        char[] d = Splitter0.splitToArray(char[].class, str);
         assertTrue(N.equals(c, d));
 
         int[] e = Array.range(0, 6);

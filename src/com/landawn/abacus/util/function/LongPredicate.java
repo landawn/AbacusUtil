@@ -5,6 +5,20 @@ package com.landawn.abacus.util.function;
  */
 public interface LongPredicate extends java.util.function.LongPredicate {
 
+    public static final LongPredicate ALWAYS_TRUE = new LongPredicate() {
+        @Override
+        public boolean test(long value) {
+            return true;
+        }
+    };
+
+    public static final LongPredicate ALWAYS_FALSE = new LongPredicate() {
+        @Override
+        public boolean test(long value) {
+            return false;
+        }
+    };
+
     @Override
     boolean test(long value);
 }

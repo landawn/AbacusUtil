@@ -10,6 +10,20 @@ import com.landawn.abacus.util.N;
  */
 public interface BytePredicate {
 
+    public static final BytePredicate ALWAYS_TRUE = new BytePredicate() {
+        @Override
+        public boolean test(byte value) {
+            return true;
+        }
+    };
+
+    public static final BytePredicate ALWAYS_FALSE = new BytePredicate() {
+        @Override
+        public boolean test(byte value) {
+            return false;
+        }
+    };
+
     boolean test(byte value);
 
     default BytePredicate and(BytePredicate other) {

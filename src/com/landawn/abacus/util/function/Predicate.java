@@ -7,6 +7,22 @@ import java.util.Objects;
  */
 public interface Predicate<T> extends java.util.function.Predicate<T> {
 
+    @SuppressWarnings("rawtypes")
+    public static final Predicate ALWAYS_TRUE = new Predicate() {
+        @Override
+        public boolean test(Object value) {
+            return true;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final Predicate ALWAYS_FALSE = new Predicate() {
+        @Override
+        public boolean test(Object value) {
+            return false;
+        }
+    };
+
     @Override
     boolean test(T value);
 

@@ -7,6 +7,20 @@ import com.landawn.abacus.util.N;
  */
 public interface CharPredicate {
 
+    public static final CharPredicate ALWAYS_TRUE = new CharPredicate() {
+        @Override
+        public boolean test(char value) {
+            return true;
+        }
+    };
+
+    public static final CharPredicate ALWAYS_FALSE = new CharPredicate() {
+        @Override
+        public boolean test(char value) {
+            return false;
+        }
+    };
+
     boolean test(char value);
 
     default CharPredicate and(CharPredicate other) {

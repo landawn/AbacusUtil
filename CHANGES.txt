@@ -1,4 +1,21 @@
 
+========Changes in 0.9.33=========================================================================
+
+1, Rename StringJoiner to Joiner and improve it.
+
+2, Add Splitter and remove string2List/string2Array/... from N
+
+3, Refactoring join(final Map<?, ?> m ... final String entryDelimiter, final String keyValueDelimiter) in N. Switch the order of parameters: entryDelimiter and keyValueDelimiter.  
+
+4, Rename StringEscapeUtil to EscapeUtil.
+
+5, Add ALWAYS_TRUE and ALWAYS_FALSE to Predicate/IntPredicate/...
+
+6, Refactoring N.split(String str, int size).
+
+7, Improvements and bug fix.
+
+
 ========Changes in 0.9.32=========================================================================
 
 1, Add Fast.java, a simple wrapper for FastJson, the fastest json parser in the world.

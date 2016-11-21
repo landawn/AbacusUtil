@@ -7,6 +7,20 @@ import com.landawn.abacus.util.N;
  */
 public interface BooleanPredicate {
 
+    public static final BooleanPredicate ALWAYS_TRUE = new BooleanPredicate() {
+        @Override
+        public boolean test(boolean value) {
+            return true;
+        }
+    };
+
+    public static final BooleanPredicate ALWAYS_FALSE = new BooleanPredicate() {
+        @Override
+        public boolean test(boolean value) {
+            return false;
+        }
+    };
+
     boolean test(boolean value);
 
     default BooleanPredicate and(BooleanPredicate other) {

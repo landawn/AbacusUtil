@@ -5,6 +5,22 @@ package com.landawn.abacus.util.function;
  */
 public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
 
+    @SuppressWarnings("rawtypes")
+    public static final BiPredicate ALWAYS_TRUE = new BiPredicate() {
+        @Override
+        public boolean test(Object t, Object u) {
+            return true;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final BiPredicate ALWAYS_FALSE = new BiPredicate() {
+        @Override
+        public boolean test(Object t, Object u) {
+            return false;
+        }
+    };
+
     @Override
     boolean test(T t, U u);
 }

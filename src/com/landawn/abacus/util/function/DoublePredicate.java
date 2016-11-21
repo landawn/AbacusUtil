@@ -5,6 +5,20 @@ package com.landawn.abacus.util.function;
  */
 public interface DoublePredicate extends java.util.function.DoublePredicate {
 
+    public static final DoublePredicate ALWAYS_TRUE = new DoublePredicate() {
+        @Override
+        public boolean test(double value) {
+            return true;
+        }
+    };
+
+    public static final DoublePredicate ALWAYS_FALSE = new DoublePredicate() {
+        @Override
+        public boolean test(double value) {
+            return false;
+        }
+    };
+
     @Override
     boolean test(double value);
 }

@@ -73,7 +73,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
-import com.landawn.abacus.util.StringJoiner;
+import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1111,31 +1111,31 @@ public final class Collectors {
      * separated by the specified delimiter, in encounter order
      */
     public static Collector<CharSequence, ?, String> joining(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Supplier<StringJoiner> supplier = new Supplier<StringJoiner>() {
+        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
             @Override
-            public StringJoiner get() {
-                return new StringJoiner(delimiter, prefix, suffix);
+            public Joiner get() {
+                return new Joiner(delimiter, prefix, suffix);
             }
         };
 
-        final BiConsumer<StringJoiner, CharSequence> accumulator = new BiConsumer<StringJoiner, CharSequence>() {
+        final BiConsumer<Joiner, CharSequence> accumulator = new BiConsumer<Joiner, CharSequence>() {
             @Override
-            public void accept(StringJoiner a, CharSequence t) {
+            public void accept(Joiner a, CharSequence t) {
                 a.add(t);
             }
         };
 
-        final BinaryOperator<StringJoiner> combiner = new BinaryOperator<StringJoiner>() {
+        final BinaryOperator<Joiner> combiner = new BinaryOperator<Joiner>() {
             @Override
-            public StringJoiner apply(StringJoiner a, StringJoiner b) {
+            public Joiner apply(Joiner a, Joiner b) {
                 a.merge(b);
                 return a;
             }
         };
 
-        final Function<StringJoiner, String> finisher = new Function<StringJoiner, String>() {
+        final Function<Joiner, String> finisher = new Function<Joiner, String>() {
             @Override
-            public String apply(StringJoiner a) {
+            public String apply(Joiner a) {
                 return a.toString();
             }
         };

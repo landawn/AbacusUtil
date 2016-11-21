@@ -91,7 +91,7 @@ public final class PropertiesUtil {
                                 if (propValue == null || N.isNullOrEmpty(propValue.toString().trim())) {
                                     propValue = new ArrayList<>();
                                 } else {
-                                    propValue = N.string2List(propValue.toString().trim(), N.ELEMENT_SEPARATOR, true);
+                                    propValue = Splitter.__().trim(true).split(propValue.toString().trim());
                                 }
                             } else if (method.getName().equals("setStatus")) {
                                 if (propValue == null || N.isNullOrEmpty(propValue.toString().trim())) {
