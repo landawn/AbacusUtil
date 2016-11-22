@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.DataSet;
@@ -620,6 +621,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> skipNull() {
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return value != null;
+            }
+        });
+    }
+
+    @Override
     public Stream<T> except(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -704,11 +715,39 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> reverse() {
-        final Object[] a = toArray();
+        final T[] a = (T[]) toArray();
 
-        N.reverse(a);
+        //        N.reverse(a);
+        //
+        //        return newStream((T[]) a, false, null);
 
-        return newStream((T[]) a, false, null);
+        return newStream(new ImmutableIterator<T>() {
+            private int cursor = a.length;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > 0;
+            }
+
+            @Override
+            public T next() {
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[--cursor];
+            }
+
+            @Override
+            public long count() {
+                return cursor - 0;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = cursor > n ? cursor - (int) n : 0;
+            }
+        }, false, null);
     }
 
     @Override

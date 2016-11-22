@@ -34,6 +34,7 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * A collection that supports order-independent equality, like {@link Set}, but
@@ -53,7 +54,7 @@ import com.landawn.abacus.util.function.Predicate;
  *
  * @author Haiyang Li
  */
-public final class LongMultiset<E> implements Collection<E> {
+public final class LongMultiset<E> implements Iterable<E> {
     private static final Comparator<Map.Entry<?, MutableLong>> cmpByCount = new Comparator<Map.Entry<?, MutableLong>>() {
         @Override
         public int compare(Entry<?, MutableLong> a, Entry<?, MutableLong> b) {
@@ -112,7 +113,7 @@ public final class LongMultiset<E> implements Collection<E> {
     //        return multiset;
     //    }
 
-    public static <T> LongMultiset<T> of(final Collection<? extends T> coll) {
+    public static <T> LongMultiset<T> from(final Collection<? extends T> coll) {
         return new LongMultiset<T>(coll);
     }
 
@@ -420,7 +421,6 @@ public final class LongMultiset<E> implements Collection<E> {
      * @return always true
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    @Override
     public boolean add(final E e) throws IllegalArgumentException {
         return add(e, 1);
     }
@@ -542,7 +542,6 @@ public final class LongMultiset<E> implements Collection<E> {
      * @param c
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    @Override
     public boolean addAll(final Collection<? extends E> c) throws IllegalArgumentException {
         return addAll(c, 1);
     }
@@ -611,12 +610,10 @@ public final class LongMultiset<E> implements Collection<E> {
         return true;
     }
 
-    @Override
     public boolean contains(final Object o) {
         return valueMap.containsKey(o);
     }
 
-    @Override
     public boolean containsAll(final Collection<?> c) {
         return valueMap.keySet().containsAll(c);
     }
@@ -628,7 +625,6 @@ public final class LongMultiset<E> implements Collection<E> {
      * @param occurrences
      * @return
      */
-    @Override
     public boolean remove(final Object e) throws IllegalArgumentException {
         return remove(e, 1);
     }
@@ -724,7 +720,6 @@ public final class LongMultiset<E> implements Collection<E> {
      * @return <tt>true</tt> if this set changed as a result of the call
      * @see Collection#removeAll(Collection)
      */
-    @Override
     public boolean removeAll(final Collection<?> c) {
         return removeAll(c, Long.MAX_VALUE);
     }
@@ -813,7 +808,6 @@ public final class LongMultiset<E> implements Collection<E> {
      * @return <tt>true</tt> if this set changed as a result of the call
      * @see Collection#retainAll(Collection)
      */
-    @Override
     public boolean retainAll(final Collection<?> c) {
         Set<E> others = null;
 
@@ -830,17 +824,14 @@ public final class LongMultiset<E> implements Collection<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Long.MAX_VALUE);
     }
 
-    @Override
     public int size() {
         return valueMap.size();
     }
 
-    @Override
     public boolean isEmpty() {
         return valueMap.isEmpty();
     }
 
-    @Override
     public void clear() {
         valueMap.clear();
     }
@@ -854,12 +845,10 @@ public final class LongMultiset<E> implements Collection<E> {
         return valueMap.entrySet();
     }
 
-    @Override
     public Object[] toArray() {
         return valueMap.keySet().toArray();
     }
 
-    @Override
     public <T> T[] toArray(final T[] a) {
         return valueMap.keySet().toArray(a);
     }
@@ -889,7 +878,25 @@ public final class LongMultiset<E> implements Collection<E> {
         return toMapSortedBy((Comparator) cmpByCount);
     }
 
-    public Map<E, Long> toMapSortedBy(final Comparator<Map.Entry<E, MutableLong>> cmp) {
+    public Map<E, Long> toMapSortedByOccurrences(final Comparator<? super Long> cmp) {
+        return toMapSortedBy(new Comparator<Map.Entry<E, MutableLong>>() {
+            @Override
+            public int compare(Entry<E, MutableLong> o1, Entry<E, MutableLong> o2) {
+                return cmp.compare(o1.getValue().longValue(), o2.getValue().longValue());
+            }
+        });
+    }
+
+    public Map<E, Long> toMapSortedByKey(final Comparator<? super E> cmp) {
+        return toMapSortedBy(new Comparator<Map.Entry<E, MutableLong>>() {
+            @Override
+            public int compare(Entry<E, MutableLong> o1, Entry<E, MutableLong> o2) {
+                return cmp.compare(o1.getKey(), o2.getKey());
+            }
+        });
+    }
+
+    Map<E, Long> toMapSortedBy(final Comparator<Map.Entry<E, MutableLong>> cmp) {
         if (N.isNullOrEmpty(valueMap)) {
             return new LinkedHashMap<>();
         }
@@ -1124,6 +1131,19 @@ public final class LongMultiset<E> implements Collection<E> {
         }
 
         return newValue;
+    }
+
+    public Stream<E> stream() {
+        return Stream.of(valueMap.keySet());
+    }
+
+    public Stream<Entry<E, Long>> stream2() {
+        return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<E, MutableLong>, Map.Entry<E, Long>>() {
+            @Override
+            public Entry<E, Long> apply(Entry<E, MutableLong> t) {
+                return MapEntry.of(t.getKey(), t.getValue().longValue());
+            }
+        });
     }
 
     @Override

@@ -9,11 +9,19 @@
 
 4, Rename StringEscapeUtil to EscapeUtil.
 
-5, Add ALWAYS_TRUE and ALWAYS_FALSE to Predicate/IntPredicate/...
+5, Add ALWAYS_TRUE/ALWAYS_FALSE/IS_NULL/NOT_NULL to Predicate/IntPredicate/...
 
 6, Refactoring N.split(String str, int size).
 
-7, Improvements and bug fix.
+7, Add skipNull to Stream
+
+8, Add checkArgument and checkState to N, the codes are copied from Google Guava under Apache License 2.0
+
+9, Refactoring and improving Multiset/LongMultiset.
+
+10, Rename Range.of(T t) to Range.just(T t), Range.of(T min, T max) to Range.between(T min, T max). 
+
+11, Improvements and bug fix.
 
 
 ========Changes in 0.9.32=========================================================================

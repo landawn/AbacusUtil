@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
@@ -272,9 +273,37 @@ abstract class AbstractFloatStream extends FloatStream {
     public FloatStream reverse() {
         final float[] a = toArray();
 
-        N.reverse(a);
+        //        N.reverse(a);
+        //
+        //        return newStream(a, false);
 
-        return newStream(a, false);
+        return newStream(new ImmutableFloatIterator() {
+            private int cursor = a.length;
+
+            @Override
+            public boolean hasNext() {
+                return cursor > 0;
+            }
+
+            @Override
+            public float next() {
+                if (cursor <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[--cursor];
+            }
+
+            @Override
+            public long count() {
+                return cursor - 0;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = cursor > n ? cursor - (int) n : 0;
+            }
+        }, false);
     }
 
     @Override

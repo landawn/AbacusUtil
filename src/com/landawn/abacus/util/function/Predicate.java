@@ -23,6 +23,22 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
         }
     };
 
+    @SuppressWarnings("rawtypes")
+    public static final Predicate IS_NULL = new Predicate() {
+        @Override
+        public boolean test(Object value) {
+            return value == null;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final Predicate NOT_NULL = new Predicate() {
+        @Override
+        public boolean test(Object value) {
+            return value != null;
+        }
+    };
+
     @Override
     boolean test(T value);
 

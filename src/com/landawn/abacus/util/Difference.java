@@ -78,7 +78,7 @@ public class Difference<L, R> {
         } else if (N.isNullOrEmpty(b)) {
             leftOnly.addAll(a);
         } else {
-            final Multiset<T2> bOccurrences = Multiset.of(b);
+            final Multiset<T2> bOccurrences = Multiset.from(b);
 
             for (T1 e : a) {
                 if (bOccurrences.getAndRemove(e) > 0) {
@@ -149,7 +149,7 @@ public class Difference<L, R> {
         List<Character> common = new ArrayList<>();
         List<Character> leftOnly = new ArrayList<>();
         List<Character> rightOnly = new ArrayList<>();
-    
+
         if (N.isNullOrEmpty(a)) {
             if (N.isNullOrEmpty(b)) {
                 // Do nothing. All empty.
@@ -160,31 +160,31 @@ public class Difference<L, R> {
             leftOnly = a.toList();
         } else {
             final Multiset<Character> bOccurrences = b.toMultiset();
-    
+
             char e = 0;
             for (int i = 0, len = a.size(); i < len; i++) {
                 e = a.get(i);
-    
+
                 if (bOccurrences.getAndRemove(e) > 0) {
                     common.add(e);
                 } else {
                     leftOnly.add(e);
                 }
             }
-    
+
             for (int i = 0, len = b.size(); i < len; i++) {
                 e = b.get(i);
-    
+
                 if (bOccurrences.getAndRemove(e) > 0) {
                     rightOnly.add(e);
                 }
-    
+
                 if (bOccurrences.isEmpty()) {
                     break;
                 }
             }
         }
-    
+
         return new Difference<>(common, leftOnly, rightOnly);
     }
 

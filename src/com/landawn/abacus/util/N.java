@@ -4230,6 +4230,14 @@ public final class N {
         return Collections.unmodifiableMap((Map<K, V>) asMap(k1, v1, k2, v2, k3, v3));
     }
 
+    public static <K, V> Map<K, V> asImmutableMap(final Object... a) {
+        if (a.length == 1 && a[0] instanceof Map) {
+            return asImmutableMap((Map<K, V>) a[0]);
+        } else {
+            return Collections.unmodifiableMap((Map<K, V>) N.asMap(a));
+        }
+    }
+
     /**
      * Wrap the specified map with a unmodifiable map.
      *
@@ -13449,7 +13457,11 @@ public final class N {
      */
     public static <T> T requireNonNull(final T obj, final String errorMessage) {
         if (obj == null) {
-            throw new NullPointerException(errorMessage);
+            if (isErrorMsg(errorMessage)) {
+                throw new NullPointerException(errorMessage);
+            } else {
+                throw new NullPointerException(errorMessage + " can not be null");
+            }
         }
 
         return obj;
@@ -13484,6 +13496,396 @@ public final class N {
     private static boolean isErrorMsg(final String msg) {
         // shortest message: "it is null"
         return msg.length() > 9 && msg.indexOf(D._SPACE) > 0;
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * @param expression a boolean expression
+     * @throws IllegalArgumentException if {@code expression} is false
+     */
+    public static void checkArgument(boolean expression) {
+        if (!expression) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * @param expression a boolean expression
+     * @param errorMessage the exception message to use if the check fails; will be converted to a
+     *     string using {@link String#valueOf(Object)}
+     * @throws IllegalArgumentException if {@code expression} is false
+     */
+    public static void checkArgument(boolean expression, String errorMessage) {
+        if (!expression) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, boolean p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, boolean p1, boolean p2) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, boolean p1, boolean p2, boolean p3) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, char p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, byte p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, short p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, int p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, int p1, int p2) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, int p1, int p2, int p3) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, long p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, long p1, long p2) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, long p1, long p2, long p3) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, float p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, float p1, float p2) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, float p1, float p2, float p3) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, double p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, double p1, double p2) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, double p1, double p2, double p3) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, Object p) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, Object p1, Object p2) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving one or more parameters to the calling method.
+     *
+     * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
+     */
+    public static void checkArgument(boolean b, String errorMessageTemplate, Object p1, Object p2, Object p3) {
+        if (!b) {
+            throw new IllegalArgumentException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * @param expression a boolean expression
+     * @throws IllegalStateException if {@code expression} is false
+     */
+    public static void checkState(boolean expression) {
+        if (!expression) {
+            throw new IllegalStateException();
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * @param expression a boolean expression
+     * @param errorMessage the exception message to use if the check fails; will be converted to a
+     *     string using {@link String#valueOf(Object)}
+     * @throws IllegalStateException if {@code expression} is false
+     */
+    public static void checkState(boolean expression, String errorMessage) {
+        if (!expression) {
+            throw new IllegalStateException(errorMessage);
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, Object p) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, Object p1, Object p2) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, Object p1, Object p2, Object p3) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /*
+     * All recent hotspots (as of 2009) *really* like to have the natural code
+     *
+     * if (guardExpression) {
+     *    throw new BadException(messageExpression);
+     * }
+     *
+     * refactored so that messageExpression is moved to a separate String-returning method.
+     *
+     * if (guardExpression) {
+     *    throw new BadException(badMsg(...));
+     * }
+     *
+     * The alternative natural refactorings into void or Exception-returning methods are much slower.
+     * This is a big deal - we're talking factors of 2-8 in microbenchmarks, not just 10-20%. (This is
+     * a hotspot optimizer bug, which should be fixed, but that's a separate, big project).
+     *
+     * The coding pattern above is heavily used in java.util, e.g. in ArrayList. There is a
+     * RangeCheckMicroBenchmark in the JDK that was used to test this.
+     *
+     * But the methods in this class want to throw different exceptions, depending on the args, so it
+     * appears that this pattern is not directly applicable. But we can use the ridiculous, devious
+     * trick of throwing an exception in the middle of the construction of another exception. Hotspot
+     * is fine with that.
+     */
+
+    /**
+     * Substitutes each {@code %s} in {@code template} with an argument. These are matched by
+     * position: the first {@code %s} gets {@code args[0]}, etc. If there are more arguments than
+     * placeholders, the unmatched arguments will be appended to the end of the formatted message in
+     * square braces.
+     *
+     * @param template a non-null string containing 0 or more {@code %s} placeholders.
+     * @param args the arguments to be substituted into the message template. Arguments are converted
+     *     to strings using {@link String#valueOf(Object)}. Arguments can be null.
+     */
+    // Note that this is somewhat-improperly used from Verify.java as well.
+    static String format(String template, Object... args) {
+        template = String.valueOf(template); // null -> "null"
+
+        // start substituting the arguments into the '%s' placeholders
+        StringBuilder builder = new StringBuilder(template.length() + 16 * args.length);
+        int templateStart = 0;
+        int i = 0;
+        while (i < args.length) {
+            int placeholderStart = template.indexOf("%s", templateStart);
+            if (placeholderStart == -1) {
+                break;
+            }
+            builder.append(template, templateStart, placeholderStart);
+            builder.append(args[i++]);
+            templateStart = placeholderStart + 2;
+        }
+        builder.append(template, templateStart, template.length());
+
+        // if we run out of placeholders, append the extra args in square braces
+        if (i < args.length) {
+            builder.append(" [");
+            builder.append(args[i++]);
+            while (i < args.length) {
+                builder.append(", ");
+                builder.append(args[i++]);
+            }
+            builder.append(']');
+        }
+
+        return builder.toString();
     }
 
     /**
@@ -27018,7 +27420,7 @@ public final class N {
             return new ArrayList<>();
         }
 
-        final Multiset<Object> bOccurrences = Multiset.of(b);
+        final Multiset<Object> bOccurrences = Multiset.from(b);
 
         final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
 
@@ -27189,7 +27591,7 @@ public final class N {
             return new ArrayList<>();
         }
 
-        final Multiset<Object> bOccurrences = Multiset.of(b);
+        final Multiset<Object> bOccurrences = Multiset.from(b);
 
         final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
 
@@ -27381,7 +27783,7 @@ public final class N {
         //
         //        return result;
 
-        final Multiset<T> bOccurrences = Multiset.of(b);
+        final Multiset<T> bOccurrences = Multiset.from(b);
         final List<T> result = new ArrayList<>(N.max(9, Math.abs(a.size() - b.size())));
 
         for (T e : a) {

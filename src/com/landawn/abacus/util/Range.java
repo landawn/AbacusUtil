@@ -116,8 +116,8 @@ public final class Range<T> implements Serializable {
      * @throws ClassCastException
      *             if the element is not {@code Comparable}
      */
-    public static <T extends Comparable<T>> Range<T> of(final T element) {
-        return of(element, element, null);
+    public static <T extends Comparable<T>> Range<T> just(final T element) {
+        return between(element, element, null);
     }
 
     /**
@@ -141,8 +141,8 @@ public final class Range<T> implements Serializable {
      * @throws ClassCastException
      *             if using natural ordering and the elements are not {@code Comparable}
      */
-    public static <T> Range<T> of(final T element, final Comparator<? super T> comparator) {
-        return of(element, element, comparator);
+    public static <T> Range<T> just(final T element, final Comparator<? super T> comparator) {
+        return between(element, element, comparator);
     }
 
     /**
@@ -171,8 +171,8 @@ public final class Range<T> implements Serializable {
      * @throws ClassCastException
      *             if the elements are not {@code Comparable}
      */
-    public static <T extends Comparable<T>> Range<T> of(final T fromInclusive, final T toInclusive) {
-        return of(fromInclusive, toInclusive, null);
+    public static <T extends Comparable<T>> Range<T> between(final T fromInclusive, final T toInclusive) {
+        return between(fromInclusive, toInclusive, null);
     }
 
     /**
@@ -203,7 +203,7 @@ public final class Range<T> implements Serializable {
      * @throws ClassCastException
      *             if using natural ordering and the elements are not {@code Comparable}
      */
-    public static <T> Range<T> of(final T fromInclusive, final T toInclusive, final Comparator<? super T> comparator) {
+    public static <T> Range<T> between(final T fromInclusive, final T toInclusive, final Comparator<? super T> comparator) {
         return new Range<T>(fromInclusive, toInclusive, comparator);
     }
 
@@ -486,7 +486,7 @@ public final class Range<T> implements Serializable {
         }
         final T min = getComparator().compare(minimum, other.minimum) < 0 ? other.minimum : minimum;
         final T max = getComparator().compare(maximum, other.maximum) < 0 ? maximum : other.maximum;
-        return of(min, max, getComparator());
+        return between(min, max, getComparator());
     }
 
     // Basics

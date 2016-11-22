@@ -34,6 +34,7 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * A collection that supports order-independent equality, like {@link Set}, but
@@ -53,7 +54,7 @@ import com.landawn.abacus.util.function.Predicate;
  *
  * @author Haiyang Li
  */
-public final class Multiset<E> implements Collection<E> {
+public final class Multiset<E> implements Iterable<E> {
     private static final Comparator<Map.Entry<?, MutableInt>> cmpByCount = new Comparator<Map.Entry<?, MutableInt>>() {
         @Override
         public int compare(Entry<?, MutableInt> a, Entry<?, MutableInt> b) {
@@ -106,7 +107,7 @@ public final class Multiset<E> implements Collection<E> {
     //        return multiset;
     //    }
 
-    public static <T> Multiset<T> of(final Collection<? extends T> coll) {
+    public static <T> Multiset<T> from(final Collection<? extends T> coll) {
         return new Multiset<T>(coll);
     }
 
@@ -390,7 +391,6 @@ public final class Multiset<E> implements Collection<E> {
      * @return always true
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
-    @Override
     public boolean add(final E e) throws IllegalArgumentException {
         return add(e, 1);
     }
@@ -512,7 +512,6 @@ public final class Multiset<E> implements Collection<E> {
      * @param c
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
-    @Override
     public boolean addAll(final Collection<? extends E> c) throws IllegalArgumentException {
         return addAll(c, 1);
     }
@@ -581,12 +580,10 @@ public final class Multiset<E> implements Collection<E> {
         return true;
     }
 
-    @Override
     public boolean contains(final Object o) {
         return valueMap.containsKey(o);
     }
 
-    @Override
     public boolean containsAll(final Collection<?> c) {
         return valueMap.keySet().containsAll(c);
     }
@@ -598,7 +595,6 @@ public final class Multiset<E> implements Collection<E> {
      * @param occurrences
      * @return
      */
-    @Override
     public boolean remove(final Object e) throws IllegalArgumentException {
         return remove(e, 1);
     }
@@ -694,7 +690,6 @@ public final class Multiset<E> implements Collection<E> {
      * @return <tt>true</tt> if this set changed as a result of the call
      * @see Collection#removeAll(Collection)
      */
-    @Override
     public boolean removeAll(final Collection<?> c) {
         return removeAll(c, Integer.MAX_VALUE);
     }
@@ -782,7 +777,6 @@ public final class Multiset<E> implements Collection<E> {
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
      */
-    @Override
     public boolean retainAll(final Collection<?> c) {
         Set<E> others = null;
 
@@ -799,17 +793,14 @@ public final class Multiset<E> implements Collection<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Integer.MAX_VALUE);
     }
 
-    @Override
     public int size() {
         return valueMap.size();
     }
 
-    @Override
     public boolean isEmpty() {
         return valueMap.isEmpty();
     }
 
-    @Override
     public void clear() {
         valueMap.clear();
     }
@@ -823,12 +814,10 @@ public final class Multiset<E> implements Collection<E> {
         return valueMap.entrySet();
     }
 
-    @Override
     public Object[] toArray() {
         return valueMap.keySet().toArray();
     }
 
-    @Override
     public <T> T[] toArray(final T[] a) {
         return valueMap.keySet().toArray(a);
     }
@@ -858,7 +847,25 @@ public final class Multiset<E> implements Collection<E> {
         return toMapSortedBy((Comparator) cmpByCount);
     }
 
-    public Map<E, Integer> toMapSortedBy(final Comparator<Map.Entry<E, MutableInt>> cmp) {
+    public Map<E, Integer> toMapSortedByOccurrences(final Comparator<? super Integer> cmp) {
+        return toMapSortedBy(new Comparator<Map.Entry<E, MutableInt>>() {
+            @Override
+            public int compare(Entry<E, MutableInt> o1, Entry<E, MutableInt> o2) {
+                return cmp.compare(o1.getValue().intValue(), o2.getValue().intValue());
+            }
+        });
+    }
+
+    public Map<E, Integer> toMapSortedByKey(final Comparator<? super E> cmp) {
+        return toMapSortedBy(new Comparator<Map.Entry<E, MutableInt>>() {
+            @Override
+            public int compare(Entry<E, MutableInt> o1, Entry<E, MutableInt> o2) {
+                return cmp.compare(o1.getKey(), o2.getKey());
+            }
+        });
+    }
+
+    Map<E, Integer> toMapSortedBy(final Comparator<Map.Entry<E, MutableInt>> cmp) {
         if (N.isNullOrEmpty(valueMap)) {
             return new LinkedHashMap<>();
         }
@@ -1093,6 +1100,19 @@ public final class Multiset<E> implements Collection<E> {
         }
 
         return newValue;
+    }
+
+    public Stream<E> stream() {
+        return Stream.of(valueMap.keySet());
+    }
+
+    public Stream<Entry<E, Integer>> stream2() {
+        return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<E, MutableInt>, Map.Entry<E, Integer>>() {
+            @Override
+            public Entry<E, Integer> apply(Entry<E, MutableInt> t) {
+                return MapEntry.of(t.getKey(), t.getValue().intValue());
+            }
+        });
     }
 
     @Override

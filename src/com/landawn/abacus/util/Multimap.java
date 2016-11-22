@@ -122,6 +122,30 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return N.asListMultimap(k1, v1, k2, v2, k3, v3);
     }
 
+    public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3,
+            final k k4, final v v4) {
+        return N.asListMultimap(k1, v1, k2, v2, k3, v3, k4, v4);
+    }
+
+    public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3,
+            final k k4, final v v4, final k k5, final v v5) {
+        return N.asListMultimap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5);
+    }
+
+    public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3,
+            final k k4, final v v4, final k k5, final v v5, final k k6, final v v6) {
+        return N.asListMultimap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6);
+    }
+
+    public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3,
+            final k k4, final v v4, final k k5, final v v5, final k k6, final v v6, final k k7, final v v7) {
+        return N.asListMultimap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7);
+    }
+
+    public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> of(final Object... a) {
+        return N.asListMultimap(a);
+    }
+
     //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<V> collectionType, final Object... a) {
     //        final Multimap<K, E, V> multimap = new Multimap<>(collectionType);
     //

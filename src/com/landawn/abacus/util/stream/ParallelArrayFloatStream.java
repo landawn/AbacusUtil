@@ -1288,6 +1288,16 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
                 return elements[--cursor];
             }
+
+            @Override
+            public long count() {
+                return cursor - fromIndex;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
+            }
         }, closeHandlers, false, maxThreadNum, splitter);
     }
 

@@ -1561,6 +1561,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract OptionalNullable<T> findAny(Predicate<? super T> predicate);
 
+    public abstract Stream<T> skipNull();
+
     /**
      * @param c
      * @return
