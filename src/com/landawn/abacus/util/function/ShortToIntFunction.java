@@ -1,9 +1,13 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface ShortToIntFunction {
+
+    public static final ShortToIntFunction DEFAULT = new ShortToIntFunction() {
+        @Override
+        public int applyAsInt(short value) {
+            return value;
+        }
+    };
 
     int applyAsInt(short value);
 }

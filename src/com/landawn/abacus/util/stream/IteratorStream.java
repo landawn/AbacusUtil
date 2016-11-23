@@ -1050,7 +1050,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
         //                    getResult();
         //                }
         //
-        //                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+        //                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
         //            }
         //
         //            @Override
@@ -1143,7 +1143,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
         //                    getResult();
         //                }
         //
-        //                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+        //                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
         //            }
         //
         //            @Override
@@ -1231,7 +1231,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     getResult();
                 }
 
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override

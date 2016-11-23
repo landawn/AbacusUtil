@@ -141,6 +141,7 @@ import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.CharPredicate;
@@ -155,6 +156,7 @@ import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortPredicate;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
 
@@ -623,12 +625,31 @@ public final class N {
         dataTypeFactory = temp;
     }
 
-    public static final IntFunction<List<Object>> LIST_SUPPLIER = DataSet.LIST_SUPPLIER;
-    public static final IntFunction<LinkedList<Object>> LINKED_LIST_SUPPLIER = DataSet.LINKED_LIST_SUPPLIER;
-    public static final IntFunction<Set<Object>> SET_SUPPLIER = DataSet.SET_SUPPLIER;
-    public static final IntFunction<LinkedHashSet<Object>> LINKED_HASH_SET_SUPPLIER = DataSet.LINKED_HASH_SET_SUPPLIER;
-    public static final IntFunction<Map<String, Object>> MAP_SUPPLIER = DataSet.MAP_SUPPLIER;
-    public static final IntFunction<LinkedHashMap<String, Object>> LINKED_HASH_MAP_SUPPLIER = DataSet.LINKED_HASH_MAP_SUPPLIER;
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<List<Object>> LIST_FACTORY = (IntFunction) IntFunction.LIST_FACTORY;
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<LinkedList<Object>> LINKED_LIST_FACTORY = (IntFunction) IntFunction.LINKED_LIST_FACTORY;
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<Set<Object>> SET_FACTORY = (IntFunction) IntFunction.SET_FACTORY;
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<LinkedHashSet<Object>> LINKED_HASH_SET_FACTORY = (IntFunction) IntFunction.LINKED_HASH_SET_FACTORY;
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<Map<String, Object>> MAP_FACTORY = (IntFunction) IntFunction.MAP_FACTORY;
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<LinkedHashMap<String, Object>> LINKED_HASH_MAP_FACTORY = (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
+
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<List<Object>> LIST_SUPPLIER = (Supplier) Supplier.LIST;
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<LinkedList<Object>> LINKED_LIST_SUPPLIER = (Supplier) Supplier.LINKED_LIST;
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<Set<Object>> SET_SUPPLIER = (Supplier) Supplier.SET;
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<LinkedHashSet<Object>> LINKED_HASH_SET_SUPPLIER = (Supplier) Supplier.LINKED_HASH_SET;
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<Map<String, Object>> MAP_SUPPLIER = (Supplier) Supplier.MAP;
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<LinkedHashMap<String, Object>> LINKED_HASH_MAP_SUPPLIER = (Supplier) Supplier.LINKED_HASH_MAP;
 
     // ...
     public static final Object NULL_MASK = new NullMask();
@@ -20971,7 +20992,7 @@ public final class N {
         return ObjectList.of(a).forEach(identity, accumulator, till);
     }
 
-    public static <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
+    public static <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<? super T, T[], R, R> accumulator, final Predicate<? super R> till) {
         if (N.isNullOrEmpty(a)) {
             return identity;
         }
@@ -20990,7 +21011,7 @@ public final class N {
      * @return
      */
     public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity,
-            final IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
+            final IndexedBiFunction<? super T, T[], R, R> accumulator, final Predicate<? super R> till) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return identity;
         }
@@ -21273,7 +21294,7 @@ public final class N {
         return result;
     }
 
-    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final R identity, final IndexedBiFunction<R, ? super T, A, R> accumulator,
+    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final R identity, final IndexedBiFunction<? super T, A, R, R> accumulator,
             final Predicate<? super R> till) {
         if (N.isNullOrEmpty(c)) {
             return identity;
@@ -21293,7 +21314,7 @@ public final class N {
      * @return
      */
     public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
-            final IndexedBiFunction<R, ? super T, A, R> accumulator, final Predicate<? super R> till) {
+            final IndexedBiFunction<? super T, A, R, R> accumulator, final Predicate<? super R> till) {
         if (fromIndex <= toIndex) {
             N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         } else {
@@ -21311,7 +21332,7 @@ public final class N {
 
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    result = accumulator.apply(result, i, list.get(i), c);
+                    result = accumulator.apply(i, list.get(i), c, result);
 
                     if (till.test(result)) {
                         break;
@@ -21319,7 +21340,7 @@ public final class N {
                 }
             } else {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
-                    result = accumulator.apply(result, i, list.get(i), c);
+                    result = accumulator.apply(i, list.get(i), c, result);
 
                     if (till.test(result)) {
                         break;
@@ -21337,7 +21358,7 @@ public final class N {
                 }
 
                 while (iter.hasNext()) {
-                    result = accumulator.apply(result, idx, iter.next(), c);
+                    result = accumulator.apply(idx, iter.next(), c, result);
 
                     if (till.test(result)) {
                         break;
@@ -21364,7 +21385,7 @@ public final class N {
                 }
 
                 for (int i = a.length - 1; i >= 0; i--) {
-                    result = accumulator.apply(result, i + toIndex, a[i], c);
+                    result = accumulator.apply(i + toIndex, a[i], c, result);
 
                     if (till.test(result)) {
                         break;
@@ -21996,6 +22017,89 @@ public final class N {
         }
 
         return outputResult;
+    }
+
+    public static <T, U> T[] filter(final T[] a, final U check, final BiPredicate<? super T, ? super U> filter) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
+        return filter(a, 0, a.length, check, filter);
+    }
+
+    public static <T, U> T[] filter(final T[] a, final int fromIndex, final int toIndex, final U check, final BiPredicate<? super T, ? super U> filter) {
+        return filter(a, fromIndex, toIndex, new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return filter.test(value, check);
+            }
+        });
+    }
+
+    public static <T, U, R extends Collection<T>> R filter(final T[] a, final U check, final BiPredicate<? super T, ? super U> filter,
+            final IntFunction<R> supplier) {
+        if (N.isNullOrEmpty(a)) {
+            return supplier.apply(0);
+        }
+
+        return filter(a, 0, a.length, check, filter, supplier);
+    }
+
+    public static <T, U, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final U check,
+            final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
+        return filter(a, fromIndex, toIndex, new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return filter.test(value, check);
+            }
+        }, supplier);
+    }
+
+    public static <T, U> List<T> filter(final Collection<T> c, final U check, final BiPredicate<? super T, ? super U> filter) {
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<>();
+        }
+
+        return filter(c, new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return filter.test(value, check);
+            }
+        });
+    }
+
+    public static <T, U> List<T> filter(final Collection<T> c, final int fromIndex, final int toIndex, final U check,
+            final BiPredicate<? super T, ? super U> filter) {
+        return filter(c, fromIndex, toIndex, new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return filter.test(value, check);
+            }
+        });
+    }
+
+    public static <T, U, R extends Collection<T>> R filter(final Collection<T> c, final U check, final BiPredicate<? super T, ? super U> filter,
+            final IntFunction<R> supplier) {
+        if (N.isNullOrEmpty(c)) {
+            return supplier.apply(0);
+        }
+
+        return filter(c, new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return filter.test(value, check);
+            }
+        }, supplier);
+    }
+
+    public static <T, U, R extends Collection<T>> R filter(final Collection<T> c, final int fromIndex, final int toIndex, final U check,
+            final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
+        return filter(c, fromIndex, toIndex, new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return filter.test(value, check);
+            }
+        }, supplier);
     }
 
     /**
@@ -35603,13 +35707,13 @@ public final class N {
     //    }
 
     public static void execute(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
-        AutoRetry.of(runnable, ifRetry, retryTimes, retryInterval).run();
+        Retry.of(runnable, ifRetry, retryTimes, retryInterval).run();
     }
 
     public static <T> T execute(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
             final long retryInterval) {
         try {
-            return AutoRetry.of(callable, ifRetry, retryTimes, retryInterval).call();
+            return Retry.of(callable, ifRetry, retryTimes, retryInterval).call();
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }

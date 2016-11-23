@@ -4,14 +4,11 @@ import java.util.function.Function;
 
 import com.landawn.abacus.util.N;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
-public interface NFunction<R> {
+public interface NFunction<T, R> {
 
-    R apply(Object... args);
+    R apply(T... args);
 
-    default <V> NFunction<V> andThen(Function<? super R, ? extends V> after) {
+    default <V> NFunction<T, V> andThen(Function<? super R, ? extends V> after) {
         N.requireNonNull(after);
 
         return args -> after.apply(apply(args));

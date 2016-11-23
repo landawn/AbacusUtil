@@ -26,7 +26,7 @@ public final class Splitter {
      * 
      * @return
      */
-    public static Splitter __() {
+    public static Splitter defauLt() {
         return with(Joiner.DEFAULT_DELIMITER);
     }
 
@@ -219,59 +219,59 @@ public final class Splitter {
         }
 
         public static List<String> split(CharSequence source) {
-            return Splitter.__().split(source);
+            return Splitter.defauLt().split(source);
         }
 
         public static <T> List<T> split(Class<T> targetType, CharSequence source) {
-            return Splitter.__().split(targetType, source);
+            return Splitter.defauLt().split(targetType, source);
         }
 
         public static <T> List<T> split(Type<T> type, CharSequence source) {
-            return Splitter.__().split(type, source);
+            return Splitter.defauLt().split(type, source);
         }
 
         public static <T> List<T> split(String typeName, CharSequence source) {
-            return Splitter.__().split(typeName, source);
+            return Splitter.defauLt().split(typeName, source);
         }
 
         public static <C extends Collection<String>> C split(final C output, CharSequence source) {
-            return Splitter.__().split(output, source);
+            return Splitter.defauLt().split(output, source);
         }
 
         public static <T, C extends Collection<T>> C split(final C output, Class<T> targetType, CharSequence source) {
-            return Splitter.__().split(output, targetType, source);
+            return Splitter.defauLt().split(output, targetType, source);
         }
 
         public static <T, C extends Collection<T>> C split(final C output, Type<T> type, CharSequence source) {
-            return Splitter.__().split(output, type, source);
+            return Splitter.defauLt().split(output, type, source);
         }
 
         public static <T, C extends Collection<T>> C split(final C output, String typeName, CharSequence source) {
-            return Splitter.__().split(output, typeName, source);
+            return Splitter.defauLt().split(output, typeName, source);
         }
 
         public static <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
-            return Splitter.__().split(supplier, source);
+            return Splitter.defauLt().split(supplier, source);
         }
 
         public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
-            return Splitter.__().split(supplier, targetType, source);
+            return Splitter.defauLt().split(supplier, targetType, source);
         }
 
         public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
-            return Splitter.__().split(supplier, type, source);
+            return Splitter.defauLt().split(supplier, type, source);
         }
 
         public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
-            return Splitter.__().split(supplier, typeName, source);
+            return Splitter.defauLt().split(supplier, typeName, source);
         }
 
         public static String[] splitToArray(CharSequence source) {
-            return Splitter.__().splitToArray(source);
+            return Splitter.defauLt().splitToArray(source);
         }
 
         public static <T> T splitToArray(Class<T> arrayClass, CharSequence source) {
-            return Splitter.__().splitToArray(arrayClass, source);
+            return Splitter.defauLt().splitToArray(arrayClass, source);
         }
     }
 
@@ -295,7 +295,7 @@ public final class Splitter {
          * 
          * @return
          */
-        public static MapSplitter __() {
+        public static MapSplitter defauLt() {
             return with(Joiner.DEFAULT_DELIMITER, Joiner.DEFAULT_KEY_VALUE_DELIMITER);
         }
 
@@ -539,51 +539,51 @@ public final class Splitter {
             }
 
             public static Map<String, String> split(CharSequence source) {
-                return MapSplitter.__().split(source);
+                return MapSplitter.defauLt().split(source);
             }
 
             public static <K, V> Map<K, V> split(Class<K> keyType, Class<V> valueType, CharSequence source) {
-                return MapSplitter.__().split(keyType, valueType, source);
+                return MapSplitter.defauLt().split(keyType, valueType, source);
             }
 
             public static <K, V> Map<K, V> split(Type<K> keyType, Type<V> valueType, CharSequence source) {
-                return MapSplitter.__().split(keyType, valueType, source);
+                return MapSplitter.defauLt().split(keyType, valueType, source);
             }
 
             public static <K, V> Map<K, V> split(String keyTypeName, String valueTypeName, CharSequence source) {
-                return MapSplitter.__().split(keyTypeName, valueTypeName, source);
+                return MapSplitter.defauLt().split(keyTypeName, valueTypeName, source);
             }
 
             public static <M extends Map<String, String>> M split(final M output, CharSequence source) {
-                return MapSplitter.__().split(output, source);
+                return MapSplitter.defauLt().split(output, source);
             }
 
             public static <K, V, M extends Map<K, V>> M split(final M output, Class<K> keyType, Class<V> valueType, CharSequence source) {
-                return MapSplitter.__().split(output, keyType, valueType, source);
+                return MapSplitter.defauLt().split(output, keyType, valueType, source);
             }
 
             public static <K, V, M extends Map<K, V>> M split(final M output, Type<K> keyType, Type<V> valueType, CharSequence source) {
-                return MapSplitter.__().split(output, keyType, valueType, source);
+                return MapSplitter.defauLt().split(output, keyType, valueType, source);
             }
 
             public static <K, V, M extends Map<K, V>> M split(final M output, String keyTypeName, String valueTypeName, CharSequence source) {
-                return MapSplitter.__().split(output, keyTypeName, valueTypeName, source);
+                return MapSplitter.defauLt().split(output, keyTypeName, valueTypeName, source);
             }
 
             public static <M extends Map<String, String>> M split(final Supplier<M> supplier, CharSequence source) {
-                return MapSplitter.__().split(supplier, source);
+                return MapSplitter.defauLt().split(supplier, source);
             }
 
             public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Class<K> keyType, Class<V> valueType, CharSequence source) {
-                return MapSplitter.__().split(supplier, keyType, valueType, source);
+                return MapSplitter.defauLt().split(supplier, keyType, valueType, source);
             }
 
             public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Type<K> keyType, Type<V> valueType, CharSequence source) {
-                return MapSplitter.__().split(supplier, keyType, valueType, source);
+                return MapSplitter.defauLt().split(supplier, keyType, valueType, source);
             }
 
             public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, String keyTypeName, String valueTypeName, CharSequence source) {
-                return MapSplitter.__().split(supplier, keyTypeName, valueTypeName, source);
+                return MapSplitter.defauLt().split(supplier, keyTypeName, valueTypeName, source);
             }
         }
     }

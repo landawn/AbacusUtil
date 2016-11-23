@@ -5,6 +5,20 @@ package com.landawn.abacus.util.function;
  */
 public interface LongSupplier extends java.util.function.LongSupplier {
 
+    public static final LongSupplier ZERO = new LongSupplier() {
+        @Override
+        public long getAsLong() {
+            return 0;
+        }
+    };
+
+    public static final LongSupplier RANDOM = new LongSupplier() {
+        @Override
+        public long getAsLong() {
+            return Util.RAND.nextLong();
+        }
+    };
+
     @Override
     long getAsLong();
 }

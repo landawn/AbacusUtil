@@ -5,6 +5,20 @@ package com.landawn.abacus.util.function;
  */
 public interface IntSupplier extends java.util.function.IntSupplier {
 
+    public static final IntSupplier ZERO = new IntSupplier() {
+        @Override
+        public int getAsInt() {
+            return 0;
+        }
+    };
+
+    public static final IntSupplier RANDOM = new IntSupplier() {
+        @Override
+        public int getAsInt() {
+            return Util.RAND.nextInt();
+        }
+    };
+
     @Override
     int getAsInt();
 }

@@ -53,6 +53,7 @@ import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -83,13 +84,43 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <U> Stream<T> filter(final U check, final BiPredicate<? super T, ? super U> predicate) {
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, check);
+            }
+        });
+    }
+
+    @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
         return takeWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
+    public <U> Stream<T> takeWhile(final U check, final BiPredicate<? super T, ? super U> predicate) {
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, check);
+            }
+        });
+    }
+
+    @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
         return dropWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate) {
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, check);
+            }
+        });
     }
 
     @Override
@@ -622,12 +653,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> skipNull() {
-        return filter(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return value != null;
-            }
-        });
+        return filter(Predicate.NOT_NULL);
     }
 
     @Override

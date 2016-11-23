@@ -1,9 +1,20 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface ByteSupplier {
+
+    public static final ByteSupplier ZERO = new ByteSupplier() {
+        @Override
+        public byte getAsByte() {
+            return 0;
+        }
+    };
+
+    public static final ByteSupplier RANDOM = new ByteSupplier() {
+        @Override
+        public byte getAsByte() {
+            return (byte) Util.RAND.nextInt();
+        }
+    };
 
     byte getAsByte();
 }

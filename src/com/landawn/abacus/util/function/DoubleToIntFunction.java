@@ -5,6 +5,13 @@ package com.landawn.abacus.util.function;
  */
 public interface DoubleToIntFunction extends java.util.function.DoubleToIntFunction {
 
+    public static final DoubleToIntFunction DEFAULT = new DoubleToIntFunction() {
+        @Override
+        public int applyAsInt(double value) {
+            return (int) value;
+        }
+    };
+
     @Override
     int applyAsInt(double value);
 }

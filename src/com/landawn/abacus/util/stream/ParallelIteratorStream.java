@@ -1348,7 +1348,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         //                    getResult();
         //                }
         //
-        //                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+        //                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
         //            }
         //
         //            @Override
@@ -1442,7 +1442,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         //                    getResult();
         //                }
         //
-        //                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+        //                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
         //            }
         //
         //            @Override
@@ -1530,7 +1530,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
                     getResult();
                 }
 
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override

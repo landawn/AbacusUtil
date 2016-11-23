@@ -2,9 +2,6 @@ package com.landawn.abacus.util.function;
 
 import com.landawn.abacus.util.N;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface ShortPredicate {
 
     public static final ShortPredicate ALWAYS_TRUE = new ShortPredicate() {
@@ -21,19 +18,87 @@ public interface ShortPredicate {
         }
     };
 
-    boolean test(short value);
+    public static final ShortPredicate IS_ZERO = new ShortPredicate() {
+        @Override
+        public boolean test(short value) {
+            return value == 0;
+        }
+    };
 
-    default ShortPredicate and(ShortPredicate other) {
-        N.requireNonNull(other);
-        return (t) -> test(t) && other.test(t);
-    }
+    public static final ShortPredicate NOT_ZERO = new ShortPredicate() {
+        @Override
+        public boolean test(short value) {
+            return value != 0;
+        }
+    };
+
+    public static final ShortPredicate IS_POSITIVE = new ShortPredicate() {
+        @Override
+        public boolean test(short value) {
+            return value > 0;
+        }
+    };
+
+    public static final ShortPredicate NOT_POSITIVE = new ShortPredicate() {
+        @Override
+        public boolean test(short value) {
+            return value <= 0;
+        }
+    };
+
+    public static final ShortPredicate IS_NEGATIVE = new ShortPredicate() {
+        @Override
+        public boolean test(short value) {
+            return value < 0;
+        }
+    };
+
+    public static final ShortPredicate NOT_NEGATIVE = new ShortPredicate() {
+        @Override
+        public boolean test(short value) {
+            return value >= 0;
+        }
+    };
+
+    boolean test(short value);
 
     default ShortPredicate negate() {
         return (t) -> !test(t);
     }
 
+    default ShortPredicate and(ShortPredicate other) {
+        N.requireNonNull(other);
+
+        return (t) -> test(t) && other.test(t);
+    }
+
     default ShortPredicate or(ShortPredicate other) {
         N.requireNonNull(other);
+
         return (t) -> test(t) || other.test(t);
+    }
+
+    static ShortPredicate isEqual(short targetShort) {
+        return value -> value == targetShort;
+    }
+
+    static ShortPredicate notEqual(short targetShort) {
+        return value -> value != targetShort;
+    }
+
+    static ShortPredicate greaterThan(short targetShort) {
+        return value -> N.compare(value, targetShort) > 0;
+    }
+
+    static ShortPredicate greaterEqual(short targetShort) {
+        return value -> N.compare(value, targetShort) >= 0;
+    }
+
+    static ShortPredicate lessThan(short targetShort) {
+        return value -> N.compare(value, targetShort) < 0;
+    }
+
+    static ShortPredicate lessEqual(short targetShort) {
+        return value -> N.compare(value, targetShort) <= 0;
     }
 }

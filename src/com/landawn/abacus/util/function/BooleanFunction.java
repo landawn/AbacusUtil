@@ -1,9 +1,20 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
+import java.util.function.Function;
+
+import com.landawn.abacus.util.N;
+
 public interface BooleanFunction<R> {
 
     R apply(boolean value);
+
+    default <V> BooleanFunction<V> andThen(Function<? super R, ? extends V> after) {
+        N.requireNonNull(after);
+
+        return t -> after.apply(apply(t));
+    }
+
+    static BooleanFunction<Boolean> identity() {
+        return t -> t;
+    }
 }

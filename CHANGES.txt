@@ -5,7 +5,7 @@
 
 2, Add Splitter and remove string2List/string2Array/... from N
 
-3, Refactoring join(final Map<?, ?> m ... final String entryDelimiter, final String keyValueDelimiter) in N. Switch the order of parameters: entryDelimiter and keyValueDelimiter.  
+3, Refactoring join(final Map<?, ?> m ... final String keyValueDelimiter, final String entryDelimiter) in N. Switch the order of parameters: entryDelimiter and keyValueDelimiter.  
 
 4, Rename StringEscapeUtil to EscapeUtil.
 
@@ -21,7 +21,19 @@
 
 10, Rename Range.of(T t) to Range.just(T t), Range.of(T min, T max) to Range.between(T min, T max). 
 
-11, Improvements and bug fix.
+11, Rename AutoRetry to Retry.
+
+12, Add Try/Synchronized.
+
+13, Add filter filter(final U check, final BiPredicate<? super T, ? super U> predicate) to Stream/ObjectList/N
+
+14, Add filter takeWhile/dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate) to Stream
+
+15, Change the order of type parameters of IndexedBiFunction and IndexedBiConsumer.
+
+16, Big improvements for functional interfaces.
+
+17, Improvements and bug fix.
 
 
 ========Changes in 0.9.32=========================================================================

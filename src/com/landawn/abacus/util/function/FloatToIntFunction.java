@@ -1,9 +1,13 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface FloatToIntFunction {
+
+    public static final FloatToIntFunction DEFAULT = new FloatToIntFunction() {
+        @Override
+        public int applyAsInt(float value) {
+            return (int) value;
+        }
+    };
 
     int applyAsInt(float value);
 }

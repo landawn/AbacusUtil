@@ -5,6 +5,13 @@ package com.landawn.abacus.util.function;
  */
 public interface LongToIntFunction extends java.util.function.LongToIntFunction {
 
+    public static final LongToIntFunction DEFAULT = new LongToIntFunction() {
+        @Override
+        public int applyAsInt(long value) {
+            return (int) value;
+        }
+    };
+
     @Override
     int applyAsInt(long value);
 }

@@ -1,9 +1,20 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface FloatSupplier {
+
+    public static final FloatSupplier ZERO = new FloatSupplier() {
+        @Override
+        public float getAsFloat() {
+            return 0;
+        }
+    };
+
+    public static final FloatSupplier RANDOM = new FloatSupplier() {
+        @Override
+        public float getAsFloat() {
+            return Util.RAND.nextFloat();
+        }
+    };
 
     float getAsFloat();
 }

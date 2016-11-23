@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedBiFunction;
@@ -1088,7 +1089,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return result;
     }
 
-    public <R> R forEach(final R identity, IndexedBiFunction<R, ? super T, T[], R> accumulator, final Predicate<? super R> till) {
+    public <R> R forEach(final R identity, IndexedBiFunction<? super T, T[], R, R> accumulator, final Predicate<? super R> till) {
         return forEach(0, size(), identity, accumulator, till);
     }
 
@@ -1102,7 +1103,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @param till break if the <code>till</code> returns true.
      * @return
      */
-    public <R> R forEach(final int fromIndex, final int toIndex, final R identity, IndexedBiFunction<R, ? super T, T[], R> accumulator,
+    public <R> R forEach(final int fromIndex, final int toIndex, final R identity, IndexedBiFunction<? super T, T[], R, R> accumulator,
             final Predicate<? super R> till) {
         if (fromIndex <= toIndex) {
             checkIndex(fromIndex, toIndex);
@@ -1115,7 +1116,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         if (size > 0) {
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    result = accumulator.apply(result, i, elementData[i], elementData);
+                    result = accumulator.apply(i, elementData[i], elementData, result);
 
                     if (till.test(result)) {
                         break;
@@ -1123,7 +1124,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
                 }
             } else {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
-                    result = accumulator.apply(result, i, elementData[i], elementData);
+                    result = accumulator.apply(i, elementData[i], elementData, result);
 
                     if (till.test(result)) {
                         break;
@@ -1243,6 +1244,16 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         checkIndex(fromIndex, toIndex);
 
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+    }
+
+    public <U> ObjectList<T> filter(final U check, final BiPredicate<? super T, ? super U> predicate) {
+        return filter(0, size, check, predicate);
+    }
+
+    public <U> ObjectList<T> filter(final int fromIndex, final int toIndex, final U check, final BiPredicate<? super T, ? super U> predicate) {
+        checkIndex(fromIndex, toIndex);
+
+        return of(N.filter(elementData, fromIndex, toIndex, check, predicate));
     }
 
     // TODO 1, replace with Stream mapToXXX(...) APIs.

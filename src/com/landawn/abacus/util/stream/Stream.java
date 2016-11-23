@@ -93,6 +93,7 @@ import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteNFunction;
@@ -270,6 +271,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract Stream<T> filter(final Predicate<? super T> predicate, final long max);
 
     /**
+     * 
+     * @param check initial value to check if the value match the condition.
+     * @param predicate
+     * @return
+     */
+    public abstract <U> Stream<T> filter(final U check, final BiPredicate<? super T, ? super U> predicate);
+
+    /**
      * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
      * 
      * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
@@ -291,6 +300,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract Stream<T> takeWhile(final Predicate<? super T> predicate, final long max);
 
     /**
+     * 
+     * @param check initial value to check if the value match the condition.
+     * @param predicate
+     * @return
+     */
+    public abstract <U> Stream<T> takeWhile(final U check, final BiPredicate<? super T, ? super U> predicate);
+
+    /**
      * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
      * 
      * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
@@ -310,6 +327,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @return
      */
     public abstract Stream<T> dropWhile(final Predicate<? super T> predicate, final long max);
+
+    /**
+     * 
+     * @param check initial value to check if the value match the condition.
+     * @param predicate
+     * @return
+     */
+    public abstract <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -5578,7 +5603,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends Iterator<?>> c, final NFunction<R> zipFunction) {
+    public static <T, R> Stream<R> zip(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5607,7 +5632,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                     args[idx++] = e.next();
                 }
 
-                return zipFunction.apply(args);
+                return zipFunction.apply((T[]) args);
             }
         });
     }
@@ -5778,7 +5803,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends Iterator<?>> c, final Object[] valuesForNone, final NFunction<R> zipFunction) {
+    public static <T, R> Stream<R> zip(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+            final NFunction<? super T, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5821,7 +5847,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                     throw new NoSuchElementException();
                 }
 
-                return zipFunction.apply(args);
+                return zipFunction.apply((T[]) args);
             }
         });
     }
@@ -6188,7 +6214,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> zipFunction) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
         return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE);
     }
 
@@ -6208,7 +6234,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final NFunction<R> zipFunction, final int queueSize) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction,
+            final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6281,7 +6308,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 boolean isOK = false;
 
                 try {
-                    R result = zipFunction.apply(next);
+                    R result = zipFunction.apply((T[]) next);
                     next = null;
                     isOK = true;
                     return result;
@@ -6701,7 +6728,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final Object[] valuesForNone, final NFunction<R> zipFunction) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+            final NFunction<? super T, R> zipFunction) {
         return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE);
     }
 
@@ -6720,8 +6748,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <R> Stream<R> parallelZip(final Collection<? extends Iterator<?>> c, final Object[] valuesForNone, final NFunction<R> zipFunction,
-            final int queueSize) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+            final NFunction<? super T, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6796,7 +6824,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
                 boolean isOK = false;
                 try {
-                    R result = zipFunction.apply(next);
+                    R result = zipFunction.apply((T[]) next);
                     next = null;
                     isOK = true;
                     return result;

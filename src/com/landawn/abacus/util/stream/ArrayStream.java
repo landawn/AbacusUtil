@@ -277,7 +277,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -327,7 +327,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -377,7 +377,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -427,7 +427,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -477,7 +477,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -527,7 +527,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -577,7 +577,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -627,7 +627,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override

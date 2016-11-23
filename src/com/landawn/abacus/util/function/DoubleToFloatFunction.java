@@ -1,9 +1,13 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface DoubleToFloatFunction {
+
+    public static final DoubleToFloatFunction DEFAULT = new DoubleToFloatFunction() {
+        @Override
+        public float applyAsFloat(double value) {
+            return (float) value;
+        }
+    };
 
     float applyAsFloat(double value);
 }

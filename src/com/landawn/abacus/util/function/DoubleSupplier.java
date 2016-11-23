@@ -5,6 +5,20 @@ package com.landawn.abacus.util.function;
  */
 public interface DoubleSupplier extends java.util.function.DoubleSupplier {
 
+    public static final DoubleSupplier ZERO = new DoubleSupplier() {
+        @Override
+        public double getAsDouble() {
+            return 0;
+        }
+    };
+
+    public static final DoubleSupplier RANDOM = new DoubleSupplier() {
+        @Override
+        public double getAsDouble() {
+            return Util.RAND.nextDouble();
+        }
+    };
+
     @Override
     double getAsDouble();
 }

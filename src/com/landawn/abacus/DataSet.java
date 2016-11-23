@@ -19,11 +19,8 @@ package com.landawn.abacus;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -34,7 +31,6 @@ import java.util.Set;
 import com.landawn.abacus.util.Builder;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -58,47 +54,23 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public interface DataSet extends Iterable<Object[]> {
-    public static final IntFunction<List<Object>> LIST_SUPPLIER = new IntFunction<List<Object>>() {
-        @Override
-        public List<Object> apply(int len) {
-            return new ArrayList<>(len);
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<List<Object>> LIST_FACTORY = (IntFunction) IntFunction.LIST_FACTORY;
 
-    public static final IntFunction<LinkedList<Object>> LINKED_LIST_SUPPLIER = new IntFunction<LinkedList<Object>>() {
-        @Override
-        public LinkedList<Object> apply(int len) {
-            return new LinkedList<>();
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<LinkedList<Object>> LINKED_LIST_FACTORY = (IntFunction) IntFunction.LINKED_LIST_FACTORY;
 
-    public static final IntFunction<Set<Object>> SET_SUPPLIER = new IntFunction<Set<Object>>() {
-        @Override
-        public Set<Object> apply(int len) {
-            return new HashSet<>(N.initHashCapacity(len));
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<Set<Object>> SET_FACTORY = (IntFunction) IntFunction.SET_FACTORY;
 
-    public static final IntFunction<LinkedHashSet<Object>> LINKED_HASH_SET_SUPPLIER = new IntFunction<LinkedHashSet<Object>>() {
-        @Override
-        public LinkedHashSet<Object> apply(int len) {
-            return new LinkedHashSet<>(N.initHashCapacity(len));
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<LinkedHashSet<Object>> LINKED_HASH_SET_FACTORY = (IntFunction) IntFunction.LINKED_HASH_SET_FACTORY;
 
-    public static final IntFunction<Map<String, Object>> MAP_SUPPLIER = new IntFunction<Map<String, Object>>() {
-        @Override
-        public Map<String, Object> apply(int len) {
-            return new HashMap<>(N.initHashCapacity(len));
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<Map<String, Object>> MAP_FACTORY = (IntFunction) IntFunction.MAP_FACTORY;
 
-    public static final IntFunction<LinkedHashMap<String, Object>> LINKED_HASH_MAP_SUPPLIER = new IntFunction<LinkedHashMap<String, Object>>() {
-        @Override
-        public LinkedHashMap<String, Object> apply(int len) {
-            return new LinkedHashMap<>(N.initHashCapacity(len));
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<LinkedHashMap<String, Object>> LINKED_HASH_MAP_FACTORY = (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
 
     //    /**
     //     * Returns the entity name associated with the query.

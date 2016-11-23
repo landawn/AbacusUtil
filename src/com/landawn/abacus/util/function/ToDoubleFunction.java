@@ -5,6 +5,13 @@ package com.landawn.abacus.util.function;
  */
 public interface ToDoubleFunction<T> extends java.util.function.ToDoubleFunction<T> {
 
+    public static final ToDoubleFunction<Double> UNBOX = new ToDoubleFunction<Double>() {
+        @Override
+        public double applyAsDouble(Double value) {
+            return value == null ? 0 : value.doubleValue();
+        }
+    };
+
     @Override
     double applyAsDouble(T value);
 }

@@ -1,9 +1,20 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface CharSupplier {
+
+    public static final CharSupplier ZERO = new CharSupplier() {
+        @Override
+        public char getAsChar() {
+            return 0;
+        }
+    };
+
+    public static final CharSupplier RANDOM = new CharSupplier() {
+        @Override
+        public char getAsChar() {
+            return (char) Math.abs(Util.RAND.nextInt() % Util.CHAR_MOD);
+        }
+    };
 
     char getAsChar();
 }

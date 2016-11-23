@@ -8,10 +8,10 @@ import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 
-public abstract class AutoRetry {
-    private static final Logger logger = LoggerFactory.getLogger(AutoRetry.class);
+public abstract class Retry {
+    private static final Logger logger = LoggerFactory.getLogger(Retry.class);
 
-    private AutoRetry() {
+    private Retry() {
         // singleton.
     }
 

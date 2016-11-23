@@ -1,16 +1,16 @@
 package com.landawn.abacus.util.function;
 
+import java.util.function.Function;
+
 import com.landawn.abacus.util.N;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
-public interface IndexedBiFunction<U, T, A, R> {
+public interface IndexedBiFunction<T, A, U, R> {
 
-    R apply(U u, int index, T t, A a);
+    R apply(int idx, T e, A a, U u);
 
-    default <V> IndexedBiFunction<U, T, A, V> andThen(Function<? super R, ? extends V> after) {
+    default <V> IndexedBiFunction<T, A, U, V> andThen(Function<? super R, ? extends V> after) {
         N.requireNonNull(after);
-        return (U u, int index, T t, A a) -> after.apply(apply(u, index, t, a));
+
+        return (idx, e, a, u) -> after.apply(apply(idx, e, a, u));
     }
 }

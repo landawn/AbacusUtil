@@ -1,9 +1,20 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface ShortSupplier {
+
+    public static final ShortSupplier ZERO = new ShortSupplier() {
+        @Override
+        public short getAsShort() {
+            return 0;
+        }
+    };
+
+    public static final ShortSupplier RANDOM = new ShortSupplier() {
+        @Override
+        public short getAsShort() {
+            return (short) Util.RAND.nextInt();
+        }
+    };
 
     short getAsShort();
 }

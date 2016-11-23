@@ -1,9 +1,13 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface IntToCharFunction {
+
+    public static final IntToCharFunction DEFAULT = new IntToCharFunction() {
+        @Override
+        public char applyAsChar(int value) {
+            return (char) value;
+        }
+    };
 
     char applyAsChar(int value);
 }

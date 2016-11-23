@@ -1,9 +1,16 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
+import java.util.function.Function;
+
+import com.landawn.abacus.util.N;
+
 public interface IntNFunction<R> {
 
     R apply(int... args);
+
+    default <V> IntNFunction<V> andThen(Function<? super R, ? extends V> after) {
+        N.requireNonNull(after);
+
+        return args -> after.apply(apply(args));
+    }
 }

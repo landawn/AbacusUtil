@@ -1,9 +1,13 @@
 package com.landawn.abacus.util.function;
 
-/**
- * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
- */
 public interface ByteToIntFunction {
+
+    public static final ByteToIntFunction DEFAULT = new ByteToIntFunction() {
+        @Override
+        public int applyAsInt(byte value) {
+            return value;
+        }
+    };
 
     int applyAsInt(byte value);
 }

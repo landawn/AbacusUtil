@@ -153,7 +153,7 @@ public class Joiner {
      * 
      * @return
      */
-    public static Joiner __() {
+    public static Joiner defauLt() {
         return with(DEFAULT_DELIMITER, DEFAULT_KEY_VALUE_DELIMITER);
     }
 

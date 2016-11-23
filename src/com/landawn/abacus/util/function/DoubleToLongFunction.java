@@ -5,6 +5,13 @@ package com.landawn.abacus.util.function;
  */
 public interface DoubleToLongFunction extends java.util.function.DoubleToLongFunction {
 
+    public static final DoubleToLongFunction DEFAULT = new DoubleToLongFunction() {
+        @Override
+        public long applyAsLong(double value) {
+            return (long) value;
+        }
+    };
+
     @Override
     long applyAsLong(double value);
 }

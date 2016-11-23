@@ -1983,7 +1983,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
             @Override
             public void skip(long n) {
-                cursor = n >= toIndex - cursor ? toIndex : cursor + (int) n;
+                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
             }
 
             @Override
