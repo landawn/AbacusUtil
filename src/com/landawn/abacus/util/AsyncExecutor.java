@@ -124,8 +124,8 @@ public class AsyncExecutor {
         return results;
     }
 
-    public CompletableFuture<Void> execute(final Runnable action, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
-        return execute(Retry.of(action, ifRetry, retryTimes, retryInterval));
+    public CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> ifRetry) {
+        return execute(Retry.of(action, retryTimes, retryInterval, ifRetry));
     }
 
     public <T> CompletableFuture<T> execute(final Callable<T> command) {
@@ -182,9 +182,9 @@ public class AsyncExecutor {
     //        return future;
     //    }
 
-    public <T> CompletableFuture<T> execute(final Callable<T> action, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
-            final long retryInterval) {
-        return execute(Retry.of(action, ifRetry, retryTimes, retryInterval));
+    public <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
+            final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
+        return execute(Retry.of(action, retryTimes, retryInterval, ifRetry));
     }
 
     ExecutorService getExecutorService() {

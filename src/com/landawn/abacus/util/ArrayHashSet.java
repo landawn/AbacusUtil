@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Haiyang Li
  */
 public class ArrayHashSet<E> implements Set<E> {
-    private final Set<ArrayWrapper<E>> set;
+    private final Set<Wrapper<E>> set;
 
     public ArrayHashSet() {
         this.set = new HashSet<>();
@@ -57,13 +57,13 @@ public class ArrayHashSet<E> implements Set<E> {
         addAll(coll);
     }
 
-    ArrayHashSet(Set<ArrayWrapper<E>> set) {
+    ArrayHashSet(Set<Wrapper<E>> set) {
         this.set = set;
     }
 
     @Override
     public boolean add(E e) {
-        return set.add(ArrayWrapper.of(e));
+        return set.add(Wrapper.of(e));
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ArrayHashSet<E> implements Set<E> {
 
     @Override
     public boolean remove(Object o) {
-        return set.remove(ArrayWrapper.of(o));
+        return set.remove(Wrapper.of(o));
     }
 
     @Override
@@ -113,10 +113,10 @@ public class ArrayHashSet<E> implements Set<E> {
             }
         }
 
-        List<ArrayWrapper<?>> list = new ArrayList<>(c.size());
+        List<Wrapper<?>> list = new ArrayList<>(c.size());
 
         for (Object e : c) {
-            list.add(ArrayWrapper.of(e));
+            list.add(Wrapper.of(e));
         }
 
         return set.retainAll(list);
@@ -124,7 +124,7 @@ public class ArrayHashSet<E> implements Set<E> {
 
     @Override
     public boolean contains(Object o) {
-        return set.contains(ArrayWrapper.of(o));
+        return set.contains(Wrapper.of(o));
     }
 
     @Override
@@ -158,8 +158,8 @@ public class ArrayHashSet<E> implements Set<E> {
         final Object[] result = new Object[size];
         int i = 0;
 
-        for (ArrayWrapper<E> e : set) {
-            result[i++] = e.getValue();
+        for (Wrapper<E> e : set) {
+            result[i++] = e.value();
         }
 
         return result;
@@ -176,8 +176,8 @@ public class ArrayHashSet<E> implements Set<E> {
         final Object[] result = a;
         int i = 0;
 
-        for (ArrayWrapper<E> e : set) {
-            result[i++] = e.getValue();
+        for (Wrapper<E> e : set) {
+            result[i++] = e.value();
         }
 
         return a;
@@ -214,9 +214,9 @@ public class ArrayHashSet<E> implements Set<E> {
     }
 
     static class Itr<T> implements Iterator<T> {
-        private final Iterator<ArrayWrapper<T>> it;
+        private final Iterator<Wrapper<T>> it;
 
-        Itr(Iterator<ArrayWrapper<T>> it) {
+        Itr(Iterator<Wrapper<T>> it) {
             this.it = it;
         }
 
@@ -227,7 +227,7 @@ public class ArrayHashSet<E> implements Set<E> {
 
         @Override
         public T next() {
-            return it.next().getValue();
+            return it.next().value();
         }
 
         @Override

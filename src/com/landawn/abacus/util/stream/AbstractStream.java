@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,6 +50,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.PermutationIterator;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -807,6 +809,36 @@ abstract class AbstractStream<T> extends Stream<T> {
                 : Optional.of(N.distribution(a));
 
         return Pair.of(summaryStatistics, distribution);
+    }
+
+    @Override
+    public Stream<List<T>> permutation() {
+        return newStream(PermutationIterator.of(toList()), false, null);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Stream<List<T>> orderedPermutation() {
+        final Iterator<List<T>> iter = PermutationIterator.ordered((List) toList());
+        return newStream(iter, false, null);
+    }
+
+    @Override
+    public Stream<List<T>> orderedPermutation(Comparator<? super T> comparator) {
+        final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
+        return newStream(iter, false, null);
+    }
+
+    @Override
+    public Stream<Set<T>> powerSet() {
+        final Set<T> set = toSet(new Supplier<Set<T>>() {
+            @Override
+            public Set<T> get() {
+                return new LinkedHashSet<>();
+            }
+        });
+
+        return newStream(N.powerSet(set).iterator(), false, null);
     }
 
     @Override

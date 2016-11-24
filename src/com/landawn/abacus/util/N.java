@@ -60,6 +60,7 @@ import java.text.DateFormat;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.AbstractSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +83,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
@@ -140,6 +142,8 @@ import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
+import com.landawn.abacus.util.Pair.Pair0;
+import com.landawn.abacus.util.Triple.Triple0;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BooleanPredicate;
@@ -159,6 +163,8 @@ import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
+import com.landawn.abacus.util.stream.ImmutableIterator;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * <p>
@@ -962,7 +968,9 @@ public final class N {
         BUILT_IN_TYPE.put(Range.class.getCanonicalName(), Range.class);
         BUILT_IN_TYPE.put(Duration.class.getCanonicalName(), Duration.class);
         BUILT_IN_TYPE.put(Pair.class.getCanonicalName(), Pair.class);
+        BUILT_IN_TYPE.put(Pair0.class.getCanonicalName(), Pair0.class);
         BUILT_IN_TYPE.put(Triple.class.getCanonicalName(), Triple.class);
+        BUILT_IN_TYPE.put(Triple0.class.getCanonicalName(), Triple0.class);
 
         BUILT_IN_TYPE.put(ArrayHashMap.class.getCanonicalName(), ArrayHashMap.class);
         BUILT_IN_TYPE.put(ArrayHashSet.class.getCanonicalName(), ArrayHashSet.class);
@@ -4203,7 +4211,7 @@ public final class N {
      * @see java.util.Collections#unmodifiableSet(Set)
      */
     public static <T> Set<T> asImmutableSet(final T... a) {
-        return Collections.unmodifiableSet(asSet(a));
+        return Collections.unmodifiableSet(asLinkedHashSet(a));
     }
 
     /**
@@ -4240,22 +4248,22 @@ public final class N {
     }
 
     public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1) {
-        return Collections.unmodifiableMap((Map<K, V>) asMap(k1, v1));
+        return Collections.unmodifiableMap((Map<K, V>) asLinkedHashMap(k1, v1));
     }
 
     public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1, final k k2, final v v2) {
-        return Collections.unmodifiableMap((Map<K, V>) asMap(k1, v1, k2, v2));
+        return Collections.unmodifiableMap((Map<K, V>) asLinkedHashMap(k1, v1, k2, v2));
     }
 
     public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
-        return Collections.unmodifiableMap((Map<K, V>) asMap(k1, v1, k2, v2, k3, v3));
+        return Collections.unmodifiableMap((Map<K, V>) asLinkedHashMap(k1, v1, k2, v2, k3, v3));
     }
 
     public static <K, V> Map<K, V> asImmutableMap(final Object... a) {
         if (a.length == 1 && a[0] instanceof Map) {
             return asImmutableMap((Map<K, V>) a[0]);
         } else {
-            return Collections.unmodifiableMap((Map<K, V>) N.asMap(a));
+            return Collections.unmodifiableMap((Map<K, V>) N.asLinkedHashMap(a));
         }
     }
 
@@ -7238,7 +7246,7 @@ public final class N {
             return str;
         }
 
-        return str.length() <= maxWidth ? str : str.substring(0, maxWidth - 3);
+        return str.length() <= maxWidth ? str : str.substring(0, maxWidth - 3) + "...";
     }
 
     public static String reverse(final String str) {
@@ -20229,7 +20237,7 @@ public final class N {
             p++;
         }
 
-        if (validSurrogatePairAt(a, p - 1) || validSurrogatePairAt(b, p - 1)) {
+        if (validSurrogatePair0At(a, p - 1) || validSurrogatePair0At(b, p - 1)) {
             p--;
         }
 
@@ -20291,7 +20299,7 @@ public final class N {
             s++;
         }
 
-        if (validSurrogatePairAt(a, aLength - s - 1) || validSurrogatePairAt(b, bLength - s - 1)) {
+        if (validSurrogatePair0At(a, aLength - s - 1) || validSurrogatePair0At(b, bLength - s - 1)) {
             s--;
         }
 
@@ -20338,7 +20346,7 @@ public final class N {
      * True when a valid surrogate pair starts at the given {@code index} in the
      * given {@code string}. Out-of-range indexes return false.
      */
-    static boolean validSurrogatePairAt(final String str, final int index) {
+    static boolean validSurrogatePair0At(final String str, final int index) {
         return index >= 0 && index <= (str.length() - 2) && Character.isHighSurrogate(str.charAt(index)) && Character.isLowSurrogate(str.charAt(index + 1));
     }
 
@@ -25796,23 +25804,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Short, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Short, Integer>>() {
+        final Comparator<Pair0<Short, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Short, Integer>>() {
             @Override
-            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
+            public int compare(final Pair0<Short, Integer> o1, final Pair0<Short, Integer> o2) {
                 return Short.compare(o1.left.shortValue(), o2.left.shortValue());
             }
-        } : new Comparator<Pair<Short, Integer>>() {
+        } : new Comparator<Pair0<Short, Integer>>() {
             @Override
-            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
+            public int compare(final Pair0<Short, Integer> o1, final Pair0<Short, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair<Short, Integer>> heap = new PriorityQueue<Pair<Short, Integer>>(n, pairCmp);
-        Pair<Short, Integer> pair = null;
+        final Queue<Pair0<Short, Integer>> heap = new PriorityQueue<Pair0<Short, Integer>>(n, pairCmp);
+        Pair0<Short, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = Pair0.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -25824,19 +25832,19 @@ public final class N {
             }
         }
 
-        final Pair<Short, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Pair0<Short, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Short, Integer>>() {
+        N.sort(arrayOfPair0, new Comparator<Pair0<Short, Integer>>() {
             @Override
-            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
+            public int compare(final Pair0<Short, Integer> o1, final Pair0<Short, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final short[] res = new short[arrayOfPair.length];
+        final short[] res = new short[arrayOfPair0.length];
 
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
+            res[i] = arrayOfPair0[i].left;
         }
 
         return res;
@@ -25863,23 +25871,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Integer, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Integer, Integer>>() {
+        final Comparator<Pair0<Integer, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Integer, Integer>>() {
             @Override
-            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
+            public int compare(final Pair0<Integer, Integer> o1, final Pair0<Integer, Integer> o2) {
                 return Integer.compare(o1.left.intValue(), o2.left.intValue());
             }
-        } : new Comparator<Pair<Integer, Integer>>() {
+        } : new Comparator<Pair0<Integer, Integer>>() {
             @Override
-            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
+            public int compare(final Pair0<Integer, Integer> o1, final Pair0<Integer, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair<Integer, Integer>> heap = new PriorityQueue<Pair<Integer, Integer>>(n, pairCmp);
-        Pair<Integer, Integer> pair = null;
+        final Queue<Pair0<Integer, Integer>> heap = new PriorityQueue<Pair0<Integer, Integer>>(n, pairCmp);
+        Pair0<Integer, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = Pair0.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -25891,19 +25899,19 @@ public final class N {
             }
         }
 
-        final Pair<Integer, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Pair0<Integer, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Integer, Integer>>() {
+        N.sort(arrayOfPair0, new Comparator<Pair0<Integer, Integer>>() {
             @Override
-            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
+            public int compare(final Pair0<Integer, Integer> o1, final Pair0<Integer, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final int[] res = new int[arrayOfPair.length];
+        final int[] res = new int[arrayOfPair0.length];
 
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
+            res[i] = arrayOfPair0[i].left;
         }
 
         return res;
@@ -25930,23 +25938,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Long, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Long, Integer>>() {
+        final Comparator<Pair0<Long, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Long, Integer>>() {
             @Override
-            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
+            public int compare(final Pair0<Long, Integer> o1, final Pair0<Long, Integer> o2) {
                 return Long.compare(o1.left.longValue(), o2.left.longValue());
             }
-        } : new Comparator<Pair<Long, Integer>>() {
+        } : new Comparator<Pair0<Long, Integer>>() {
             @Override
-            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
+            public int compare(final Pair0<Long, Integer> o1, final Pair0<Long, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair<Long, Integer>> heap = new PriorityQueue<Pair<Long, Integer>>(n, pairCmp);
-        Pair<Long, Integer> pair = null;
+        final Queue<Pair0<Long, Integer>> heap = new PriorityQueue<Pair0<Long, Integer>>(n, pairCmp);
+        Pair0<Long, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = Pair0.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -25958,19 +25966,19 @@ public final class N {
             }
         }
 
-        final Pair<Long, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Pair0<Long, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Long, Integer>>() {
+        N.sort(arrayOfPair0, new Comparator<Pair0<Long, Integer>>() {
             @Override
-            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
+            public int compare(final Pair0<Long, Integer> o1, final Pair0<Long, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final long[] res = new long[arrayOfPair.length];
+        final long[] res = new long[arrayOfPair0.length];
 
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
+            res[i] = arrayOfPair0[i].left;
         }
 
         return res;
@@ -25997,23 +26005,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Float, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Float, Integer>>() {
+        final Comparator<Pair0<Float, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Float, Integer>>() {
             @Override
-            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
+            public int compare(final Pair0<Float, Integer> o1, final Pair0<Float, Integer> o2) {
                 return Float.compare(o1.left.floatValue(), o2.left.floatValue());
             }
-        } : new Comparator<Pair<Float, Integer>>() {
+        } : new Comparator<Pair0<Float, Integer>>() {
             @Override
-            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
+            public int compare(final Pair0<Float, Integer> o1, final Pair0<Float, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair<Float, Integer>> heap = new PriorityQueue<Pair<Float, Integer>>(n, pairCmp);
-        Pair<Float, Integer> pair = null;
+        final Queue<Pair0<Float, Integer>> heap = new PriorityQueue<Pair0<Float, Integer>>(n, pairCmp);
+        Pair0<Float, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = Pair0.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -26025,19 +26033,19 @@ public final class N {
             }
         }
 
-        final Pair<Float, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Pair0<Float, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Float, Integer>>() {
+        N.sort(arrayOfPair0, new Comparator<Pair0<Float, Integer>>() {
             @Override
-            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
+            public int compare(final Pair0<Float, Integer> o1, final Pair0<Float, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final float[] res = new float[arrayOfPair.length];
+        final float[] res = new float[arrayOfPair0.length];
 
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
+            res[i] = arrayOfPair0[i].left;
         }
 
         return res;
@@ -26064,23 +26072,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Double, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Double, Integer>>() {
+        final Comparator<Pair0<Double, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Double, Integer>>() {
             @Override
-            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
+            public int compare(final Pair0<Double, Integer> o1, final Pair0<Double, Integer> o2) {
                 return Double.compare(o1.left.doubleValue(), o2.left.doubleValue());
             }
-        } : new Comparator<Pair<Double, Integer>>() {
+        } : new Comparator<Pair0<Double, Integer>>() {
             @Override
-            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
+            public int compare(final Pair0<Double, Integer> o1, final Pair0<Double, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair<Double, Integer>> heap = new PriorityQueue<Pair<Double, Integer>>(n, pairCmp);
-        Pair<Double, Integer> pair = null;
+        final Queue<Pair0<Double, Integer>> heap = new PriorityQueue<Pair0<Double, Integer>>(n, pairCmp);
+        Pair0<Double, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = Pair0.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -26092,19 +26100,19 @@ public final class N {
             }
         }
 
-        final Pair<Double, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Pair0<Double, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Double, Integer>>() {
+        N.sort(arrayOfPair0, new Comparator<Pair0<Double, Integer>>() {
             @Override
-            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
+            public int compare(final Pair0<Double, Integer> o1, final Pair0<Double, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final double[] res = new double[arrayOfPair.length];
+        final double[] res = new double[arrayOfPair0.length];
 
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
+            res[i] = arrayOfPair0[i].left;
         }
 
         return res;
@@ -26132,23 +26140,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair<Comparable, Integer>>() {
+        final Comparator<Pair0<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair0<Comparable, Integer>>() {
             @Override
-            public int compare(final Pair<Comparable, Integer> o1, final Pair<Comparable, Integer> o2) {
+            public int compare(final Pair0<Comparable, Integer> o1, final Pair0<Comparable, Integer> o2) {
                 return N.compare(o1.left, o2.left);
             }
-        } : new Comparator<Pair<T, Integer>>() {
+        } : new Comparator<Pair0<T, Integer>>() {
             @Override
-            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
+            public int compare(final Pair0<T, Integer> o1, final Pair0<T, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair<T, Integer>> heap = new PriorityQueue<Pair<T, Integer>>(n, pairCmp);
-        Pair<T, Integer> pair = null;
+        final Queue<Pair0<T, Integer>> heap = new PriorityQueue<Pair0<T, Integer>>(n, pairCmp);
+        Pair0<T, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = Pair0.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -26160,19 +26168,19 @@ public final class N {
             }
         }
 
-        final Pair<T, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Pair0<T, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<T, Integer>>() {
+        N.sort(arrayOfPair0, new Comparator<Pair0<T, Integer>>() {
             @Override
-            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
+            public int compare(final Pair0<T, Integer> o1, final Pair0<T, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final T[] res = N.newArray(a.getClass().getComponentType(), arrayOfPair.length);
+        final T[] res = N.newArray(a.getClass().getComponentType(), arrayOfPair0.length);
 
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
+            res[i] = arrayOfPair0[i].left;
         }
 
         return res;
@@ -26214,29 +26222,29 @@ public final class N {
             return res;
         }
 
-        final Comparator<Pair<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair<Comparable, Integer>>() {
+        final Comparator<Pair0<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair0<Comparable, Integer>>() {
             @Override
-            public int compare(final Pair<Comparable, Integer> o1, final Pair<Comparable, Integer> o2) {
+            public int compare(final Pair0<Comparable, Integer> o1, final Pair0<Comparable, Integer> o2) {
                 return N.compare(o1.left, o2.left);
             }
-        } : new Comparator<Pair<T, Integer>>() {
+        } : new Comparator<Pair0<T, Integer>>() {
             @Override
-            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
+            public int compare(final Pair0<T, Integer> o1, final Pair0<T, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair<T, Integer>> heap = new PriorityQueue<Pair<T, Integer>>(n, pairCmp);
+        final Queue<Pair0<T, Integer>> heap = new PriorityQueue<Pair0<T, Integer>>(n, pairCmp);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
-            Pair<T, Integer> pair = null;
+            Pair0<T, Integer> pair = null;
             T e = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                pair = Pair.of(e, i);
+                pair = Pair0.of(e, i);
 
                 if (heap.size() >= n) {
                     if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -26249,7 +26257,7 @@ public final class N {
             }
         } else {
             final Iterator<T> iter = c.iterator();
-            Pair<T, Integer> pair = null;
+            Pair0<T, Integer> pair = null;
             T e = null;
 
             for (int i = 0; i < toIndex && iter.hasNext(); i++) {
@@ -26259,7 +26267,7 @@ public final class N {
                     continue;
                 }
 
-                pair = Pair.of(e, i);
+                pair = Pair0.of(e, i);
 
                 if (heap.size() >= n) {
                     if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -26272,19 +26280,19 @@ public final class N {
             }
         }
 
-        final Pair<T, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Pair0<T, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<T, Integer>>() {
+        N.sort(arrayOfPair0, new Comparator<Pair0<T, Integer>>() {
             @Override
-            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
+            public int compare(final Pair0<T, Integer> o1, final Pair0<T, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final List<T> res = new ArrayList<T>(arrayOfPair.length);
+        final List<T> res = new ArrayList<T>(arrayOfPair0.length);
 
-        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res.add(arrayOfPair[i].left);
+        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
+            res.add(arrayOfPair0[i].left);
         }
 
         return res;
@@ -26709,7 +26717,7 @@ public final class N {
     }
 
     private static Object getHashKey(Object obj) {
-        return obj == null || obj.getClass().isArray() == false ? obj : ArrayWrapper.of(obj);
+        return obj == null || obj.getClass().isArray() == false ? obj : Wrapper.of(obj);
     }
 
     /**
@@ -28439,6 +28447,20 @@ public final class N {
         }
 
         return c;
+    }
+
+    public static <T> Iterator<T> concat(Iterator<? extends T> a, Iterator<? extends T> b) {
+        return Stream.concat(a, b).iterator();
+    }
+
+    public static <T> Iterator<T> concat(Iterator<? extends T>... a) {
+        return Stream.concat(a).iterator();
+    }
+
+    public static <T> Iterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
+        final Iterator<T> iter = (Iterator<T>) Stream.concat(c).iterator();
+
+        return iter;
     }
 
     public static int replaceAll(final boolean[] a, final boolean oldVal, final boolean newVal) {
@@ -35706,14 +35728,14 @@ public final class N {
     //        IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
     //    }
 
-    public static void execute(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
-        Retry.of(runnable, ifRetry, retryTimes, retryInterval).run();
+    public static void execute(final Runnable runnable, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> ifRetry) {
+        Retry.of(runnable, retryTimes, retryInterval, ifRetry).run();
     }
 
-    public static <T> T execute(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
-            final long retryInterval) {
+    public static <T> T execute(final Callable<T> callable, final int retryTimes, final long retryInterval,
+            final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
         try {
-            return Retry.of(callable, ifRetry, retryTimes, retryInterval).call();
+            return Retry.of(callable, retryTimes, retryInterval, ifRetry).call();
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
@@ -35801,6 +35823,144 @@ public final class N {
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
         IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
+    }
+
+    public static <E> Set<Set<E>> powerSet(Set<E> set) {
+        return new PowerSet<E>(set);
+    }
+
+    private static final class PowerSet<E> extends AbstractSet<Set<E>> {
+        final ImmutableMap<E, Integer> inputSet;
+
+        PowerSet(Set<E> input) {
+            this.inputSet = indexMap(input);
+            checkArgument(inputSet.size() <= 30, "Too many elements to create power set: %s > 30", inputSet.size());
+        }
+
+        @Override
+        public int size() {
+            return 1 << inputSet.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Iterator<Set<E>> iterator() {
+            return new ImmutableIterator<Set<E>>() {
+                private final int size = size();
+                private int position;
+
+                @Override
+                public boolean hasNext() {
+                    return position < size;
+                }
+
+                @Override
+                public Set<E> next() {
+                    if (!hasNext()) {
+                        throw new NoSuchElementException();
+                    }
+
+                    return new SubSet<E>(inputSet, position++);
+                }
+            };
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (obj instanceof Set) {
+                Set<?> set = (Set<?>) obj;
+                return inputSet.keySet().containsAll(set);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof PowerSet) {
+                PowerSet<?> that = (PowerSet<?>) obj;
+                return inputSet.equals(that.inputSet);
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            /*
+             * The sum of the sums of the hash codes in each subset is just the sum of
+             * each input element's hash code times the number of sets that element
+             * appears in. Each element appears in exactly half of the 2^n sets, so:
+             */
+            return inputSet.keySet().hashCode() << (inputSet.size() - 1);
+        }
+
+        @Override
+        public String toString() {
+            return "powerSet(" + inputSet + ")";
+        }
+    }
+
+    private static final class SubSet<E> extends AbstractSet<E> {
+        private final ImmutableMap<E, Integer> inputSet;
+        private final ImmutableList<E> elements;
+        private final int mask;
+
+        SubSet(ImmutableMap<E, Integer> inputSet, int mask) {
+            this.inputSet = inputSet;
+            this.elements = ImmutableList.of((E[]) inputSet.keySet().toArray());
+            this.mask = mask;
+        }
+
+        @Override
+        public Iterator<E> iterator() {
+            return new ImmutableIterator<E>() {
+                int remainingSetBits = mask;
+
+                @Override
+                public boolean hasNext() {
+                    return remainingSetBits != 0;
+                }
+
+                @Override
+                public E next() {
+                    int index = Integer.numberOfTrailingZeros(remainingSetBits);
+                    if (index == 32) {
+                        throw new NoSuchElementException();
+                    }
+                    remainingSetBits &= ~(1 << index);
+                    return elements.get(index);
+                }
+            };
+        }
+
+        @Override
+        public int size() {
+            return Integer.bitCount(mask);
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            Integer index = inputSet.get(o);
+            return index != null && (mask & (1 << index)) != 0;
+        }
+    }
+
+    /**
+     * Returns a map from the ith element of list to i.
+     */
+    static <E> ImmutableMap<E, Integer> indexMap(Collection<E> c) {
+        final Map<E, Integer> map = new LinkedHashMap<>();
+
+        int i = 0;
+
+        for (E e : c) {
+            map.put(e, i++);
+        }
+
+        return ImmutableMap.of(map);
     }
 
     @Beta

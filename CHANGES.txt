@@ -13,7 +13,7 @@
 
 6, Refactoring N.split(String str, int size).
 
-7, Add skipNull to Stream
+7, Add skipNull and powerSet to Stream
 
 8, Add checkArgument and checkState to N, the codes are copied from Google Guava under Apache License 2.0
 
@@ -23,17 +23,23 @@
 
 11, Rename AutoRetry to Retry.
 
-12, Add Try/Synchronized.
+12, Add Try and Synchronized.
 
 13, Add filter filter(final U check, final BiPredicate<? super T, ? super U> predicate) to Stream/ObjectList/N
 
-14, Add filter takeWhile/dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate) to Stream
+14, Add takeWhile/dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate) to Stream
 
 15, Change the order of type parameters of IndexedBiFunction and IndexedBiConsumer.
 
 16, Big improvements for functional interfaces.
 
-17, Improvements and bug fix.
+17. Add Hash function, copied from Google Guava under Apache License 2.0.
+
+18, Rename DataSet.XXX_SUPPLIER and N.XXX_SUPPLIER to XXX_FACTORY.
+
+19, Rename ArrayWrapper to Wrapper and improve it to support all types.
+
+20, Improvements and bug fix.
 
 
 ========Changes in 0.9.32=========================================================================

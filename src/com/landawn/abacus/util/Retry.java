@@ -18,12 +18,12 @@ public abstract class Retry {
     /**
      * 
      * @param runnable
-     * @param ifRetry
      * @param retryTimes Default value is 1.
      * @param retryInterval Default value is 0.
+     * @param ifRetry
      * @return
      */
-    public static Runnable of(final Runnable runnable, final Function<Throwable, Boolean> ifRetry, final int retryTimes, final long retryInterval) {
+    public static Runnable of(final Runnable runnable, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> ifRetry) {
         if (retryTimes < 0 || retryInterval < 0) {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
@@ -63,13 +63,13 @@ public abstract class Retry {
     /**
      * 
      * @param callable
-     * @param ifRetry
      * @param retryTimes Default value is 1.
      * @param retryInterval Default value is 0.
+     * @param ifRetry
      * @return
      */
-    public static <T> Callable<T> of(final Callable<T> callable, final BiFunction<Throwable, ? super T, Boolean> ifRetry, final int retryTimes,
-            final long retryInterval) {
+    public static <T> Callable<T> of(final Callable<T> callable, final int retryTimes, final long retryInterval,
+            final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
         if (retryTimes < 0 || retryInterval < 0) {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }

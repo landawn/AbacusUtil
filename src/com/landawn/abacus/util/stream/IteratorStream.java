@@ -26,7 +26,6 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
-import com.landawn.abacus.util.PermutationIterator;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -1997,24 +1996,6 @@ final class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public long count() {
         return elements.count();
-    }
-
-    @Override
-    public Stream<List<T>> permutation() {
-        return new IteratorStream<List<T>>(PermutationIterator.of(toList()), closeHandlers);
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    public Stream<List<T>> orderedPermutation() {
-        final Iterator<List<T>> iter = PermutationIterator.ordered((List) toList());
-        return new IteratorStream<>(iter, closeHandlers);
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    public Stream<List<T>> orderedPermutation(Comparator<? super T> comparator) {
-        return new IteratorStream<List<T>>(PermutationIterator.ordered((List) toList(), comparator == null ? OBJECT_COMPARATOR : comparator), closeHandlers);
     }
 
     @Override

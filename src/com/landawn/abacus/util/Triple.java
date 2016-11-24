@@ -129,9 +129,9 @@ public final class Triple<L, M, R> {
      * @param <R>
      */
     public static final class Triple0<L, M, R> {
-        public L left;
-        public M middle;
-        public R right;
+        public final L left;
+        public final M middle;
+        public final R right;
 
         public Triple0(final L l, final M m, final R r) {
             this.left = l;

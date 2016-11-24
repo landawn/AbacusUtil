@@ -32,7 +32,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
-import com.landawn.abacus.util.PermutationIterator;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -2684,25 +2683,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                 cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
             }
         }, closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public Stream<List<T>> permutation() {
-        return new ParallelIteratorStream<>(PermutationIterator.of(toList()), closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    public Stream<List<T>> orderedPermutation() {
-        final Iterator<List<T>> iter = PermutationIterator.ordered((List) toList());
-        return new ParallelIteratorStream<>(iter, closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    public Stream<List<T>> orderedPermutation(Comparator<? super T> comparator) {
-        return new ParallelIteratorStream<>(PermutationIterator.ordered((List) toList(), comparator == null ? OBJECT_COMPARATOR : comparator), closeHandlers,
-                false, null, maxThreadNum, splitter);
     }
 
     @Override

@@ -34,6 +34,8 @@ import java.util.RandomAccess;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.landawn.abacus.util.Pair.Pair0;
+
 /**
  *
  * @since 0.8
@@ -2359,7 +2361,7 @@ public final class Array {
             return;
         }
 
-        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
         final Holder<Throwable> errorHolder = new Holder<Throwable>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
@@ -2367,7 +2369,7 @@ public final class Array {
         for (int i = 0; i < CPU_CORES; i++) {
             final int start = fromIndex + i * lenOfSubArray;
             final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-            subArrayIndexQueue.add(Pair.of(start, end));
+            subArrayIndexQueue.add(Pair0.of(start, end));
 
             activeThreadNum.incrementAndGet();
 
@@ -2399,13 +2401,13 @@ public final class Array {
 
         while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
             for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                final Pair0<Integer, Integer> pairA = subArrayIndexQueue.poll();
                 if (++i == size) {
                     subArrayIndexQueue.add(pairA);
                 } else {
                     i++;
-                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+                    final Pair0<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair0.of(pairA.left, pairB.right));
 
                     activeThreadNum.incrementAndGet();
 
@@ -2480,7 +2482,7 @@ public final class Array {
             return;
         }
 
-        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
         final Holder<Throwable> errorHolder = new Holder<Throwable>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
@@ -2488,7 +2490,7 @@ public final class Array {
         for (int i = 0; i < CPU_CORES; i++) {
             final int start = fromIndex + i * lenOfSubArray;
             final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-            subArrayIndexQueue.add(Pair.of(start, end));
+            subArrayIndexQueue.add(Pair0.of(start, end));
 
             activeThreadNum.incrementAndGet();
 
@@ -2520,13 +2522,13 @@ public final class Array {
 
         while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
             for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                final Pair0<Integer, Integer> pairA = subArrayIndexQueue.poll();
                 if (++i == size) {
                     subArrayIndexQueue.add(pairA);
                 } else {
                     i++;
-                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+                    final Pair0<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair0.of(pairA.left, pairB.right));
 
                     activeThreadNum.incrementAndGet();
 
@@ -2601,7 +2603,7 @@ public final class Array {
             return;
         }
 
-        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
         final Holder<Throwable> errorHolder = new Holder<Throwable>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
@@ -2609,7 +2611,7 @@ public final class Array {
         for (int i = 0; i < CPU_CORES; i++) {
             final int start = fromIndex + i * lenOfSubArray;
             final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-            subArrayIndexQueue.add(Pair.of(start, end));
+            subArrayIndexQueue.add(Pair0.of(start, end));
 
             activeThreadNum.incrementAndGet();
 
@@ -2641,13 +2643,13 @@ public final class Array {
 
         while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
             for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                final Pair0<Integer, Integer> pairA = subArrayIndexQueue.poll();
                 if (++i == size) {
                     subArrayIndexQueue.add(pairA);
                 } else {
                     i++;
-                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+                    final Pair0<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair0.of(pairA.left, pairB.right));
 
                     activeThreadNum.incrementAndGet();
 
@@ -2722,7 +2724,7 @@ public final class Array {
             return;
         }
 
-        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
         final Holder<Throwable> errorHolder = new Holder<Throwable>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
@@ -2730,7 +2732,7 @@ public final class Array {
         for (int i = 0; i < CPU_CORES; i++) {
             final int start = fromIndex + i * lenOfSubArray;
             final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-            subArrayIndexQueue.add(Pair.of(start, end));
+            subArrayIndexQueue.add(Pair0.of(start, end));
 
             activeThreadNum.incrementAndGet();
 
@@ -2762,13 +2764,13 @@ public final class Array {
 
         while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
             for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                final Pair0<Integer, Integer> pairA = subArrayIndexQueue.poll();
                 if (++i == size) {
                     subArrayIndexQueue.add(pairA);
                 } else {
                     i++;
-                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+                    final Pair0<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair0.of(pairA.left, pairB.right));
 
                     activeThreadNum.incrementAndGet();
 
@@ -2843,7 +2845,7 @@ public final class Array {
             return;
         }
 
-        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
         final Holder<Throwable> errorHolder = new Holder<Throwable>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
@@ -2851,7 +2853,7 @@ public final class Array {
         for (int i = 0; i < CPU_CORES; i++) {
             final int start = fromIndex + i * lenOfSubArray;
             final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-            subArrayIndexQueue.add(Pair.of(start, end));
+            subArrayIndexQueue.add(Pair0.of(start, end));
 
             activeThreadNum.incrementAndGet();
 
@@ -2883,13 +2885,13 @@ public final class Array {
 
         while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
             for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                final Pair0<Integer, Integer> pairA = subArrayIndexQueue.poll();
                 if (++i == size) {
                     subArrayIndexQueue.add(pairA);
                 } else {
                     i++;
-                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+                    final Pair0<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair0.of(pairA.left, pairB.right));
 
                     activeThreadNum.incrementAndGet();
 
@@ -2964,7 +2966,7 @@ public final class Array {
             return;
         }
 
-        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
         final Holder<Throwable> errorHolder = new Holder<Throwable>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
@@ -2972,7 +2974,7 @@ public final class Array {
         for (int i = 0; i < CPU_CORES; i++) {
             final int start = fromIndex + i * lenOfSubArray;
             final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-            subArrayIndexQueue.add(Pair.of(start, end));
+            subArrayIndexQueue.add(Pair0.of(start, end));
 
             activeThreadNum.incrementAndGet();
 
@@ -3004,13 +3006,13 @@ public final class Array {
 
         while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
             for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                final Pair0<Integer, Integer> pairA = subArrayIndexQueue.poll();
                 if (++i == size) {
                     subArrayIndexQueue.add(pairA);
                 } else {
                     i++;
-                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+                    final Pair0<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair0.of(pairA.left, pairB.right));
 
                     activeThreadNum.incrementAndGet();
 
@@ -3104,7 +3106,7 @@ public final class Array {
             return;
         }
 
-        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
         final Holder<Throwable> errorHolder = new Holder<Throwable>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
@@ -3112,7 +3114,7 @@ public final class Array {
         for (int i = 0; i < CPU_CORES; i++) {
             final int start = fromIndex + i * lenOfSubArray;
             final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-            subArrayIndexQueue.add(Pair.of(start, end));
+            subArrayIndexQueue.add(Pair0.of(start, end));
 
             activeThreadNum.incrementAndGet();
 
@@ -3144,13 +3146,13 @@ public final class Array {
 
         while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
             for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                final Pair0<Integer, Integer> pairA = subArrayIndexQueue.poll();
                 if (++i == size) {
                     subArrayIndexQueue.add(pairA);
                 } else {
                     i++;
-                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+                    final Pair0<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair0.of(pairA.left, pairB.right));
 
                     activeThreadNum.incrementAndGet();
 
@@ -3257,7 +3259,7 @@ public final class Array {
             return;
         }
 
-        final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
+        final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
         final Holder<Throwable> errorHolder = new Holder<Throwable>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
@@ -3265,7 +3267,7 @@ public final class Array {
         for (int i = 0; i < CPU_CORES; i++) {
             final int start = fromIndex + i * lenOfSubArray;
             final int end = toIndex - start < lenOfSubArray ? toIndex : start + lenOfSubArray;
-            subArrayIndexQueue.add(Pair.of(start, end));
+            subArrayIndexQueue.add(Pair0.of(start, end));
 
             activeThreadNum.incrementAndGet();
 
@@ -3297,13 +3299,13 @@ public final class Array {
 
         while (subArrayIndexQueue.size() > 1 && errorHolder.value() == null) {
             for (int i = 0, size = subArrayIndexQueue.size(); i < size;) {
-                final Pair<Integer, Integer> pairA = subArrayIndexQueue.poll();
+                final Pair0<Integer, Integer> pairA = subArrayIndexQueue.poll();
                 if (++i == size) {
                     subArrayIndexQueue.add(pairA);
                 } else {
                     i++;
-                    final Pair<Integer, Integer> pairB = subArrayIndexQueue.poll();
-                    subArrayIndexQueue.offer(Pair.of(pairA.left, pairB.right));
+                    final Pair0<Integer, Integer> pairB = subArrayIndexQueue.poll();
+                    subArrayIndexQueue.offer(Pair0.of(pairA.left, pairB.right));
 
                     activeThreadNum.incrementAndGet();
 

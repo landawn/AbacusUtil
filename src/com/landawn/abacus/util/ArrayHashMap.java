@@ -34,7 +34,7 @@ import com.landawn.abacus.exception.AbacusException;
  * @author Haiyang Li
  */
 public class ArrayHashMap<K, V> implements Map<K, V> {
-    private final Map<ArrayWrapper<K>, V> map;
+    private final Map<Wrapper<K>, V> map;
 
     public ArrayHashMap() {
         map = new HashMap<>();
@@ -83,12 +83,12 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
 
     @Override
     public V get(Object key) {
-        return map.get(ArrayWrapper.of(key));
+        return map.get(Wrapper.of(key));
     }
 
     @Override
     public V put(K key, V value) {
-        return map.put(ArrayWrapper.of(key), value);
+        return map.put(Wrapper.of(key), value);
     }
 
     @Override
@@ -104,12 +104,12 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
 
     @Override
     public V remove(Object key) {
-        return map.remove(ArrayWrapper.of(key));
+        return map.remove(Wrapper.of(key));
     }
 
     @Override
     public boolean containsKey(Object key) {
-        return map.containsKey(ArrayWrapper.of(key));
+        return map.containsKey(Wrapper.of(key));
     }
 
     @Override
@@ -163,9 +163,9 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
     }
 
     static class ArrayEntrySet<K, V> implements Set<Map.Entry<K, V>> {
-        private final Set<Map.Entry<ArrayWrapper<K>, V>> set;
+        private final Set<Map.Entry<Wrapper<K>, V>> set;
 
-        ArrayEntrySet(Set<Map.Entry<ArrayWrapper<K>, V>> set) {
+        ArrayEntrySet(Set<Map.Entry<Wrapper<K>, V>> set) {
             this.set = set;
         }
 
@@ -204,7 +204,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
             if (o instanceof Map.Entry) {
                 final Map.Entry<K, V> entry = (Map.Entry<K, V>) o;
 
-                return set.contains(new MapEntry<ArrayWrapper<K>, V>(ArrayWrapper.of(entry.getKey()), entry.getValue()));
+                return set.contains(new MapEntry<Wrapper<K>, V>(Wrapper.of(entry.getKey()), entry.getValue()));
             }
 
             return false;
@@ -226,7 +226,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
             final Object[] result = new Object[size];
             int i = 0;
 
-            for (Map.Entry<ArrayWrapper<K>, V> e : set) {
+            for (Map.Entry<Wrapper<K>, V> e : set) {
                 result[i++] = new ArrayEntry<K, V>(e);
             }
 
@@ -244,7 +244,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
             final Object[] result = a;
             int i = 0;
 
-            for (Map.Entry<ArrayWrapper<K>, V> e : set) {
+            for (Map.Entry<Wrapper<K>, V> e : set) {
                 result[i++] = new ArrayEntry<K, V>(e);
             }
 
@@ -283,9 +283,9 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
     }
 
     static class ArrayEntryIterator<K, V> implements Iterator<java.util.Map.Entry<K, V>> {
-        private final Iterator<Map.Entry<ArrayWrapper<K>, V>> it;
+        private final Iterator<Map.Entry<Wrapper<K>, V>> it;
 
-        ArrayEntryIterator(Iterator<Map.Entry<ArrayWrapper<K>, V>> it) {
+        ArrayEntryIterator(Iterator<Map.Entry<Wrapper<K>, V>> it) {
             this.it = it;
         }
 
@@ -306,15 +306,15 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
     }
 
     static class ArrayEntry<K, V> implements Map.Entry<K, V> {
-        private final Map.Entry<ArrayWrapper<K>, V> entry;
+        private final Map.Entry<Wrapper<K>, V> entry;
 
-        ArrayEntry(Map.Entry<ArrayWrapper<K>, V> entry) {
+        ArrayEntry(Map.Entry<Wrapper<K>, V> entry) {
             this.entry = entry;
         }
 
         @Override
         public K getKey() {
-            return entry.getKey().getValue();
+            return entry.getKey().value();
         }
 
         @Override

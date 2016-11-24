@@ -138,7 +138,7 @@ import com.landawn.abacus.util.function.Supplier;
  * </ul>
  *
  * <p>In addition to the predefined implementations in {@link Collectors}, the
- * static factory methods {@link #of(Supplier, BiConsumer, BinaryOperator, Characteristics...)}
+ * static factory methods {@link #of(Supplier, Characteristics..., BiConsumer, BinaryOperator)}
  * can be used to construct collectors.  For example, you could create a collector
  * that accumulates widgets into a {@code TreeSet} with:
  *

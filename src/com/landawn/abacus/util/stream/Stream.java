@@ -1443,6 +1443,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract Stream<List<T>> orderedPermutation(Comparator<? super T> comparator);
 
+    public abstract Stream<Set<T>> powerSet();
+
     public abstract CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper);
 
     public abstract ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper);
