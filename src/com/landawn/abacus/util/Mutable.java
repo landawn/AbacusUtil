@@ -35,25 +35,6 @@ package com.landawn.abacus.util;
  * @since 2.1
  * @version $Id: Mutable.java 1478488 2013-05-02 19:05:44Z ggregory $
  */
-public interface Mutable<T> {
-
-    /**
-     * Gets the value of this mutable.
-     * 
-     * @return the stored value
-     */
-    T getValue();
-
-    /**
-     * Sets the value of this mutable.
-     * 
-     * @param value
-     *            the value to store
-     * @throws NullPointerException
-     *             if the object is null and null is invalid
-     * @throws ClassCastException
-     *             if the type is invalid
-     */
-    void setValue(T value);
+public interface Mutable {
 
 }

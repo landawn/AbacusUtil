@@ -322,19 +322,46 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         return of(a);
     }
 
-    /**
-     * Returns random numbers between 0 (inclusive) and the specified value (exclusive).
-     * 
-     * @param bound
-     * @param len
-     * @return
-     * @see java.util.Random#nextInt(int)
-     */
-    public static IntList random(final int bound, final int len) {
-        final int[] a = new int[len];
+    //    /**
+    //     * Returns random numbers between 0 (inclusive) and the specified value (exclusive).
+    //     * 
+    //     * @param bound
+    //     * @param len
+    //     * @return
+    //     * @see java.util.Random#nextInt(int)
+    //     */
+    //    public static IntList random(final int bound, final int len) {
+    //        final int[] a = new int[len];
+    //
+    //        for (int i = 0; i < len; i++) {
+    //            a[i] = RAND.nextInt(bound);
+    //        }
+    //
+    //        return of(a);
+    //    }
 
-        for (int i = 0; i < len; i++) {
-            a[i] = RAND.nextInt(bound);
+    public static IntList random(final int startInclusive, final int endInclusive, final int len) {
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+        }
+
+        if (startInclusive == endInclusive) {
+            return repeat(startInclusive, len);
+        }
+
+        final int[] a = new int[len];
+        final long mod = endInclusive - startInclusive + 1L;
+
+        if (mod <= Integer.MAX_VALUE) {
+            final int n = (int) mod;
+
+            for (int i = 0; i < len; i++) {
+                a[i] = RAND.nextInt(n) + startInclusive;
+            }
+        } else {
+            for (int i = 0; i < len; i++) {
+                a[i] = (int) (Math.abs(RAND.nextLong() % mod) + startInclusive);
+            }
         }
 
         return of(a);

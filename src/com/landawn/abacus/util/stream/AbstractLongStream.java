@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
@@ -7,6 +21,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.IndexedLong;
+import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongSummaryStatistics;
@@ -32,6 +47,9 @@ import com.landawn.abacus.util.function.ToLongFunction;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 abstract class AbstractLongStream extends LongStream {
 
@@ -104,6 +122,26 @@ abstract class AbstractLongStream extends LongStream {
                 return new HashMap<>();
             }
         });
+    }
+
+    @Override
+    public <K> Multimap<K, Long, List<Long>> toMultimap(LongFunction<? extends K> keyMapper) {
+        return toMultimap(keyMapper, new LongFunction<Long>() {
+            @Override
+            public Long apply(long value) {
+                return value;
+            }
+        });
+    }
+
+    @Override
+    public <K, V extends Collection<Long>> Multimap<K, Long, V> toMultimap(LongFunction<? extends K> keyMapper, Supplier<Multimap<K, Long, V>> mapSupplier) {
+        return toMultimap(keyMapper, new LongFunction<Long>() {
+            @Override
+            public Long apply(long value) {
+                return value;
+            }
+        }, mapSupplier);
     }
 
     @Override
@@ -189,11 +227,7 @@ abstract class AbstractLongStream extends LongStream {
 
                 }, null, sorted) };
 
-        if (this.isParallel()) {
-            return new ParallelArrayStream<LongStream>(a, 0, a.length, closeHandlers, false, null, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayStream<LongStream>(a, closeHandlers);
-        }
+        return this.newStream(a, false, null);
     }
 
     @Override
@@ -255,6 +289,38 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public String join(final CharSequence delimiter) {
+        return join(delimiter, "", "");
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
+            @Override
+            public Joiner get() {
+                return new Joiner(delimiter, prefix, suffix);
+            }
+        };
+
+        final ObjLongConsumer<Joiner> accumulator = new ObjLongConsumer<Joiner>() {
+            @Override
+            public void accept(Joiner a, long t) {
+                a.add(t);
+            }
+        };
+
+        final BiConsumer<Joiner, Joiner> combiner = new BiConsumer<Joiner, Joiner>() {
+            @Override
+            public void accept(Joiner a, Joiner b) {
+                a.merge(b);
+            }
+        };
+
+        final Joiner joiner = collect(supplier, accumulator, combiner);
+        return joiner.toString();
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
@@ -303,89 +369,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream parallel() {
-        return parallel(DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public LongStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public LongStream parallel(BaseStream.Splitter splitter) {
-        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
-    }
-
-    @Override
-    public int maxThreadNum() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return 1;
-    }
-
-    @Override
-    public LongStream maxThreadNum(int maxThreadNum) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");  
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    @Override
-    public Splitter splitter() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return DEFAULT_SPILTTER;
-    }
-
-    @Override
-    public LongStream splitter(Splitter splitter) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    protected LongStream newStream(final long[] a, final boolean sorted) {
-        if (this.isParallel()) {
-            return new ParallelArrayLongStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayLongStream(a, closeHandlers, sorted);
-        }
-    }
-
-    protected LongStream newStream(final LongIterator iter, final boolean sorted) {
-        if (this.isParallel()) {
-            final ImmutableLongIterator longIter = iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public long next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorLongStream(longIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            final ImmutableLongIterator longIter = iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public long next() {
-                    return iter.next();
-                }
-            };
-
-            return new IteratorLongStream(longIter, closeHandlers, sorted);
-        }
+    public LongStream cached() {
+        return this.newStream(toArray(), sorted);
     }
 }

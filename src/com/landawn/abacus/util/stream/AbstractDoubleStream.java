@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
@@ -10,6 +24,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.IndexedDouble;
+import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
@@ -33,6 +48,9 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 abstract class AbstractDoubleStream extends DoubleStream {
 
@@ -105,6 +123,27 @@ abstract class AbstractDoubleStream extends DoubleStream {
                 return new HashMap<>();
             }
         });
+    }
+
+    @Override
+    public <K> Multimap<K, Double, List<Double>> toMultimap(DoubleFunction<? extends K> keyMapper) {
+        return toMultimap(keyMapper, new DoubleFunction<Double>() {
+            @Override
+            public Double apply(double value) {
+                return value;
+            }
+        });
+    }
+
+    @Override
+    public <K, V extends Collection<Double>> Multimap<K, Double, V> toMultimap(DoubleFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Double, V>> mapSupplier) {
+        return toMultimap(keyMapper, new DoubleFunction<Double>() {
+            @Override
+            public Double apply(double value) {
+                return value;
+            }
+        }, mapSupplier);
     }
 
     @Override
@@ -286,11 +325,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
                 }, null, sorted) };
 
-        if (this.isParallel()) {
-            return new ParallelArrayStream<DoubleStream>(a, 0, a.length, closeHandlers, false, null, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayStream<DoubleStream>(a, closeHandlers);
-        }
+        return this.newStream(a, false, null);
     }
 
     @Override
@@ -352,6 +387,38 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public String join(final CharSequence delimiter) {
+        return join(delimiter, "", "");
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
+            @Override
+            public Joiner get() {
+                return new Joiner(delimiter, prefix, suffix);
+            }
+        };
+
+        final ObjDoubleConsumer<Joiner> accumulator = new ObjDoubleConsumer<Joiner>() {
+            @Override
+            public void accept(Joiner a, double t) {
+                a.add(t);
+            }
+        };
+
+        final BiConsumer<Joiner, Joiner> combiner = new BiConsumer<Joiner, Joiner>() {
+            @Override
+            public void accept(Joiner a, Joiner b) {
+                a.merge(b);
+            }
+        };
+
+        final Joiner joiner = collect(supplier, accumulator, combiner);
+        return joiner.toString();
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
@@ -401,91 +468,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream parallel() {
-        return parallel(DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public DoubleStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public DoubleStream parallel(BaseStream.Splitter splitter) {
-        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
-    }
-
-    @Override
-    public int maxThreadNum() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return 1;
-    }
-
-    @Override
-    public DoubleStream maxThreadNum(int maxThreadNum) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");  
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    @Override
-    public Splitter splitter() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return DEFAULT_SPILTTER;
-    }
-
-    @Override
-    public DoubleStream splitter(Splitter splitter) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    protected DoubleStream newStream(final double[] a, final boolean sorted) {
-        if (this.isParallel()) {
-            return new ParallelArrayDoubleStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayDoubleStream(a, closeHandlers, sorted);
-        }
-    }
-
-    protected DoubleStream newStream(final DoubleIterator iter, final boolean sorted) {
-        if (this.isParallel()) {
-            final ImmutableDoubleIterator doubleIter = iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter
-                    : new ImmutableDoubleIterator() {
-                        @Override
-                        public boolean hasNext() {
-                            return iter.hasNext();
-                        }
-
-                        @Override
-                        public double next() {
-                            return iter.next();
-                        }
-                    };
-
-            return new ParallelIteratorDoubleStream(doubleIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            final ImmutableDoubleIterator doubleIter = iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter
-                    : new ImmutableDoubleIterator() {
-                        @Override
-                        public boolean hasNext() {
-                            return iter.hasNext();
-                        }
-
-                        @Override
-                        public double next() {
-                            return iter.next();
-                        }
-                    };
-
-            return new IteratorDoubleStream(doubleIter, closeHandlers, sorted);
-        }
+    public DoubleStream cached() {
+        return this.newStream(toArray(), sorted);
     }
 }

@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 
@@ -98,12 +99,9 @@ public class AsyncExecutor {
 
     public List<CompletableFuture<Void>> execute(final Runnable... commands) {
         final List<CompletableFuture<Void>> results = new ArrayList<>(commands.length);
-        CompletableFuture<Void> future = null;
 
         for (int i = 0, len = commands.length; i < len; i++) {
-            future = new CompletableFuture<Void>(this, commands[i], null);
-            getExecutorService().execute(future);
-            results.add(future);
+            results.add(execute(commands[i]));
         }
 
         return results;
@@ -111,21 +109,12 @@ public class AsyncExecutor {
 
     public List<CompletableFuture<Void>> execute(final List<? extends Runnable> commands) {
         final List<CompletableFuture<Void>> results = new ArrayList<>(commands.size());
-        CompletableFuture<Void> future = null;
 
         for (Runnable cmd : commands) {
-            future = new CompletableFuture<Void>(this, cmd, null);
-
-            getExecutorService().execute(future);
-
-            results.add(future);
+            results.add(execute(cmd));
         }
 
         return results;
-    }
-
-    public CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> ifRetry) {
-        return execute(Retry.of(action, retryTimes, retryInterval, ifRetry));
     }
 
     public <T> CompletableFuture<T> execute(final Callable<T> command) {
@@ -138,12 +127,9 @@ public class AsyncExecutor {
 
     public <T> List<CompletableFuture<T>> execute(final Callable<T>... commands) {
         final List<CompletableFuture<T>> results = new ArrayList<>(commands.length);
-        CompletableFuture<T> future = null;
 
         for (int i = 0, len = commands.length; i < len; i++) {
-            future = new CompletableFuture<T>(this, commands[i]);
-            getExecutorService().execute(future);
-            results.add(future);
+            results.add(execute(commands[i]));
         }
 
         return results;
@@ -151,14 +137,9 @@ public class AsyncExecutor {
 
     public <T> List<CompletableFuture<T>> execute(final Collection<? extends Callable<T>> commands) {
         final List<CompletableFuture<T>> results = new ArrayList<>(commands.size());
-        CompletableFuture<T> future = null;
 
         for (Callable<T> cmd : commands) {
-            future = new CompletableFuture<T>(this, cmd);
-
-            getExecutorService().execute(future);
-
-            results.add(future);
+            results.add(execute(cmd));
         }
 
         return results;
@@ -182,9 +163,25 @@ public class AsyncExecutor {
     //        return future;
     //    }
 
+    public CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+            final Function<Throwable, Boolean> retryCondition) {
+        return execute(new Runnable() {
+            @Override
+            public void run() {
+                Retry.of(retryTimes, retryInterval, retryCondition).run(action);
+            }
+        });
+    }
+
     public <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
-            final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
-        return execute(Retry.of(action, retryTimes, retryInterval, ifRetry));
+            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+        return execute(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                return retry.call(action);
+            }
+        });
     }
 
     ExecutorService getExecutorService() {

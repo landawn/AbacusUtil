@@ -1,3 +1,16 @@
+========Changes in 0.9.34=========================================================================
+
+1, Refacoring MutableXXX.
+
+2, Improve split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) in Stream/IntStream... to support: http://stackoverflow.com/questions/29095967/splitting-list-into-sublists-along-elements/40791717#40791717
+
+3, Add join to IntStream/DoubleStream/LongStream/...
+
+4, Refactoring Try/Retry/Synchronized
+
+5, Refactoring random for CharList/IntList/CharStream/IntStream.
+
+6, Improvements and bug fix.
 
 ========Changes in 0.9.33=========================================================================
 

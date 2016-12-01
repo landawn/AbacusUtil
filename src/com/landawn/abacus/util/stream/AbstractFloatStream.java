@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
@@ -10,6 +24,7 @@ import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IndexedFloat;
+import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
@@ -33,6 +48,9 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 abstract class AbstractFloatStream extends FloatStream {
 
@@ -105,6 +123,27 @@ abstract class AbstractFloatStream extends FloatStream {
                 return new HashMap<>();
             }
         });
+    }
+
+    @Override
+    public <K> Multimap<K, Float, List<Float>> toMultimap(FloatFunction<? extends K> keyMapper) {
+        return toMultimap(keyMapper, new FloatFunction<Float>() {
+            @Override
+            public Float apply(float value) {
+                return value;
+            }
+        });
+    }
+
+    @Override
+    public <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Float, V>> mapSupplier) {
+        return toMultimap(keyMapper, new FloatFunction<Float>() {
+            @Override
+            public Float apply(float value) {
+                return value;
+            }
+        }, mapSupplier);
     }
 
     @Override
@@ -262,11 +301,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
                 }, null, sorted) };
 
-        if (this.isParallel()) {
-            return new ParallelArrayStream<FloatStream>(a, 0, a.length, closeHandlers, false, null, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayStream<FloatStream>(a, closeHandlers);
-        }
+        return this.newStream(a, false, null);
     }
 
     @Override
@@ -328,6 +363,38 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public String join(final CharSequence delimiter) {
+        return join(delimiter, "", "");
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
+            @Override
+            public Joiner get() {
+                return new Joiner(delimiter, prefix, suffix);
+            }
+        };
+
+        final ObjFloatConsumer<Joiner> accumulator = new ObjFloatConsumer<Joiner>() {
+            @Override
+            public void accept(Joiner a, float t) {
+                a.add(t);
+            }
+        };
+
+        final BiConsumer<Joiner, Joiner> combiner = new BiConsumer<Joiner, Joiner>() {
+            @Override
+            public void accept(Joiner a, Joiner b) {
+                a.merge(b);
+            }
+        };
+
+        final Joiner joiner = collect(supplier, accumulator, combiner);
+        return joiner.toString();
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
@@ -377,89 +444,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream parallel() {
-        return parallel(DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public FloatStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public FloatStream parallel(BaseStream.Splitter splitter) {
-        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
-    }
-
-    @Override
-    public int maxThreadNum() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return 1;
-    }
-
-    @Override
-    public FloatStream maxThreadNum(int maxThreadNum) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");  
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    @Override
-    public Splitter splitter() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return DEFAULT_SPILTTER;
-    }
-
-    @Override
-    public FloatStream splitter(Splitter splitter) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    protected FloatStream newStream(final float[] a, final boolean sorted) {
-        if (this.isParallel()) {
-            return new ParallelArrayFloatStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayFloatStream(a, closeHandlers, sorted);
-        }
-    }
-
-    protected FloatStream newStream(final FloatIterator iter, final boolean sorted) {
-        if (this.isParallel()) {
-            final ImmutableFloatIterator floatIter = iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public float next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorFloatStream(floatIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            final ImmutableFloatIterator floatIter = iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public float next() {
-                    return iter.next();
-                }
-            };
-
-            return new IteratorFloatStream(floatIter, closeHandlers, sorted);
-        }
+    public FloatStream cached() {
+        return this.newStream(toArray(), sorted);
     }
 }

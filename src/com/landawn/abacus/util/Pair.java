@@ -16,6 +16,8 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Map;
+
 /**
  * 
  * @since 0.8
@@ -25,7 +27,7 @@ package com.landawn.abacus.util;
  * @param <L>
  * @param <R>
  */
-public final class Pair<L, R> {
+public final class Pair<L, R> implements Map.Entry<L, R> {
     public L left;
     public R right;
 
@@ -79,6 +81,21 @@ public final class Pair<L, R> {
     //    }
 
     @Override
+    public L getKey() {
+        return left;
+    }
+
+    @Override
+    public R getValue() {
+        return right;
+    }
+
+    @Override
+    public R setValue(R value) {
+        return this.right = value;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -113,7 +130,7 @@ public final class Pair<L, R> {
      * @param <L>
      * @param <R>
      */
-    public static final class Pair0<L, R> {
+    public static final class Pair0<L, R> implements Map.Entry<L, R> {
         public final L left;
         public final R right;
 
@@ -124,6 +141,26 @@ public final class Pair<L, R> {
 
         public static <L, R> Pair0<L, R> of(final L l, final R r) {
             return new Pair0<L, R>(l, r);
+        }
+
+        @Override
+        public L getKey() {
+            return left;
+        }
+
+        @Override
+        public R getValue() {
+            return right;
+        }
+
+        /**
+         * @param R
+         * @deprecated UnsupportedOperationException
+         */
+        @Override
+        @Deprecated
+        public R setValue(R value) {
+            throw new UnsupportedOperationException();
         }
 
         @Override

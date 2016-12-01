@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
@@ -36,6 +50,9 @@ import com.landawn.abacus.util.function.Supplier;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 final class ArrayLongStream extends AbstractLongStream {
     private final long[] elements;
@@ -728,6 +745,7 @@ final class ArrayLongStream extends AbstractLongStream {
             final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
             private int cursor = fromIndex;
+            private boolean preCondition = false;
 
             @Override
             public boolean hasNext() {
@@ -743,13 +761,18 @@ final class ArrayLongStream extends AbstractLongStream {
                 final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
 
                 while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], boundary)) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(elements[cursor], boundary);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (boundaryUpdate != null) {
                             boundaryUpdate.accept(boundary);
                         }
+
                         break;
                     }
                 }
@@ -808,13 +831,55 @@ final class ArrayLongStream extends AbstractLongStream {
     //    }
 
     @Override
-    public LongStream peek(LongConsumer action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(elements[i]);
-        }
+    public LongStream peek(final LongConsumer action) {
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            action.accept(elements[i]);
+        //        }
+        // 
+        //        return this;
 
-        // return new LongStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
-        return this;
+        return new IteratorLongStream(new ImmutableLongIterator() {
+            int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public long next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                action.accept(elements[cursor]);
+
+                return elements[cursor++];
+            }
+
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
+            //
+            //    @Override
+            //    public void skip(long n) {
+            //        cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+            //    }
+
+            @Override
+            public long[] toArray() {
+                final long[] a = new long[toIndex - cursor];
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    action.accept(elements[cursor]);
+
+                    a[i] = elements[cursor++];
+                }
+
+                return a;
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1424,8 +1489,8 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream parallel(int maxThreadNum, Splitter splitter) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         return new ParallelArrayLongStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);

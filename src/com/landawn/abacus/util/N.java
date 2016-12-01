@@ -143,6 +143,7 @@ import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.Pair.Pair0;
+import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.Triple.Triple0;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -4178,7 +4179,7 @@ public final class N {
      * @see java.util.Collections#unmodifiableList(List)
      */
     public static <T> List<T> asImmutableList(final T... a) {
-        return Collections.unmodifiableList(Arrays.asList(a));
+        return ImmutableList.of(a);
     }
 
     //    /**
@@ -4200,7 +4201,7 @@ public final class N {
      * @see java.util.Collections#unmodifiableList(List)
      */
     public static <T> List<T> asImmutableList(final List<? extends T> list) {
-        return Collections.unmodifiableList(list);
+        return ImmutableList.of(list);
     }
 
     /**
@@ -4211,7 +4212,7 @@ public final class N {
      * @see java.util.Collections#unmodifiableSet(Set)
      */
     public static <T> Set<T> asImmutableSet(final T... a) {
-        return Collections.unmodifiableSet(asLinkedHashSet(a));
+        return ImmutableSet.of(a);
     }
 
     /**
@@ -4222,7 +4223,7 @@ public final class N {
      * @see java.util.Collections#unmodifiableSet(Set)
      */
     public static <T> Set<T> asImmutableSet(final Set<? extends T> s) {
-        return Collections.unmodifiableSet(s);
+        return ImmutableSet.of(s);
     }
 
     /**
@@ -4248,23 +4249,19 @@ public final class N {
     }
 
     public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1) {
-        return Collections.unmodifiableMap((Map<K, V>) asLinkedHashMap(k1, v1));
+        return ImmutableMap.of(k1, v1);
     }
 
     public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1, final k k2, final v v2) {
-        return Collections.unmodifiableMap((Map<K, V>) asLinkedHashMap(k1, v1, k2, v2));
+        return ImmutableMap.of(k1, v1, k2, v2);
     }
 
     public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
-        return Collections.unmodifiableMap((Map<K, V>) asLinkedHashMap(k1, v1, k2, v2, k3, v3));
+        return ImmutableMap.of(k1, v1, k2, v2, k3, v3);
     }
 
     public static <K, V> Map<K, V> asImmutableMap(final Object... a) {
-        if (a.length == 1 && a[0] instanceof Map) {
-            return asImmutableMap((Map<K, V>) a[0]);
-        } else {
-            return Collections.unmodifiableMap((Map<K, V>) N.asLinkedHashMap(a));
-        }
+        return ImmutableMap.of(a);
     }
 
     /**
@@ -4275,7 +4272,7 @@ public final class N {
      * @see java.util.Collections#unmodifiableMap(Map)
      */
     public static <K, V> Map<K, V> asImmutableMap(final Map<? extends K, ? extends V> m) {
-        return Collections.unmodifiableMap(m);
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -28458,7 +28455,7 @@ public final class N {
     }
 
     public static <T> Iterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
-        final Iterator<T> iter = (Iterator<T>) Stream.concat(c).iterator();
+        final Iterator<T> iter = ((Stream<T>) Stream.concat(c)).iterator();
 
         return iter;
     }
@@ -35728,14 +35725,19 @@ public final class N {
     //        IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
     //    }
 
-    public static void execute(final Runnable runnable, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> ifRetry) {
-        Retry.of(runnable, retryTimes, retryInterval, ifRetry).run();
+    public static void execute(final Try.Runnable cmd, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> retryCondition) {
+        try {
+            Retry0.of(retryTimes, retryInterval, retryCondition).run(cmd);
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
     }
 
-    public static <T> T execute(final Callable<T> callable, final int retryTimes, final long retryInterval,
-            final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
+    public static <T> T execute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
+            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
         try {
-            return Retry.of(callable, retryTimes, retryInterval, ifRetry).call();
+            final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+            return retry.call(cmd);
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
@@ -35772,6 +35774,35 @@ public final class N {
     //    public static <T> CompletableFuture<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
     //        return asyncExecutor.invoke(instance, method, args);
     //    }
+
+    public static CompletableFuture<Void> asyncExecute(final Try.Runnable cmd, final int retryTimes, final long retryInterval,
+            final Function<Throwable, Boolean> retryCondition) {
+        return asyncExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Retry0.of(retryTimes, retryInterval, retryCondition).run(cmd);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        });
+    }
+
+    public static <T> CompletableFuture<T> asyncExecute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
+            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+        return asyncExecutor.execute(new Callable<T>() {
+            @Override
+            public T call() {
+                try {
+                    final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                    return retry.call(cmd);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        });
+    }
 
     public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
         IOUtil.parse(iter, elementParser);
@@ -36012,7 +36043,7 @@ public final class N {
      * @return the input <code>obj</code>
      */
     public static <T> T println(final T obj) {
-        final String str = toString(obj);
+        final String str = N.deepToString(obj);
         System.out.println(str);
         return obj;
     }

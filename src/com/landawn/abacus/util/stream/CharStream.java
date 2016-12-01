@@ -541,6 +541,24 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
     /**
      * 
      * @param keyMapper
+     * @return
+     * @see Collectors#toMultimap(Function)
+     */
+    public abstract <K> Multimap<K, Character, List<Character>> toMultimap(CharFunction<? extends K> keyMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMultimap(Function, Supplier)
+     */
+    public abstract <K, V extends Collection<Character>> Multimap<K, Character, V> toMultimap(CharFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Character, V>> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
@@ -760,6 +778,10 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
 
     public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarize2();
 
+    public abstract String join(CharSequence delimiter);
+
+    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
+
     /**
      * Returns whether any elements of this stream match the provided
      * predicate.  May not evaluate the predicate on all elements if not
@@ -921,6 +943,8 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
 
     public abstract CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC,
             CharTriFunction<Character> zipFunction);
+
+    public abstract CharStream cached();
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -1190,7 +1214,22 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
         });
     }
 
+    public static CharStream random() {
+        final int mod = Character.MAX_VALUE + 1;
+
+        return iterate(new CharSupplier() {
+            @Override
+            public char getAsChar() {
+                return (char) Math.abs(RAND.nextInt() % mod);
+            }
+        });
+    }
+
     public static CharStream random(final char startInclusive, final char endInclusive) {
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+        }
+
         if (startInclusive == endInclusive) {
             return iterate(new CharSupplier() {
                 @Override
@@ -1199,15 +1238,32 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
                 }
             });
         } else {
-            return iterate(new CharSupplier() {
-                final int mod = endInclusive - startInclusive + 1;
+            final int mod = endInclusive - startInclusive + 1;
 
+            return iterate(new CharSupplier() {
                 @Override
                 public char getAsChar() {
                     return (char) (Math.abs(RAND.nextInt() % mod) + startInclusive);
                 }
             });
         }
+    }
+
+    public static CharStream random(final char[] candicates) {
+        if (N.isNullOrEmpty(candicates)) {
+            return empty();
+        } else if (candicates.length >= Integer.MAX_VALUE) {
+            throw new IllegalArgumentException();
+        }
+
+        final int n = candicates.length;
+
+        return iterate(new CharSupplier() {
+            @Override
+            public char getAsChar() {
+                return candicates[RAND.nextInt(n)];
+            }
+        });
     }
 
     public static CharStream iterate(final Supplier<Boolean> hasNext, final CharSupplier next) {
@@ -2000,8 +2056,8 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
      * @return
      */
     public static CharStream parallelMerge(final CharStream[] a, final CharBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2060,8 +2116,8 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
      * @return
      */
     public static CharStream parallelMerge(final CharIterator[] a, final CharBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2093,8 +2149,8 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
      * @return
      */
     public static CharStream parallelMerge(final Collection<? extends CharIterator> c, final CharBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(c)) {

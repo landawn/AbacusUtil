@@ -30,7 +30,7 @@ package com.landawn.abacus.util;
  * @since 2.1
  * @version $Id: MutableShort.java 1669791 2015-03-28 15:22:59Z britter $
  */
-public final class MutableShort extends Number implements Comparable<MutableShort>, Mutable<Number> {
+public final class MutableShort extends Number implements Comparable<MutableShort>, Mutable {
 
     /**
      * Required for serialization support.
@@ -59,31 +59,12 @@ public final class MutableShort extends Number implements Comparable<MutableShor
         this.value = value;
     }
 
-    /**
-     * Constructs a new MutableShort with the specified value.
-     * 
-     * @param value  the initial value to store, not null
-     * @throws NullPointerException if the object is null
-     */
-    public MutableShort(final Number value) {
-        super();
-        this.value = value.shortValue();
-    }
-
-    /**
-     * Constructs a new MutableShort parsing the given string.
-     * 
-     * @param value  the string to parse, not null
-     * @throws NumberFormatException if the string cannot be parsed into a short
-     * @since 2.5
-     */
-    public MutableShort(final String value) throws NumberFormatException {
-        super();
-        this.value = Short.parseShort(value);
-    }
-
     public static MutableShort of(final short value) {
         return new MutableShort(value);
+    }
+
+    public short value() {
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -92,20 +73,8 @@ public final class MutableShort extends Number implements Comparable<MutableShor
      * 
      * @return the value as a Short, never null
      */
-    @Override
-    public Short getValue() {
-        return Short.valueOf(this.value);
-    }
-
-    /**
-     * Sets the value from any Number instance.
-     * 
-     * @param value  the value to set, not null
-     * @throws NullPointerException if the object is null
-     */
-    @Override
-    public void setValue(final Number value) {
-        this.value = value.shortValue();
+    public short getValue() {
+        return value;
     }
 
     /**
@@ -115,6 +84,17 @@ public final class MutableShort extends Number implements Comparable<MutableShor
      */
     public void setValue(final short value) {
         this.value = value;
+    }
+
+    public short getAndSet(final short value) {
+        short result = value;
+        this.value = value;
+        return result;
+    }
+
+    public short setAndGet(final short value) {
+        this.value = value;
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -148,17 +128,6 @@ public final class MutableShort extends Number implements Comparable<MutableShor
     }
 
     /**
-     * Adds a value to the value of this instance.
-     * 
-     * @param operand  the value to add, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void add(final Number operand) {
-        this.value += operand.shortValue();
-    }
-
-    /**
      * Subtracts a value from the value of this instance.
      * 
      * @param operand  the value to subtract, not null
@@ -166,17 +135,6 @@ public final class MutableShort extends Number implements Comparable<MutableShor
      */
     public void subtract(final short operand) {
         this.value -= operand;
-    }
-
-    /**
-     * Subtracts a value from the value of this instance.
-     * 
-     * @param operand  the value to subtract, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void subtract(final Number operand) {
-        this.value -= operand.shortValue();
     }
 
     /**
@@ -291,16 +249,6 @@ public final class MutableShort extends Number implements Comparable<MutableShor
 
     //-----------------------------------------------------------------------
     /**
-     * Gets this mutable as an instance of Short.
-     *
-     * @return a Short instance containing the value from this mutable, never null
-     */
-    public Short toShort() {
-        return Short.valueOf(shortValue());
-    }
-
-    //-----------------------------------------------------------------------
-    /**
      * Compares this mutable to another in ascending order.
      * 
      * @param other  the other mutable to compare to, not null
@@ -323,7 +271,7 @@ public final class MutableShort extends Number implements Comparable<MutableShor
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof MutableShort) {
-            return value == ((MutableShort) obj).shortValue();
+            return value == ((MutableShort) obj).value;
         }
         return false;
     }

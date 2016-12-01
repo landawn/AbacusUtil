@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
@@ -7,6 +21,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.IndexedShort;
+import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
@@ -32,6 +47,9 @@ import com.landawn.abacus.util.function.ToShortFunction;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 abstract class AbstractShortStream extends ShortStream {
 
@@ -104,6 +122,27 @@ abstract class AbstractShortStream extends ShortStream {
                 return new HashMap<>();
             }
         });
+    }
+
+    @Override
+    public <K> Multimap<K, Short, List<Short>> toMultimap(ShortFunction<? extends K> keyMapper) {
+        return toMultimap(keyMapper, new ShortFunction<Short>() {
+            @Override
+            public Short apply(short value) {
+                return value;
+            }
+        });
+    }
+
+    @Override
+    public <K, V extends Collection<Short>> Multimap<K, Short, V> toMultimap(ShortFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Short, V>> mapSupplier) {
+        return toMultimap(keyMapper, new ShortFunction<Short>() {
+            @Override
+            public Short apply(short value) {
+                return value;
+            }
+        }, mapSupplier);
     }
 
     @Override
@@ -189,11 +228,7 @@ abstract class AbstractShortStream extends ShortStream {
 
                 }, null, sorted) };
 
-        if (this.isParallel()) {
-            return new ParallelArrayStream<ShortStream>(a, 0, a.length, closeHandlers, false, null, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayStream<ShortStream>(a, closeHandlers);
-        }
+        return this.newStream(a, false, null);
     }
 
     @Override
@@ -255,6 +290,38 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public String join(final CharSequence delimiter) {
+        return join(delimiter, "", "");
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
+            @Override
+            public Joiner get() {
+                return new Joiner(delimiter, prefix, suffix);
+            }
+        };
+
+        final ObjShortConsumer<Joiner> accumulator = new ObjShortConsumer<Joiner>() {
+            @Override
+            public void accept(Joiner a, short t) {
+                a.add(t);
+            }
+        };
+
+        final BiConsumer<Joiner, Joiner> combiner = new BiConsumer<Joiner, Joiner>() {
+            @Override
+            public void accept(Joiner a, Joiner b) {
+                a.merge(b);
+            }
+        };
+
+        final Joiner joiner = collect(supplier, accumulator, combiner);
+        return joiner.toString();
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
@@ -304,89 +371,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream parallel() {
-        return parallel(DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public ShortStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public ShortStream parallel(BaseStream.Splitter splitter) {
-        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
-    }
-
-    @Override
-    public int maxThreadNum() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return 1;
-    }
-
-    @Override
-    public ShortStream maxThreadNum(int maxThreadNum) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");  
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    @Override
-    public Splitter splitter() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return DEFAULT_SPILTTER;
-    }
-
-    @Override
-    public ShortStream splitter(Splitter splitter) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    protected ShortStream newStream(final short[] a, final boolean sorted) {
-        if (this.isParallel()) {
-            return new ParallelArrayShortStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayShortStream(a, closeHandlers, sorted);
-        }
-    }
-
-    protected ShortStream newStream(final ShortIterator iter, final boolean sorted) {
-        if (this.isParallel()) {
-            final ImmutableShortIterator shortIter = iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public short next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorShortStream(shortIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            final ImmutableShortIterator shortIter = iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public short next() {
-                    return iter.next();
-                }
-            };
-
-            return new IteratorShortStream(shortIter, closeHandlers, sorted);
-        }
+    public ShortStream cached() {
+        return this.newStream(toArray(), sorted);
     }
 }

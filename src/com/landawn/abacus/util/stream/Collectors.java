@@ -43,6 +43,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
@@ -3022,6 +3023,42 @@ public final class Collectors {
         }
     }
 
+    public static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, Map<K, V>> toMap() {
+        final Function<Map.Entry<? extends K, ? extends V>, ? extends K> keyMapper = new Function<Map.Entry<? extends K, ? extends V>, K>() {
+            @Override
+            public K apply(Entry<? extends K, ? extends V> t) {
+                return t.getKey();
+            }
+        };
+
+        final Function<Map.Entry<? extends K, ? extends V>, ? extends V> valueMapper = new Function<Map.Entry<? extends K, ? extends V>, V>() {
+            @Override
+            public V apply(Entry<? extends K, ? extends V> t) {
+                return t.getValue();
+            }
+        };
+
+        return toMap(keyMapper, valueMapper);
+    }
+
+    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<? extends K, ? extends V>, ?, M> toMap(final Supplier<M> mapSupplier) {
+        final Function<Map.Entry<? extends K, ? extends V>, ? extends K> keyMapper = new Function<Map.Entry<? extends K, ? extends V>, K>() {
+            @Override
+            public K apply(Entry<? extends K, ? extends V> t) {
+                return t.getKey();
+            }
+        };
+
+        final Function<Map.Entry<? extends K, ? extends V>, ? extends V> valueMapper = new Function<Map.Entry<? extends K, ? extends V>, V>() {
+            @Override
+            public V apply(Entry<? extends K, ? extends V> t) {
+                return t.getValue();
+            }
+        };
+
+        return toMap(keyMapper, valueMapper, mapSupplier);
+    }
+
     /**
      * Returns a {@code Collector} that accumulates elements into a
      * {@code Map} whose keys and values are the result of applying the provided
@@ -3434,6 +3471,66 @@ public final class Collectors {
     public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(final Function<? super T, ? extends K> keyMapper,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<BiMap<K, U>> mapSupplier) {
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+    }
+
+    public static <K, E> Collector<Map.Entry<? extends K, ? extends E>, ?, Multimap<K, E, List<E>>> toMultimap() {
+        final Function<Map.Entry<? extends K, ? extends E>, ? extends K> keyMapper = new Function<Map.Entry<? extends K, ? extends E>, K>() {
+            @Override
+            public K apply(Entry<? extends K, ? extends E> t) {
+                return t.getKey();
+            }
+        };
+
+        final Function<Map.Entry<? extends K, ? extends E>, ? extends E> valueMapper = new Function<Map.Entry<? extends K, ? extends E>, E>() {
+            @Override
+            public E apply(Entry<? extends K, ? extends E> t) {
+                return t.getValue();
+            }
+        };
+
+        return toMultimap(keyMapper, valueMapper);
+    }
+
+    public static <K, E, V extends Collection<E>> Collector<Map.Entry<? extends K, ? extends E>, ?, Multimap<K, E, V>> toMultimap(
+            final Supplier<Multimap<K, E, V>> mapSupplier) {
+        final Function<Map.Entry<? extends K, ? extends E>, ? extends K> keyMapper = new Function<Map.Entry<? extends K, ? extends E>, K>() {
+            @Override
+            public K apply(Entry<? extends K, ? extends E> t) {
+                return t.getKey();
+            }
+        };
+
+        final Function<Map.Entry<? extends K, ? extends E>, ? extends E> valueMapper = new Function<Map.Entry<? extends K, ? extends E>, E>() {
+            @Override
+            public E apply(Entry<? extends K, ? extends E> t) {
+                return t.getValue();
+            }
+        };
+
+        return toMultimap(keyMapper, valueMapper, mapSupplier);
+    }
+
+    public static <T, K> Collector<T, ?, Multimap<K, T, List<T>>> toMultimap(Function<? super T, ? extends K> keyMapper) {
+        final Function<? super T, ? extends T> valueMapper = new Function<T, T>() {
+            @Override
+            public T apply(T t) {
+                return t;
+            }
+        };
+
+        return toMultimap(keyMapper, valueMapper);
+    }
+
+    public static <T, K, V extends Collection<T>> Collector<T, ?, Multimap<K, T, V>> toMultimap(final Function<? super T, ? extends K> keyMapper,
+            final Supplier<Multimap<K, T, V>> mapSupplier) {
+        final Function<? super T, ? extends T> valueMapper = new Function<T, T>() {
+            @Override
+            public T apply(T t) {
+                return t;
+            }
+        };
+
+        return toMultimap(keyMapper, valueMapper, mapSupplier);
     }
 
     public static <T, K, U> Collector<T, ?, Multimap<K, U, List<U>>> toMultimap(Function<? super T, ? extends K> keyMapper,

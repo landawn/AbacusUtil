@@ -33,7 +33,7 @@ import java.io.Serializable;
  * @since 2.2
  * @version $Id: MutableBoolean.java 1669791 2015-03-28 15:22:59Z britter $
  */
-public final class MutableBoolean implements Mutable<Boolean>, Serializable, Comparable<MutableBoolean> {
+public final class MutableBoolean implements Mutable, Serializable, Comparable<MutableBoolean> {
 
     /**
      * Required for serialization support.
@@ -62,19 +62,12 @@ public final class MutableBoolean implements Mutable<Boolean>, Serializable, Com
         this.value = value;
     }
 
-    /**
-     * Constructs a new MutableBoolean with the specified value.
-     * 
-     * @param value  the initial value to store, not null
-     * @throws NullPointerException if the object is null
-     */
-    public MutableBoolean(final Boolean value) {
-        super();
-        this.value = value.booleanValue();
-    }
-
     public static MutableBoolean of(final boolean value) {
         return new MutableBoolean(value);
+    }
+
+    public boolean value() {
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -83,20 +76,8 @@ public final class MutableBoolean implements Mutable<Boolean>, Serializable, Com
      * 
      * @return the value as a Boolean, never null
      */
-    @Override
-    public Boolean getValue() {
-        return Boolean.valueOf(this.value);
-    }
-
-    /**
-     * Sets the value from any Boolean instance.
-     * 
-     * @param value  the value to set, not null
-     * @throws NullPointerException if the object is null
-     */
-    @Override
-    public void setValue(final Boolean value) {
-        this.value = value.booleanValue();
+    public boolean getValue() {
+        return value;
     }
 
     /**
@@ -106,6 +87,17 @@ public final class MutableBoolean implements Mutable<Boolean>, Serializable, Com
      */
     public void setValue(final boolean value) {
         this.value = value;
+    }
+
+    public boolean getAndSet(final boolean value) {
+        boolean result = value;
+        this.value = value;
+        return result;
+    }
+
+    public boolean setAndGet(final boolean value) {
+        this.value = value;
+        return value;
     }
 
     /**
@@ -147,25 +139,8 @@ public final class MutableBoolean implements Mutable<Boolean>, Serializable, Com
         return value == false;
     }
 
-    //-----------------------------------------------------------------------
-    /**
-     * Returns the value of this MutableBoolean as a boolean.
-     * 
-     * @return the boolean value represented by this object.
-     */
-    public boolean booleanValue() {
-        return value;
-    }
-
-    //-----------------------------------------------------------------------
-    /**
-     * Gets this mutable as an instance of Boolean.
-     *
-     * @return a Boolean instance containing the value from this mutable, never null
-     * @since 2.5
-     */
-    public Boolean toBoolean() {
-        return Boolean.valueOf(booleanValue());
+    public void inverse() {
+        this.value = !this.value;
     }
 
     //-----------------------------------------------------------------------
@@ -193,7 +168,7 @@ public final class MutableBoolean implements Mutable<Boolean>, Serializable, Com
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof MutableBoolean) {
-            return value == ((MutableBoolean) obj).booleanValue();
+            return value == ((MutableBoolean) obj).value;
         }
         return false;
     }

@@ -596,6 +596,24 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     /**
      * 
      * @param keyMapper
+     * @return
+     * @see Collectors#toMultimap(Function)
+     */
+    public abstract <K> Multimap<K, Integer, List<Integer>> toMultimap(IntFunction<? extends K> keyMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMultimap(Function, Supplier)
+     */
+    public abstract <K, V extends Collection<Integer>> Multimap<K, Integer, V> toMultimap(IntFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Integer, V>> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
@@ -840,6 +858,10 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
 
     public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarize2();
 
+    public abstract String join(CharSequence delimiter);
+
+    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
+
     /**
      * Returns whether any elements of this stream match the provided
      * predicate.  May not evaluate the predicate on all elements if not
@@ -1000,6 +1022,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     public abstract IntStream zipWith(IntStream b, int valueForNoneA, int valueForNoneB, IntBiFunction<Integer> zipFunction);
 
     public abstract IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTriFunction<Integer> zipFunction);
+
+    public abstract IntStream cached();
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -1318,20 +1342,55 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
         });
     }
 
-    /**
-     * Returns random numbers between 0 (inclusive) and the specified value (exclusive).
-     * 
-     * @param bound
-     * @return
-     * @see java.util.Random#nextInt(int)
-     */
-    public static IntStream random(final int bound) {
-        return iterate(new IntSupplier() {
-            @Override
-            public int getAsInt() {
-                return RAND.nextInt(bound);
+    //    /**
+    //     * Returns random numbers between 0 (inclusive) and the specified value (exclusive).
+    //     * 
+    //     * @param bound
+    //     * @return
+    //     * @see java.util.Random#nextInt(int)
+    //     */
+    //    public static IntStream random(final int bound) {
+    //        return iterate(new IntSupplier() {
+    //            @Override
+    //            public int getAsInt() {
+    //                return RAND.nextInt(bound);
+    //            }
+    //        });
+    //    }
+
+    public static IntStream random(final int startInclusive, final int endInclusive) {
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+        }
+
+        if (startInclusive == endInclusive) {
+            return iterate(new IntSupplier() {
+                @Override
+                public int getAsInt() {
+                    return startInclusive;
+                }
+            });
+        } else {
+            final long mod = endInclusive - startInclusive + 1L;
+
+            if (mod <= Integer.MAX_VALUE) {
+                final int n = (int) mod;
+
+                return iterate(new IntSupplier() {
+                    @Override
+                    public int getAsInt() {
+                        return RAND.nextInt(n) + startInclusive;
+                    }
+                });
+            } else {
+                return iterate(new IntSupplier() {
+                    @Override
+                    public int getAsInt() {
+                        return (int) (Math.abs(RAND.nextLong() % mod) + startInclusive);
+                    }
+                });
             }
-        });
+        }
     }
 
     public static IntStream iterate(final Supplier<Boolean> hasNext, final IntSupplier next) {
@@ -2124,8 +2183,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @return
      */
     public static IntStream parallelMerge(final IntStream[] a, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2184,8 +2243,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @return
      */
     public static IntStream parallelMerge(final IntIterator[] a, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2217,8 +2276,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @return
      */
     public static IntStream parallelMerge(final Collection<? extends IntIterator> c, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(c)) {

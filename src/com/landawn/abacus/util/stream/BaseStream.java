@@ -27,6 +27,7 @@ package com.landawn.abacus.util.stream;
 import java.util.Iterator;
 
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.Try;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -59,6 +60,9 @@ import com.landawn.abacus.util.Nth;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable {
+    // public static final int MAX_THREAD_POOL_SIZE = 8192;
+    public static final int MAX_THREAD_POOL_SIZE = Integer.MAX_VALUE;
+    public static final int MAX_THREAD_NUM_PER_OPERATION = 1024;
 
     S append(S s);
 
@@ -96,7 +100,7 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
 
     /**
      * Returns an equivalent stream that is parallel. May return
-     * itself if the stream was already parallel
+     * itself if the stream was already parallel. Any parallel should be closed by try-catch or call tried before last step.
      *
      * @return a parallel stream
      * @see #parallel(int, Splitter)
@@ -309,6 +313,8 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
      * @return
      */
     S splitter(Splitter splitter);
+
+    Try<S> tried();
 
     /**
      * Returns an equivalent stream with an additional close handler.  Close

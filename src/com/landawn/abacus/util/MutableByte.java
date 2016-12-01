@@ -30,7 +30,7 @@ package com.landawn.abacus.util;
  * @since 2.1
  * @version $Id: MutableByte.java 1669791 2015-03-28 15:22:59Z britter $
  */
-public final class MutableByte extends Number implements Comparable<MutableByte>, Mutable<Number> {
+public final class MutableByte extends Number implements Comparable<MutableByte>, Mutable {
 
     /**
      * Required for serialization support.
@@ -59,31 +59,12 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
         this.value = value;
     }
 
-    /**
-     * Constructs a new MutableByte with the specified value.
-     * 
-     * @param value  the initial value to store, not null
-     * @throws NullPointerException if the object is null
-     */
-    public MutableByte(final Number value) {
-        super();
-        this.value = value.byteValue();
-    }
-
-    /**
-     * Constructs a new MutableByte parsing the given string.
-     * 
-     * @param value  the string to parse, not null
-     * @throws NumberFormatException if the string cannot be parsed into a byte
-     * @since 2.5
-     */
-    public MutableByte(final String value) throws NumberFormatException {
-        super();
-        this.value = Byte.parseByte(value);
-    }
-
     public static MutableByte of(final byte value) {
         return new MutableByte(value);
+    }
+
+    public byte value() {
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -92,20 +73,8 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
      * 
      * @return the value as a Byte, never null
      */
-    @Override
-    public Byte getValue() {
-        return Byte.valueOf(this.value);
-    }
-
-    /**
-     * Sets the value from any Number instance.
-     * 
-     * @param value  the value to set, not null
-     * @throws NullPointerException if the object is null
-     */
-    @Override
-    public void setValue(final Number value) {
-        this.value = value.byteValue();
+    public byte getValue() {
+        return value;
     }
 
     /**
@@ -115,6 +84,17 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
      */
     public void setValue(final byte value) {
         this.value = value;
+    }
+
+    public byte getAndSet(final byte value) {
+        byte result = value;
+        this.value = value;
+        return result;
+    }
+
+    public byte setAndGet(final byte value) {
+        this.value = value;
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -148,17 +128,6 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
     }
 
     /**
-     * Adds a value to the value of this instance.
-     * 
-     * @param operand  the value to add, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void add(final Number operand) {
-        this.value += operand.byteValue();
-    }
-
-    /**
      * Subtracts a value from the value of this instance.
      * 
      * @param operand  the value to subtract, not null
@@ -166,17 +135,6 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
      */
     public void subtract(final byte operand) {
         this.value -= operand;
-    }
-
-    /**
-     * Subtracts a value from the value of this instance.
-     * 
-     * @param operand  the value to subtract, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void subtract(final Number operand) {
-        this.value -= operand.byteValue();
     }
 
     /**
@@ -291,16 +249,6 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
 
     //-----------------------------------------------------------------------
     /**
-     * Gets this mutable as an instance of Byte.
-     *
-     * @return a Byte instance containing the value from this mutable
-     */
-    public Byte toByte() {
-        return Byte.valueOf(byteValue());
-    }
-
-    //-----------------------------------------------------------------------
-    /**
      * Compares this mutable to another in ascending order.
      * 
      * @param other  the other mutable to compare to, not null
@@ -323,7 +271,7 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof MutableByte) {
-            return value == ((MutableByte) obj).byteValue();
+            return value == ((MutableByte) obj).value;
         }
         return false;
     }

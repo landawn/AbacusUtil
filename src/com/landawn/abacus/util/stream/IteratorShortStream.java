@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
@@ -38,6 +52,9 @@ import com.landawn.abacus.util.function.ToShortFunction;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 final class IteratorShortStream extends AbstractShortStream {
     private final ImmutableShortIterator elements;
@@ -366,6 +383,7 @@ final class IteratorShortStream extends AbstractShortStream {
         return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
             private short next;
             private boolean hasNext = false;
+            private boolean preCondition = false;
 
             @Override
             public boolean hasNext() {
@@ -386,13 +404,18 @@ final class IteratorShortStream extends AbstractShortStream {
                 }
 
                 while (hasNext) {
-                    if (predicate.apply(next, boundary)) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
                         if (boundaryUpdate != null) {
                             boundaryUpdate.accept(boundary);
                         }
+
                         break;
                     }
                 }
@@ -1173,8 +1196,8 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream parallel(int maxThreadNum, Splitter splitter) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         return new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitter);

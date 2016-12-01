@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.lang.reflect.Field;
@@ -5,24 +19,34 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.Wrapper;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
+import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -31,7 +55,10 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Sheet;
+import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.Try;
+import com.landawn.abacus.util.Wrapper;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 
@@ -39,16 +66,48 @@ import com.landawn.abacus.util.function.BinaryOperator;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  * @param <T>
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T, S> {
     static final Logger logger = LoggerFactory.getLogger(StreamBase.class);
 
     static final Object NONE = new Object();
-    static final int THREAD_POOL_SIZE = 256;
-    static final AsyncExecutor asyncExecutor = new AsyncExecutor(THREAD_POOL_SIZE, 300L, TimeUnit.SECONDS);
+
+    static final int CORE_THREAD_POOL_SIZE = 16;
+    static final AsyncExecutor asyncExecutor;
+
+    static {
+        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, 300L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(1));
+
+        asyncExecutor = new AsyncExecutor(threadPoolExecutor) {
+            @Override
+            public CompletableFuture<Void> execute(final Runnable command) {
+                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
+                //        throw new RejectedExecutionException("Task is rejected due to execeeded max thread pool size: " + MAX_THREAD_POOL_SIZE);
+                //    }
+
+                return super.execute(command);
+            }
+
+            @Override
+            public <T> CompletableFuture<T> execute(final Callable<T> command) {
+                //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
+                //        throw new RejectedExecutionException("Task is rejected due to execeeded max thread pool size: " + MAX_THREAD_POOL_SIZE);
+                //    }
+
+                return super.execute(command);
+            }
+        };
+    }
+
     static final int DEFAULT_MAX_THREAD_NUM = N.CPU_CORES;
     static final int DEFAULT_READING_THREAD_NUM = 8;
-    static final int DEFAULT_QUEUE_SIZE = 16;
+
+    static final int MAX_QUEUE_SIZE = 8192;
+    static final int DEFAULT_QUEUE_SIZE_PER_ITERATOR = 16;
     static final Splitter DEFAULT_SPILTTER = Splitter.ITERATOR;
     static final Random RAND = new SecureRandom();
 
@@ -351,33 +410,381 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
     }
 
     @Override
-    public void close() {
+    public Try<S> tried() {
+        return Try.of((S) this);
+    }
+
+    @Override
+    public S parallel() {
+        return parallel(DEFAULT_SPILTTER);
+    }
+
+    @Override
+    public S parallel(int maxThreadNum) {
+        return parallel(maxThreadNum, DEFAULT_SPILTTER);
+    }
+
+    @Override
+    public S parallel(BaseStream.Splitter splitter) {
+        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
+    }
+
+    @Override
+    public int maxThreadNum() {
+        // throw new UnsupportedOperationException("It's not supported sequential stream.");
+
+        // ignore, do nothing if it's sequential stream.
+        return 1;
+    }
+
+    @Override
+    public S maxThreadNum(int maxThreadNum) {
+        // throw new UnsupportedOperationException("It's not supported sequential stream.");  
+
+        // ignore, do nothing if it's sequential stream.
+        return (S) this;
+    }
+
+    @Override
+    public Splitter splitter() {
+        // throw new UnsupportedOperationException("It's not supported sequential stream.");
+
+        // ignore, do nothing if it's sequential stream.
+        return DEFAULT_SPILTTER;
+    }
+
+    @Override
+    public S splitter(Splitter splitter) {
+        // throw new UnsupportedOperationException("It's not supported sequential stream.");
+
+        // ignore, do nothing if it's sequential stream.
+        return (S) this;
+    }
+
+    @Override
+    public synchronized void close() {
         if (isClosed) {
             return;
         }
 
-        try {
-            if (N.notNullOrEmpty(closeHandlers)) {
-                Throwable ex = null;
+        isClosed = true;
 
-                for (Runnable closeHandler : closeHandlers) {
-                    try {
-                        closeHandler.run();
-                    } catch (Throwable e) {
-                        if (ex == null) {
-                            ex = e;
-                        } else {
-                            ex.addSuppressed(e);
-                        }
+        if (N.notNullOrEmpty(closeHandlers)) {
+            Throwable ex = null;
+
+            for (Runnable closeHandler : closeHandlers) {
+                try {
+                    closeHandler.run();
+                } catch (Throwable e) {
+                    if (ex == null) {
+                        ex = e;
+                    } else {
+                        ex.addSuppressed(e);
                     }
                 }
-
-                if (ex != null) {
-                    throw N.toRuntimeException(ex);
-                }
             }
-        } finally {
-            isClosed = true;
+
+            if (ex != null) {
+                throw N.toRuntimeException(ex);
+            }
+        }
+    }
+
+    protected CharStream newStream(final char[] a, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayCharStream(a, closeHandlers, sorted);
+        }
+    }
+
+    protected CharStream newStream(final CharIterator iter, final boolean sorted) {
+        if (this.isParallel()) {
+            final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public char next() {
+                    return iter.next();
+                }
+            };
+
+            return new ParallelIteratorCharStream(charIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public char next() {
+                    return iter.next();
+                }
+            };
+
+            return new IteratorCharStream(charIter, closeHandlers, sorted);
+        }
+    }
+
+    protected ByteStream newStream(final byte[] a, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayByteStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayByteStream(a, closeHandlers, sorted);
+        }
+    }
+
+    protected ByteStream newStream(final ByteIterator iter, final boolean sorted) {
+        if (this.isParallel()) {
+            final ImmutableByteIterator byteIter = iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public byte next() {
+                    return iter.next();
+                }
+            };
+
+            return new ParallelIteratorByteStream(byteIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            final ImmutableByteIterator byteIter = iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public byte next() {
+                    return iter.next();
+                }
+            };
+
+            return new IteratorByteStream(byteIter, closeHandlers, sorted);
+        }
+    }
+
+    protected ShortStream newStream(final short[] a, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayShortStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayShortStream(a, closeHandlers, sorted);
+        }
+    }
+
+    protected ShortStream newStream(final ShortIterator iter, final boolean sorted) {
+        if (this.isParallel()) {
+            final ImmutableShortIterator shortIter = iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public short next() {
+                    return iter.next();
+                }
+            };
+
+            return new ParallelIteratorShortStream(shortIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            final ImmutableShortIterator shortIter = iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public short next() {
+                    return iter.next();
+                }
+            };
+
+            return new IteratorShortStream(shortIter, closeHandlers, sorted);
+        }
+    }
+
+    protected IntStream newStream(final int[] a, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayIntStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayIntStream(a, closeHandlers, sorted);
+        }
+    }
+
+    protected IntStream newStream(final IntIterator iter, final boolean sorted) {
+        if (this.isParallel()) {
+            final ImmutableIntIterator intIter = iter instanceof ImmutableIntIterator ? (ImmutableIntIterator) iter : new ImmutableIntIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public int next() {
+                    return iter.next();
+                }
+            };
+
+            return new ParallelIteratorIntStream(intIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            final ImmutableIntIterator intIter = iter instanceof ImmutableIntIterator ? (ImmutableIntIterator) iter : new ImmutableIntIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public int next() {
+                    return iter.next();
+                }
+            };
+
+            return new IteratorIntStream(intIter, closeHandlers, sorted);
+        }
+    }
+
+    protected LongStream newStream(final long[] a, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayLongStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayLongStream(a, closeHandlers, sorted);
+        }
+    }
+
+    protected LongStream newStream(final LongIterator iter, final boolean sorted) {
+        if (this.isParallel()) {
+            final ImmutableLongIterator longIter = iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public long next() {
+                    return iter.next();
+                }
+            };
+
+            return new ParallelIteratorLongStream(longIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            final ImmutableLongIterator longIter = iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public long next() {
+                    return iter.next();
+                }
+            };
+
+            return new IteratorLongStream(longIter, closeHandlers, sorted);
+        }
+    }
+
+    protected FloatStream newStream(final float[] a, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayFloatStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayFloatStream(a, closeHandlers, sorted);
+        }
+    }
+
+    protected FloatStream newStream(final FloatIterator iter, final boolean sorted) {
+        if (this.isParallel()) {
+            final ImmutableFloatIterator floatIter = iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public float next() {
+                    return iter.next();
+                }
+            };
+
+            return new ParallelIteratorFloatStream(floatIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            final ImmutableFloatIterator floatIter = iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public float next() {
+                    return iter.next();
+                }
+            };
+
+            return new IteratorFloatStream(floatIter, closeHandlers, sorted);
+        }
+    }
+
+    protected DoubleStream newStream(final double[] a, final boolean sorted) {
+        if (this.isParallel()) {
+            return new ParallelArrayDoubleStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayDoubleStream(a, closeHandlers, sorted);
+        }
+    }
+
+    protected DoubleStream newStream(final DoubleIterator iter, final boolean sorted) {
+        if (this.isParallel()) {
+            final ImmutableDoubleIterator doubleIter = iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter
+                    : new ImmutableDoubleIterator() {
+                        @Override
+                        public boolean hasNext() {
+                            return iter.hasNext();
+                        }
+
+                        @Override
+                        public double next() {
+                            return iter.next();
+                        }
+                    };
+
+            return new ParallelIteratorDoubleStream(doubleIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+        } else {
+            final ImmutableDoubleIterator doubleIter = iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter
+                    : new ImmutableDoubleIterator() {
+                        @Override
+                        public boolean hasNext() {
+                            return iter.hasNext();
+                        }
+
+                        @Override
+                        public double next() {
+                            return iter.next();
+                        }
+                    };
+
+            return new IteratorDoubleStream(doubleIter, closeHandlers, sorted);
+        }
+    }
+
+    protected <E> Stream<E> newStream(final E[] a, final boolean sorted, final Comparator<? super E> comparator) {
+        if (this.isParallel()) {
+            return new ParallelArrayStream<E>(a, 0, a.length, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitter());
+        } else {
+            return new ArrayStream<E>(a, closeHandlers, sorted, comparator);
+        }
+    }
+
+    protected <E> Stream<E> newStream(final Iterator<E> iter, final boolean sorted, final Comparator<? super E> comparator) {
+        if (this.isParallel()) {
+            return new ParallelIteratorStream<E>(iter, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitter());
+        } else {
+            return new IteratorStream<E>(iter, closeHandlers, sorted, comparator);
         }
     }
 
@@ -414,7 +821,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
     }
 
     static int calculateQueueSize(int len) {
-        return N.min(128, len * DEFAULT_QUEUE_SIZE);
+        return N.min(MAX_QUEUE_SIZE, len * DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     static boolean isSameComparator(Comparator<?> a, Comparator<?> b) {

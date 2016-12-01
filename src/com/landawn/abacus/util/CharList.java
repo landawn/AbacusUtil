@@ -205,7 +205,38 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return of(Array.repeat(element, len));
     }
 
+    public static CharList random(final int len) {
+        final char[] a = new char[len];
+        final int mod = Character.MAX_VALUE + 1;
+
+        for (int i = 0; i < len; i++) {
+            a[i] = (char) Math.abs(RAND.nextInt() % mod);
+        }
+
+        return of(a);
+    }
+
+    //    public static CharList random(CharPredicate predicate, final int len) {
+    //        final char[] a = new char[len];
+    //        final int mod = Character.MAX_VALUE + 1;
+    //        char ch = 0;
+    //
+    //        for (int i = 0; i < len;) {
+    //            ch = (char) Math.abs(RAND.nextInt() % mod);
+    //
+    //            if (predicate.test(ch)) {
+    //                a[i++] = ch;
+    //            }
+    //        }
+    //
+    //        return of(a);
+    //    }
+
     public static CharList random(final char startInclusive, final char endInclusive, final int len) {
+        if (startInclusive > endInclusive) {
+            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+        }
+
         if (startInclusive == endInclusive) {
             return repeat(startInclusive, len);
         }
@@ -220,21 +251,42 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return of(a);
     }
 
-    public static CharList random(final char startInclusive, final char endInclusive, CharPredicate predicate, final int len) {
-        if (startInclusive == endInclusive) {
-            return repeat(startInclusive, len);
+    //    public static CharList random(final char startInclusive, final char endInclusive, CharPredicate predicate, final int len) {
+    //        if (startInclusive > endInclusive) {
+    //            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+    //        }
+    //
+    //        if (startInclusive == endInclusive) {
+    //            return repeat(startInclusive, len);
+    //        }
+    //
+    //        final char[] a = new char[len];
+    //        final int mod = endInclusive - startInclusive + 1;
+    //        char ch = 0;
+    //
+    //        for (int i = 0; i < len;) {
+    //            ch = (char) (Math.abs(RAND.nextInt() % mod) + startInclusive);
+    //
+    //            if (predicate.test(ch)) {
+    //                a[i++] = ch;
+    //            }
+    //        }
+    //
+    //        return of(a);
+    //    }
+
+    public static CharList random(final char[] candicates, final int len) {
+        if (N.isNullOrEmpty(candicates) || candicates.length >= Integer.MAX_VALUE) {
+            throw new IllegalArgumentException();
+        } else if (candicates.length == 1) {
+            return repeat(candicates[0], len);
         }
 
+        final int n = candicates.length;
         final char[] a = new char[len];
-        final int mod = endInclusive - startInclusive + 1;
-        char ch = 0;
 
-        for (int i = 0; i < len;) {
-            ch = (char) (Math.abs(RAND.nextInt() % mod) + startInclusive);
-
-            if (predicate.test(ch)) {
-                a[i++] = ch;
-            }
+        for (int i = 0; i < len; i++) {
+            a[i] = candicates[RAND.nextInt(n)];
         }
 
         return of(a);

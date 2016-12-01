@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
@@ -33,6 +47,9 @@ import com.landawn.abacus.util.function.Supplier;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 final class ArrayCharStream extends AbstractCharStream {
     private final char[] elements;
@@ -537,6 +554,7 @@ final class ArrayCharStream extends AbstractCharStream {
             final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
             private int cursor = fromIndex;
+            private boolean preCondition = false;
 
             @Override
             public boolean hasNext() {
@@ -552,13 +570,18 @@ final class ArrayCharStream extends AbstractCharStream {
                 final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
 
                 while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], boundary)) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(elements[cursor], boundary);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (boundaryUpdate != null) {
                             boundaryUpdate.accept(boundary);
                         }
+
                         break;
                     }
                 }
@@ -586,13 +609,55 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream peek(CharConsumer action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(elements[i]);
-        }
+    public CharStream peek(final CharConsumer action) {
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            action.accept(elements[i]);
+        //        }
+        // 
+        //        return this;
 
-        // return new CharStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
-        return this;
+        return new IteratorCharStream(new ImmutableCharIterator() {
+            int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public char next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                action.accept(elements[cursor]);
+
+                return elements[cursor++];
+            }
+
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
+            //
+            //    @Override
+            //    public void skip(long n) {
+            //        cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+            //    }
+
+            @Override
+            public char[] toArray() {
+                final char[] a = new char[toIndex - cursor];
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    action.accept(elements[cursor]);
+
+                    a[i] = elements[cursor++];
+                }
+
+                return a;
+            }
+        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1152,8 +1217,8 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public CharStream parallel(int maxThreadNum, com.landawn.abacus.util.stream.BaseStream.Splitter splitter) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         return new ParallelArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);

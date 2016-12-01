@@ -30,7 +30,7 @@ package com.landawn.abacus.util;
  * @since 2.1
  * @version $Id: MutableFloat.java 1669791 2015-03-28 15:22:59Z britter $
  */
-public final class MutableFloat extends Number implements Comparable<MutableFloat>, Mutable<Number> {
+public final class MutableFloat extends Number implements Comparable<MutableFloat>, Mutable {
 
     /**
      * Required for serialization support.
@@ -59,31 +59,12 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
         this.value = value;
     }
 
-    /**
-     * Constructs a new MutableFloat with the specified value.
-     * 
-     * @param value  the initial value to store, not null
-     * @throws NullPointerException if the object is null
-     */
-    public MutableFloat(final Number value) {
-        super();
-        this.value = value.floatValue();
-    }
-
-    /**
-     * Constructs a new MutableFloat parsing the given string.
-     * 
-     * @param value  the string to parse, not null
-     * @throws NumberFormatException if the string cannot be parsed into a float
-     * @since 2.5
-     */
-    public MutableFloat(final String value) throws NumberFormatException {
-        super();
-        this.value = Float.parseFloat(value);
-    }
-
     public static MutableFloat of(final float value) {
         return new MutableFloat(value);
+    }
+
+    public float value() {
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -92,20 +73,19 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
      * 
      * @return the value as a Float, never null
      */
-    @Override
-    public Float getValue() {
-        return Float.valueOf(this.value);
+    public float getValue() {
+        return value;
     }
 
-    /**
-     * Sets the value from any Number instance.
-     * 
-     * @param value  the value to set, not null
-     * @throws NullPointerException if the object is null
-     */
-    @Override
-    public void setValue(final Number value) {
-        this.value = value.floatValue();
+    public float getAndSet(final float value) {
+        float result = value;
+        this.value = value;
+        return result;
+    }
+
+    public float setAndGet(final float value) {
+        this.value = value;
+        return value;
     }
 
     /**
@@ -167,17 +147,6 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
     }
 
     /**
-     * Adds a value to the value of this instance.
-     * 
-     * @param operand  the value to add, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void add(final Number operand) {
-        this.value += operand.floatValue();
-    }
-
-    /**
      * Subtracts a value from the value of this instance.
      * 
      * @param operand  the value to subtract
@@ -185,17 +154,6 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
      */
     public void subtract(final float operand) {
         this.value -= operand;
-    }
-
-    /**
-     * Subtracts a value from the value of this instance.
-     * 
-     * @param operand  the value to subtract, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void subtract(final Number operand) {
-        this.value -= operand.floatValue();
     }
 
     /**
@@ -300,16 +258,6 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
 
     //-----------------------------------------------------------------------
     /**
-     * Gets this mutable as an instance of Float.
-     *
-     * @return a Float instance containing the value from this mutable, never null
-     */
-    public Float toFloat() {
-        return Float.valueOf(floatValue());
-    }
-
-    //-----------------------------------------------------------------------
-    /**
      * Compares this mutable to another in ascending order.
      * 
      * @param other  the other mutable to compare to, not null
@@ -354,7 +302,7 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
      */
     @Override
     public boolean equals(final Object obj) {
-        return obj instanceof MutableFloat && Float.floatToIntBits(((MutableFloat) obj).value) == Float.floatToIntBits(value);
+        return obj instanceof MutableFloat && Float.compare(((MutableFloat) obj).value, value) == 0;
     }
 
     /**

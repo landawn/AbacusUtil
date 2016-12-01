@@ -24,10 +24,7 @@
  */
 package com.landawn.abacus.util.stream;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
@@ -55,7 +52,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteSummaryStatistics;
@@ -91,6 +87,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -1079,6 +1076,24 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     /**
      * 
      * @param keyMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    public abstract <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyMapper,
+            Supplier<Multimap<K, T, V>> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
@@ -1091,7 +1106,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param valueMapper
      * @param mapSupplier
      * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier);
@@ -1719,6 +1734,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract <T2, T3, R> Stream<R> zipWith(final Stream<T2> b, final Stream<T3> c, final T valueForNoneA, final T2 valueForNoneB, final T3 valueForNoneC,
             final TriFunction<? super T, ? super T2, ? super T3, R> zipFunction);
 
+    public abstract Stream<T> cached();
+
     /**
      * Returns a reusable stream which can be repeatedly used.
      * 
@@ -1734,10 +1751,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract long persist(Writer writer, Function<? super T, String> toLine);
 
     public abstract long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
-            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter);
+            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter);
 
     public abstract long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter);
+            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter);
 
     @Override
     public abstract ImmutableIterator<T> iterator();
@@ -1819,6 +1836,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         }
     }
 
+    public static <K, V> Stream<Map.Entry<K, V>> of(final Map<K, V> map) {
+        if (N.isNullOrEmpty(map)) {
+            return empty();
+        }
+
+        return of(map.entrySet());
+    }
+
     /**
      * Returns a sequential, stateful and immutable <code>Stream</code>.
      *
@@ -1848,35 +1873,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
         final Stream<T> stream = of(iterator);
         return stream.skip(startIndex).limit(endIndex - startIndex);
-    }
-
-    /**
-     * <p> The returned stream encapsulates a {@link Reader}.  If timely
-     * disposal of file system resources is required, the try-with-resources
-     * construct should be used to ensure that the stream's
-     * {@link close close} method is invoked after the stream operations
-     * are completed.
-     * 
-     * @param file
-     * @return
-     */
-    static Stream<String> of(File file) {
-        BufferedReader br = null;
-
-        try {
-            br = new BufferedReader(new FileReader(file));
-            final BufferedReader tmp = br;
-
-            return of(br).onClose(new Runnable() {
-                @Override
-                public void run() {
-                    IOUtil.close(tmp);
-                }
-            });
-        } catch (IOException e) {
-            IOUtil.close(br);
-            throw new AbacusIOException(e);
-        }
     }
 
     /**
@@ -1913,6 +1909,24 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         N.requireNonNull(resultSet);
 
         return of(new RowIterator(resultSet), startIndex, endIndex);
+    }
+
+    static Try<Stream<String>> of(final File file) {
+        final Reader reader = IOUtil.createBufferedReader(file);
+
+        return of(reader).onClose(new Runnable() {
+            private boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                IOUtil.closeQuietly(reader);
+            }
+        }).tried();
     }
 
     public static Stream<Character> from(char... a) {
@@ -2516,7 +2530,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                     try {
                         T next = null;
 
-                        while (onGoing.booleanValue() && iter.hasNext()) {
+                        while (onGoing.value() && iter.hasNext()) {
                             next = iter.next();
 
                             if (next == null) {
@@ -2524,7 +2538,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                             }
 
                             if (queue.offer(next) == false) {
-                                while (onGoing.booleanValue()) {
+                                while (onGoing.value()) {
                                     if (queue.offer(next, 100, TimeUnit.MILLISECONDS)) {
                                         break;
                                     }
@@ -2547,7 +2561,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             public boolean hasNext() {
                 try {
                     if (next == null && (next = queue.poll()) == null) {
-                        while (onGoing.booleanValue() && (threadCounter.get() > 0 || queue.size() > 0)) { // (queue.size() > 0 || counter.get() > 0) is wrong. has to check counter first
+                        while (onGoing.value() && (threadCounter.get() > 0 || queue.size() > 0)) { // (queue.size() > 0 || counter.get() > 0) is wrong. has to check counter first
                             if ((next = queue.poll(100, TimeUnit.MILLISECONDS)) != null) {
                                 break;
                             }
@@ -5869,7 +5883,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @return
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -5919,7 +5933,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -5994,7 +6008,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -6031,7 +6045,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             @Override
             public boolean hasNext() {
                 try {
-                    while (nextA == null && onGoing.booleanValue() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                    while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
                         nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
                     }
 
@@ -6041,7 +6055,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                         return false;
                     }
 
-                    while (nextB == null && onGoing.booleanValue() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                    while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
                         nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
                     }
 
@@ -6092,7 +6106,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -6133,7 +6147,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             @Override
             public boolean hasNext() {
                 try {
-                    while (nextA == null && onGoing.booleanValue() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                    while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
                         nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
                     }
 
@@ -6143,7 +6157,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                         return false;
                     }
 
-                    while (nextB == null && onGoing.booleanValue() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                    while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
                         nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
                     }
 
@@ -6153,7 +6167,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                         return false;
                     }
 
-                    while (nextC == null && onGoing.booleanValue() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
+                    while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
                         nextC = queueC.poll(100, TimeUnit.MILLISECONDS);
                     }
 
@@ -6217,7 +6231,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
-        return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -6262,7 +6276,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
                 for (int i = 0; i < len; i++) {
                     try {
-                        while (next[i] == null && onGoing.booleanValue() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
+                        while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
                             next[i] = queues[i].poll(100, TimeUnit.MILLISECONDS);
                         }
 
@@ -6347,7 +6361,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -6417,7 +6431,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -6497,7 +6511,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -6536,11 +6550,11 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             @Override
             public boolean hasNext() {
                 try {
-                    while (nextA == null && onGoing.booleanValue() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                    while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
                         nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
                     }
 
-                    while (nextB == null && onGoing.booleanValue() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                    while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
                         nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
                     }
                 } catch (Throwable e) {
@@ -6610,7 +6624,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -6655,15 +6669,15 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             @Override
             public boolean hasNext() {
                 try {
-                    while (nextA == null && onGoing.booleanValue() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                    while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
                         nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
                     }
 
-                    while (nextB == null && onGoing.booleanValue() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                    while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
                         nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
                     }
 
-                    while (nextC == null && onGoing.booleanValue() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
+                    while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
                         nextC = queueC.poll(100, TimeUnit.MILLISECONDS);
                     }
                 } catch (Throwable e) {
@@ -6732,7 +6746,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
             final NFunction<? super T, R> zipFunction) {
-        return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE);
+        return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -6780,7 +6794,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
                 for (int i = 0; i < len; i++) {
                     try {
-                        while (next[i] == null && onGoing.booleanValue() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
+                        while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
                             next[i] = queues[i].poll(100, TimeUnit.MILLISECONDS);
                         }
                     } catch (Throwable e) {
@@ -7113,8 +7127,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @return
      */
     public static <T> Stream<T> parallelMerge(final Stream<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -7174,8 +7188,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <T> Stream<T> parallelMerge(final Iterator<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -7209,8 +7223,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <T> Stream<T> parallelMerge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(c)) {
@@ -7298,14 +7312,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 try {
                     A nextA = null;
 
-                    while (onGoing.booleanValue() && a.hasNext()) {
+                    while (onGoing.value() && a.hasNext()) {
                         nextA = a.next();
 
                         if (nextA == null) {
                             nextA = (A) NONE;
                         }
 
-                        while (onGoing.booleanValue() && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
+                        while (onGoing.value() && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
                             // continue
                         }
                     }
@@ -7323,14 +7337,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 try {
                     B nextB = null;
 
-                    while (onGoing.booleanValue() && b.hasNext()) {
+                    while (onGoing.value() && b.hasNext()) {
                         nextB = b.next();
 
                         if (nextB == null) {
                             nextB = (B) NONE;
                         }
 
-                        while (onGoing.booleanValue() && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
+                        while (onGoing.value() && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
                             // continue
                         }
                     }
@@ -7353,14 +7367,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 try {
                     A nextA = null;
 
-                    while (onGoing.booleanValue() && a.hasNext()) {
+                    while (onGoing.value() && a.hasNext()) {
                         nextA = a.next();
 
                         if (nextA == null) {
                             nextA = (A) NONE;
                         }
 
-                        while (onGoing.booleanValue() && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
+                        while (onGoing.value() && queueA.offer(nextA, 100, TimeUnit.MILLISECONDS) == false) {
                             // continue
                         }
                     }
@@ -7378,14 +7392,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 try {
                     B nextB = null;
 
-                    while (onGoing.booleanValue() && b.hasNext()) {
+                    while (onGoing.value() && b.hasNext()) {
                         nextB = b.next();
 
                         if (nextB == null) {
                             nextB = (B) NONE;
                         }
 
-                        while (onGoing.booleanValue() && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
+                        while (onGoing.value() && queueB.offer(nextB, 100, TimeUnit.MILLISECONDS) == false) {
                             // continue
                         }
                     }
@@ -7403,14 +7417,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 try {
                     C nextC = null;
 
-                    while (onGoing.booleanValue() && c.hasNext()) {
+                    while (onGoing.value() && c.hasNext()) {
                         nextC = c.next();
 
                         if (nextC == null) {
                             nextC = (C) NONE;
                         }
 
-                        while (onGoing.booleanValue() && queueC.offer(nextC, 100, TimeUnit.MILLISECONDS) == false) {
+                        while (onGoing.value() && queueC.offer(nextC, 100, TimeUnit.MILLISECONDS) == false) {
                             // continue
                         }
                     }
@@ -7441,14 +7455,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                     try {
                         Object next = null;
 
-                        while (onGoing.booleanValue() && iter.hasNext()) {
+                        while (onGoing.value() && iter.hasNext()) {
                             next = iter.next();
 
                             if (next == null) {
                                 next = NONE;
                             }
 
-                            while (onGoing.booleanValue() && queue.offer(next, 100, TimeUnit.MILLISECONDS) == false) {
+                            while (onGoing.value() && queue.offer(next, 100, TimeUnit.MILLISECONDS) == false) {
                                 // continue
                             }
                         }

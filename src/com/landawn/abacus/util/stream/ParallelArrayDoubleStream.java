@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
@@ -49,6 +63,9 @@ import com.landawn.abacus.util.function.ToLongFunction;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     private final double[] elements;
@@ -68,7 +85,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         this.elements = values;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
-        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, THREAD_POOL_SIZE, toIndex - fromIndex);
+        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION, toIndex - fromIndex);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
     }
 
@@ -303,6 +320,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
             private int cursor = fromIndex;
+            private boolean preCondition = false;
 
             @Override
             public boolean hasNext() {
@@ -318,13 +336,18 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
                 final DoubleList result = DoubleList.of(N.EMPTY_DOUBLE_ARRAY);
 
                 while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], boundary)) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(elements[cursor], boundary);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (boundaryUpdate != null) {
                             boundaryUpdate.accept(boundary);
                         }
+
                         break;
                     }
                 }
@@ -374,13 +397,24 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream peek(DoubleConsumer action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(elements[i]);
+    public DoubleStream peek(final DoubleConsumer action) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorDoubleStream(sequential().peek(action).doubleIterator(), closeHandlers, false, maxThreadNum, splitter);
         }
 
-        // return new DoubleStreamImpl(values, fromIndex, toIndex, sorted, closeHandlers);
-        return this;
+        final DoubleStream stream = boxed().peek(new Consumer<Double>() {
+            @Override
+            public void accept(Double t) {
+                action.accept(t);
+            }
+        }).sequential().mapToDouble(new ToDoubleFunction<Double>() {
+            @Override
+            public double applyAsDouble(Double value) {
+                return value.doubleValue();
+            }
+        });
+
+        return new ParallelIteratorDoubleStream(stream, closeHandlers, false, maxThreadNum, splitter);
     }
 
     @Override
@@ -562,7 +596,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     //            throw N.toRuntimeException(e);
     //        }
     //
-    //        return result.booleanValue();
+    //        return result.value();
     //    }
 
     @Override
@@ -1430,7 +1464,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             throw N.toRuntimeException(e);
         }
 
-        return result.booleanValue();
+        return result.value();
     }
 
     @Override
@@ -1512,7 +1546,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             throw N.toRuntimeException(e);
         }
 
-        return result.booleanValue();
+        return result.value();
     }
 
     @Override
@@ -1594,7 +1628,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             throw N.toRuntimeException(e);
         }
 
-        return result.booleanValue();
+        return result.value();
     }
 
     //    @Override
@@ -2044,7 +2078,9 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream maxThreadNum(int maxThreadNum) {
-        if (this.maxThreadNum == maxThreadNum) {
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
+        } else if (this.maxThreadNum == maxThreadNum) {
             return this;
         }
 

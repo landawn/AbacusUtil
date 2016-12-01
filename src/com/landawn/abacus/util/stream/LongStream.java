@@ -583,6 +583,24 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     /**
      * 
      * @param keyMapper
+     * @return
+     * @see Collectors#toMultimap(Function)
+     */
+    public abstract <K> Multimap<K, Long, List<Long>> toMultimap(LongFunction<? extends K> keyMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMultimap(Function, Supplier)
+     */
+    public abstract <K, V extends Collection<Long>> Multimap<K, Long, V> toMultimap(LongFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Long, V>> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
@@ -827,6 +845,10 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarize2();
 
+    public abstract String join(CharSequence delimiter);
+
+    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
+
     /**
      * Returns whether any elements of this stream match the provided
      * predicate.  May not evaluate the predicate on all elements if not
@@ -988,6 +1010,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     public abstract LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC,
             LongTriFunction<Long> zipFunction);
+
+    public abstract LongStream cached();
 
     /**
      * Returns a {@code FloatStream} consisting of the elements of this stream,
@@ -2079,8 +2103,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @return
      */
     public static LongStream parallelMerge(final LongStream[] a, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2139,8 +2163,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @return
      */
     public static LongStream parallelMerge(final LongIterator[] a, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2172,8 +2196,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @return
      */
     public static LongStream parallelMerge(final Collection<? extends LongIterator> c, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(c)) {

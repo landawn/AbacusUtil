@@ -30,7 +30,7 @@ package com.landawn.abacus.util;
  * @since 2.1
  * @version $Id: MutableDouble.java 1669791 2015-03-28 15:22:59Z britter $
  */
-public final class MutableDouble extends Number implements Comparable<MutableDouble>, Mutable<Number> {
+public final class MutableDouble extends Number implements Comparable<MutableDouble>, Mutable {
 
     /**
      * Required for serialization support.
@@ -59,31 +59,12 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
         this.value = value;
     }
 
-    /**
-     * Constructs a new MutableDouble with the specified value.
-     * 
-     * @param value  the initial value to store, not null
-     * @throws NullPointerException if the object is null
-     */
-    public MutableDouble(final Number value) {
-        super();
-        this.value = value.doubleValue();
-    }
-
-    /**
-     * Constructs a new MutableDouble parsing the given string.
-     * 
-     * @param value  the string to parse, not null
-     * @throws NumberFormatException if the string cannot be parsed into a double
-     * @since 2.5
-     */
-    public MutableDouble(final String value) throws NumberFormatException {
-        super();
-        this.value = Double.parseDouble(value);
-    }
-
     public static MutableDouble of(final double value) {
         return new MutableDouble(value);
+    }
+
+    public double value() {
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -92,20 +73,8 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      * 
      * @return the value as a Double, never null
      */
-    @Override
-    public Double getValue() {
-        return Double.valueOf(this.value);
-    }
-
-    /**
-     * Sets the value from any Number instance.
-     * 
-     * @param value  the value to set, not null
-     * @throws NullPointerException if the object is null
-     */
-    @Override
-    public void setValue(final Number value) {
-        this.value = value.doubleValue();
+    public double getValue() {
+        return value;
     }
 
     /**
@@ -115,6 +84,17 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      */
     public void setValue(final double value) {
         this.value = value;
+    }
+
+    public double getAndSet(final double value) {
+        double result = value;
+        this.value = value;
+        return result;
+    }
+
+    public double setAndGet(final double value) {
+        this.value = value;
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -167,17 +147,6 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
     }
 
     /**
-     * Adds a value to the value of this instance.
-     * 
-     * @param operand  the value to add, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void add(final Number operand) {
-        this.value += operand.doubleValue();
-    }
-
-    /**
      * Subtracts a value from the value of this instance.
      * 
      * @param operand  the value to subtract, not null
@@ -185,17 +154,6 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      */
     public void subtract(final double operand) {
         this.value -= operand;
-    }
-
-    /**
-     * Subtracts a value from the value of this instance.
-     * 
-     * @param operand  the value to subtract, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void subtract(final Number operand) {
-        this.value -= operand.doubleValue();
     }
 
     /**
@@ -300,16 +258,6 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
 
     //-----------------------------------------------------------------------
     /**
-     * Gets this mutable as an instance of Double.
-     *
-     * @return a Double instance containing the value from this mutable, never null
-     */
-    public Double toDouble() {
-        return Double.valueOf(doubleValue());
-    }
-
-    //-----------------------------------------------------------------------
-    /**
      * Compares this mutable to another in ascending order.
      * 
      * @param other  the other mutable to compare to, not null
@@ -352,7 +300,7 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      */
     @Override
     public boolean equals(final Object obj) {
-        return obj instanceof MutableDouble && Double.doubleToLongBits(((MutableDouble) obj).value) == Double.doubleToLongBits(value);
+        return obj instanceof MutableDouble && Double.compare(((MutableDouble) obj).value, value) == 0;
     }
 
     /**

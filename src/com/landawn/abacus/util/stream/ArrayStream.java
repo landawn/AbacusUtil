@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
@@ -44,6 +58,9 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  * @param <T>
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 final class ArrayStream<T> extends AbstractStream<T> {
     private final T[] elements;
@@ -1192,47 +1209,54 @@ final class ArrayStream<T> extends AbstractStream<T> {
     //        }, closeHandlers);
     //    }
 
-    @Override
-    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
-        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final List<T> result = new ArrayList<>();
-
-                while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], boundary)) {
-                        result.add(elements[cursor]);
-                        cursor++;
-                    } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
-                        }
-                        break;
-                    }
-                }
-
-                return Stream.of(result);
-            }
-
-        }, closeHandlers);
-    }
+    //    @Override
+    //    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+    //        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+    //            private int cursor = fromIndex;
+    //            private boolean preCondition = false;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public Stream<T> next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final List<T> result = new ArrayList<>();
+    //
+    //                while (cursor < toIndex) {
+    //                    if (result.size() == 0) {
+    //                        preCondition = predicate.apply(elements[cursor], boundary);
+    //                        result.add(elements[cursor]);
+    //                        cursor++;
+    //                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+    //                        result.add(elements[cursor]);
+    //                        cursor++;
+    //                    } else {
+    //                        if (boundaryUpdate != null) {
+    //                            boundaryUpdate.accept(boundary);
+    //                        }
+    //
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                return Stream.of(result);
+    //            }
+    //
+    //        }, closeHandlers);
+    //    }
 
     @Override
     public <U> Stream<List<T>> splitIntoList(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             private int cursor = fromIndex;
+            private boolean preCondition = false;
 
             @Override
             public boolean hasNext() {
@@ -1248,13 +1272,18 @@ final class ArrayStream<T> extends AbstractStream<T> {
                 final List<T> result = new ArrayList<>();
 
                 while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], boundary)) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(elements[cursor], boundary);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (boundaryUpdate != null) {
                             boundaryUpdate.accept(boundary);
                         }
+
                         break;
                     }
                 }
@@ -1270,6 +1299,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
             private int cursor = fromIndex;
+            private boolean preCondition = false;
 
             @Override
             public boolean hasNext() {
@@ -1285,13 +1315,18 @@ final class ArrayStream<T> extends AbstractStream<T> {
                 final Set<T> result = new HashSet<>();
 
                 while (cursor < toIndex) {
-                    if (predicate.apply(elements[cursor], boundary)) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(elements[cursor], boundary);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (boundaryUpdate != null) {
                             boundaryUpdate.accept(boundary);
                         }
+
                         break;
                     }
                 }
@@ -1366,13 +1401,55 @@ final class ArrayStream<T> extends AbstractStream<T> {
     //    }
 
     @Override
-    public Stream<T> peek(Consumer<? super T> action) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            action.accept(elements[i]);
-        }
+    public Stream<T> peek(final Consumer<? super T> action) {
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            action.accept(elements[i]);
+        //        }
+        //        
+        //        return this;
 
-        // return new ArrayStream<T>(values, fromIndex, toIndex, sorted, closeHandlers);
-        return this;
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
+            int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                action.accept(elements[cursor]);
+
+                return elements[cursor++];
+            }
+
+            //    @Override
+            //    public long count() {
+            //        return toIndex - cursor;
+            //    }
+            //
+            //    @Override
+            //    public void skip(long n) {
+            //        cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+            //    }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    action.accept(elements[cursor]);
+
+                    a[i] = (A) elements[cursor++];
+                }
+
+                return a;
+            }
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1871,7 +1948,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> queued() {
-        return queued(DEFAULT_QUEUE_SIZE);
+        return queued(DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -1896,19 +1973,14 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> cached(IntFunction<T[]> generator) {
-        return new ArrayStream<T>(toArray(generator), closeHandlers, sorted, cmp);
-    }
-
-    @Override
     public ImmutableIterator<T> iterator() {
         return ImmutableIterator.of(elements, fromIndex, toIndex);
     }
 
     @Override
     public Stream<T> parallel(int maxThreadNum, BaseStream.Splitter splitter) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         return new ParallelArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitter);

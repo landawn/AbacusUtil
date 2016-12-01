@@ -30,7 +30,7 @@ package com.landawn.abacus.util;
  * @since 2.1
  * @version $Id: MutableInt.java 1669791 2015-03-28 15:22:59Z britter $
  */
-public final class MutableInt extends Number implements Comparable<MutableInt>, Mutable<Number> {
+public final class MutableInt extends Number implements Comparable<MutableInt>, Mutable {
 
     /**
      * Required for serialization support.
@@ -59,31 +59,12 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
         this.value = value;
     }
 
-    /**
-     * Constructs a new MutableInt with the specified value.
-     * 
-     * @param value  the initial value to store, not null
-     * @throws NullPointerException if the object is null
-     */
-    public MutableInt(final Number value) {
-        super();
-        this.value = value.intValue();
-    }
-
-    /**
-     * Constructs a new MutableInt parsing the given string.
-     * 
-     * @param value  the string to parse, not null
-     * @throws NumberFormatException if the string cannot be parsed into an int
-     * @since 2.5
-     */
-    public MutableInt(final String value) throws NumberFormatException {
-        super();
-        this.value = Integer.parseInt(value);
-    }
-
     public static MutableInt of(final int value) {
         return new MutableInt(value);
+    }
+
+    public int value() {
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -92,20 +73,19 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
      * 
      * @return the value as a Integer, never null
      */
-    @Override
-    public Integer getValue() {
-        return Integer.valueOf(this.value);
+    public int getValue() {
+        return value;
     }
 
-    /**
-     * Sets the value from any Number instance.
-     * 
-     * @param value  the value to set, not null
-     * @throws NullPointerException if the object is null
-     */
-    @Override
-    public void setValue(final Number value) {
-        this.value = value.intValue();
+    public int getAndSet(final int value) {
+        int result = value;
+        this.value = value;
+        return result;
+    }
+
+    public int setAndGet(final int value) {
+        this.value = value;
+        return value;
     }
 
     /**
@@ -148,17 +128,6 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
     }
 
     /**
-     * Adds a value to the value of this instance.
-     * 
-     * @param operand  the value to add, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void add(final Number operand) {
-        this.value += operand.intValue();
-    }
-
-    /**
      * Subtracts a value from the value of this instance.
      * 
      * @param operand  the value to subtract, not null
@@ -166,17 +135,6 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
      */
     public void subtract(final int operand) {
         this.value -= operand;
-    }
-
-    /**
-     * Subtracts a value from the value of this instance.
-     * 
-     * @param operand  the value to subtract, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void subtract(final Number operand) {
-        this.value -= operand.intValue();
     }
 
     /**
@@ -281,16 +239,6 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
 
     //-----------------------------------------------------------------------
     /**
-     * Gets this mutable as an instance of Integer.
-     *
-     * @return a Integer instance containing the value from this mutable, never null
-     */
-    public Integer toInteger() {
-        return Integer.valueOf(intValue());
-    }
-
-    //-----------------------------------------------------------------------
-    /**
      * Compares this mutable to another in ascending order.
      * 
      * @param other  the other mutable to compare to, not null
@@ -313,7 +261,7 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof MutableInt) {
-            return value == ((MutableInt) obj).intValue();
+            return value == ((MutableInt) obj).value;
         }
         return false;
     }

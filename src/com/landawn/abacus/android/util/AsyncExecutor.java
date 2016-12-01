@@ -23,6 +23,7 @@ import java.util.concurrent.Callable;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Retry;
+import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 
@@ -60,8 +61,13 @@ public class AsyncExecutor {
     }
 
     public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> ifRetry) {
-        return execute(Retry.of(action, retryTimes, retryInterval, ifRetry));
+            final Function<Throwable, Boolean> retryCondition) {
+        return execute(new Runnable() {
+            @Override
+            public void run() {
+                Retry.of(retryTimes, retryInterval, retryCondition).run(action);
+            }
+        });
     }
 
     @Beta
@@ -86,8 +92,14 @@ public class AsyncExecutor {
     }
 
     public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
-            final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
-        return execute(Retry.of(action, retryTimes, retryInterval, ifRetry));
+            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+        return execute(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                return retry.call(action);
+            }
+        });
     }
 
     /**
@@ -124,8 +136,13 @@ public class AsyncExecutor {
     }
 
     public static CompletableFuture<Void> executeInParallel(final Runnable action, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> ifRetry) {
-        return executeInParallel(Retry.of(action, retryTimes, retryInterval, ifRetry));
+            final Function<Throwable, Boolean> retryCondition) {
+        return executeInParallel(new Runnable() {
+            @Override
+            public void run() {
+                Retry.of(retryTimes, retryInterval, retryCondition).run(action);
+            }
+        });
     }
 
     /**
@@ -155,9 +172,15 @@ public class AsyncExecutor {
         return executeInParallel(new CompletableFuture<T>(action));
     }
 
-    public static <T> CompletableFuture<T> executeInParallel(final Callable<T> action, final int retryTimes,
-            final long retryInterval, final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
-        return executeInParallel(Retry.of(action, retryTimes, retryInterval, ifRetry));
+    public static <T> CompletableFuture<T> executeInParallel(final Callable<T> action, final int retryTimes, final long retryInterval,
+            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+        return executeInParallel(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                return retry.call(action);
+            }
+        });
     }
 
     /**
@@ -205,8 +228,13 @@ public class AsyncExecutor {
     }
 
     public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> ifRetry) {
-        return executeOnUiThread(Retry.of(action, retryTimes, retryInterval, ifRetry));
+            final Function<Throwable, Boolean> retryCondition) {
+        return executeOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Retry.of(retryTimes, retryInterval, retryCondition).run(action);
+            }
+        });
     }
 
     /**
@@ -265,9 +293,15 @@ public class AsyncExecutor {
         return executeOnUiThread(new CompletableFuture<T>(action), delay);
     }
 
-    public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final int retryTimes,
-            final long retryInterval, final BiFunction<Throwable, ? super T, Boolean> ifRetry) {
-        return executeOnUiThread(Retry.of(action, retryTimes, retryInterval, ifRetry));
+    public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final int retryTimes, final long retryInterval,
+            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+        return executeOnUiThread(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                return retry.call(action);
+            }
+        });
     }
 
     /**

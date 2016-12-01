@@ -2468,17 +2468,17 @@ public final class IOUtil {
         close((Closeable) writer);
     }
 
-    public static void close(final Closeable closeable) {
+    public static void close(final AutoCloseable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new AbacusIOException(e);
             }
         }
     }
 
-    public static void close(final Closeable... a) {
+    public static void close(final AutoCloseable... a) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -2486,14 +2486,14 @@ public final class IOUtil {
         close(Arrays.asList(a));
     }
 
-    public static void close(final Collection<? extends Closeable> c) {
+    public static void close(final Collection<? extends AutoCloseable> c) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
 
         RuntimeException ex = null;
 
-        for (Closeable closeable : c) {
+        for (AutoCloseable closeable : c) {
             try {
                 close(closeable);
             } catch (RuntimeException e) {
@@ -2537,7 +2537,7 @@ public final class IOUtil {
         closeQuietly((Closeable) writer);
     }
 
-    public static void closeQuietly(final Closeable closeable) {
+    public static void closeQuietly(final AutoCloseable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
@@ -2548,7 +2548,7 @@ public final class IOUtil {
         }
     }
 
-    public static void closeQuietly(final Closeable... a) {
+    public static void closeQuietly(final AutoCloseable... a) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -2556,12 +2556,12 @@ public final class IOUtil {
         closeQuietly(Arrays.asList(a));
     }
 
-    public static void closeQuietly(final Collection<? extends Closeable> c) {
+    public static void closeQuietly(final Collection<? extends AutoCloseable> c) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
 
-        for (Closeable closeable : c) {
+        for (AutoCloseable closeable : c) {
             closeQuietly(closeable);
         }
     }

@@ -585,6 +585,24 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
     /**
      * 
      * @param keyMapper
+     * @return
+     * @see Collectors#toMultimap(Function)
+     */
+    public abstract <K> Multimap<K, Double, List<Double>> toMultimap(DoubleFunction<? extends K> keyMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMultimap(Function, Supplier)
+     */
+    public abstract <K, V extends Collection<Double>> Multimap<K, Double, V> toMultimap(DoubleFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Double, V>> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
@@ -879,6 +897,10 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
 
     public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarize2();
 
+    public abstract String join(CharSequence delimiter);
+
+    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
+
     /**
      * Returns whether any elements of this stream match the provided
      * predicate.  May not evaluate the predicate on all elements if not
@@ -1040,6 +1062,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
 
     public abstract DoubleStream zipWith(DoubleStream b, DoubleStream c, double valueForNoneA, double valueForNoneB, double valueForNoneC,
             DoubleTriFunction<Double> zipFunction);
+
+    public abstract DoubleStream cached();
 
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
@@ -1915,8 +1939,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream parallelMerge(final DoubleStream[] a, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -1975,8 +1999,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream parallelMerge(final DoubleIterator[] a, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2008,8 +2032,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream parallelMerge(final Collection<? extends DoubleIterator> c, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(c)) {

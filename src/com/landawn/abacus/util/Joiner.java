@@ -76,6 +76,8 @@ public class Joiner {
     private final String delimiter;
     private final String keyValueDelimiter;
     private final String suffix;
+    private final boolean isEmptyDelimiter;
+    private final boolean isEmptyKeyValueDelimiter;
     private boolean trim = false;
 
     /*
@@ -145,7 +147,8 @@ public class Joiner {
         this.keyValueDelimiter = keyValueDelimiter.toString();
         this.suffix = suffix.toString();
         this.emptyValue = this.prefix + this.suffix;
-
+        this.isEmptyDelimiter = N.isNullOrEmpty(delimiter);
+        this.isEmptyKeyValueDelimiter = N.isNullOrEmpty(keyValueDelimiter);
     }
 
     /**
@@ -278,7 +281,11 @@ public class Joiner {
             if (sb == null) {
                 sb = prepareBuilder().append(a[i]);
             } else {
-                sb.append(delimiter).append(a[i]);
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
             }
         }
 
@@ -306,7 +313,11 @@ public class Joiner {
             if (sb == null) {
                 sb = prepareBuilder().append(a[i]);
             } else {
-                sb.append(delimiter).append(a[i]);
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
             }
         }
 
@@ -334,7 +345,11 @@ public class Joiner {
             if (sb == null) {
                 sb = prepareBuilder().append(a[i]);
             } else {
-                sb.append(delimiter).append(a[i]);
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
             }
         }
 
@@ -362,7 +377,11 @@ public class Joiner {
             if (sb == null) {
                 sb = prepareBuilder().append(a[i]);
             } else {
-                sb.append(delimiter).append(a[i]);
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
             }
         }
 
@@ -390,7 +409,11 @@ public class Joiner {
             if (sb == null) {
                 sb = prepareBuilder().append(a[i]);
             } else {
-                sb.append(delimiter).append(a[i]);
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
             }
         }
 
@@ -418,7 +441,11 @@ public class Joiner {
             if (sb == null) {
                 sb = prepareBuilder().append(a[i]);
             } else {
-                sb.append(delimiter).append(a[i]);
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
             }
         }
 
@@ -446,7 +473,11 @@ public class Joiner {
             if (sb == null) {
                 sb = prepareBuilder().append(a[i]);
             } else {
-                sb.append(delimiter).append(a[i]);
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
             }
         }
 
@@ -474,7 +505,11 @@ public class Joiner {
             if (sb == null) {
                 sb = prepareBuilder().append(a[i]);
             } else {
-                sb.append(delimiter).append(a[i]);
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
             }
         }
 
@@ -503,7 +538,11 @@ public class Joiner {
                 if (sb == null) {
                     sb = prepareBuilder().append(N.toString(a[i]).trim());
                 } else {
-                    sb.append(delimiter).append(N.toString(a[i]).trim());
+                    if (isEmptyDelimiter) {
+                        sb.append(N.toString(a[i]).trim());
+                    } else {
+                        sb.append(delimiter).append(N.toString(a[i]).trim());
+                    }
                 }
             }
         } else {
@@ -511,7 +550,11 @@ public class Joiner {
                 if (sb == null) {
                     sb = prepareBuilder().append(N.toString(a[i]));
                 } else {
-                    sb.append(delimiter).append(N.toString(a[i]));
+                    if (isEmptyDelimiter) {
+                        sb.append(N.toString(a[i]));
+                    } else {
+                        sb.append(delimiter).append(N.toString(a[i]));
+                    }
                 }
             }
         }
@@ -546,13 +589,21 @@ public class Joiner {
                 if (sb == null) {
                     sb = prepareBuilder().append(N.toString(e).trim());
                 } else {
-                    sb.append(delimiter).append(N.toString(e).trim());
+                    if (isEmptyDelimiter) {
+                        sb.append(N.toString(e).trim());
+                    } else {
+                        sb.append(delimiter).append(N.toString(e).trim());
+                    }
                 }
             } else {
                 if (sb == null) {
                     sb = prepareBuilder().append(N.toString(e));
                 } else {
-                    sb.append(delimiter).append(N.toString(e));
+                    if (isEmptyDelimiter) {
+                        sb.append(N.toString(e));
+                    } else {
+                        sb.append(delimiter).append(N.toString(e));
+                    }
                 }
             }
 
@@ -591,13 +642,33 @@ public class Joiner {
                 if (sb == null) {
                     sb = prepareBuilder().append(N.toString(entry.getKey()).trim()).append(keyValueDelimiter).append(N.toString(entry.getValue()).trim());
                 } else {
-                    sb.append(delimiter).append(N.toString(entry.getKey()).trim()).append(keyValueDelimiter).append(N.toString(entry.getValue()).trim());
+                    if (isEmptyDelimiter) {
+                        sb.append(N.toString(entry.getKey()).trim());
+                    } else {
+                        sb.append(delimiter).append(N.toString(entry.getKey()).trim());
+                    }
+
+                    if (isEmptyKeyValueDelimiter) {
+                        sb.append(N.toString(entry.getValue()).trim());
+                    } else {
+                        sb.append(keyValueDelimiter).append(N.toString(entry.getValue()).trim());
+                    }
                 }
             } else {
                 if (sb == null) {
                     sb = prepareBuilder().append(N.toString(entry.getKey())).append(keyValueDelimiter).append(N.toString(entry.getValue()));
                 } else {
-                    sb.append(delimiter).append(N.toString(entry.getKey())).append(keyValueDelimiter).append(N.toString(entry.getValue()));
+                    if (isEmptyDelimiter) {
+                        sb.append(N.toString(entry.getKey()));
+                    } else {
+                        sb.append(delimiter).append(N.toString(entry.getKey()));
+                    }
+
+                    if (isEmptyKeyValueDelimiter) {
+                        sb.append(N.toString(entry.getValue()));
+                    } else {
+                        sb.append(keyValueDelimiter).append(N.toString(entry.getValue()));
+                    }
                 }
             }
 
@@ -643,7 +714,9 @@ public class Joiner {
 
     private StringBuilder prepareBuilder() {
         if (value != null) {
-            value.append(delimiter);
+            if (isEmptyDelimiter == false) {
+                value.append(delimiter);
+            }
         } else {
             value = new StringBuilder().append(prefix);
         }

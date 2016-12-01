@@ -546,6 +546,24 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
     /**
      * 
      * @param keyMapper
+     * @return
+     * @see Collectors#toMultimap(Function)
+     */
+    public abstract <K> Multimap<K, Short, List<Short>> toMultimap(ShortFunction<? extends K> keyMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMultimap(Function, Supplier)
+     */
+    public abstract <K, V extends Collection<Short>> Multimap<K, Short, V> toMultimap(ShortFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Short, V>> mapSupplier);
+
+    /**
+     * 
+     * @param keyMapper
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
@@ -765,6 +783,10 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
 
     public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarize2();
 
+    public abstract String join(CharSequence delimiter);
+
+    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
+
     /**
      * Returns whether any elements of this stream match the provided
      * predicate.  May not evaluate the predicate on all elements if not
@@ -926,6 +948,8 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
 
     public abstract ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
             ShortTriFunction<Short> zipFunction);
+
+    public abstract ShortStream cached();
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -1947,8 +1971,8 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
      * @return
      */
     public static ShortStream parallelMerge(final ShortStream[] a, final ShortBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2007,8 +2031,8 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
      * @return
      */
     public static ShortStream parallelMerge(final ShortIterator[] a, final ShortBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(a)) {
@@ -2040,8 +2064,8 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
      * @return
      */
     public static ShortStream parallelMerge(final Collection<? extends ShortIterator> c, final ShortBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("maxThreadNum can be less than 1");
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
         if (N.isNullOrEmpty(c)) {

@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.io.File;
@@ -57,7 +71,9 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
@@ -73,6 +89,9 @@ import com.landawn.abacus.util.function.TriFunction;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  * @param <T>
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 abstract class AbstractStream<T> extends Stream<T> {
 
@@ -466,6 +485,26 @@ abstract class AbstractStream<T> extends Stream<T> {
     abstract DoubleStream flatMapToDouble4(Function<? super T, DoubleIterator> function);
 
     @Override
+    public Stream<Stream<T>> split(final int size) {
+        return splitIntoList(size).map(new Function<List<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(List<T> t) {
+                return Stream.of(t);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+        return splitIntoList(boundary, predicate, boundaryUpdate).map(new Function<List<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(List<T> t) {
+                return Stream.of(t);
+            }
+        });
+    }
+
+    @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
         final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
 
@@ -576,6 +615,26 @@ abstract class AbstractStream<T> extends Stream<T> {
                 return new HashMap<>();
             }
         });
+    }
+
+    @Override
+    public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyMapper) {
+        return toMultimap(keyMapper, new Function<T, T>() {
+            @Override
+            public T apply(T t) {
+                return t;
+            }
+        });
+    }
+
+    @Override
+    public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyMapper, Supplier<Multimap<K, T, V>> mapSupplier) {
+        return toMultimap(keyMapper, new Function<T, T>() {
+            @Override
+            public T apply(T t) {
+                return t;
+            }
+        }, mapSupplier);
     }
 
     @Override
@@ -1000,6 +1059,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> cached() {
+        return newStream((T[]) toArray(), sorted, cmp);
+    }
+
+    @Override
+    public Stream<T> cached(IntFunction<T[]> generator) {
+        return newStream(toArray(generator), sorted, cmp);
+    }
+
+    @Override
     public long persist(File file, Function<? super T, String> toLine) {
         Writer writer = null;
 
@@ -1048,7 +1117,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
-            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter) {
         PreparedStatement stmt = null;
 
         try {
@@ -1064,13 +1133,13 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter) {
         final Iterator<T> iter = iterator();
 
         long cnt = 0;
         try {
             while (iter.hasNext()) {
-                stmtSetter.accept(stmt, iter.next());
+                stmtSetter.accept(iter.next(), stmt);
 
                 stmt.addBatch();
 
@@ -1093,68 +1162,5 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         return cnt;
-    }
-
-    @Override
-    public Stream<T> parallel() {
-        return parallel(DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public Stream<T> parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public Stream<T> parallel(Splitter splitter) {
-        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
-    }
-
-    @Override
-    public int maxThreadNum() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return 1;
-    }
-
-    @Override
-    public Stream<T> maxThreadNum(int maxThreadNum) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");  
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    @Override
-    public Splitter splitter() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return DEFAULT_SPILTTER;
-    }
-
-    @Override
-    public Stream<T> splitter(Splitter splitter) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    protected <E> Stream<E> newStream(final E[] a, final boolean sorted, final Comparator<? super E> comparator) {
-        if (this.isParallel()) {
-            return new ParallelArrayStream<E>(a, 0, a.length, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayStream<E>(a, closeHandlers, sorted, comparator);
-        }
-    }
-
-    protected <E> Stream<E> newStream(final Iterator<E> iter, final boolean sorted, final Comparator<? super E> comparator) {
-        if (this.isParallel()) {
-            return new ParallelIteratorStream<E>(iter, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitter());
-        } else {
-            return new IteratorStream<E>(iter, closeHandlers, sorted, comparator);
-        }
     }
 }

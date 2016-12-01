@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import java.util.concurrent.Callable;
@@ -5,78 +19,47 @@ import java.util.concurrent.Callable;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 
-public final class Synchronized {
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
+public final class Synchronized<T> {
+    private final T target;
 
-    private Synchronized() {
-        // singleton.
+    Synchronized(final T target) {
+        this.target = target;
     }
 
-    /**
-     * 
-     * @param target object to be synchronized.
-     * @param callable
-     * @return
-     */
-    public static <T> Callable<T> of(final Object target, final Callable<T> callable) {
-        return new Callable<T>() {
-            @Override
-            public T call() throws Exception {
-                synchronized (target) {
-                    return callable.call();
-                }
-            }
-        };
+    public static <T> Synchronized<T> on(final T target) {
+        N.requireNonNull(target);
+
+        return new Synchronized<>(target);
     }
 
-    /**
-     * 
-     * @param target object to be synchronized.
-     * @param runnable
-     * @return
-     */
-    public static Runnable of(final Object target, final Runnable runnable) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                synchronized (target) {
-                    runnable.run();
-                }
-            }
-        };
+    public void run(final Runnable cmd) {
+        synchronized (target) {
+            cmd.run();
+        }
     }
 
-    /**
-     * 
-     * @param target object to be synchronized and operated
-     * @param func
-     * @return
-     */
-    public static <T, R> Function<T, R> of(final T target, final Function<T, R> func) {
-        return new Function<T, R>() {
-            @Override
-            public R apply(T t) {
-                synchronized (target) {
-                    return func.apply(target);
-                }
-            }
-        };
+    public void run(final Consumer<? super T> cmd) {
+        synchronized (target) {
+            cmd.accept(target);
+        }
     }
 
-    /**
-     * 
-     * @param target object to be synchronized and operated
-     * @param consumer
-     * @return
-     */
-    public static <T> Consumer<T> of(final T target, final Consumer<T> consumer) {
-        return new Consumer<T>() {
-            @Override
-            public void accept(T t) {
-                synchronized (target) {
-                    consumer.accept(target);
-                }
-            }
-        };
+    public <R> R call(final Try.Callable<R> cmd) {
+        synchronized (target) {
+            return cmd.call();
+        }
+    }
+
+    public <R> R call(final Function<? super T, R> cmd) {
+        synchronized (target) {
+            return cmd.apply(target);
+        }
     }
 
     //    public static <T> T execute(final Object target, final Callable<T> callable) {
@@ -106,4 +89,42 @@ public final class Synchronized {
     //            consumer.accept(target);
     //        }
     //    }
+
+    public static final class Synchronized0<T> {
+        private final T target;
+
+        Synchronized0(final T target) {
+            this.target = target;
+        }
+
+        public static <T> Synchronized0<T> on(final T target) {
+            N.requireNonNull(target);
+
+            return new Synchronized0<>(target);
+        }
+
+        public void run(final Try.Runnable cmd) throws Exception {
+            synchronized (target) {
+                cmd.run();
+            }
+        }
+
+        public void run(final Try.Consumer<? super T> cmd) throws Exception {
+            synchronized (target) {
+                cmd.accept(target);
+            }
+        }
+
+        public <R> R call(final Callable<R> cmd) throws Exception {
+            synchronized (target) {
+                return cmd.call();
+            }
+        }
+
+        public <R> R call(final Try.Function<? super T, R> cmd) throws Exception {
+            synchronized (target) {
+                return cmd.apply(target);
+            }
+        }
+    }
 }

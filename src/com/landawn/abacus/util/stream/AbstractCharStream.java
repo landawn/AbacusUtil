@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
@@ -10,6 +24,7 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.IndexedChar;
+import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
@@ -32,6 +47,9 @@ import com.landawn.abacus.util.function.ToCharFunction;
 /**
  * This class is a sequential, stateful and immutable stream implementation.
  *
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 abstract class AbstractCharStream extends CharStream {
 
@@ -104,6 +122,27 @@ abstract class AbstractCharStream extends CharStream {
                 return new HashMap<>();
             }
         });
+    }
+
+    @Override
+    public <K> Multimap<K, Character, List<Character>> toMultimap(CharFunction<? extends K> keyMapper) {
+        return toMultimap(keyMapper, new CharFunction<Character>() {
+            @Override
+            public Character apply(char value) {
+                return value;
+            }
+        });
+    }
+
+    @Override
+    public <K, V extends Collection<Character>> Multimap<K, Character, V> toMultimap(CharFunction<? extends K> keyMapper,
+            Supplier<Multimap<K, Character, V>> mapSupplier) {
+        return toMultimap(keyMapper, new CharFunction<Character>() {
+            @Override
+            public Character apply(char value) {
+                return value;
+            }
+        }, mapSupplier);
     }
 
     @Override
@@ -189,11 +228,7 @@ abstract class AbstractCharStream extends CharStream {
 
                 }, null, sorted) };
 
-        if (this.isParallel()) {
-            return new ParallelArrayStream<CharStream>(a, 0, a.length, closeHandlers, false, null, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayStream<CharStream>(a, closeHandlers);
-        }
+        return this.newStream(a, false, null);
     }
 
     @Override
@@ -256,6 +291,38 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public String join(final CharSequence delimiter) {
+        return join(delimiter, "", "");
+    }
+
+    @Override
+    public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
+        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
+            @Override
+            public Joiner get() {
+                return new Joiner(delimiter, prefix, suffix);
+            }
+        };
+
+        final ObjCharConsumer<Joiner> accumulator = new ObjCharConsumer<Joiner>() {
+            @Override
+            public void accept(Joiner a, char t) {
+                a.add(t);
+            }
+        };
+
+        final BiConsumer<Joiner, Joiner> combiner = new BiConsumer<Joiner, Joiner>() {
+            @Override
+            public void accept(Joiner a, Joiner b) {
+                a.merge(b);
+            }
+        };
+
+        final Joiner joiner = collect(supplier, accumulator, combiner);
+        return joiner.toString();
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
         return collect(supplier, accumulator, combiner);
@@ -294,6 +361,11 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public CharStream cached() {
+        return this.newStream(toArray(), sorted);
+    }
+
+    @Override
     public CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBiFunction<Character> zipFunction) {
         return CharStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
@@ -301,92 +373,5 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTriFunction<Character> zipFunction) {
         return CharStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
-    }
-
-    @Override
-    public CharStream parallel() {
-        return parallel(DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public CharStream parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, DEFAULT_SPILTTER);
-    }
-
-    @Override
-    public CharStream parallel(BaseStream.Splitter splitter) {
-        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
-    }
-
-    @Override
-    public int maxThreadNum() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return 1;
-    }
-
-    @Override
-    public CharStream maxThreadNum(int maxThreadNum) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");  
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    @Override
-    public Splitter splitter() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return DEFAULT_SPILTTER;
-    }
-
-    @Override
-    public CharStream splitter(Splitter splitter) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
-
-        // ignore, do nothing if it's sequential stream.
-        return this;
-    }
-
-    protected CharStream newStream(final char[] a, final boolean sorted) {
-        if (this.isParallel()) {
-            return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            return new ArrayCharStream(a, closeHandlers, sorted);
-        }
-    }
-
-    protected CharStream newStream(final CharIterator iter, final boolean sorted) {
-        if (this.isParallel()) {
-            final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public char next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorCharStream(charIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
-        } else {
-            final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public char next() {
-                    return iter.next();
-                }
-            };
-
-            return new IteratorCharStream(charIter, closeHandlers, sorted);
-        }
     }
 }

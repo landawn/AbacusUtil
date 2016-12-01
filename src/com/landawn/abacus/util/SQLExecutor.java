@@ -1,5 +1,15 @@
 /*
- * Copyright (c) 2015, Haiyang Li. All rights reserved.
+ * Copyright (C) 2015 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.landawn.abacus.util;
@@ -2238,11 +2248,11 @@ public final class SQLExecutor implements Closeable {
         return iterators;
     }
 
-    public Stream<Object[]> stream(final String sql, final Object... parameters) {
+    public Try<Stream<Object[]>> stream(final String sql, final Object... parameters) {
         return stream(sql, null, parameters);
     }
 
-    public Stream<Object[]> stream(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    public Try<Stream<Object[]>> stream(final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return stream(sql, statementSetter, null, parameters);
     }
 
@@ -2255,15 +2265,15 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public Stream<Object[]> stream(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public Try<Stream<Object[]>> stream(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return stream((Connection) null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public Stream<Object[]> stream(final Connection conn, final String sql, final Object... parameters) {
+    public Try<Stream<Object[]>> stream(final Connection conn, final String sql, final Object... parameters) {
         return stream(conn, sql, null, parameters);
     }
 
-    public Stream<Object[]> stream(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    public Try<Stream<Object[]>> stream(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return stream(conn, sql, statementSetter, null, parameters);
     }
 
@@ -2277,19 +2287,26 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public Stream<Object[]> stream(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+    public Try<Stream<Object[]>> stream(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
         final RowIterator iterator = this.iterate(conn, sql, statementSetter, jdbcSettings, parameters);
 
         return Stream.of(iterator).onClose(new Runnable() {
+            private boolean isClosed = false;
+
             @Override
             public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
                 IOUtil.closeQuietly(iterator);
             }
-        });
+        }).tried();
     }
 
-    public Stream<Object[]> streamAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public Try<Stream<Object[]>> streamAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(sql, null, jdbcSettings, parameters);
     }
 
@@ -2302,11 +2319,12 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public Stream<Object[]> streamAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public Try<Stream<Object[]>> streamAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return streamAll((Connection) null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    Stream<Object[]> streamAll(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    Try<Stream<Object[]>> streamAll(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(conn, sql, null, jdbcSettings, parameters);
     }
 
@@ -2321,7 +2339,7 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    Stream<Object[]> streamAll(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+    Try<Stream<Object[]>> streamAll(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
@@ -2332,14 +2350,21 @@ public final class SQLExecutor implements Closeable {
 
         return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators)).skip(jdbcSettings.getOffset())
                 .limit(jdbcSettings.getCount()).onClose(new Runnable() {
+                    private boolean isClosed = false;
+
                     @Override
                     public void run() {
+                        if (isClosed) {
+                            return;
+                        }
+
+                        isClosed = true;
                         IOUtil.closeQuietly(iterators);
                     }
-                });
+                }).tried();
     }
 
-    public Stream<Object[]> streamAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public Try<Stream<Object[]>> streamAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(sqls, null, jdbcSettings, parameters);
     }
 
@@ -2352,12 +2377,12 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public Stream<Object[]> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    public Try<Stream<Object[]>> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll((Connection) null, sqls, statementSetter, jdbcSettings, parameters);
     }
 
-    Stream<Object[]> streamAll(final Connection conn, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+    Try<Stream<Object[]>> streamAll(final Connection conn, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(conn, sqls, null, jdbcSettings, parameters);
     }
 
@@ -2372,7 +2397,7 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    Stream<Object[]> streamAll(final Connection conn, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+    Try<Stream<Object[]>> streamAll(final Connection conn, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
@@ -2383,18 +2408,25 @@ public final class SQLExecutor implements Closeable {
 
         return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators)).skip(jdbcSettings.getOffset())
                 .limit(jdbcSettings.getCount()).onClose(new Runnable() {
+                    private boolean isClosed = false;
+
                     @Override
                     public void run() {
+                        if (isClosed) {
+                            return;
+                        }
+
+                        isClosed = true;
                         IOUtil.closeQuietly(iterators);
                     }
-                });
+                }).tried();
     }
 
-    public <T> Stream<T> stream(final Class<T> targetClass, final String sql, final Object... parameters) {
+    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final Object... parameters) {
         return stream(targetClass, sql, null, parameters);
     }
 
-    public <T> Stream<T> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return stream(targetClass, sql, statementSetter, null, parameters);
     }
 
@@ -2407,16 +2439,16 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> Stream<T> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return stream(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public <T> Stream<T> stream(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return stream(targetClass, conn, sql, null, parameters);
     }
 
-    public <T> Stream<T> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final Object... parameters) {
         return stream(targetClass, conn, sql, statementSetter, null, parameters);
     }
@@ -2431,7 +2463,7 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> Stream<T> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         final RowIterator iterator = this.iterate(conn, sql, statementSetter, jdbcSettings, parameters);
 
@@ -2475,11 +2507,18 @@ public final class SQLExecutor implements Closeable {
                     }
                 }
             }).onClose(new Runnable() {
+                private boolean isClosed = false;
+
                 @Override
                 public void run() {
+                    if (isClosed) {
+                        return;
+                    }
+
+                    isClosed = true;
                     IOUtil.closeQuietly(iterator);
                 }
-            });
+            }).tried();
         } catch (SQLException e) {
             IOUtil.closeQuietly(iterator);
 
@@ -2487,7 +2526,7 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    public <T> Stream<T> streamAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(targetClass, sql, null, jdbcSettings, parameters);
     }
 
@@ -2500,12 +2539,13 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> Stream<T> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    public <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    <T> Stream<T> streamAll(final Class<T> targetClass, final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final Connection conn, final String sql, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return streamAll(targetClass, conn, sql, null, jdbcSettings, parameters);
     }
 
@@ -2520,7 +2560,7 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    <T> Stream<T> streamAll(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
@@ -2570,11 +2610,18 @@ public final class SQLExecutor implements Closeable {
                             }
                         }
                     }).onClose(new Runnable() {
+                        private boolean isClosed = false;
+
                         @Override
                         public void run() {
+                            if (isClosed) {
+                                return;
+                            }
+
+                            isClosed = true;
                             IOUtil.closeQuietly(iterators);
                         }
-                    });
+                    }).tried();
         } catch (SQLException e) {
             IOUtil.closeQuietly(iterators);
 
@@ -2582,7 +2629,7 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    public <T> Stream<T> streamAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(targetClass, sqls, null, jdbcSettings, parameters);
     }
 
@@ -2595,12 +2642,12 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> Stream<T> streamAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    public <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(targetClass, null, sqls, statementSetter, jdbcSettings, parameters);
     }
 
-    <T> Stream<T> streamAll(final Class<T> targetClass, final Connection conn, final List<String> sqls, final JdbcSettings jdbcSettings,
+    <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final Connection conn, final List<String> sqls, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll(targetClass, conn, sqls, null, jdbcSettings, parameters);
     }
@@ -2616,7 +2663,7 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    <T> Stream<T> streamAll(final Class<T> targetClass, final Connection conn, final List<String> sqls, final StatementSetter statementSetter,
+    <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final Connection conn, final List<String> sqls, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
@@ -2666,11 +2713,18 @@ public final class SQLExecutor implements Closeable {
                             }
                         }
                     }).onClose(new Runnable() {
+                        private boolean isClosed = false;
+
                         @Override
                         public void run() {
+                            if (isClosed) {
+                                return;
+                            }
+
+                            isClosed = true;
                             IOUtil.closeQuietly(iterators);
                         }
-                    });
+                    }).tried();
         } catch (SQLException e) {
             IOUtil.closeQuietly(iterators);
 

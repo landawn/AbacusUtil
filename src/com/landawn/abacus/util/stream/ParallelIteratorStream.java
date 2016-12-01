@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util.stream;
 
 import java.sql.PreparedStatement;
@@ -57,6 +71,9 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * This class is a sequential, stateful and immutable stream implementation.
  *
  * @param <T>
+ * @since 0.8
+ * 
+ * @author Haiyang Li
  */
 final class ParallelIteratorStream<T> extends AbstractStream<T> {
     private final ImmutableIterator<T> elements;
@@ -70,14 +87,14 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
         N.requireNonNull(iterator);
 
-        if (maxThreadNum < 1) {
-            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
-        } else if (maxThreadNum > THREAD_POOL_SIZE) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("'maxThreaddNum' is bigger than max thread pool size: " + THREAD_POOL_SIZE + ". It will reduced to max thread pool size: "
-                        + THREAD_POOL_SIZE + " automatically");
-            }
-        }
+        //        if (maxThreadNum < 1) {
+        //            throw new IllegalArgumentException("'maxThreadNum' must be bigger than 0");
+        //        } else if (maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+        //            if (logger.isWarnEnabled()) {
+        //                logger.warn("'maxThreaddNum' is bigger than max thread pool size: " + MAX_THREAD_NUM_PER_OPERATION + ". It will reduced to max thread pool size: "
+        //                        + MAX_THREAD_NUM_PER_OPERATION + " automatically");
+        //            }
+        //        }
 
         this.elements = iterator instanceof ImmutableIterator ? (ImmutableIterator<T>) iterator : new ImmutableIterator<T>() {
             @Override
@@ -91,7 +108,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             }
         };
 
-        this.maxThreadNum = N.min(maxThreadNum, THREAD_POOL_SIZE);
+        this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
     }
 
@@ -970,32 +987,32 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitter);
     }
 
-    @Override
-    public Stream<Stream<T>> split(final int size) {
-        return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (elements.hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final Object[] a = new Object[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayStream<T>((T[]) a, 0, cnt, null, sorted, cmp);
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitter);
-    }
+    //    @Override
+    //    public Stream<Stream<T>> split(final int size) {
+    //        return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+    //            @Override
+    //            public boolean hasNext() {
+    //                return elements.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public Stream<T> next() {
+    //                if (elements.hasNext() == false) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final Object[] a = new Object[size];
+    //                int cnt = 0;
+    //
+    //                while (cnt < size && elements.hasNext()) {
+    //                    a[cnt++] = elements.next();
+    //                }
+    //
+    //                return new ArrayStream<T>((T[]) a, 0, cnt, null, sorted, cmp);
+    //            }
+    //
+    //        }, closeHandlers, false, null, maxThreadNum, splitter);
+    //    }
 
     @Override
     public Stream<List<T>> splitIntoList(final int size) {
@@ -1165,51 +1182,58 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     //        }, closeHandlers, false, null, maxThreadNum, splitter);
     //    }
 
-    @Override
-    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-            private T next = (T) NONE;
-
-            @Override
-            public boolean hasNext() {
-                return next != NONE || elements.hasNext();
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final List<T> result = new ArrayList<>();
-
-                if (next == NONE) {
-                    next = elements.next();
-                }
-
-                while (next != NONE) {
-                    if (predicate.apply(next, boundary)) {
-                        result.add(next);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
-                        }
-                        break;
-                    }
-                }
-
-                return Stream.of(result);
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitter);
-    }
+    //    @Override
+    //    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+    //        return new ParallelIteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+    //            private T next = (T) NONE;
+    //            private boolean preCondition = false;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return next != NONE || elements.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public Stream<T> next() {
+    //                if (hasNext() == false) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final List<T> result = new ArrayList<>();
+    //
+    //                if (next == NONE) {
+    //                    next = elements.next();
+    //                }
+    //
+    //                while (next != NONE) {
+    //                    if (result.size() == 0) {
+    //                        preCondition = predicate.apply(next, boundary);
+    //                        result.add(next);
+    //                        next = elements.hasNext() ? elements.next() : (T) NONE;
+    //                    } else if (predicate.apply(next, boundary) == preCondition) {
+    //                        result.add(next);
+    //                        next = elements.hasNext() ? elements.next() : (T) NONE;
+    //                    } else {
+    //                        if (boundaryUpdate != null) {
+    //                            boundaryUpdate.accept(boundary);
+    //                        }
+    //
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                return Stream.of(result);
+    //            }
+    //
+    //        }, closeHandlers, false, null, maxThreadNum, splitter);
+    //    }
 
     @Override
     public <U> Stream<List<T>> splitIntoList(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             private T next = (T) NONE;
+            private boolean preCondition = false;
 
             @Override
             public boolean hasNext() {
@@ -1229,13 +1253,18 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
                 }
 
                 while (next != NONE) {
-                    if (predicate.apply(next, boundary)) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
+                        result.add(next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
                         result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {
                         if (boundaryUpdate != null) {
                             boundaryUpdate.accept(boundary);
                         }
+
                         break;
                     }
                 }
@@ -1251,6 +1280,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             final Consumer<? super U> boundaryUpdate) {
         return new ParallelIteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
             private T next = (T) NONE;
+            private boolean preCondition = false;
 
             @Override
             public boolean hasNext() {
@@ -1270,14 +1300,18 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
                 }
 
                 while (next != NONE) {
-                    if (predicate.apply(next, boundary)) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
                         result.add(next);
-
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
+                        result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {
                         if (boundaryUpdate != null) {
                             boundaryUpdate.accept(boundary);
                         }
+
                         break;
                     }
                 }
@@ -1682,26 +1716,44 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
-        return new ParallelIteratorStream<T>(new ImmutableIterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().peek(action).iterator(), closeHandlers, false, null, maxThreadNum, splitter);
+        }
 
-            @Override
-            public T next() {
-                final T next = elements.next();
+        final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
 
-                //    try {
-                //        action.accept(next);
-                //    } catch (Throwable e) {
-                //        // ignore.
-                //    }
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ImmutableIterator<T>() {
+                private Object next = NONE;
 
-                action.accept(next);
-                return next;
-            }
-        }, closeHandlers, sorted, cmp, maxThreadNum, splitter);
+                @Override
+                public boolean hasNext() {
+                    if (next == NONE) {
+                        synchronized (elements) {
+                            if (elements.hasNext()) {
+                                next = elements.next();
+                            }
+                        }
+                    }
+
+                    return next != NONE;
+                }
+
+                @Override
+                public T next() {
+                    if (next == NONE && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final T result = (T) next;
+                    action.accept(result);
+                    next = NONE;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitter);
     }
 
     @Override
@@ -1907,7 +1959,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     //            throw N.toRuntimeException(e);
     //        }
     //
-    //        return result.booleanValue();
+    //        return result.value();
     //    }
 
     @Override
@@ -2428,7 +2480,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result.booleanValue();
+        return result.value();
     }
 
     @Override
@@ -2481,7 +2533,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result.booleanValue();
+        return result.value();
     }
 
     @Override
@@ -2534,7 +2586,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result.booleanValue();
+        return result.value();
     }
 
     @Override
@@ -2957,7 +3009,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> queued() {
-        return queued(DEFAULT_QUEUE_SIZE);
+        return queued(DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     @Override
@@ -3010,15 +3062,8 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> cached(IntFunction<T[]> generator) {
-        final T[] a = toArray(generator);
-        return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
-    }
-
-    @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
-
+            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter) {
         if (maxThreadNum <= 1) {
             return sequential().persist(stmt, batchSize, batchInterval, stmtSetter);
         }
@@ -3044,7 +3089,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
                                 }
                             }
 
-                            stmtSetter.accept(stmt, next);
+                            stmtSetter.accept(next, stmt);
                             stmt.addBatch();
 
                             if ((++cnt % batchSize) == 0) {
@@ -3123,7 +3168,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> maxThreadNum(int maxThreadNum) {
-        if (this.maxThreadNum == maxThreadNum) {
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
+        } else if (this.maxThreadNum == maxThreadNum) {
             return this;
         }
 
@@ -3156,5 +3203,4 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
         return new ParallelIteratorStream<T>(elements, newCloseHandlers, sorted, cmp, maxThreadNum, splitter);
     }
-
 }

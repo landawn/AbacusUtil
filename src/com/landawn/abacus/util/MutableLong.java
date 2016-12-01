@@ -30,7 +30,7 @@ package com.landawn.abacus.util;
  * @since 2.1
  * @version $Id: MutableLong.java 1669791 2015-03-28 15:22:59Z britter $
  */
-public final class MutableLong extends Number implements Comparable<MutableLong>, Mutable<Number> {
+public final class MutableLong extends Number implements Comparable<MutableLong>, Mutable {
 
     /**
      * Required for serialization support.
@@ -59,31 +59,12 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
         this.value = value;
     }
 
-    /**
-     * Constructs a new MutableLong with the specified value.
-     * 
-     * @param value  the initial value to store, not null
-     * @throws NullPointerException if the object is null
-     */
-    public MutableLong(final Number value) {
-        super();
-        this.value = value.longValue();
-    }
-
-    /**
-     * Constructs a new MutableLong parsing the given string.
-     * 
-     * @param value  the string to parse, not null
-     * @throws NumberFormatException if the string cannot be parsed into a long
-     * @since 2.5
-     */
-    public MutableLong(final String value) throws NumberFormatException {
-        super();
-        this.value = Long.parseLong(value);
-    }
-
     public static MutableLong of(final long value) {
         return new MutableLong(value);
+    }
+
+    public long value() {
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -92,20 +73,8 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
      * 
      * @return the value as a Long, never null
      */
-    @Override
-    public Long getValue() {
-        return Long.valueOf(this.value);
-    }
-
-    /**
-     * Sets the value from any Number instance.
-     * 
-     * @param value  the value to set, not null
-     * @throws NullPointerException if the object is null
-     */
-    @Override
-    public void setValue(final Number value) {
-        this.value = value.longValue();
+    public long getValue() {
+        return value;
     }
 
     /**
@@ -115,6 +84,17 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
      */
     public void setValue(final long value) {
         this.value = value;
+    }
+
+    public long getAndSet(final long value) {
+        long result = value;
+        this.value = value;
+        return result;
+    }
+
+    public long setAndGet(final long value) {
+        this.value = value;
+        return value;
     }
 
     //-----------------------------------------------------------------------
@@ -148,17 +128,6 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
     }
 
     /**
-     * Adds a value to the value of this instance.
-     * 
-     * @param operand  the value to add, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void add(final Number operand) {
-        this.value += operand.longValue();
-    }
-
-    /**
      * Subtracts a value from the value of this instance.
      * 
      * @param operand  the value to subtract, not null
@@ -166,17 +135,6 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
      */
     public void subtract(final long operand) {
         this.value -= operand;
-    }
-
-    /**
-     * Subtracts a value from the value of this instance.
-     * 
-     * @param operand  the value to subtract, not null
-     * @throws NullPointerException if the object is null
-     * @since Commons Lang 2.2
-     */
-    public void subtract(final Number operand) {
-        this.value -= operand.longValue();
     }
 
     /**
@@ -281,16 +239,6 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
 
     //-----------------------------------------------------------------------
     /**
-     * Gets this mutable as an instance of Long.
-     *
-     * @return a Long instance containing the value from this mutable, never null
-     */
-    public Long toLong() {
-        return Long.valueOf(longValue());
-    }
-
-    //-----------------------------------------------------------------------
-    /**
      * Compares this mutable to another in ascending order.
      * 
      * @param other  the other mutable to compare to, not null
@@ -313,7 +261,7 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof MutableLong) {
-            return value == ((MutableLong) obj).longValue();
+            return value == ((MutableLong) obj).value;
         }
         return false;
     }

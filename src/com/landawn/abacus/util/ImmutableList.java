@@ -1,20 +1,40 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package com.landawn.abacus.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class ImmutableList<E> extends ImmutableCollection<E> implements List<E> {
     private final List<E> list;
 
-    ImmutableList(List<E> list) {
-        this.list = list;
+    ImmutableList(List<? extends E> list) {
+        this.list = (List<E>) list;
     }
 
     public static <E> ImmutableList<E> of(E... a) {
-        return new ImmutableList<E>(N.asImmutableList(a));
+        return new ImmutableList<E>(Arrays.asList(a));
     }
 
     /**
@@ -22,8 +42,8 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      * @param list the elements in this <code>list</code> are shared by the returned ImmutableList.
      * @return
      */
-    public static <E> ImmutableList<E> of(List<E> list) {
-        return new ImmutableList<E>(N.asImmutableList(list));
+    public static <E> ImmutableList<E> of(List<? extends E> list) {
+        return new ImmutableList<E>(list);
     }
 
     @Override

@@ -22,15 +22,15 @@ package com.landawn.abacus.util;
  * under the Apache License 2.0. The methods copied from other products/frameworks may be modified in this class.
  * </p>
  * 
- * A mutable <code>byte</code> wrapper.
+ * A mutable <code>char</code> wrapper.
  * <p>
- * Note that as MutableCharacter does not extend Character, it is not treated by String.format as a Character parameter. 
+ * Note that as MutableChar does not extend Char, it is not treated by String.format as a Char parameter. 
  * 
- * @see Character
+ * @see Char
  * @since 2.1
- * @version $Id: MutableCharacter.java 1669791 2015-03-28 15:22:59Z britter $
+ * @version $Id: MutableChar.java 1669791 2015-03-28 15:22:59Z britter $
  */
-public final class MutableChar implements Comparable<MutableChar>, Mutable<Character> {
+public final class MutableChar implements Comparable<MutableChar>, Mutable {
     /** The mutable value. */
     private volatile char value;
 
@@ -46,17 +46,7 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable<Chara
      * 
      * @param value  the initial value to store
      */
-    public MutableChar(char value) {
-        super();
-        this.value = value;
-    }
-
-    /**
-     * Constructs a new MutableChar with the specified value.
-     * 
-     * @param value  the initial value to store
-     */
-    public MutableChar(Character value) {
+    public MutableChar(final char value) {
         super();
         this.value = value;
     }
@@ -65,26 +55,18 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable<Chara
         return new MutableChar(value);
     }
 
-    //-----------------------------------------------------------------------
-    /**
-     * Gets the value as a Character instance.
-     * 
-     * @return the value as a Character, never null
-     */
-    @Override
-    public Character getValue() {
-        return Character.valueOf(this.value);
+    public char value() {
+        return value;
     }
 
+    //-----------------------------------------------------------------------
     /**
-     * Sets the value from any Number instance.
+     * Gets the value as a Char instance.
      * 
-     * @param value  the value to set, not null
-     * @throws NullPointerException if the object is null
+     * @return the value as a Char, never null
      */
-    @Override
-    public void setValue(final Character value) {
-        this.value = value.charValue();
+    public char getValue() {
+        return value;
     }
 
     /**
@@ -96,18 +78,113 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable<Chara
         this.value = value;
     }
 
-    public char charValue() {
+    public char getAndSet(final char value) {
+        char result = value;
+        this.value = value;
+        return result;
+    }
+
+    public char setAndGet(final char value) {
+        this.value = value;
         return value;
     }
 
     //-----------------------------------------------------------------------
     /**
-     * Gets this mutable as an instance of Character.
+     * Increments the value.
      *
-     * @return a Character instance containing the value from this mutable
+     * @since Commons Lang 2.2
      */
-    public Character toCharacter() {
-        return Character.valueOf(value);
+    public void increment() {
+        value++;
+    }
+
+    /**
+     * Decrements the value.
+     *
+     * @since Commons Lang 2.2
+     */
+    public void decrement() {
+        value--;
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * Adds a value to the value of this instance.
+     * 
+     * @param operand  the value to add, not null
+     * @since Commons Lang 2.2
+     */
+    public void add(final char operand) {
+        this.value += operand;
+    }
+
+    /**
+     * Subtracts a value from the value of this instance.
+     * 
+     * @param operand  the value to subtract, not null
+     * @since Commons Lang 2.2
+     */
+    public void subtract(final char operand) {
+        this.value -= operand;
+    }
+
+    /**
+     * Increments by one the current value.
+     *
+     * @return the previous value
+     */
+    public final char getAndIncrement() {
+        return value++;
+    }
+
+    /**
+     * Decrements by one the current value.
+     *
+     * @return the previous value
+     */
+    public final char getAndDecrement() {
+        return value--;
+    }
+
+    /**
+     * Increments by one the current value.
+     *
+     * @return the updated value
+     */
+    public final char incrementAndGet() {
+        return ++value;
+    }
+
+    /**
+     * Decrements by one the current value.
+     *
+     * @return the updated value
+     */
+    public final char decrementAndGet() {
+        return --value;
+    }
+
+    /**
+     * Adds the given value to the current value.
+     *
+     * @param delta the value to add
+     * @return the previous value
+     */
+    public final char getAndAdd(final char delta) {
+        final char prev = value;
+        value += delta;
+        return prev;
+    }
+
+    /**
+     * Adds the given value to the current value.
+     *
+     * @param delta the value to add
+     * @return the updated value
+     */
+    public final char addAndGet(final char delta) {
+        return value += delta;
     }
 
     //-----------------------------------------------------------------------
@@ -136,6 +213,7 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable<Chara
         if (obj instanceof MutableChar) {
             return value == ((MutableChar) obj).value;
         }
+
         return false;
     }
 
