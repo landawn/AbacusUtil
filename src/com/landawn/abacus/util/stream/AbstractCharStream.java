@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
@@ -31,11 +32,13 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
+import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharTriFunction;
@@ -70,6 +73,53 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public CharStream dropWhile(final CharPredicate predicate) {
         return dropWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public CharStream drop(final long n, final CharConsumer action) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be less than 0");
+        } else if (n == 0) {
+            return this;
+        }
+
+        if (this.isParallel()) {
+            final AtomicLong cnt = new AtomicLong(n);
+
+            return dropWhile(new CharPredicate() {
+                @Override
+                public boolean test(char value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        } else {
+            final MutableLong cnt = MutableLong.of(n);
+
+            return dropWhile(new CharPredicate() {
+                @Override
+                public boolean test(char value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        }
+    }
+
+    @Override
+    public CharStream dropWhile(final CharPredicate predicate, final CharConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return dropWhile(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return true;
+                }
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -156,6 +206,35 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public OptionalChar first() {
+        final CharIterator iter = this.charIterator();
+
+        return iter.hasNext() ? OptionalChar.of(iter.next()) : OptionalChar.empty();
+    }
+
+    @Override
+    public OptionalChar last() {
+        final CharIterator iter = this.charIterator();
+
+        if (iter.hasNext() == false) {
+            return OptionalChar.empty();
+        }
+
+        char next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+        }
+
+        return OptionalChar.of(next);
+    }
+
+    //    @Override
+    //    public OptionalChar any() {
+    //        return findAny(CharPredicate.ALWAYS_TRUE);
+    //    }
+
+    @Override
     public CharStream except(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -232,6 +311,53 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public Stream<CharStream> splitBy(CharPredicate where) {
+        N.requireNonNull(where);
+
+        final CharIterator iter = this.charIterator();
+        final CharList list = new CharList();
+        char next = 0;
+        CharStream p = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (where.test(next)) {
+                list.add(next);
+            } else {
+                p = CharStream.of(next);
+
+                break;
+            }
+        }
+
+        final CharStream[] a = new CharStream[] { new ArrayCharStream(list.array(), 0, list.size(), null, sorted),
+                new IteratorCharStream(iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public char next() {
+                        return iter.next();
+                    }
+
+                }, null, sorted) };
+
+        if (p != null) {
+            a[1] = a[1].prepend(p);
+        }
+
+        return this.newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<CharList> sliding(int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    @Override
     public CharStream reverse() {
         final char[] a = toArray();
 
@@ -266,6 +392,15 @@ abstract class AbstractCharStream extends CharStream {
                 cursor = cursor > n ? cursor - (int) n : 0;
             }
         }, false);
+    }
+
+    @Override
+    public CharStream shuffle() {
+        final char[] a = toArray();
+
+        N.shuffle(a);
+
+        return newStream(a, false);
     }
 
     @Override

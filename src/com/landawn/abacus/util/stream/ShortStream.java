@@ -175,6 +175,26 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
     public abstract ShortStream dropWhile(final ShortPredicate predicate, final long max);
 
     /**
+     * Take away and consume the specified <code>n</code> elements.
+     * 
+     * @param n
+     * @param action
+     * @return
+     * @see #dropWhile(ShortPredicate)
+     */
+    public abstract ShortStream drop(final long n, final ShortConsumer action);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param predicate
+     * @param action
+     * @return
+     * @see  #dropWhile(ShortPredicate)
+     */
+    public abstract ShortStream dropWhile(final ShortPredicate predicate, final ShortConsumer action);
+
+    /**
      * Returns a stream consisting of the results of applying the given
      * function to the elements of this stream.
      *
@@ -295,9 +315,29 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
     public abstract <U> Stream<ShortStream> split(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
-    public abstract Stream<ShortStream> splitAt(int n);
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<ShortStream> splitAt(int where);
+
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<ShortStream> splitBy(ShortPredicate where);
+
+    public abstract Stream<ShortList> sliding(int windowSize);
+
+    public abstract Stream<ShortList> sliding(int windowSize, int increment);
 
     public abstract ShortStream reverse();
+
+    public abstract ShortStream shuffle();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -894,6 +934,12 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
 
     public abstract OptionalShort findAny(ShortPredicate predicate);
 
+    public abstract OptionalShort first();
+
+    public abstract OptionalShort last();
+
+    //    public abstract OptionalShort any();
+
     /**
      * @param c
      * @return
@@ -949,8 +995,6 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
     public abstract ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
             ShortTriFunction<Short> zipFunction);
 
-    public abstract ShortStream cached();
-
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
@@ -974,6 +1018,8 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
      * each boxed to an {@code Shorteger}
      */
     public abstract Stream<Short> boxed();
+
+    public abstract ShortStream cached();
 
     public abstract Stream<IndexedShort> indexed();
 
@@ -1020,9 +1066,7 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
     }
 
     public static ShortStream range(final short startInclusive, final short endExclusive) {
-        if (startInclusive > endExclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
-        } else if (startInclusive == endExclusive) {
+        if (startInclusive >= endExclusive) {
             return empty();
         }
 
@@ -1051,14 +1095,14 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
             throw new IllegalArgumentException("'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return empty();
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         return new IteratorShortStream(new ImmutableShortIterator() {
             private short next = startInclusive;
@@ -1084,7 +1128,7 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
 
     public static ShortStream rangeClosed(final short startInclusive, final short endInclusive) {
         if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+            return empty();
         } else if (startInclusive == endInclusive) {
             return of(startInclusive);
         }
@@ -1116,12 +1160,14 @@ public abstract class ShortStream extends StreamBase<Short, ShortStream> {
 
         if (endInclusive == startInclusive) {
             return of(startInclusive);
+        } else if (endInclusive > startInclusive != by > 0) {
+            return empty();
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         return new IteratorShortStream(new ImmutableShortIterator() {
             private short next = startInclusive;

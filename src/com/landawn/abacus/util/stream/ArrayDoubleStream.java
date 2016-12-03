@@ -783,6 +783,36 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final DoubleList result = DoubleList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public DoubleStream distinct() {
         return new ArrayDoubleStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
@@ -1081,6 +1111,16 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public OptionalDouble first() {
+        return fromIndex < toIndex ? OptionalDouble.of(elements[fromIndex]) : OptionalDouble.empty();
+    }
+
+    @Override
+    public OptionalDouble last() {
+        return fromIndex < toIndex ? OptionalDouble.of(elements[toIndex - 1]) : OptionalDouble.empty();
+    }
+
+    @Override
     public double reduce(double identity, DoubleBinaryOperator op) {
         double result = identity;
 
@@ -1292,6 +1332,11 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public Stream<Double> boxed() {
         return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? DOUBLE_COMPARATOR : null);
+    }
+
+    @Override
+    public DoubleStream cached() {
+        return this;
     }
 
     @Override

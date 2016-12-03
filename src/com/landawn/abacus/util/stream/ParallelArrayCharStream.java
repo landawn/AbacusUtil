@@ -291,6 +291,36 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<CharList>(new ImmutableIterator<CharList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public CharList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final CharList result = CharList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public CharStream distinct() {
         final char[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
@@ -672,6 +702,16 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         };
 
         return boxed().toMultimap(keyMapper2, valueMapper2, mapSupplier);
+    }
+
+    @Override
+    public OptionalChar first() {
+        return fromIndex < toIndex ? OptionalChar.of(elements[fromIndex]) : OptionalChar.empty();
+    }
+
+    @Override
+    public OptionalChar last() {
+        return fromIndex < toIndex ? OptionalChar.of(elements[toIndex - 1]) : OptionalChar.empty();
     }
 
     @Override
@@ -1856,6 +1896,11 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         }
 
         return tmp;
+    }
+
+    @Override
+    public CharStream cached() {
+        return this;
     }
 
     @Override

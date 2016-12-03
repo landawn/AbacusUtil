@@ -873,9 +873,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    <R> Stream<R> flatMap4(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
+    <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(((ArrayStream<T>) sequential()).flatMap4(mapper).iterator(), closeHandlers, false, null, maxThreadNum,
+            return new ParallelIteratorStream<>(((ArrayStream<T>) sequential()).flatMap0(mapper).iterator(), closeHandlers, false, null, maxThreadNum,
                     splitter);
         }
 
@@ -952,9 +952,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    CharStream flatMapToChar4(final Function<? super T, CharIterator> mapper) {
+    CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(((ArrayStream<T>) sequential()).flatMapToChar4(mapper).charIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorCharStream(((ArrayStream<T>) sequential()).flatMapToChar0(mapper).charIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -1031,9 +1031,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ByteStream flatMapToByte4(final Function<? super T, ByteIterator> mapper) {
+    ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(((ArrayStream<T>) sequential()).flatMapToByte4(mapper).byteIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorByteStream(((ArrayStream<T>) sequential()).flatMapToByte0(mapper).byteIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -1110,9 +1110,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ShortStream flatMapToShort4(final Function<? super T, ShortIterator> mapper) {
+    ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(((ArrayStream<T>) sequential()).flatMapToShort4(mapper).shortIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorShortStream(((ArrayStream<T>) sequential()).flatMapToShort0(mapper).shortIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -1189,9 +1189,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    IntStream flatMapToInt4(final Function<? super T, IntIterator> mapper) {
+    IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(((ArrayStream<T>) sequential()).flatMapToInt4(mapper).intIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorIntStream(((ArrayStream<T>) sequential()).flatMapToInt0(mapper).intIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -1268,9 +1268,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    LongStream flatMapToLong4(final Function<? super T, LongIterator> mapper) {
+    LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(((ArrayStream<T>) sequential()).flatMapToLong4(mapper).longIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorLongStream(((ArrayStream<T>) sequential()).flatMapToLong0(mapper).longIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -1347,9 +1347,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    FloatStream flatMapToFloat4(final Function<? super T, FloatIterator> mapper) {
+    FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(((ArrayStream<T>) sequential()).flatMapToFloat4(mapper).floatIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorFloatStream(((ArrayStream<T>) sequential()).flatMapToFloat0(mapper).floatIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -1426,9 +1426,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    DoubleStream flatMapToDouble4(final Function<? super T, DoubleIterator> mapper) {
+    DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(((ArrayStream<T>) sequential()).flatMapToDouble4(mapper).doubleIterator(), closeHandlers, false,
+            return new ParallelIteratorDoubleStream(((ArrayStream<T>) sequential()).flatMapToDouble0(mapper).doubleIterator(), closeHandlers, false,
                     maxThreadNum, splitter);
         }
 
@@ -1804,6 +1804,36 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<List<T>> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public List<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = N.asList(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public Stream<T> distinct() {
         final T[] a = N.distinct(elements, fromIndex, toIndex);
         return new ParallelArrayStream<T>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitter);
@@ -2025,12 +2055,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> till) {
+    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> predicate) {
         if (logger.isWarnEnabled()) {
             logger.warn("'forEach' is sequentially executed in parallel stream");
         }
 
-        return sequential().forEach(identity, accumulator, till);
+        return sequential().forEach(identity, accumulator, predicate);
     }
 
     //    @Override
@@ -2244,6 +2274,24 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier) {
         return collect(Collectors.toMultimap(keyMapper, valueMapper, mapSupplier));
+    }
+
+    @Override
+    public OptionalNullable<T> first() {
+        if (fromIndex == toIndex) {
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalNullable<T> last() {
+        if (fromIndex == toIndex) {
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.of(elements[toIndex - 1]);
     }
 
     @Override
@@ -3571,6 +3619,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     //
     //        return this;
     //    }
+
+    @Override
+    public Stream<T> cached() {
+        return this;
+    }
 
     @Override
     public Stream<T> queued() {

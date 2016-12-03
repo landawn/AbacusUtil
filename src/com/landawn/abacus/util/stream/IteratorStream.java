@@ -479,7 +479,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    <R> Stream<R> flatMap4(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
+    <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
         //        final ObjectList<Object> list = ObjectList.of(new Object[9], 0);
         //
         //        while (values.hasNext()) {
@@ -516,7 +516,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    CharStream flatMapToChar4(final Function<? super T, CharIterator> mapper) {
+    CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
         return new IteratorCharStream(new ImmutableCharIterator() {
             private CharIterator cur = null;
 
@@ -541,7 +541,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ByteStream flatMapToByte4(final Function<? super T, ByteIterator> mapper) {
+    ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
         return new IteratorByteStream(new ImmutableByteIterator() {
             private ByteIterator cur = null;
 
@@ -566,7 +566,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ShortStream flatMapToShort4(final Function<? super T, ShortIterator> mapper) {
+    ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
         return new IteratorShortStream(new ImmutableShortIterator() {
             private ShortIterator cur = null;
 
@@ -591,7 +591,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    IntStream flatMapToInt4(final Function<? super T, IntIterator> mapper) {
+    IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private IntIterator cur = null;
 
@@ -616,7 +616,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    LongStream flatMapToLong4(final Function<? super T, LongIterator> mapper) {
+    LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
         return new IteratorLongStream(new ImmutableLongIterator() {
             private LongIterator cur = null;
 
@@ -641,7 +641,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    FloatStream flatMapToFloat4(final Function<? super T, FloatIterator> mapper) {
+    FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private FloatIterator cur = null;
 
@@ -666,7 +666,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    DoubleStream flatMapToDouble4(final Function<? super T, DoubleIterator> mapper) {
+    DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private DoubleIterator cur = null;
 
@@ -1022,6 +1022,53 @@ final class IteratorStream<T> extends AbstractStream<T> {
                 return result;
             }
 
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<List<T>> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+            private List<T> prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public List<T> next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>(windowSize);
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    result.addAll(prev.subList(windowSize - cnt, windowSize));
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
         }, closeHandlers);
     }
 
@@ -1703,13 +1750,13 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> till) {
+    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> predicate) {
         U result = identity;
 
         while (elements.hasNext()) {
             result = accumulator.apply(result, elements.next());
 
-            if (till.test(result)) {
+            if (predicate.test(result) == false) {
                 break;
             }
         }

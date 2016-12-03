@@ -425,6 +425,58 @@ final class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<CharList>(new ImmutableIterator<CharList>() {
+            private CharList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public CharList next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                CharList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final char[] dest = new char[windowSize];
+                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    result = CharList.of(dest, cnt);
+                } else {
+                    result = new CharList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public CharStream distinct() {
         final Set<Character> set = new LinkedHashSet<>();
 

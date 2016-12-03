@@ -307,6 +307,57 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     }
 
     @Override
+    public Stream<ByteList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
+            private ByteList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public ByteList next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                ByteList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final byte[] dest = new byte[windowSize];
+                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    result = ByteList.of(dest, cnt);
+                } else {
+                    result = new ByteList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public ByteStream distinct() {
         final Set<Byte> set = new LinkedHashSet<>();
 
@@ -1562,7 +1613,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
     @Override
     public ImmutableByteIterator byteIterator() {
-        return this.sequential().byteIterator();
+        return elements;
     }
 
     @Override

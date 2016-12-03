@@ -176,6 +176,26 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
     public abstract DoubleStream dropWhile(final DoublePredicate predicate, final long max);
 
     /**
+     * Take away and consume the specified <code>n</code> elements.
+     * 
+     * @param n
+     * @param action
+     * @return
+     * @see #dropWhile(DoublePredicate)
+     */
+    public abstract DoubleStream drop(final long n, final DoubleConsumer action);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param predicate
+     * @param action
+     * @return
+     * @see  #dropWhile(DoublePredicate)
+     */
+    public abstract DoubleStream dropWhile(final DoublePredicate predicate, final DoubleConsumer action);
+
+    /**
      * Returns a stream consisting of the results of applying the given
      * function to the elements of this stream.
      *
@@ -328,9 +348,29 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
     public abstract <U> Stream<DoubleStream> split(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
-    public abstract Stream<DoubleStream> splitAt(int n);
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<DoubleStream> splitAt(int where);
+
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<DoubleStream> splitBy(DoublePredicate where);
+
+    public abstract Stream<DoubleList> sliding(int windowSize);
+
+    public abstract Stream<DoubleList> sliding(int windowSize, int increment);
 
     public abstract DoubleStream reverse();
+
+    public abstract DoubleStream shuffle();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -1008,6 +1048,12 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
 
     public abstract OptionalDouble findAny(DoublePredicate predicate);
 
+    public abstract OptionalDouble first();
+
+    public abstract OptionalDouble last();
+
+    //    public abstract OptionalDouble any();
+
     /**
      * @param c
      * @return
@@ -1063,8 +1109,6 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
     public abstract DoubleStream zipWith(DoubleStream b, DoubleStream c, double valueForNoneA, double valueForNoneB, double valueForNoneC,
             DoubleTriFunction<Double> zipFunction);
 
-    public abstract DoubleStream cached();
-
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
      * boxed to {@code Double}.
@@ -1076,6 +1120,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * each boxed to a {@code Double}
      */
     public abstract Stream<Double> boxed();
+
+    public abstract DoubleStream cached();
 
     public abstract Stream<IndexedDouble> indexed();
 

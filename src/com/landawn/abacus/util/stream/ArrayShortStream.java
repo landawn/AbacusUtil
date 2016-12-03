@@ -594,6 +594,36 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ShortList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ShortList result = ShortList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public ShortStream distinct() {
         return new ArrayShortStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
@@ -881,6 +911,16 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public OptionalShort first() {
+        return fromIndex < toIndex ? OptionalShort.of(elements[fromIndex]) : OptionalShort.empty();
+    }
+
+    @Override
+    public OptionalShort last() {
+        return fromIndex < toIndex ? OptionalShort.of(elements[toIndex - 1]) : OptionalShort.empty();
+    }
+
+    @Override
     public short reduce(short identity, ShortBinaryOperator op) {
         short result = identity;
 
@@ -1103,6 +1143,11 @@ final class ArrayShortStream extends AbstractShortStream {
     //        });
     //    }
 
+    //    @Override
+    //    public OptionalShort findAny() {
+    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
+    //    }
+
     @Override
     public IntStream asIntStream() {
         //        final int[] a = new int[toIndex - fromIndex];
@@ -1156,6 +1201,28 @@ final class ArrayShortStream extends AbstractShortStream {
     @Override
     public Stream<Short> boxed() {
         return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null);
+    }
+
+    //    @Override
+    //    public ShortStream exclude(Collection<?> c) {
+    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
+    //
+    //        return filter(new ShortPredicate() {
+    //            @Override
+    //            public boolean test(short value) {
+    //                return !set.contains(value);
+    //            }
+    //        });
+    //    }
+
+    //    @Override
+    //    public OptionalShort findAny() {
+    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
+    //    }
+
+    @Override
+    public ShortStream cached() {
+        return this;
     }
 
     @Override

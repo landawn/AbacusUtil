@@ -66,6 +66,8 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
 
     S append(S s);
 
+    S prepend(S stream);
+
     //    /**
     //     * Append the specified Iterator to the tail of this stream.
     //     * @param iter
@@ -227,8 +229,8 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
      * Because the sequential way is as fast, or even faster than the parallel way for some methods, or is pretty difficult, if not possible, to implement the method by parallel approach.
      * Here are the methods which are executed sequentially even in parallel Streams.  
      * <br></br>
-     * <i>split, distinct, toArray, toObjectList, toList, toSet, toMultiset, toLongMultiset, kthLargest, 
-     * count, except(Collection c), intersect(Collection c), forEach(identity, accumulator, till)</i>
+     * <i>split/splitAt/splitBy/sliding, distinct, toArray, toObjectList, toList, toSet, toMultiset, toLongMultiset, kthLargest, 
+     * count, except(Collection c), intersect(Collection c), forEach(identity, accumulator, predicate)</i>
      * 
      * @param maxThreadNum Default value is the number of cpu-cores. Steps/operations will be executed sequentially if <code>maxThreadNum</code> is 1.
      * @param splitter The target array is split by ranges for multiple threads if splitter is <code>Splitter.ARRAY</code> and target stream composed by array. It looks like:

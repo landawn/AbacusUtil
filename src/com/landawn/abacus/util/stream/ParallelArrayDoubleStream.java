@@ -359,6 +359,36 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final DoubleList result = DoubleList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public DoubleStream distinct() {
         final double[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayDoubleStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
@@ -761,6 +791,16 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         };
 
         return boxed().toMultimap(keyMapper2, valueMapper2, mapSupplier);
+    }
+
+    @Override
+    public OptionalDouble first() {
+        return fromIndex < toIndex ? OptionalDouble.of(elements[fromIndex]) : OptionalDouble.empty();
+    }
+
+    @Override
+    public OptionalDouble last() {
+        return fromIndex < toIndex ? OptionalDouble.of(elements[toIndex - 1]) : OptionalDouble.empty();
     }
 
     @Override
@@ -2000,6 +2040,11 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         }
 
         return tmp;
+    }
+
+    @Override
+    public DoubleStream cached() {
+        return this;
     }
 
     @Override

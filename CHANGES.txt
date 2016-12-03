@@ -1,3 +1,16 @@
+========Changes in 0.9.35=========================================================================
+
+1, Add just/groupBy2/toMap2 to Stream.
+
+2, Add first/last/shuffle/sliding/splitBy/drop/dropWhile to Stream/IntStream/CharStream/DoubleStream...
+
+3, switch the flatMapXXX2 and flatMapXXX3 in Stream.
+
+4, inverse the condition of for-loop continuation to keep consistent with other method: takeWhile/dropWhile/filter/... in Stream/N/ObjectList/DataSet... 
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.34=========================================================================
 
 1, Refacoring MutableXXX.

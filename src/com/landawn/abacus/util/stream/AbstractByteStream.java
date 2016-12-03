@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
@@ -31,11 +32,13 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
+import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteTriFunction;
@@ -70,6 +73,53 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public ByteStream dropWhile(BytePredicate predicate) {
         return dropWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public ByteStream drop(final long n, final ByteConsumer action) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be less than 0");
+        } else if (n == 0) {
+            return this;
+        }
+
+        if (this.isParallel()) {
+            final AtomicLong cnt = new AtomicLong(n);
+
+            return dropWhile(new BytePredicate() {
+                @Override
+                public boolean test(byte value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        } else {
+            final MutableLong cnt = MutableLong.of(n);
+
+            return dropWhile(new BytePredicate() {
+                @Override
+                public boolean test(byte value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        }
+    }
+
+    @Override
+    public ByteStream dropWhile(final BytePredicate predicate, final ByteConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return dropWhile(new BytePredicate() {
+            @Override
+            public boolean test(byte value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return true;
+                }
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -155,6 +205,35 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public OptionalByte first() {
+        final ByteIterator iter = this.byteIterator();
+
+        return iter.hasNext() ? OptionalByte.of(iter.next()) : OptionalByte.empty();
+    }
+
+    @Override
+    public OptionalByte last() {
+        final ByteIterator iter = this.byteIterator();
+
+        if (iter.hasNext() == false) {
+            return OptionalByte.empty();
+        }
+
+        byte next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+        }
+
+        return OptionalByte.of(next);
+    }
+
+    //    @Override
+    //    public OptionalByte any() {
+    //        return findAny(BytePredicate.ALWAYS_TRUE);
+    //    }
+
+    @Override
     public ByteStream except(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -231,6 +310,53 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public Stream<ByteStream> splitBy(BytePredicate where) {
+        N.requireNonNull(where);
+
+        final ByteIterator iter = this.byteIterator();
+        final ByteList list = new ByteList();
+        byte next = 0;
+        ByteStream p = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (where.test(next)) {
+                list.add(next);
+            } else {
+                p = ByteStream.of(next);
+
+                break;
+            }
+        }
+
+        final ByteStream[] a = new ByteStream[] { new ArrayByteStream(list.array(), 0, list.size(), null, sorted),
+                new IteratorByteStream(iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public byte next() {
+                        return iter.next();
+                    }
+
+                }, null, sorted) };
+
+        if (p != null) {
+            a[1] = a[1].prepend(p);
+        }
+
+        return this.newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<ByteList> sliding(int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    @Override
     public ByteStream reverse() {
         final byte[] a = toArray();
 
@@ -265,6 +391,15 @@ abstract class AbstractByteStream extends ByteStream {
                 cursor = cursor > n ? cursor - (int) n : 0;
             }
         }, false);
+    }
+
+    @Override
+    public ByteStream shuffle() {
+        final byte[] a = toArray();
+
+        N.shuffle(a);
+
+        return newStream(a, false);
     }
 
     @Override

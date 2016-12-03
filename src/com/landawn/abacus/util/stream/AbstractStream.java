@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.AbacusIOException;
@@ -62,6 +63,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
@@ -145,8 +147,100 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> drop(final long n, final Consumer<? super T> action) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be less than 0");
+        } else if (n == 0) {
+            return this;
+        }
+
+        if (this.isParallel()) {
+            final AtomicLong cnt = new AtomicLong(n);
+
+            return dropWhile(new Predicate<T>() {
+                @Override
+                public boolean test(T value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        } else {
+            final MutableLong cnt = MutableLong.of(n);
+
+            return dropWhile(new Predicate<T>() {
+                @Override
+                public boolean test(T value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        }
+    }
+
+    @Override
+    public Stream<T> dropWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return dropWhile(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return dropWhile(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, check);
+            }
+        }, action);
+    }
+
+    @Override
+    public <U, R> Stream<R> map(final U seed, final BiFunction<? super T, ? super U, ? extends R> mapper) {
+        return map(new Function<T, R>() {
+            @Override
+            public R apply(T t) {
+                return mapper.apply(t, seed);
+            }
+        });
+    }
+
+    @Override
+    public <U, R> Stream<R> flatMap(final U seed, final BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper) {
+        return flatMap(new Function<T, Stream<? extends R>>() {
+            @Override
+            public Stream<? extends R> apply(T t) {
+                return mapper.apply(t, seed);
+            }
+        });
+    }
+
+    @Override
     public <R> Stream<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
-        return flatMap4(new Function<T, Iterator<? extends R>>() {
+        return flatMap0(new Function<T, Iterator<? extends R>>() {
+            @Override
+            public Iterator<? extends R> apply(T t) {
+                return mapper.apply(t).iterator();
+            }
+        });
+    }
+
+    abstract <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper);
+
+    @Override
+    public <R> Stream<R> flatMap2(final Function<? super T, ? extends Collection<? extends R>> mapper) {
+        return flatMap0(new Function<T, Iterator<? extends R>>() {
             @Override
             public Iterator<? extends R> apply(T t) {
                 return mapper.apply(t).iterator();
@@ -155,8 +249,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> flatMap2(final Function<? super T, ? extends R[]> mapper) {
-        return flatMap4(new Function<T, Iterator<? extends R>>() {
+    public <R> Stream<R> flatMap3(final Function<? super T, ? extends R[]> mapper) {
+        return flatMap0(new Function<T, Iterator<? extends R>>() {
             @Override
             public Iterator<? extends R> apply(T t) {
                 return ImmutableIterator.of(mapper.apply(t));
@@ -165,18 +259,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> flatMap3(final Function<? super T, ? extends Collection<? extends R>> mapper) {
-        return flatMap4(new Function<T, Iterator<? extends R>>() {
-            @Override
-            public Iterator<? extends R> apply(T t) {
-                return mapper.apply(t).iterator();
-            }
-        });
-    }
-
-    @Override
     public CharStream flatMapToChar(final Function<? super T, ? extends CharStream> mapper) {
-        return flatMapToChar4(new Function<T, CharIterator>() {
+        return flatMapToChar0(new Function<T, CharIterator>() {
             @Override
             public CharIterator apply(T t) {
                 return mapper.apply(t).charIterator();
@@ -184,19 +268,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public CharStream flatMapToChar2(final Function<? super T, char[]> mapper) {
-        return flatMapToChar4(new Function<T, CharIterator>() {
-            @Override
-            public CharIterator apply(T t) {
-                return ImmutableCharIterator.of(mapper.apply(t));
-            }
-        });
-    }
+    abstract CharStream flatMapToChar0(Function<? super T, CharIterator> function);
 
     @Override
-    public CharStream flatMapToChar3(final Function<? super T, ? extends Collection<Character>> mapper) {
-        return flatMapToChar4(new Function<T, CharIterator>() {
+    public CharStream flatMapToChar2(final Function<? super T, ? extends Collection<Character>> mapper) {
+        return flatMapToChar0(new Function<T, CharIterator>() {
             @Override
             public CharIterator apply(T t) {
                 final Iterator<Character> iter = mapper.apply(t).iterator();
@@ -217,8 +293,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public CharStream flatMapToChar3(final Function<? super T, char[]> mapper) {
+        return flatMapToChar0(new Function<T, CharIterator>() {
+            @Override
+            public CharIterator apply(T t) {
+                return ImmutableCharIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
-        return flatMapToByte4(new Function<T, ByteIterator>() {
+        return flatMapToByte0(new Function<T, ByteIterator>() {
             @Override
             public ByteIterator apply(T t) {
                 return mapper.apply(t).byteIterator();
@@ -226,19 +312,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public ByteStream flatMapToByte2(final Function<? super T, byte[]> mapper) {
-        return flatMapToByte4(new Function<T, ByteIterator>() {
-            @Override
-            public ByteIterator apply(T t) {
-                return ImmutableByteIterator.of(mapper.apply(t));
-            }
-        });
-    }
+    abstract ByteStream flatMapToByte0(Function<? super T, ByteIterator> function);
 
     @Override
-    public ByteStream flatMapToByte3(final Function<? super T, ? extends Collection<Byte>> mapper) {
-        return flatMapToByte4(new Function<T, ByteIterator>() {
+    public ByteStream flatMapToByte2(final Function<? super T, ? extends Collection<Byte>> mapper) {
+        return flatMapToByte0(new Function<T, ByteIterator>() {
             @Override
             public ByteIterator apply(T t) {
                 final Iterator<Byte> iter = mapper.apply(t).iterator();
@@ -259,8 +337,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public ByteStream flatMapToByte3(final Function<? super T, byte[]> mapper) {
+        return flatMapToByte0(new Function<T, ByteIterator>() {
+            @Override
+            public ByteIterator apply(T t) {
+                return ImmutableByteIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public ShortStream flatMapToShort(final Function<? super T, ? extends ShortStream> mapper) {
-        return flatMapToShort4(new Function<T, ShortIterator>() {
+        return flatMapToShort0(new Function<T, ShortIterator>() {
             @Override
             public ShortIterator apply(T t) {
                 return mapper.apply(t).shortIterator();
@@ -268,19 +356,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public ShortStream flatMapToShort2(final Function<? super T, short[]> mapper) {
-        return flatMapToShort4(new Function<T, ShortIterator>() {
-            @Override
-            public ShortIterator apply(T t) {
-                return ImmutableShortIterator.of(mapper.apply(t));
-            }
-        });
-    }
+    abstract ShortStream flatMapToShort0(Function<? super T, ShortIterator> function);
 
     @Override
-    public ShortStream flatMapToShort3(final Function<? super T, ? extends Collection<Short>> mapper) {
-        return flatMapToShort4(new Function<T, ShortIterator>() {
+    public ShortStream flatMapToShort2(final Function<? super T, ? extends Collection<Short>> mapper) {
+        return flatMapToShort0(new Function<T, ShortIterator>() {
             @Override
             public ShortIterator apply(T t) {
                 final Iterator<Short> iter = mapper.apply(t).iterator();
@@ -301,8 +381,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public ShortStream flatMapToShort3(final Function<? super T, short[]> mapper) {
+        return flatMapToShort0(new Function<T, ShortIterator>() {
+            @Override
+            public ShortIterator apply(T t) {
+                return ImmutableShortIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
-        return flatMapToInt4(new Function<T, IntIterator>() {
+        return flatMapToInt0(new Function<T, IntIterator>() {
             @Override
             public IntIterator apply(T t) {
                 return mapper.apply(t).intIterator();
@@ -310,19 +400,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public IntStream flatMapToInt2(final Function<? super T, int[]> mapper) {
-        return flatMapToInt4(new Function<T, IntIterator>() {
-            @Override
-            public IntIterator apply(T t) {
-                return ImmutableIntIterator.of(mapper.apply(t));
-            }
-        });
-    }
+    abstract IntStream flatMapToInt0(Function<? super T, IntIterator> function);
 
     @Override
-    public IntStream flatMapToInt3(final Function<? super T, ? extends Collection<Integer>> mapper) {
-        return flatMapToInt4(new Function<T, IntIterator>() {
+    public IntStream flatMapToInt2(final Function<? super T, ? extends Collection<Integer>> mapper) {
+        return flatMapToInt0(new Function<T, IntIterator>() {
             @Override
             public IntIterator apply(T t) {
                 final Iterator<Integer> iter = mapper.apply(t).iterator();
@@ -343,8 +425,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public IntStream flatMapToInt3(final Function<? super T, int[]> mapper) {
+        return flatMapToInt0(new Function<T, IntIterator>() {
+            @Override
+            public IntIterator apply(T t) {
+                return ImmutableIntIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public LongStream flatMapToLong(final Function<? super T, ? extends LongStream> mapper) {
-        return flatMapToLong4(new Function<T, LongIterator>() {
+        return flatMapToLong0(new Function<T, LongIterator>() {
             @Override
             public LongIterator apply(T t) {
                 return mapper.apply(t).longIterator();
@@ -352,19 +444,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public LongStream flatMapToLong2(final Function<? super T, long[]> mapper) {
-        return flatMapToLong4(new Function<T, LongIterator>() {
-            @Override
-            public LongIterator apply(T t) {
-                return ImmutableLongIterator.of(mapper.apply(t));
-            }
-        });
-    }
+    abstract LongStream flatMapToLong0(Function<? super T, LongIterator> function);
 
     @Override
-    public LongStream flatMapToLong3(final Function<? super T, ? extends Collection<Long>> mapper) {
-        return flatMapToLong4(new Function<T, LongIterator>() {
+    public LongStream flatMapToLong2(final Function<? super T, ? extends Collection<Long>> mapper) {
+        return flatMapToLong0(new Function<T, LongIterator>() {
             @Override
             public LongIterator apply(T t) {
                 final Iterator<Long> iter = mapper.apply(t).iterator();
@@ -385,8 +469,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public LongStream flatMapToLong3(final Function<? super T, long[]> mapper) {
+        return flatMapToLong0(new Function<T, LongIterator>() {
+            @Override
+            public LongIterator apply(T t) {
+                return ImmutableLongIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
-        return flatMapToFloat4(new Function<T, FloatIterator>() {
+        return flatMapToFloat0(new Function<T, FloatIterator>() {
             @Override
             public FloatIterator apply(T t) {
                 return mapper.apply(t).floatIterator();
@@ -394,19 +488,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public FloatStream flatMapToFloat2(final Function<? super T, float[]> mapper) {
-        return flatMapToFloat4(new Function<T, FloatIterator>() {
-            @Override
-            public FloatIterator apply(T t) {
-                return ImmutableFloatIterator.of(mapper.apply(t));
-            }
-        });
-    }
+    abstract FloatStream flatMapToFloat0(Function<? super T, FloatIterator> function);
 
     @Override
-    public FloatStream flatMapToFloat3(final Function<? super T, ? extends Collection<Float>> mapper) {
-        return flatMapToFloat4(new Function<T, FloatIterator>() {
+    public FloatStream flatMapToFloat2(final Function<? super T, ? extends Collection<Float>> mapper) {
+        return flatMapToFloat0(new Function<T, FloatIterator>() {
             @Override
             public FloatIterator apply(T t) {
                 final Iterator<Float> iter = mapper.apply(t).iterator();
@@ -427,8 +513,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public FloatStream flatMapToFloa3(final Function<? super T, float[]> mapper) {
+        return flatMapToFloat0(new Function<T, FloatIterator>() {
+            @Override
+            public FloatIterator apply(T t) {
+                return ImmutableFloatIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
     public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
-        return flatMapToDouble4(new Function<T, DoubleIterator>() {
+        return flatMapToDouble0(new Function<T, DoubleIterator>() {
             @Override
             public DoubleIterator apply(T t) {
                 return mapper.apply(t).doubleIterator();
@@ -436,19 +532,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public DoubleStream flatMapToDouble2(final Function<? super T, double[]> mapper) {
-        return flatMapToDouble4(new Function<T, DoubleIterator>() {
-            @Override
-            public DoubleIterator apply(T t) {
-                return ImmutableDoubleIterator.of(mapper.apply(t));
-            }
-        });
-    }
+    abstract DoubleStream flatMapToDouble0(Function<? super T, DoubleIterator> function);
 
     @Override
-    public DoubleStream flatMapToDouble3(final Function<? super T, ? extends Collection<Double>> mapper) {
-        return flatMapToDouble4(new Function<T, DoubleIterator>() {
+    public DoubleStream flatMapToDouble2(final Function<? super T, ? extends Collection<Double>> mapper) {
+        return flatMapToDouble0(new Function<T, DoubleIterator>() {
             @Override
             public DoubleIterator apply(T t) {
                 final Iterator<Double> iter = mapper.apply(t).iterator();
@@ -468,21 +556,15 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    abstract <R> Stream<R> flatMap4(final Function<? super T, ? extends Iterator<? extends R>> mapper);
-
-    abstract CharStream flatMapToChar4(Function<? super T, CharIterator> function);
-
-    abstract ByteStream flatMapToByte4(Function<? super T, ByteIterator> function);
-
-    abstract ShortStream flatMapToShort4(Function<? super T, ShortIterator> function);
-
-    abstract IntStream flatMapToInt4(Function<? super T, IntIterator> function);
-
-    abstract LongStream flatMapToLong4(Function<? super T, LongIterator> function);
-
-    abstract FloatStream flatMapToFloat4(Function<? super T, FloatIterator> function);
-
-    abstract DoubleStream flatMapToDouble4(Function<? super T, DoubleIterator> function);
+    @Override
+    public DoubleStream flatMapToDouble3(final Function<? super T, double[]> mapper) {
+        return flatMapToDouble0(new Function<T, DoubleIterator>() {
+            @Override
+            public DoubleIterator apply(T t) {
+                return ImmutableDoubleIterator.of(mapper.apply(t));
+            }
+        });
+    }
 
     @Override
     public Stream<Stream<T>> split(final int size) {
@@ -565,6 +647,21 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <K, U> Stream<Entry<K, List<U>>> groupBy2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return groupBy(keyMapper, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy2(Function<? super T, ? extends K> keyMapper,
+            Function<? super T, ? extends U> valueMapper, Supplier<M> mapSupplier) {
+        final Map<K, List<U>> map = collect(
+                Collectors.groupingBy(keyMapper, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapSupplier));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
     public <K> Map<K, List<T>> toMap(Function<? super T, ? extends K> classifier) {
         return toMap(classifier, new Supplier<Map<K, List<T>>>() {
             @Override
@@ -615,6 +712,18 @@ abstract class AbstractStream<T> extends Stream<T> {
                 return new HashMap<>();
             }
         });
+    }
+
+    @Override
+    public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        return toMap(keyMapper, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            Supplier<M> mapSupplier) {
+        return toMap(keyMapper, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapSupplier);
     }
 
     @Override
@@ -713,6 +822,39 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public OptionalNullable<T> first() {
+        final Iterator<T> iter = this.iterator();
+
+        if (iter.hasNext() == false) {
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.of(iter.next());
+    }
+
+    @Override
+    public OptionalNullable<T> last() {
+        final Iterator<T> iter = this.iterator();
+
+        if (iter.hasNext() == false) {
+            return OptionalNullable.empty();
+        }
+
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+        }
+
+        return OptionalNullable.of(next);
+    }
+
+    //    @Override
+    //    public OptionalNullable<T> any() {
+    //        return findAny(Predicate.ALWAYS_TRUE);
+    //    }
+
+    @Override
     public Stream<T> skipNull() {
         return filter(Predicate.NOT_NULL);
     }
@@ -801,6 +943,41 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> splitBy(Predicate<? super T> where) {
+        N.requireNonNull(where);
+
+        final Iterator<T> iter = this.iterator();
+        final List<T> list = new ArrayList<>();
+        T next = null;
+        Stream<T> p = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (where.test(next)) {
+                list.add(next);
+            } else {
+                p = Stream.of(next);
+
+                break;
+            }
+        }
+
+        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
+
+        if (p != null) {
+            a[1] = a[1].prepend(p);
+        }
+
+        return this.newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<List<T>> sliding(int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    @Override
     public Stream<T> reverse() {
         final T[] a = (T[]) toArray();
 
@@ -835,6 +1012,15 @@ abstract class AbstractStream<T> extends Stream<T> {
                 cursor = cursor > n ? cursor - (int) n : 0;
             }
         }, false, null);
+    }
+
+    @Override
+    public Stream<T> shuffle() {
+        final T[] a = (T[]) toArray();
+
+        N.shuffle(a);
+
+        return newStream(a, false, null);
     }
 
     @Override

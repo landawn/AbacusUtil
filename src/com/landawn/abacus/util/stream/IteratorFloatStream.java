@@ -527,6 +527,57 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public Stream<FloatList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<FloatList>(new ImmutableIterator<FloatList>() {
+            private FloatList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public FloatList next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                FloatList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final float[] dest = new float[windowSize];
+                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    result = FloatList.of(dest, cnt);
+                } else {
+                    result = new FloatList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public FloatStream distinct() {
         final Set<Float> set = new LinkedHashSet<>();
 

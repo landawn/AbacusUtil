@@ -20970,58 +20970,59 @@ public final class N {
         ObjectList.of(a).forEach(fromIndex, toIndex, action);
     }
 
-    public static <T, R> R forEach(final T[] a, final R identity, final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
+    public static <T, R> R forEach(final T[] a, final R identity, final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> predicate) {
         if (N.isNullOrEmpty(a)) {
             return identity;
         }
 
-        return ObjectList.of(a).forEach(identity, accumulator, till);
+        return ObjectList.of(a).forEach(identity, accumulator, predicate);
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
      * @param fromIndex
      * @param toIndex
      * @param identity
      * @param accumulator
-     * @param till break if the <code>till</code> returns true.
+     * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
     public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final BiFunction<R, ? super T, R> accumulator,
-            final Predicate<? super R> till) {
+            final Predicate<? super R> predicate) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return identity;
         }
 
-        return ObjectList.of(a).forEach(identity, accumulator, till);
+        return ObjectList.of(a).forEach(identity, accumulator, predicate);
     }
 
-    public static <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<? super T, T[], R, R> accumulator, final Predicate<? super R> till) {
+    public static <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<? super T, T[], R, R> accumulator,
+            final Predicate<? super R> predicate) {
         if (N.isNullOrEmpty(a)) {
             return identity;
         }
 
-        return ObjectList.of(a).forEach(identity, accumulator, till);
+        return ObjectList.of(a).forEach(identity, accumulator, predicate);
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * Execute <code>accumulator</code> on each element till <code>till</code> returns false.
      * 
      * @param fromIndex
      * @param toIndex
      * @param identity
      * @param accumulator
-     * @param till break if the <code>till</code> returns true.
+     * @param predicate break if the <code>till</code> returns false.
      * @return
      */
     public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity,
-            final IndexedBiFunction<? super T, T[], R, R> accumulator, final Predicate<? super R> till) {
+            final IndexedBiFunction<? super T, T[], R, R> accumulator, final Predicate<? super R> predicate) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return identity;
         }
 
-        return ObjectList.of(a).forEach(identity, accumulator, till);
+        return ObjectList.of(a).forEach(identity, accumulator, predicate);
     }
 
     public static <T, A extends Collection<? extends T>> void forEach(final A c, final Consumer<? super T> action) {
@@ -21197,26 +21198,26 @@ public final class N {
     }
 
     public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final R identity, BiFunction<R, ? super T, R> accumulator,
-            final Predicate<? super R> till) {
+            final Predicate<? super R> predicate) {
         if (N.isNullOrEmpty(c)) {
             return identity;
         }
 
-        return forEach(c, 0, c.size(), identity, accumulator, till);
+        return forEach(c, 0, c.size(), identity, accumulator, predicate);
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
      * @param fromIndex
      * @param toIndex
      * @param identity
      * @param accumulator
-     * @param till break if the <code>till</code> returns true.
+     * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
     public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
-            final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> till) {
+            final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> predicate) {
         if (fromIndex <= toIndex) {
             N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         } else {
@@ -21236,7 +21237,7 @@ public final class N {
                 for (int i = fromIndex; i < toIndex; i++) {
                     result = accumulator.apply(result, list.get(i));
 
-                    if (till.test(result)) {
+                    if (predicate.test(result) == false) {
                         break;
                     }
                 }
@@ -21244,7 +21245,7 @@ public final class N {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
                     result = accumulator.apply(result, list.get(i));
 
-                    if (till.test(result)) {
+                    if (predicate.test(result) == false) {
                         break;
                     }
                 }
@@ -21262,7 +21263,7 @@ public final class N {
                 while (iter.hasNext()) {
                     result = accumulator.apply(result, iter.next());
 
-                    if (till.test(result)) {
+                    if (predicate.test(result) == false) {
                         break;
                     }
 
@@ -21289,7 +21290,7 @@ public final class N {
                 for (int i = a.length - 1; i >= 0; i--) {
                     result = accumulator.apply(result, a[i]);
 
-                    if (till.test(result)) {
+                    if (predicate.test(result) == false) {
                         break;
                     }
                 }
@@ -21300,26 +21301,26 @@ public final class N {
     }
 
     public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final R identity, final IndexedBiFunction<? super T, A, R, R> accumulator,
-            final Predicate<? super R> till) {
+            final Predicate<? super R> predicate) {
         if (N.isNullOrEmpty(c)) {
             return identity;
         }
 
-        return forEach(c, 0, c.size(), identity, accumulator, till);
+        return forEach(c, 0, c.size(), identity, accumulator, predicate);
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
      * @param fromIndex
      * @param toIndex
      * @param identity
      * @param accumulator
-     * @param till break if the <code>till</code> returns true.
+     * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
     public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
-            final IndexedBiFunction<? super T, A, R, R> accumulator, final Predicate<? super R> till) {
+            final IndexedBiFunction<? super T, A, R, R> accumulator, final Predicate<? super R> predicate) {
         if (fromIndex <= toIndex) {
             N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         } else {
@@ -21339,7 +21340,7 @@ public final class N {
                 for (int i = fromIndex; i < toIndex; i++) {
                     result = accumulator.apply(i, list.get(i), c, result);
 
-                    if (till.test(result)) {
+                    if (predicate.test(result) == false) {
                         break;
                     }
                 }
@@ -21347,7 +21348,7 @@ public final class N {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
                     result = accumulator.apply(i, list.get(i), c, result);
 
-                    if (till.test(result)) {
+                    if (predicate.test(result) == false) {
                         break;
                     }
                 }
@@ -21365,7 +21366,7 @@ public final class N {
                 while (iter.hasNext()) {
                     result = accumulator.apply(idx, iter.next(), c, result);
 
-                    if (till.test(result)) {
+                    if (predicate.test(result) == false) {
                         break;
                     }
 
@@ -21392,7 +21393,7 @@ public final class N {
                 for (int i = a.length - 1; i >= 0; i--) {
                     result = accumulator.apply(i + toIndex, a[i], c, result);
 
-                    if (till.test(result)) {
+                    if (predicate.test(result) == false) {
                         break;
                     }
                 }
@@ -28455,7 +28456,7 @@ public final class N {
     }
 
     public static <T> Iterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
-        final Iterator<T> iter = ((Stream<T>) Stream.concat(c)).iterator();
+        final Iterator<T> iter = (Iterator<T>) Stream.concat(c).iterator();
 
         return iter;
     }

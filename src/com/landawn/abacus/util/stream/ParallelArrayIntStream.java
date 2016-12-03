@@ -461,6 +461,36 @@ final class ParallelArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public Stream<IntList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<IntList>(new ImmutableIterator<IntList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public IntList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final IntList result = IntList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public IntStream distinct() {
         final int[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayIntStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
@@ -870,6 +900,16 @@ final class ParallelArrayIntStream extends AbstractIntStream {
         };
 
         return boxed().toMultimap(keyMapper2, valueMapper2, mapSupplier);
+    }
+
+    @Override
+    public OptionalInt first() {
+        return fromIndex < toIndex ? OptionalInt.of(elements[fromIndex]) : OptionalInt.empty();
+    }
+
+    @Override
+    public OptionalInt last() {
+        return fromIndex < toIndex ? OptionalInt.of(elements[toIndex - 1]) : OptionalInt.empty();
     }
 
     @Override
@@ -2159,6 +2199,11 @@ final class ParallelArrayIntStream extends AbstractIntStream {
         }
 
         return tmp;
+    }
+
+    @Override
+    public IntStream cached() {
+        return this;
     }
 
     @Override

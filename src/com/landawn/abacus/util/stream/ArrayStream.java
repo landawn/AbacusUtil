@@ -660,7 +660,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    <R> Stream<R> flatMap4(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
+    <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
         //        final List<Object[]> listOfArray = new ArrayList<Object[]>();
         //
         //        int lengthOfAll = 0;
@@ -704,7 +704,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    CharStream flatMapToChar4(final Function<? super T, CharIterator> mapper) {
+    CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
         //        final List<char[]> listOfArray = new ArrayList<char[]>();
         //
         //        int lengthOfAll = 0;
@@ -748,7 +748,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ByteStream flatMapToByte4(final Function<? super T, ByteIterator> mapper) {
+    ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
         //        final List<byte[]> listOfArray = new ArrayList<byte[]>();
         //
         //        int lengthOfAll = 0;
@@ -792,7 +792,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ShortStream flatMapToShort4(final Function<? super T, ShortIterator> mapper) {
+    ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
         //        final List<short[]> listOfArray = new ArrayList<short[]>();
         //
         //        int lengthOfAll = 0;
@@ -836,7 +836,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    IntStream flatMapToInt4(final Function<? super T, IntIterator> mapper) {
+    IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
         //        final List<int[]> listOfArray = new ArrayList<int[]>();
         //
         //        int lengthOfAll = 0;
@@ -880,7 +880,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    LongStream flatMapToLong4(final Function<? super T, LongIterator> mapper) {
+    LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
         //        final List<long[]> listOfArray = new ArrayList<long[]>();
         //
         //        int lengthOfAll = 0;
@@ -924,7 +924,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    FloatStream flatMapToFloat4(final Function<? super T, FloatIterator> mapper) {
+    FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
         //        final List<float[]> listOfArray = new ArrayList<float[]>();
         //
         //        int lengthOfAll = 0;
@@ -968,7 +968,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    DoubleStream flatMapToDouble4(final Function<? super T, DoubleIterator> mapper) {
+    DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
         //        final List<double[]> listOfArray = new ArrayList<double[]>();
         //
         //        int lengthOfAll = 0;
@@ -1338,6 +1338,36 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<List<T>> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public List<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = N.asList(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public Stream<T> distinct() {
         return new ArrayStream<T>(N.distinct(elements, fromIndex, toIndex), closeHandlers, sorted, cmp);
     }
@@ -1486,13 +1516,13 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> till) {
+    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> predicate) {
         U result = identity;
 
         for (int i = fromIndex; i < toIndex; i++) {
             result = accumulator.apply(result, elements[i]);
 
-            if (till.test(result)) {
+            if (predicate.test(result) == false) {
                 break;
             }
         }
@@ -1679,6 +1709,24 @@ final class ArrayStream<T> extends AbstractStream<T> {
         }
 
         return result;
+    }
+
+    @Override
+    public OptionalNullable<T> first() {
+        if (fromIndex == toIndex) {
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.of(elements[fromIndex]);
+    }
+
+    @Override
+    public OptionalNullable<T> last() {
+        if (fromIndex == toIndex) {
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.of(elements[toIndex - 1]);
     }
 
     @Override
@@ -1945,6 +1993,16 @@ final class ArrayStream<T> extends AbstractStream<T> {
     //
     //        return this;
     //    }
+
+    //    @Override
+    //    public OptionalNullable<T> findAny() {
+    //        return count() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(elements[fromIndex]);
+    //    }
+
+    @Override
+    public Stream<T> cached() {
+        return this;
+    }
 
     @Override
     public Stream<T> queued() {

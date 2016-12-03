@@ -334,6 +334,36 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate);
 
     /**
+     * Take away and consume the specified <code>n</code> elements.
+     * 
+     * @param n
+     * @param action
+     * @return
+     * @see #dropWhile(Predicate)
+     */
+    public abstract Stream<T> drop(final long n, final Consumer<? super T> action);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param predicate
+     * @param action
+     * @return
+     * @see  #dropWhile(Predicate)
+     */
+    public abstract Stream<T> dropWhile(final Predicate<? super T> predicate, final Consumer<? super T> action);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param check
+     * @param predicate
+     * @param action
+     * @return {@link #dropWhile(Object, BiPredicate)}
+     */
+    public abstract <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action);
+
+    /**
      * Returns a stream consisting of the results of applying the given
      * function to the elements of this stream.
      *
@@ -347,6 +377,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @return the new stream
      */
     public abstract <R> Stream<R> map(Function<? super T, ? extends R> mapper);
+
+    public abstract <U, R> Stream<R> map(U seed, BiFunction<? super T, ? super U, ? extends R> mapper);
 
     public abstract CharStream mapToChar(ToCharFunction<? super T> mapper);
 
@@ -442,27 +474,29 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper);
 
-    public abstract <R> Stream<R> flatMap2(Function<? super T, ? extends R[]> mapper);
+    public abstract <U, R> Stream<R> flatMap(U seed, BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper);
 
-    public abstract <R> Stream<R> flatMap3(Function<? super T, ? extends Collection<? extends R>> mapper);
+    public abstract <R> Stream<R> flatMap2(Function<? super T, ? extends Collection<? extends R>> mapper);
+
+    public abstract <R> Stream<R> flatMap3(Function<? super T, ? extends R[]> mapper);
 
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 
-    public abstract CharStream flatMapToChar2(Function<? super T, char[]> mapper);
+    public abstract CharStream flatMapToChar2(Function<? super T, ? extends Collection<Character>> mapper);
 
-    public abstract CharStream flatMapToChar3(Function<? super T, ? extends Collection<Character>> mapper);
+    public abstract CharStream flatMapToChar3(Function<? super T, char[]> mapper);
 
     public abstract ByteStream flatMapToByte(Function<? super T, ? extends ByteStream> mapper);
 
-    public abstract ByteStream flatMapToByte2(Function<? super T, byte[]> mapper);
+    public abstract ByteStream flatMapToByte2(Function<? super T, ? extends Collection<Byte>> mapper);
 
-    public abstract ByteStream flatMapToByte3(Function<? super T, ? extends Collection<Byte>> mapper);
+    public abstract ByteStream flatMapToByte3(Function<? super T, byte[]> mapper);
 
     public abstract ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper);
 
-    public abstract ShortStream flatMapToShort2(Function<? super T, short[]> mapper);
+    public abstract ShortStream flatMapToShort2(Function<? super T, ? extends Collection<Short>> mapper);
 
-    public abstract ShortStream flatMapToShort3(Function<? super T, ? extends Collection<Short>> mapper);
+    public abstract ShortStream flatMapToShort3(Function<? super T, short[]> mapper);
 
     /**
      * Returns an {@code IntStream} consisting of the results of replacing each
@@ -484,9 +518,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper);
 
-    public abstract IntStream flatMapToInt2(Function<? super T, int[]> mapper);
+    public abstract IntStream flatMapToInt2(Function<? super T, ? extends Collection<Integer>> mapper);
 
-    public abstract IntStream flatMapToInt3(Function<? super T, ? extends Collection<Integer>> mapper);
+    public abstract IntStream flatMapToInt3(Function<? super T, int[]> mapper);
 
     /**
      * Returns an {@code LongStream} consisting of the results of replacing each
@@ -508,15 +542,15 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper);
 
-    public abstract LongStream flatMapToLong2(Function<? super T, long[]> mapper);
+    public abstract LongStream flatMapToLong2(Function<? super T, ? extends Collection<Long>> mapper);
 
-    public abstract LongStream flatMapToLong3(Function<? super T, ? extends Collection<Long>> mapper);
+    public abstract LongStream flatMapToLong3(Function<? super T, long[]> mapper);
 
     public abstract FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper);
 
-    public abstract FloatStream flatMapToFloat2(Function<? super T, float[]> mapper);
+    public abstract FloatStream flatMapToFloat2(Function<? super T, ? extends Collection<Float>> mapper);
 
-    public abstract FloatStream flatMapToFloat3(Function<? super T, ? extends Collection<Float>> mapper);
+    public abstract FloatStream flatMapToFloa3(Function<? super T, float[]> mapper);
 
     /**
      * Returns an {@code DoubleStream} consisting of the results of replacing
@@ -538,9 +572,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper);
 
-    public abstract DoubleStream flatMapToDouble2(Function<? super T, double[]> mapper);
+    public abstract DoubleStream flatMapToDouble2(Function<? super T, ? extends Collection<Double>> mapper);
 
-    public abstract DoubleStream flatMapToDouble3(Function<? super T, ? extends Collection<Double>> mapper);
+    public abstract DoubleStream flatMapToDouble3(Function<? super T, double[]> mapper);
 
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
@@ -562,6 +596,26 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy2(Function<? super T, ? extends K> keyMapper,
+            Function<? super T, ? extends U> valueMapper, Supplier<M> mapSupplier);
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller). 
@@ -728,9 +782,29 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract <U> Stream<Set<T>> splitIntoSet(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
-    public abstract Stream<Stream<T>> splitAt(int n);
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<Stream<T>> splitAt(int where);
+
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<Stream<T>> splitBy(Predicate<? super T> where);
+
+    public abstract Stream<List<T>> sliding(int windowSize);
+
+    public abstract Stream<List<T>> sliding(int windowSize, int increment);
 
     public abstract Stream<T> reverse();
+
+    public abstract Stream<T> shuffle();
 
     /**
      * Returns a stream consisting of the distinct elements (according to
@@ -919,14 +993,14 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract void forEach(Consumer<? super T> action);
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
      * @param identity
      * @param accumulator
-     * @param till break if the <code>till</code> returns true.
+     * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public abstract <U> U forEach(final U identity, BiFunction<U, ? super T, U> accumulator, final Predicate<? super U> till);
+    public abstract <U> U forEach(final U identity, BiFunction<U, ? super T, U> accumulator, final Predicate<? super U> predicate);
 
     //    /**
     //     * In parallel Streams, the elements after the first element which <code>action</code> returns false may be executed by action too.
@@ -1072,6 +1146,19 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+
+    public abstract <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @param mapSupplier
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            Supplier<M> mapSupplier);
 
     /**
      * 
@@ -1603,6 +1690,12 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract OptionalNullable<T> findAny(Predicate<? super T> predicate);
 
+    public abstract OptionalNullable<T> first();
+
+    public abstract OptionalNullable<T> last();
+
+    //    public abstract OptionalNullable<T> any();
+
     public abstract Stream<T> skipNull();
 
     /**
@@ -1645,6 +1738,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @see IntList#xor(IntList)
      */
     public abstract Stream<T> xor(Collection<? extends T> c);
+
+    public abstract Stream<Indexed<T>> indexed();
 
     //    /**
     //     * Skip all the elements in the specified collection.
@@ -1696,7 +1791,15 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     //     */
     //    public abstract Stream<T> breakWhileError(int maxRetries, long retryInterval);
 
-    public abstract Stream<Indexed<T>> indexed();
+    public abstract Stream<T> cached();
+
+    /**
+     * Returns a reusable stream which can be repeatedly used.
+     * 
+     * @param generator
+     * @return
+     */
+    public abstract Stream<T> cached(IntFunction<T[]> generator);
 
     public abstract Stream<T> queued();
 
@@ -1707,14 +1810,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @return
      */
     public abstract Stream<T> queued(int queueSize);
-
-    /**
-     * Append the specified stream to the tail of this stream.
-     * @param stream
-     * @return
-     */
-    @Override
-    public abstract Stream<T> append(final Stream<T> stream);
 
     /**
      * 
@@ -1733,16 +1828,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract <T2, T3, R> Stream<R> zipWith(final Stream<T2> b, final Stream<T3> c, final T valueForNoneA, final T2 valueForNoneB, final T3 valueForNoneC,
             final TriFunction<? super T, ? super T2, ? super T3, R> zipFunction);
-
-    public abstract Stream<T> cached();
-
-    /**
-     * Returns a reusable stream which can be repeatedly used.
-     * 
-     * @param generator
-     * @return
-     */
-    public abstract Stream<T> cached(IntFunction<T[]> generator);
 
     public abstract long persist(File file, Function<? super T, String> toLine);
 
@@ -1765,6 +1850,18 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public static <T> Stream<T> empty() {
         return EMPTY;
+    }
+
+    public static <T> Stream<T> just(final T a) {
+        return of(N.asArray(a));
+    }
+
+    public static <T> Stream<T> just(final T a, final T b) {
+        return of(N.asArray(a, b));
+    }
+
+    public static <T> Stream<T> just(final T a, final T b, final T c) {
+        return of(N.asArray(a, b, c));
     }
 
     public static <T> Stream<T> of(final T... a) {
@@ -1911,7 +2008,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         return of(new RowIterator(resultSet), startIndex, endIndex);
     }
 
-    static Try<Stream<String>> of(final File file) {
+    public static Try<Stream<String>> of(final File file) {
         final Reader reader = IOUtil.createBufferedReader(file);
 
         return of(reader).onClose(new Runnable() {

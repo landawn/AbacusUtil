@@ -593,6 +593,36 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<CharList>(new ImmutableIterator<CharList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public CharList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final CharList result = CharList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public CharStream distinct() {
         return new ArrayCharStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
@@ -857,6 +887,16 @@ final class ArrayCharStream extends AbstractCharStream {
         }
 
         return result;
+    }
+
+    @Override
+    public OptionalChar first() {
+        return fromIndex < toIndex ? OptionalChar.of(elements[fromIndex]) : OptionalChar.empty();
+    }
+
+    @Override
+    public OptionalChar last() {
+        return fromIndex < toIndex ? OptionalChar.of(elements[toIndex - 1]) : OptionalChar.empty();
     }
 
     @Override
@@ -1135,6 +1175,23 @@ final class ArrayCharStream extends AbstractCharStream {
     @Override
     public Stream<Character> boxed() {
         return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? CHAR_COMPARATOR : null);
+    }
+
+    //    @Override
+    //    public CharStream exclude(Collection<?> c) {
+    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
+    //
+    //        return filter(new CharPredicate() {
+    //            @Override
+    //            public boolean test(char value) {
+    //                return !set.contains(value);
+    //            }
+    //        });
+    //    }
+
+    @Override
+    public CharStream cached() {
+        return this;
     }
 
     @Override

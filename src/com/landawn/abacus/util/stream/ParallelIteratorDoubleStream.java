@@ -375,6 +375,57 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+            private DoubleList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public DoubleList next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                DoubleList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final double[] dest = new double[windowSize];
+                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    result = DoubleList.of(dest, cnt);
+                } else {
+                    result = new DoubleList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public DoubleStream distinct() {
         final Set<Double> set = new LinkedHashSet<>();
 
@@ -1610,7 +1661,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public ImmutableDoubleIterator doubleIterator() {
-        return this.sequential().doubleIterator();
+        return elements;
     }
 
     @Override

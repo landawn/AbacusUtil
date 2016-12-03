@@ -291,6 +291,36 @@ final class ParallelArrayByteStream extends AbstractByteStream {
     }
 
     @Override
+    public Stream<ByteList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ByteList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ByteList result = ByteList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public ByteStream distinct() {
         final byte[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayByteStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
@@ -672,6 +702,16 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         };
 
         return boxed().toMultimap(keyMapper2, valueMapper2, mapSupplier);
+    }
+
+    @Override
+    public OptionalByte first() {
+        return fromIndex < toIndex ? OptionalByte.of(elements[fromIndex]) : OptionalByte.empty();
+    }
+
+    @Override
+    public OptionalByte last() {
+        return fromIndex < toIndex ? OptionalByte.of(elements[toIndex - 1]) : OptionalByte.empty();
     }
 
     @Override
@@ -1856,6 +1896,11 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         return tmp;
+    }
+
+    @Override
+    public ByteStream cached() {
+        return this;
     }
 
     @Override

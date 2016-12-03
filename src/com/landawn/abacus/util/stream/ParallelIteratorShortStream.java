@@ -308,6 +308,57 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
+            private ShortList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public ShortList next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                ShortList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final short[] dest = new short[windowSize];
+                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    result = ShortList.of(dest, cnt);
+                } else {
+                    result = new ShortList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public ShortStream distinct() {
         final Set<Short> set = new LinkedHashSet<>();
 
@@ -1584,7 +1635,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
 
     @Override
     public ImmutableShortIterator shortIterator() {
-        return this.sequential().shortIterator();
+        return elements;
     }
 
     @Override

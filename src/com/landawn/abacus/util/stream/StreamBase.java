@@ -400,6 +400,11 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
     }
 
     @Override
+    public S prepend(S s) {
+        return s.append((S) this);
+    }
+
+    @Override
     public boolean isParallel() {
         return false;
     }

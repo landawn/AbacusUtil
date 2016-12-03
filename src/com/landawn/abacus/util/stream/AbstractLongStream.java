@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.Joiner;
@@ -31,11 +32,13 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.LongBiFunction;
+import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongTriFunction;
@@ -70,6 +73,53 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public LongStream dropWhile(final LongPredicate predicate) {
         return dropWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public LongStream drop(final long n, final LongConsumer action) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be less than 0");
+        } else if (n == 0) {
+            return this;
+        }
+
+        if (this.isParallel()) {
+            final AtomicLong cnt = new AtomicLong(n);
+
+            return dropWhile(new LongPredicate() {
+                @Override
+                public boolean test(long value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        } else {
+            final MutableLong cnt = MutableLong.of(n);
+
+            return dropWhile(new LongPredicate() {
+                @Override
+                public boolean test(long value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        }
+    }
+
+    @Override
+    public LongStream dropWhile(final LongPredicate predicate, final LongConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return dropWhile(new LongPredicate() {
+            @Override
+            public boolean test(long value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return true;
+                }
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -155,6 +205,35 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public OptionalLong first() {
+        final LongIterator iter = this.longIterator();
+
+        return iter.hasNext() ? OptionalLong.of(iter.next()) : OptionalLong.empty();
+    }
+
+    @Override
+    public OptionalLong last() {
+        final LongIterator iter = this.longIterator();
+
+        if (iter.hasNext() == false) {
+            return OptionalLong.empty();
+        }
+
+        long next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+        }
+
+        return OptionalLong.of(next);
+    }
+
+    //    @Override
+    //    public OptionalLong any() {
+    //        return findAny(LongPredicate.ALWAYS_TRUE);
+    //    }
+
+    @Override
     public LongStream except(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -231,6 +310,53 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public Stream<LongStream> splitBy(LongPredicate where) {
+        N.requireNonNull(where);
+
+        final LongIterator iter = this.longIterator();
+        final LongList list = new LongList();
+        long next = 0;
+        LongStream p = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (where.test(next)) {
+                list.add(next);
+            } else {
+                p = LongStream.of(next);
+
+                break;
+            }
+        }
+
+        final LongStream[] a = new LongStream[] { new ArrayLongStream(list.array(), 0, list.size(), null, sorted),
+                new IteratorLongStream(iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public long next() {
+                        return iter.next();
+                    }
+
+                }, null, sorted) };
+
+        if (p != null) {
+            a[1] = a[1].prepend(p);
+        }
+
+        return this.newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<LongList> sliding(int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    @Override
     public LongStream reverse() {
         final long[] a = toArray();
 
@@ -265,6 +391,15 @@ abstract class AbstractLongStream extends LongStream {
                 cursor = cursor > n ? cursor - (int) n : 0;
             }
         }, false);
+    }
+
+    @Override
+    public LongStream shuffle() {
+        final long[] a = toArray();
+
+        N.shuffle(a);
+
+        return newStream(a, false);
     }
 
     @Override

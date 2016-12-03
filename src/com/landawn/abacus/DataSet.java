@@ -774,46 +774,47 @@ public interface DataSet extends Iterable<Object[]> {
      */
     void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action, boolean shareRowArray);
 
-    <R> R forEach(R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> till);
+    <R> R forEach(R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> predicate);
 
-    <R> R forEach(R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> till, boolean shareRowArray);
+    <R> R forEach(R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> predicate, boolean shareRowArray);
 
-    <R> R forEach(Collection<String> columnNames, R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> till);
+    <R> R forEach(Collection<String> columnNames, R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> predicate);
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
      * @param columnNames
      * @param identity
      * @param accumulator
-     * @param till break if the <code>till</code> returns true.
+     * @param predicate break if the <code>predicate</code> returns false.
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> till, boolean shareRowArray);
+    <R> R forEach(Collection<String> columnNames, R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> predicate,
+            boolean shareRowArray);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> till);
+    <R> R forEach(int fromRowIndex, int toRowIndex, R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> predicate);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> till,
+    <R> R forEach(int fromRowIndex, int toRowIndex, R identity, BiFunction<R, ? super Object[], R> accumulator, Predicate<? super R> predicate,
             boolean shareRowArray);
 
     <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R identity, BiFunction<R, ? super Object[], R> accumulator,
-            Predicate<? super R> till);
+            Predicate<? super R> predicate);
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
      * @param identity
      * @param accumulator
-     * @param till break if the <code>till</code> returns true.
+     * @param predicate break if the <code>predicate</code> returns false.
      * @param shareRowArray
      * @return
      */
     <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R identity, BiFunction<R, ? super Object[], R> accumulator,
-            Predicate<? super R> till, boolean shareRowArray);
+            Predicate<? super R> predicate, boolean shareRowArray);
 
     /**
      *

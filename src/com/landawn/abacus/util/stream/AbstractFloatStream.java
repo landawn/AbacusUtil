@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
@@ -32,11 +33,13 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.FloatBiFunction;
+import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatTriFunction;
@@ -71,6 +74,53 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public FloatStream dropWhile(final FloatPredicate predicate) {
         return dropWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public FloatStream drop(final long n, final FloatConsumer action) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be less than 0");
+        } else if (n == 0) {
+            return this;
+        }
+
+        if (this.isParallel()) {
+            final AtomicLong cnt = new AtomicLong(n);
+
+            return dropWhile(new FloatPredicate() {
+                @Override
+                public boolean test(float value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        } else {
+            final MutableLong cnt = MutableLong.of(n);
+
+            return dropWhile(new FloatPredicate() {
+                @Override
+                public boolean test(float value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        }
+    }
+
+    @Override
+    public FloatStream dropWhile(final FloatPredicate predicate, final FloatConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return dropWhile(new FloatPredicate() {
+            @Override
+            public boolean test(float value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return true;
+                }
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -229,6 +279,35 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public OptionalFloat first() {
+        final FloatIterator iter = this.floatIterator();
+
+        return iter.hasNext() ? OptionalFloat.of(iter.next()) : OptionalFloat.empty();
+    }
+
+    @Override
+    public OptionalFloat last() {
+        final FloatIterator iter = this.floatIterator();
+
+        if (iter.hasNext() == false) {
+            return OptionalFloat.empty();
+        }
+
+        float next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+        }
+
+        return OptionalFloat.of(next);
+    }
+
+    //    @Override
+    //    public OptionalFloat any() {
+    //        return findAny(FloatPredicate.ALWAYS_TRUE);
+    //    }
+
+    @Override
     public FloatStream except(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -305,6 +384,53 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public Stream<FloatStream> splitBy(FloatPredicate where) {
+        N.requireNonNull(where);
+
+        final FloatIterator iter = this.floatIterator();
+        final FloatList list = new FloatList();
+        float next = 0;
+        FloatStream p = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (where.test(next)) {
+                list.add(next);
+            } else {
+                p = FloatStream.of(next);
+
+                break;
+            }
+        }
+
+        final FloatStream[] a = new FloatStream[] { new ArrayFloatStream(list.array(), 0, list.size(), null, sorted),
+                new IteratorFloatStream(iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public float next() {
+                        return iter.next();
+                    }
+
+                }, null, sorted) };
+
+        if (p != null) {
+            a[1] = a[1].prepend(p);
+        }
+
+        return this.newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<FloatList> sliding(int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    @Override
     public FloatStream reverse() {
         final float[] a = toArray();
 
@@ -339,6 +465,15 @@ abstract class AbstractFloatStream extends FloatStream {
                 cursor = cursor > n ? cursor - (int) n : 0;
             }
         }, false);
+    }
+
+    @Override
+    public FloatStream shuffle() {
+        final float[] a = toArray();
+
+        N.shuffle(a);
+
+        return newStream(a, false);
     }
 
     @Override

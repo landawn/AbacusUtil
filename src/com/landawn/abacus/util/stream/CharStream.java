@@ -174,6 +174,26 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
     public abstract CharStream dropWhile(final CharPredicate predicate, final long max);
 
     /**
+     * Take away and consume the specified <code>n</code> elements.
+     * 
+     * @param n
+     * @param action
+     * @return
+     * @see #dropWhile(CharPredicate)
+     */
+    public abstract CharStream drop(final long n, final CharConsumer action);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param predicate
+     * @param action
+     * @return
+     * @see  #dropWhile(CharPredicate)
+     */
+    public abstract CharStream dropWhile(final CharPredicate predicate, final CharConsumer action);
+
+    /**
      * Returns a stream consisting of the results of applying the given
      * function to the elements of this stream.
      *
@@ -294,9 +314,29 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
     public abstract <U> Stream<CharStream> split(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
-    public abstract Stream<CharStream> splitAt(int n);
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<CharStream> splitAt(int where);
+
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<CharStream> splitBy(CharPredicate where);
+
+    public abstract Stream<CharList> sliding(int windowSize);
+
+    public abstract Stream<CharList> sliding(int windowSize, int increment);
 
     public abstract CharStream reverse();
+
+    public abstract CharStream shuffle();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -889,6 +929,12 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
 
     public abstract OptionalChar findAny(CharPredicate predicate);
 
+    public abstract OptionalChar first();
+
+    public abstract OptionalChar last();
+
+    //    public abstract OptionalChar any();
+
     /**
      * @param c
      * @return
@@ -944,8 +990,6 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
     public abstract CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC,
             CharTriFunction<Character> zipFunction);
 
-    public abstract CharStream cached();
-
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
@@ -969,6 +1013,8 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
      * each boxed to an {@code Chareger}
      */
     public abstract Stream<Character> boxed();
+
+    public abstract CharStream cached();
 
     public abstract Stream<IndexedChar> indexed();
 
@@ -1062,9 +1108,7 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
     }
 
     public static CharStream range(final char startInclusive, final char endExclusive) {
-        if (startInclusive > endExclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
-        } else if (startInclusive == endExclusive) {
+        if (startInclusive >= endExclusive) {
             return empty();
         }
 
@@ -1093,14 +1137,14 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
             throw new IllegalArgumentException("'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return empty();
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         return new IteratorCharStream(new ImmutableCharIterator() {
             private char next = startInclusive;
@@ -1126,7 +1170,7 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
 
     public static CharStream rangeClosed(final char startInclusive, final char endInclusive) {
         if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+            return empty();
         } else if (startInclusive == endInclusive) {
             return of(startInclusive);
         }
@@ -1158,12 +1202,14 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
 
         if (endInclusive == startInclusive) {
             return of(startInclusive);
+        } else if (endInclusive > startInclusive != by > 0) {
+            return empty();
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         return new IteratorCharStream(new ImmutableCharIterator() {
             private char next = startInclusive;

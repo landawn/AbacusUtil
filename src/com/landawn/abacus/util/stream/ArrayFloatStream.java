@@ -782,6 +782,36 @@ final class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public Stream<FloatList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<FloatList>(new ImmutableIterator<FloatList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public FloatList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final FloatList result = FloatList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public FloatStream distinct() {
         return new ArrayFloatStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
@@ -1080,6 +1110,16 @@ final class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public OptionalFloat first() {
+        return fromIndex < toIndex ? OptionalFloat.of(elements[fromIndex]) : OptionalFloat.empty();
+    }
+
+    @Override
+    public OptionalFloat last() {
+        return fromIndex < toIndex ? OptionalFloat.of(elements[toIndex - 1]) : OptionalFloat.empty();
+    }
+
+    @Override
     public float reduce(float identity, FloatBinaryOperator op) {
         float result = identity;
 
@@ -1341,6 +1381,16 @@ final class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public Stream<Float> boxed() {
         return new IteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? FLOAT_COMPARATOR : null);
+    }
+
+    //    @Override
+    //    public OptionalFloat findAny() {
+    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
+    //    }
+
+    @Override
+    public FloatStream cached() {
+        return this;
     }
 
     @Override

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
@@ -174,6 +175,10 @@ public final class Splitter {
         return this.split(supplier.get(), typeName, source);
     }
 
+    public <T> T split(CharSequence source, Function<? super String[], T> converter) {
+        return converter.apply(this.splitToArray(source));
+    }
+
     public String[] splitToArray(CharSequence source) {
         if (N.isNullOrEmpty(source)) {
             return N.EMPTY_STRING_ARRAY;
@@ -284,6 +289,10 @@ public final class Splitter {
 
         public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
             return Splitter.defauLt().split(supplier, typeName, source);
+        }
+
+        public static <T> T split(CharSequence source, Function<? super String[], T> converter) {
+            return converter.apply(Splitter.defauLt().splitToArray(source));
         }
 
         public static String[] splitToArray(CharSequence source) {
@@ -553,6 +562,10 @@ public final class Splitter {
             return this.split(supplier.get(), keyTypeName, valueTypeName, source);
         }
 
+        public <T> T split(CharSequence source, Function<? super Map<String, String>, T> converter) {
+            return converter.apply(this.split(source));
+        }
+
         public static final class MapSplitter0 {
             private MapSplitter0() {
                 // singleton
@@ -604,6 +617,10 @@ public final class Splitter {
 
             public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, String keyTypeName, String valueTypeName, CharSequence source) {
                 return MapSplitter.defauLt().split(supplier, keyTypeName, valueTypeName, source);
+            }
+
+            public static <T> T split(CharSequence source, Function<? super Map<String, String>, T> converter) {
+                return converter.apply(MapSplitter.defauLt().split(source));
             }
         }
     }

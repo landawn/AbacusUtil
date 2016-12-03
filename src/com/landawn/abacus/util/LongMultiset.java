@@ -946,20 +946,20 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>till</code> returns true.
+     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
      * @param identity
      * @param accumulator
-     * @param till break if the <code>till</code> returns true.
+     * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public <R> R forEach(final R identity, BiFunction<R, ? super Map.Entry<E, MutableLong>, R> accumulator, final Predicate<? super R> till) {
+    public <R> R forEach(final R identity, BiFunction<R, ? super Map.Entry<E, MutableLong>, R> accumulator, final Predicate<? super R> predicate) {
         R result = identity;
 
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
             result = accumulator.apply(result, entry);
 
-            if (till.test(result)) {
+            if (predicate.test(result) == false) {
                 break;
             }
         }

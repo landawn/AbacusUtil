@@ -360,6 +360,36 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public Stream<FloatList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<FloatList>(new ImmutableIterator<FloatList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public FloatList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final FloatList result = FloatList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public FloatStream distinct() {
         final float[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayFloatStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
@@ -762,6 +792,16 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         };
 
         return boxed().toMultimap(keyMapper2, valueMapper2, mapSupplier);
+    }
+
+    @Override
+    public OptionalFloat first() {
+        return fromIndex < toIndex ? OptionalFloat.of(elements[fromIndex]) : OptionalFloat.empty();
+    }
+
+    @Override
+    public OptionalFloat last() {
+        return fromIndex < toIndex ? OptionalFloat.of(elements[toIndex - 1]) : OptionalFloat.empty();
     }
 
     @Override
@@ -2043,6 +2083,11 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         }
 
         return tmp;
+    }
+
+    @Override
+    public FloatStream cached() {
+        return this;
     }
 
     @Override

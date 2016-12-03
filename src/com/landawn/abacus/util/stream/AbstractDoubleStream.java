@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
@@ -37,6 +38,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.DoubleBiFunction;
+import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.DoubleTriFunction;
@@ -71,6 +73,53 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public DoubleStream dropWhile(final DoublePredicate predicate) {
         return dropWhile(predicate, Long.MAX_VALUE);
+    }
+
+    @Override
+    public DoubleStream drop(final long n, final DoubleConsumer action) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be less than 0");
+        } else if (n == 0) {
+            return this;
+        }
+
+        if (this.isParallel()) {
+            final AtomicLong cnt = new AtomicLong(n);
+
+            return dropWhile(new DoublePredicate() {
+                @Override
+                public boolean test(double value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        } else {
+            final MutableLong cnt = MutableLong.of(n);
+
+            return dropWhile(new DoublePredicate() {
+                @Override
+                public boolean test(double value) {
+                    return cnt.decrementAndGet() >= 0;
+                }
+            }, action);
+        }
+    }
+
+    @Override
+    public DoubleStream dropWhile(final DoublePredicate predicate, final DoubleConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return dropWhile(new DoublePredicate() {
+            @Override
+            public boolean test(double value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return true;
+                }
+
+                return false;
+            }
+        });
     }
 
     @Override
@@ -253,6 +302,35 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public OptionalDouble first() {
+        final DoubleIterator iter = this.doubleIterator();
+
+        return iter.hasNext() ? OptionalDouble.of(iter.next()) : OptionalDouble.empty();
+    }
+
+    @Override
+    public OptionalDouble last() {
+        final DoubleIterator iter = this.doubleIterator();
+
+        if (iter.hasNext() == false) {
+            return OptionalDouble.empty();
+        }
+
+        double next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+        }
+
+        return OptionalDouble.of(next);
+    }
+
+    //    @Override
+    //    public OptionalDouble any() {
+    //        return findAny(DoublePredicate.ALWAYS_TRUE);
+    //    }
+
+    @Override
     public DoubleStream except(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -329,6 +407,53 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public Stream<DoubleStream> splitBy(DoublePredicate where) {
+        N.requireNonNull(where);
+
+        final DoubleIterator iter = this.doubleIterator();
+        final DoubleList list = new DoubleList();
+        double next = 0;
+        DoubleStream p = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (where.test(next)) {
+                list.add(next);
+            } else {
+                p = DoubleStream.of(next);
+
+                break;
+            }
+        }
+
+        final DoubleStream[] a = new DoubleStream[] { new ArrayDoubleStream(list.array(), 0, list.size(), null, sorted),
+                new IteratorDoubleStream(iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter : new ImmutableDoubleIterator() {
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+
+                    @Override
+                    public double next() {
+                        return iter.next();
+                    }
+
+                }, null, sorted) };
+
+        if (p != null) {
+            a[1] = a[1].prepend(p);
+        }
+
+        return this.newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<DoubleList> sliding(int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    @Override
     public DoubleStream reverse() {
         final double[] a = toArray();
 
@@ -363,6 +488,15 @@ abstract class AbstractDoubleStream extends DoubleStream {
                 cursor = cursor > n ? cursor - (int) n : 0;
             }
         }, false);
+    }
+
+    @Override
+    public DoubleStream shuffle() {
+        final double[] a = toArray();
+
+        N.shuffle(a);
+
+        return newStream(a, false);
     }
 
     @Override

@@ -177,6 +177,26 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
     public abstract FloatStream dropWhile(final FloatPredicate predicate, final long max);
 
     /**
+     * Take away and consume the specified <code>n</code> elements.
+     * 
+     * @param n
+     * @param action
+     * @return
+     * @see #dropWhile(FloatPredicate)
+     */
+    public abstract FloatStream drop(final long n, final FloatConsumer action);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param predicate
+     * @param action
+     * @return
+     * @see  #dropWhile(FloatPredicate)
+     */
+    public abstract FloatStream dropWhile(final FloatPredicate predicate, final FloatConsumer action);
+
+    /**
      * Returns a stream consisting of the results of applying the given
      * function to the elements of this stream.
      *
@@ -329,9 +349,29 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
     public abstract <U> Stream<FloatStream> split(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
-    public abstract Stream<FloatStream> splitAt(int n);
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<FloatStream> splitAt(int where);
+
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<FloatStream> splitBy(FloatPredicate where);
+
+    public abstract Stream<FloatList> sliding(int windowSize);
+
+    public abstract Stream<FloatList> sliding(int windowSize, int increment);
 
     public abstract FloatStream reverse();
+
+    public abstract FloatStream shuffle();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -1008,6 +1048,12 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
 
     public abstract OptionalFloat findAny(FloatPredicate predicate);
 
+    public abstract OptionalFloat first();
+
+    public abstract OptionalFloat last();
+
+    //    public abstract OptionalFloat any();
+
     /**
      * @param c
      * @return
@@ -1063,8 +1109,6 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
     public abstract FloatStream zipWith(FloatStream b, FloatStream c, float valueForNoneA, float valueForNoneB, float valueForNoneC,
             FloatTriFunction<Float> zipFunction);
 
-    public abstract FloatStream cached();
-
     /**
      * Returns a {@code DoubleStream} consisting of the elements of this stream,
      * converted to {@code double}.
@@ -1088,6 +1132,8 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
      * each boxed to a {@code Float}
      */
     public abstract Stream<Float> boxed();
+
+    public abstract FloatStream cached();
 
     public abstract Stream<IndexedFloat> indexed();
 

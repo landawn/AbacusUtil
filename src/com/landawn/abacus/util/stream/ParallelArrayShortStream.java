@@ -292,6 +292,36 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ShortList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ShortList result = ShortList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public ShortStream distinct() {
         final short[] a = N.removeDuplicates(elements, fromIndex, toIndex, sorted);
         return new ParallelArrayShortStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
@@ -695,6 +725,16 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         };
 
         return boxed().toMultimap(keyMapper2, valueMapper2, mapSupplier);
+    }
+
+    @Override
+    public OptionalShort first() {
+        return fromIndex < toIndex ? OptionalShort.of(elements[fromIndex]) : OptionalShort.empty();
+    }
+
+    @Override
+    public OptionalShort last() {
+        return fromIndex < toIndex ? OptionalShort.of(elements[toIndex - 1]) : OptionalShort.empty();
     }
 
     @Override
@@ -1879,6 +1919,11 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         }
 
         return tmp;
+    }
+
+    @Override
+    public ShortStream cached() {
+        return this;
     }
 
     @Override

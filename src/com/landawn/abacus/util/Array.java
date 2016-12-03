@@ -436,7 +436,7 @@ public final class Array {
     //    }
 
     public static char[] range(char startInclusive, final char endExclusive) {
-        if (endExclusive == startInclusive) {
+        if (startInclusive >= endExclusive) {
             return N.EMPTY_CHAR_ARRAY;
         }
 
@@ -450,7 +450,7 @@ public final class Array {
     }
 
     public static byte[] range(byte startInclusive, final byte endExclusive) {
-        if (endExclusive == startInclusive) {
+        if (startInclusive >= endExclusive) {
             return N.EMPTY_BYTE_ARRAY;
         }
 
@@ -464,7 +464,7 @@ public final class Array {
     }
 
     public static short[] range(short startInclusive, final short endExclusive) {
-        if (endExclusive == startInclusive) {
+        if (startInclusive >= endExclusive) {
             return N.EMPTY_SHORT_ARRAY;
         }
 
@@ -478,7 +478,7 @@ public final class Array {
     }
 
     public static int[] range(int startInclusive, final int endExclusive) {
-        if (endExclusive == startInclusive) {
+        if (startInclusive >= endExclusive) {
             return N.EMPTY_INT_ARRAY;
         }
 
@@ -496,9 +496,7 @@ public final class Array {
     }
 
     public static long[] range(long startInclusive, final long endExclusive) {
-        if (startInclusive > endExclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
-        } else if (endExclusive == startInclusive) {
+        if (startInclusive >= endExclusive) {
             return N.EMPTY_LONG_ARRAY;
         }
 
@@ -554,14 +552,14 @@ public final class Array {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return N.EMPTY_CHAR_ARRAY;
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         final int len = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
         final char[] a = new char[len];
@@ -578,14 +576,14 @@ public final class Array {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return N.EMPTY_BYTE_ARRAY;
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         final int len = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
         final byte[] a = new byte[len];
@@ -602,14 +600,14 @@ public final class Array {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return N.EMPTY_SHORT_ARRAY;
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         final int len = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
         final short[] a = new short[len];
@@ -626,14 +624,14 @@ public final class Array {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return N.EMPTY_INT_ARRAY;
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         final long len = (endExclusive * 1L - startInclusive) / by + ((endExclusive * 1L - startInclusive) % by == 0 ? 0 : 1);
 
@@ -655,14 +653,14 @@ public final class Array {
             throw new IllegalArgumentException("The input parameter 'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return N.EMPTY_LONG_ARRAY;
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         long len = 0;
 
@@ -747,6 +745,12 @@ public final class Array {
     //    }
 
     public static char[] rangeClosed(char startInclusive, final char endInclusive) {
+        if (startInclusive > endInclusive) {
+            return N.EMPTY_CHAR_ARRAY;
+        } else if (startInclusive == endInclusive) {
+            return Array.of(startInclusive);
+        }
+
         final char[] a = new char[endInclusive * 1 - startInclusive + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
@@ -757,6 +761,12 @@ public final class Array {
     }
 
     public static byte[] rangeClosed(byte startInclusive, final byte endInclusive) {
+        if (startInclusive > endInclusive) {
+            return N.EMPTY_BYTE_ARRAY;
+        } else if (startInclusive == endInclusive) {
+            return Array.of(startInclusive);
+        }
+
         final byte[] a = new byte[endInclusive * 1 - startInclusive + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
@@ -767,6 +777,12 @@ public final class Array {
     }
 
     public static short[] rangeClosed(short startInclusive, final short endInclusive) {
+        if (startInclusive > endInclusive) {
+            return N.EMPTY_SHORT_ARRAY;
+        } else if (startInclusive == endInclusive) {
+            return Array.of(startInclusive);
+        }
+
         final short[] a = new short[endInclusive * 1 - startInclusive + 1];
 
         for (int i = 0, len = a.length; i < len; i++) {
@@ -777,6 +793,12 @@ public final class Array {
     }
 
     public static int[] rangeClosed(int startInclusive, final int endInclusive) {
+        if (startInclusive > endInclusive) {
+            return N.EMPTY_INT_ARRAY;
+        } else if (startInclusive == endInclusive) {
+            return Array.of(startInclusive);
+        }
+
         if (endInclusive * 1L - startInclusive + 1 > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("overflow");
         }
@@ -792,8 +814,12 @@ public final class Array {
 
     public static long[] rangeClosed(long startInclusive, final long endInclusive) {
         if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
-        } else if (endInclusive - startInclusive + 1 <= 0 || endInclusive - startInclusive + 1 > Integer.MAX_VALUE) {
+            return N.EMPTY_LONG_ARRAY;
+        } else if (startInclusive == endInclusive) {
+            return Array.of(startInclusive);
+        }
+
+        if (endInclusive - startInclusive + 1 <= 0 || endInclusive - startInclusive + 1 > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("overflow");
         }
 
@@ -837,12 +863,14 @@ public final class Array {
 
         if (endInclusive == startInclusive) {
             return new char[] { startInclusive };
+        } else if (endInclusive > startInclusive != by > 0) {
+            return N.EMPTY_CHAR_ARRAY;
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         final int len = (endInclusive * 1 - startInclusive) / by + 1;
         final char[] a = new char[len];
@@ -861,12 +889,14 @@ public final class Array {
 
         if (endInclusive == startInclusive) {
             return new byte[] { startInclusive };
+        } else if (endInclusive > startInclusive != by > 0) {
+            return N.EMPTY_BYTE_ARRAY;
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         final int len = (endInclusive * 1 - startInclusive) / by + 1;
         final byte[] a = new byte[len];
@@ -885,12 +915,14 @@ public final class Array {
 
         if (endInclusive == startInclusive) {
             return new short[] { startInclusive };
+        } else if (endInclusive > startInclusive != by > 0) {
+            return N.EMPTY_SHORT_ARRAY;
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         final int len = (endInclusive * 1 - startInclusive) / by + 1;
         final short[] a = new short[len];
@@ -909,12 +941,14 @@ public final class Array {
 
         if (endInclusive == startInclusive) {
             return new int[] { startInclusive };
+        } else if (endInclusive > startInclusive != by > 0) {
+            return N.EMPTY_INT_ARRAY;
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         final long len = (endInclusive * 1L - startInclusive) / by + 1;
 
@@ -938,12 +972,14 @@ public final class Array {
 
         if (endInclusive == startInclusive) {
             return new long[] { startInclusive };
+        } else if (endInclusive > startInclusive != by > 0) {
+            return N.EMPTY_LONG_ARRAY;
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endInclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         long len = 0;
 

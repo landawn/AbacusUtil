@@ -478,6 +478,57 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
     }
 
     @Override
+    public Stream<IntList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<IntList>(new ImmutableIterator<IntList>() {
+            private IntList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public IntList next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                IntList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final int[] dest = new int[windowSize];
+                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    result = IntList.of(dest, cnt);
+                } else {
+                    result = new IntList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
     public IntStream distinct() {
         final Set<Integer> set = new LinkedHashSet<>();
 
@@ -1802,7 +1853,7 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
 
     @Override
     public ImmutableIntIterator intIterator() {
-        return this.sequential().intIterator();
+        return elements;
     }
 
     @Override

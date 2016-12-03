@@ -593,6 +593,36 @@ final class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
+    public Stream<ByteList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ByteList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ByteList result = ByteList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public ByteStream distinct() {
         return new ArrayByteStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
@@ -857,6 +887,16 @@ final class ArrayByteStream extends AbstractByteStream {
         }
 
         return result;
+    }
+
+    @Override
+    public OptionalByte first() {
+        return fromIndex < toIndex ? OptionalByte.of(elements[fromIndex]) : OptionalByte.empty();
+    }
+
+    @Override
+    public OptionalByte last() {
+        return fromIndex < toIndex ? OptionalByte.of(elements[toIndex - 1]) : OptionalByte.empty();
     }
 
     @Override
@@ -1135,6 +1175,23 @@ final class ArrayByteStream extends AbstractByteStream {
     @Override
     public Stream<Byte> boxed() {
         return new IteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? BYTE_COMPARATOR : null);
+    }
+
+    //    @Override
+    //    public ByteStream exclude(Collection<?> c) {
+    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
+    //
+    //        return filter(new BytePredicate() {
+    //            @Override
+    //            public boolean test(byte value) {
+    //                return !set.contains(value);
+    //            }
+    //        });
+    //    }
+
+    @Override
+    public ByteStream cached() {
+        return this;
     }
 
     @Override

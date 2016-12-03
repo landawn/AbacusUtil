@@ -620,9 +620,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    <R> Stream<R> flatMap4(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
+    <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(((IteratorStream<T>) sequential()).flatMap4(mapper).iterator(), closeHandlers, false, null, maxThreadNum,
+            return new ParallelIteratorStream<>(((IteratorStream<T>) sequential()).flatMap0(mapper).iterator(), closeHandlers, false, null, maxThreadNum,
                     splitter);
         }
 
@@ -666,9 +666,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    CharStream flatMapToChar4(final Function<? super T, CharIterator> mapper) {
+    CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(((IteratorStream<T>) sequential()).flatMapToChar4(mapper).charIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorCharStream(((IteratorStream<T>) sequential()).flatMapToChar0(mapper).charIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -712,9 +712,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ByteStream flatMapToByte4(final Function<? super T, ByteIterator> mapper) {
+    ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(((IteratorStream<T>) sequential()).flatMapToByte4(mapper).byteIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorByteStream(((IteratorStream<T>) sequential()).flatMapToByte0(mapper).byteIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -758,9 +758,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ShortStream flatMapToShort4(final Function<? super T, ShortIterator> mapper) {
+    ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(((IteratorStream<T>) sequential()).flatMapToShort4(mapper).shortIterator(), closeHandlers, false,
+            return new ParallelIteratorShortStream(((IteratorStream<T>) sequential()).flatMapToShort0(mapper).shortIterator(), closeHandlers, false,
                     maxThreadNum, splitter);
         }
 
@@ -804,9 +804,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    IntStream flatMapToInt4(final Function<? super T, IntIterator> mapper) {
+    IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(((IteratorStream<T>) sequential()).flatMapToInt4(mapper).intIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorIntStream(((IteratorStream<T>) sequential()).flatMapToInt0(mapper).intIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -850,9 +850,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    LongStream flatMapToLong4(final Function<? super T, LongIterator> mapper) {
+    LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(((IteratorStream<T>) sequential()).flatMapToLong4(mapper).longIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorLongStream(((IteratorStream<T>) sequential()).flatMapToLong0(mapper).longIterator(), closeHandlers, false, maxThreadNum,
                     splitter);
         }
 
@@ -896,9 +896,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    FloatStream flatMapToFloat4(final Function<? super T, FloatIterator> mapper) {
+    FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(((IteratorStream<T>) sequential()).flatMapToFloat4(mapper).floatIterator(), closeHandlers, false,
+            return new ParallelIteratorFloatStream(((IteratorStream<T>) sequential()).flatMapToFloat0(mapper).floatIterator(), closeHandlers, false,
                     maxThreadNum, splitter);
         }
 
@@ -942,9 +942,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    DoubleStream flatMapToDouble4(final Function<? super T, DoubleIterator> mapper) {
+    DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(((IteratorStream<T>) sequential()).flatMapToDouble4(mapper).doubleIterator(), closeHandlers, false,
+            return new ParallelIteratorDoubleStream(((IteratorStream<T>) sequential()).flatMapToDouble0(mapper).doubleIterator(), closeHandlers, false,
                     maxThreadNum, splitter);
         }
 
@@ -1319,6 +1319,53 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
                 return result;
             }
 
+        }, closeHandlers, false, null, maxThreadNum, splitter);
+    }
+
+    @Override
+    public Stream<List<T>> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+            private List<T> prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public List<T> next() {
+                if (elements.hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>(windowSize);
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    result.addAll(prev.subList(windowSize - cnt, windowSize));
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
         }, closeHandlers, false, null, maxThreadNum, splitter);
     }
 
@@ -1901,12 +1948,12 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> till) {
+    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> predicate) {
         if (logger.isWarnEnabled()) {
             logger.warn("'forEach' is sequentially executed in parallel stream");
         }
 
-        return sequential().forEach(identity, accumulator, till);
+        return sequential().forEach(identity, accumulator, predicate);
     }
 
     //    @Override

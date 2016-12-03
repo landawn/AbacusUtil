@@ -784,6 +784,36 @@ final class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
+    public Stream<LongList> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<LongList>(new ImmutableIterator<LongList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public LongList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final LongList result = LongList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public LongStream distinct() {
         return new ArrayLongStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
     }
@@ -1079,6 +1109,16 @@ final class ArrayLongStream extends AbstractLongStream {
         }
 
         return result;
+    }
+
+    @Override
+    public OptionalLong first() {
+        return fromIndex < toIndex ? OptionalLong.of(elements[fromIndex]) : OptionalLong.empty();
+    }
+
+    @Override
+    public OptionalLong last() {
+        return fromIndex < toIndex ? OptionalLong.of(elements[toIndex - 1]) : OptionalLong.empty();
     }
 
     @Override
@@ -1407,6 +1447,11 @@ final class ArrayLongStream extends AbstractLongStream {
     @Override
     public Stream<Long> boxed() {
         return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? LONG_COMPARATOR : null);
+    }
+
+    @Override
+    public LongStream cached() {
+        return this;
     }
 
     @Override

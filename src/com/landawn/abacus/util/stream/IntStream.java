@@ -179,6 +179,26 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     public abstract IntStream dropWhile(final IntPredicate predicate, final long max);
 
     /**
+     * Take away and consume the specified <code>n</code> elements.
+     * 
+     * @param n
+     * @param action
+     * @return
+     * @see #dropWhile(IntPredicate)
+     */
+    public abstract IntStream drop(final long n, final IntConsumer action);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param predicate
+     * @param action
+     * @return
+     * @see  #dropWhile(IntPredicate)
+     */
+    public abstract IntStream dropWhile(IntPredicate predicate, IntConsumer action);
+
+    /**
      * Returns a stream consisting of the results of applying the given
      * function to the elements of this stream.
      *
@@ -343,9 +363,29 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     public abstract <U> Stream<IntStream> split(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
-    public abstract Stream<IntStream> splitAt(int n);
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<IntStream> splitAt(int where);
+
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<IntStream> splitBy(IntPredicate where);
+
+    public abstract Stream<IntList> sliding(int windowSize);
+
+    public abstract Stream<IntList> sliding(int windowSize, int increment);
 
     public abstract IntStream reverse();
+
+    public abstract IntStream shuffle();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -969,6 +1009,12 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
 
     public abstract OptionalInt findAny(IntPredicate predicate);
 
+    public abstract OptionalInt first();
+
+    public abstract OptionalInt last();
+
+    //    public abstract OptionalInt any();
+
     /**
      * @param c
      * @return
@@ -1023,8 +1069,6 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
 
     public abstract IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTriFunction<Integer> zipFunction);
 
-    public abstract IntStream cached();
-
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
      * converted to {@code long}.
@@ -1072,6 +1116,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * each boxed to an {@code Integer}
      */
     public abstract Stream<Integer> boxed();
+
+    public abstract IntStream cached();
 
     public abstract Stream<IndexedInt> indexed();
 
@@ -1181,9 +1227,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     //    }
 
     public static IntStream range(final int startInclusive, final int endExclusive) {
-        if (startInclusive > endExclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
-        } else if (startInclusive == endExclusive) {
+        if (startInclusive >= endExclusive) {
             return empty();
         }
 
@@ -1212,14 +1256,14 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
             throw new IllegalArgumentException("'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return empty();
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int next = startInclusive;
@@ -1245,7 +1289,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
 
     public static IntStream rangeClosed(final int startInclusive, final int endInclusive) {
         if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
+            return empty();
         } else if (startInclusive == endInclusive) {
             return of(startInclusive);
         }
@@ -1277,12 +1321,14 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
 
         if (endInclusive == startInclusive) {
             return of(startInclusive);
+        } else if (endInclusive > startInclusive != by > 0) {
+            return empty();
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int next = startInclusive;

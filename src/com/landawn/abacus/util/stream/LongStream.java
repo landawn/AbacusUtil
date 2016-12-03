@@ -178,6 +178,26 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     public abstract LongStream dropWhile(final LongPredicate predicate, final long max);
 
     /**
+     * Take away and consume the specified <code>n</code> elements.
+     * 
+     * @param n
+     * @param action
+     * @return
+     * @see #dropWhile(LongPredicate)
+     */
+    public abstract LongStream drop(final long n, final LongConsumer action);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param predicate
+     * @param action
+     * @return
+     * @see  #dropWhile(LongPredicate)
+     */
+    public abstract LongStream dropWhile(final LongPredicate predicate, final LongConsumer action);
+
+    /**
      * Returns a stream consisting of the results of applying the given
      * function to the elements of this stream.
      *
@@ -330,9 +350,29 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     public abstract <U> Stream<LongStream> split(final U boundary, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
-    public abstract Stream<LongStream> splitAt(int n);
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<LongStream> splitAt(int where);
+
+    /**
+     * Split the stream into two pieces at <code>where</code>
+     * 
+     * @param where
+     * @return
+     */
+    public abstract Stream<LongStream> splitBy(LongPredicate where);
+
+    public abstract Stream<LongList> sliding(int windowSize);
+
+    public abstract Stream<LongList> sliding(int windowSize, int increment);
 
     public abstract LongStream reverse();
+
+    public abstract LongStream shuffle();
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -956,6 +996,12 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     public abstract OptionalLong findAny(LongPredicate predicate);
 
+    public abstract OptionalLong first();
+
+    public abstract OptionalLong last();
+
+    //    public abstract OptionalLong any();
+
     /**
      * @param c
      * @return
@@ -1011,8 +1057,6 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     public abstract LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC,
             LongTriFunction<Long> zipFunction);
 
-    public abstract LongStream cached();
-
     /**
      * Returns a {@code FloatStream} consisting of the elements of this stream,
      * converted to {@code double}.
@@ -1048,6 +1092,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * each boxed to {@code Long}
      */
     public abstract Stream<Long> boxed();
+
+    public abstract LongStream cached();
 
     public abstract Stream<IndexedLong> indexed();
 
@@ -1086,9 +1132,7 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {
-        if (startInclusive > endExclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endExclusive'");
-        } else if (startInclusive == endExclusive) {
+        if (startInclusive >= endExclusive) {
             return empty();
         } else if (endExclusive - startInclusive < 0) {
             final long m = BigInteger.valueOf(endExclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
@@ -1121,14 +1165,14 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
             throw new IllegalArgumentException("'by' can't be zero");
         }
 
-        if (endExclusive == startInclusive) {
+        if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return empty();
         }
 
-        if (endExclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endExclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         if ((by > 0 && endExclusive - startInclusive < 0) || (by < 0 && startInclusive - endExclusive < 0)) {
             long m = BigInteger.valueOf(endExclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
@@ -1166,13 +1210,13 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     public static LongStream rangeClosed(final long startInclusive, final long endInclusive) {
         if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+            return empty();
+        } else if (startInclusive == endInclusive) {
+            return of(startInclusive);
         } else if (endInclusive - startInclusive + 1 <= 0) {
             final long m = BigInteger.valueOf(endInclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
             return concat(range(startInclusive, startInclusive + m), range(startInclusive + m, (startInclusive + m) + m),
                     rangeClosed((startInclusive + m) + m, endInclusive));
-        } else if (startInclusive == endInclusive) {
-            return of(startInclusive);
         }
 
         return new IteratorLongStream(new ImmutableLongIterator() {
@@ -1202,12 +1246,14 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
         if (endInclusive == startInclusive) {
             return of(startInclusive);
+        } else if (endInclusive > startInclusive != by > 0) {
+            return empty();
         }
 
-        if (endInclusive > startInclusive != by > 0) {
-            throw new IllegalArgumentException(
-                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        }
+        //        if (endInclusive > startInclusive != by > 0) {
+        //            throw new IllegalArgumentException(
+        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
+        //        }
 
         if ((by > 0 && endInclusive - startInclusive < 0) || (by < 0 && startInclusive - endInclusive < 0) || ((endInclusive - startInclusive) / by + 1 <= 0)) {
             long m = BigInteger.valueOf(endInclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
