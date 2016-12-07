@@ -16,6 +16,8 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -41,6 +43,35 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
     public static <L, R> Pair<L, R> of(final L l, final R r) {
         return new Pair<L, R>(l, r);
+    }
+
+    public static <T> Pair<T, T> from(T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new Pair<T, T>(null, null);
+        } else if (a.length == 1) {
+            return new Pair<T, T>(a[0], null);
+        } else {
+            return new Pair<T, T>(a[0], a[1]);
+        }
+    }
+
+    public static <T> Pair<T, T> from(Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return new Pair<T, T>(null, null);
+        } else if (c.size() == 1) {
+            return new Pair<T, T>(c.iterator().next(), null);
+        } else {
+            final Iterator<? extends T> iter = c.iterator();
+            return new Pair<T, T>(iter.next(), iter.next());
+        }
+    }
+
+    public L left() {
+        return left;
+    }
+
+    public R right() {
+        return right;
     }
 
     public L getLeft() {
@@ -141,6 +172,35 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public static <L, R> Pair0<L, R> of(final L l, final R r) {
             return new Pair0<L, R>(l, r);
+        }
+
+        public static <T> Pair0<T, T> from(T[] a) {
+            if (N.isNullOrEmpty(a)) {
+                return new Pair0<T, T>(null, null);
+            } else if (a.length == 1) {
+                return new Pair0<T, T>(a[0], null);
+            } else {
+                return new Pair0<T, T>(a[0], a[1]);
+            }
+        }
+
+        public static <T> Pair0<T, T> from(Collection<? extends T> c) {
+            if (N.isNullOrEmpty(c)) {
+                return new Pair0<T, T>(null, null);
+            } else if (c.size() == 1) {
+                return new Pair0<T, T>(c.iterator().next(), null);
+            } else {
+                final Iterator<? extends T> iter = c.iterator();
+                return new Pair0<T, T>(iter.next(), iter.next());
+            }
+        }
+
+        public L left() {
+            return left;
+        }
+
+        public R right() {
+            return right;
         }
 
         @Override

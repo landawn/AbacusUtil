@@ -336,7 +336,7 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -370,9 +370,32 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     public abstract Stream<LongList> sliding(int windowSize, int increment);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract LongStream reverse();
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract LongStream shuffle();
+
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
+    public abstract LongStream rotate(int distance);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -1031,14 +1054,6 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     //     * @see IntList#intersect(IntList)
     //     */
     //    public abstract LongStream exclude(Collection<?> c);
-
-    /**
-     * Append the specified stream to the tail of this stream.
-     * @param stream
-     * @return
-     */
-    @Override
-    public abstract LongStream append(LongStream stream);
 
     /**
      * 

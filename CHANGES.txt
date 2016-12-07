@@ -1,3 +1,22 @@
+========Changes in 0.9.36=========================================================================
+
+1, Rename BaseStream.Splitter to BaseStream.Splitor
+
+2, Remove SQLExecutor.stream(Connection...) and SQLExecutor.iterate(Connection ...)
+
+3, Big performance improvement for parallel Stream. refer to: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/BaseStream.html
+
+4, Add two more flatMap2 and flatMap3 to Stream.
+
+5, Add rotate to Stream/IntStream/DoubleStream/...
+
+6, Rename splitIntoList to split2, and splitIntoSet to split3.
+
+7, Rename IOUtil.createXXX to IOUtil.newXXX
+
+8, Improvements and bug fix.
+
+
 ========Changes in 0.9.35=========================================================================
 
 1, Add just/groupBy2/toMap2 to Stream.

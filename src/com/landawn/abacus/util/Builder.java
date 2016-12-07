@@ -145,6 +145,12 @@ public class Builder<T> {
             super(l);
         }
 
+        public BooleanListBuilder set(int index, boolean e) {
+            value.set(index, e);
+
+            return this;
+        }
+
         public BooleanListBuilder add(boolean e) {
             value.add(e);
 
@@ -186,6 +192,12 @@ public class Builder<T> {
     public static final class CharListBuilder extends Builder<CharList> {
         CharListBuilder(CharList l) {
             super(l);
+        }
+
+        public CharListBuilder set(int index, char e) {
+            value.set(index, e);
+
+            return this;
         }
 
         public CharListBuilder add(char e) {
@@ -231,6 +243,12 @@ public class Builder<T> {
             super(l);
         }
 
+        public ByteListBuilder set(int index, byte e) {
+            value.set(index, e);
+
+            return this;
+        }
+
         public ByteListBuilder add(byte e) {
             value.add(e);
 
@@ -272,6 +290,12 @@ public class Builder<T> {
     public static final class ShortListBuilder extends Builder<ShortList> {
         ShortListBuilder(ShortList l) {
             super(l);
+        }
+
+        public ShortListBuilder set(int index, short e) {
+            value.set(index, e);
+
+            return this;
         }
 
         public ShortListBuilder add(short e) {
@@ -317,6 +341,12 @@ public class Builder<T> {
             super(l);
         }
 
+        public IntListBuilder set(int index, int e) {
+            value.set(index, e);
+
+            return this;
+        }
+
         public IntListBuilder add(int e) {
             value.add(e);
 
@@ -358,6 +388,12 @@ public class Builder<T> {
     public static final class LongListBuilder extends Builder<LongList> {
         LongListBuilder(LongList l) {
             super(l);
+        }
+
+        public LongListBuilder set(int index, long e) {
+            value.set(index, e);
+
+            return this;
         }
 
         public LongListBuilder add(long e) {
@@ -403,6 +439,12 @@ public class Builder<T> {
             super(l);
         }
 
+        public FloatListBuilder set(int index, float e) {
+            value.set(index, e);
+
+            return this;
+        }
+
         public FloatListBuilder add(float e) {
             value.add(e);
 
@@ -446,6 +488,12 @@ public class Builder<T> {
             super(l);
         }
 
+        public DoubleListBuilder set(int index, double e) {
+            value.set(index, e);
+
+            return this;
+        }
+
         public DoubleListBuilder add(double e) {
             value.add(e);
 
@@ -487,6 +535,12 @@ public class Builder<T> {
     public static final class ObjectListBuilder<T> extends Builder<ObjectList<T>> {
         ObjectListBuilder(ObjectList<T> l) {
             super(l);
+        }
+
+        public ObjectListBuilder<T> set(int index, T e) {
+            value.set(index, e);
+
+            return this;
         }
 
         public ObjectListBuilder<T> add(T e) {

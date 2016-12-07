@@ -77,6 +77,17 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
         return value;
     }
 
+    /**
+     * Sets the value.
+     * 
+     * @param value  the value to set
+     */
+    public MutableInt setValue(final int value) {
+        this.value = value;
+
+        return this;
+    }
+
     public int getAndSet(final int value) {
         int result = value;
         this.value = value;
@@ -86,15 +97,6 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
     public int setAndGet(final int value) {
         this.value = value;
         return value;
-    }
-
-    /**
-     * Sets the value.
-     * 
-     * @param value  the value to set
-     */
-    public void setValue(final int value) {
-        this.value = value;
     }
 
     //-----------------------------------------------------------------------

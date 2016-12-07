@@ -623,11 +623,6 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream distinct() {
-        return new ArrayCharStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
-    }
-
-    @Override
     public CharStream sorted() {
         if (sorted) {
             return this;
@@ -1273,12 +1268,12 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream parallel(int maxThreadNum, com.landawn.abacus.util.stream.BaseStream.Splitter splitter) {
+    public CharStream parallel(int maxThreadNum, com.landawn.abacus.util.stream.BaseStream.Splitor splitor) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override

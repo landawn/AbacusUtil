@@ -206,6 +206,16 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public CharStream distinct() {
+        return boxed().distinct().mapToChar(new ToCharFunction<Character>() {
+            @Override
+            public char applyAsChar(Character value) {
+                return value.charValue();
+            }
+        });
+    }
+
+    @Override
     public OptionalChar first() {
         final CharIterator iter = this.charIterator();
 
@@ -399,6 +409,15 @@ abstract class AbstractCharStream extends CharStream {
         final char[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public CharStream rotate(int distance) {
+        final char[] a = toArray();
+
+        N.rotate(a, distance);
 
         return newStream(a, false);
     }

@@ -205,6 +205,16 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public ByteStream distinct() {
+        return boxed().distinct().mapToByte(new ToByteFunction<Byte>() {
+            @Override
+            public byte applyAsByte(Byte value) {
+                return value.byteValue();
+            }
+        });
+    }
+
+    @Override
     public OptionalByte first() {
         final ByteIterator iter = this.byteIterator();
 
@@ -398,6 +408,15 @@ abstract class AbstractByteStream extends ByteStream {
         final byte[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public ByteStream rotate(int distance) {
+        final byte[] a = toArray();
+
+        N.rotate(a, distance);
 
         return newStream(a, false);
     }

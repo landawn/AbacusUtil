@@ -205,6 +205,16 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public LongStream distinct() {
+        return boxed().distinct().mapToLong(new ToLongFunction<Long>() {
+            @Override
+            public long applyAsLong(Long value) {
+                return value.longValue();
+            }
+        });
+    }
+
+    @Override
     public OptionalLong first() {
         final LongIterator iter = this.longIterator();
 
@@ -398,6 +408,15 @@ abstract class AbstractLongStream extends LongStream {
         final long[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public LongStream rotate(int distance) {
+        final long[] a = toArray();
+
+        N.rotate(a, distance);
 
         return newStream(a, false);
     }

@@ -16,6 +16,9 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 /**
  * 
  * @since 0.8
@@ -42,6 +45,44 @@ public final class Triple<L, M, R> {
 
     public static <L, M, R> Triple<L, M, R> of(final L l, final M m, final R r) {
         return new Triple<L, M, R>(l, m, r);
+    }
+
+    public static <T> Triple<T, T, T> from(T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new Triple<T, T, T>(null, null, null);
+        } else if (a.length == 1) {
+            return new Triple<T, T, T>(a[0], null, null);
+        } else if (a.length == 2) {
+            return new Triple<T, T, T>(a[0], a[1], null);
+        } else {
+            return new Triple<T, T, T>(a[0], a[1], a[2]);
+        }
+    }
+
+    public static <T> Triple<T, T, T> from(Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return new Triple<T, T, T>(null, null, null);
+        } else if (c.size() == 1) {
+            return new Triple<T, T, T>(c.iterator().next(), null, null);
+        } else if (c.size() == 2) {
+            final Iterator<? extends T> iter = c.iterator();
+            return new Triple<T, T, T>(iter.next(), iter.next(), null);
+        } else {
+            final Iterator<? extends T> iter = c.iterator();
+            return new Triple<T, T, T>(iter.next(), iter.next(), iter.next());
+        }
+    }
+
+    public L left() {
+        return left;
+    }
+
+    public M middle() {
+        return middle;
+    }
+
+    public R right() {
+        return right;
     }
 
     public L getLeft() {
@@ -141,6 +182,44 @@ public final class Triple<L, M, R> {
 
         public static <L, M, R> Triple0<L, M, R> of(final L l, final M m, final R r) {
             return new Triple0<L, M, R>(l, m, r);
+        }
+
+        public static <T> Triple0<T, T, T> from(T[] a) {
+            if (N.isNullOrEmpty(a)) {
+                return new Triple0<T, T, T>(null, null, null);
+            } else if (a.length == 1) {
+                return new Triple0<T, T, T>(a[0], null, null);
+            } else if (a.length == 2) {
+                return new Triple0<T, T, T>(a[0], a[1], null);
+            } else {
+                return new Triple0<T, T, T>(a[0], a[1], a[2]);
+            }
+        }
+
+        public static <T> Triple0<T, T, T> from(Collection<? extends T> c) {
+            if (N.isNullOrEmpty(c)) {
+                return new Triple0<T, T, T>(null, null, null);
+            } else if (c.size() == 1) {
+                return new Triple0<T, T, T>(c.iterator().next(), null, null);
+            } else if (c.size() == 2) {
+                final Iterator<? extends T> iter = c.iterator();
+                return new Triple0<T, T, T>(iter.next(), iter.next(), null);
+            } else {
+                final Iterator<? extends T> iter = c.iterator();
+                return new Triple0<T, T, T>(iter.next(), iter.next(), iter.next());
+            }
+        }
+
+        public L left() {
+            return left;
+        }
+
+        public M middle() {
+            return middle;
+        }
+
+        public R right() {
+            return right;
         }
 
         @Override

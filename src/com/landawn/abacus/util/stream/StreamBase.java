@@ -108,7 +108,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     static final int MAX_QUEUE_SIZE = 8192;
     static final int DEFAULT_QUEUE_SIZE_PER_ITERATOR = 16;
-    static final Splitter DEFAULT_SPILTTER = Splitter.ITERATOR;
+    static final Splitor DEFAULT_SPLITOR = Splitor.ITERATOR;
     static final Random RAND = new SecureRandom();
 
     static final Comparator<Character> CHAR_COMPARATOR = new Comparator<Character>() {
@@ -421,17 +421,17 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     @Override
     public S parallel() {
-        return parallel(DEFAULT_SPILTTER);
+        return parallel(DEFAULT_SPLITOR);
     }
 
     @Override
     public S parallel(int maxThreadNum) {
-        return parallel(maxThreadNum, DEFAULT_SPILTTER);
+        return parallel(maxThreadNum, DEFAULT_SPLITOR);
     }
 
     @Override
-    public S parallel(BaseStream.Splitter splitter) {
-        return parallel(DEFAULT_MAX_THREAD_NUM, splitter);
+    public S parallel(Splitor splitor) {
+        return parallel(DEFAULT_MAX_THREAD_NUM, splitor);
     }
 
     @Override
@@ -451,15 +451,15 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
     }
 
     @Override
-    public Splitter splitter() {
+    public Splitor splitor() {
         // throw new UnsupportedOperationException("It's not supported sequential stream.");
 
         // ignore, do nothing if it's sequential stream.
-        return DEFAULT_SPILTTER;
+        return DEFAULT_SPLITOR;
     }
 
     @Override
-    public S splitter(Splitter splitter) {
+    public S splitor(Splitor splitor) {
         // throw new UnsupportedOperationException("It's not supported sequential stream.");
 
         // ignore, do nothing if it's sequential stream.
@@ -497,7 +497,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected CharStream newStream(final char[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             return new ArrayCharStream(a, closeHandlers, sorted);
         }
@@ -517,7 +517,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 }
             };
 
-            return new ParallelIteratorCharStream(charIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelIteratorCharStream(charIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
                 @Override
@@ -537,7 +537,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected ByteStream newStream(final byte[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayByteStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelArrayByteStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             return new ArrayByteStream(a, closeHandlers, sorted);
         }
@@ -557,7 +557,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 }
             };
 
-            return new ParallelIteratorByteStream(byteIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelIteratorByteStream(byteIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableByteIterator byteIter = iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
                 @Override
@@ -577,7 +577,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected ShortStream newStream(final short[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayShortStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelArrayShortStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             return new ArrayShortStream(a, closeHandlers, sorted);
         }
@@ -597,7 +597,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 }
             };
 
-            return new ParallelIteratorShortStream(shortIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelIteratorShortStream(shortIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableShortIterator shortIter = iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
                 @Override
@@ -617,7 +617,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected IntStream newStream(final int[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayIntStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelArrayIntStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             return new ArrayIntStream(a, closeHandlers, sorted);
         }
@@ -637,7 +637,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 }
             };
 
-            return new ParallelIteratorIntStream(intIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelIteratorIntStream(intIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableIntIterator intIter = iter instanceof ImmutableIntIterator ? (ImmutableIntIterator) iter : new ImmutableIntIterator() {
                 @Override
@@ -657,7 +657,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected LongStream newStream(final long[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayLongStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelArrayLongStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             return new ArrayLongStream(a, closeHandlers, sorted);
         }
@@ -677,7 +677,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 }
             };
 
-            return new ParallelIteratorLongStream(longIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelIteratorLongStream(longIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableLongIterator longIter = iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
                 @Override
@@ -697,7 +697,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected FloatStream newStream(final float[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayFloatStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelArrayFloatStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             return new ArrayFloatStream(a, closeHandlers, sorted);
         }
@@ -717,7 +717,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 }
             };
 
-            return new ParallelIteratorFloatStream(floatIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelIteratorFloatStream(floatIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableFloatIterator floatIter = iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
                 @Override
@@ -737,7 +737,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected DoubleStream newStream(final double[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayDoubleStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelArrayDoubleStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             return new ArrayDoubleStream(a, closeHandlers, sorted);
         }
@@ -758,7 +758,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                         }
                     };
 
-            return new ParallelIteratorDoubleStream(doubleIter, closeHandlers, sorted, this.maxThreadNum(), this.splitter());
+            return new ParallelIteratorDoubleStream(doubleIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableDoubleIterator doubleIter = iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter
                     : new ImmutableDoubleIterator() {
@@ -779,7 +779,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected <E> Stream<E> newStream(final E[] a, final boolean sorted, final Comparator<? super E> comparator) {
         if (this.isParallel()) {
-            return new ParallelArrayStream<E>(a, 0, a.length, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitter());
+            return new ParallelArrayStream<E>(a, 0, a.length, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitor());
         } else {
             return new ArrayStream<E>(a, closeHandlers, sorted, comparator);
         }
@@ -787,7 +787,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
 
     protected <E> Stream<E> newStream(final Iterator<E> iter, final boolean sorted, final Comparator<? super E> comparator) {
         if (this.isParallel()) {
-            return new ParallelIteratorStream<E>(iter, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitter());
+            return new ParallelIteratorStream<E>(iter, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitor());
         } else {
             return new IteratorStream<E>(iter, closeHandlers, sorted, comparator);
         }
@@ -1051,7 +1051,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
         return newCloseHandlers;
     }
 
-    static Object getHashKey(Object obj) {
+    static Object hashKey(Object obj) {
         return obj == null || obj.getClass().isArray() == false ? obj : Wrapper.of(obj);
     }
 

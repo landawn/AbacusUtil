@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiFunction;
@@ -48,6 +49,14 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> {
+
+    private static final Map<Class<?>, Object[]> emptyArrayPool = N.newConcurrentHashMap();
+
+    static {
+        emptyArrayPool.put(Object.class, N.EMPTY_OBJECT_ARRAY);
+        emptyArrayPool.put(String.class, N.EMPTY_STRING_ARRAY);
+    }
+
     private T[] elementData = null;
     private int size = 0;
 
@@ -95,6 +104,28 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return
      * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
+    public static <T> ObjectList<T> empty(Class<T[]> cls) {
+        final Class<T> componentType = (Class<T>) cls.getComponentType();
+        return of(createEmptyArray(componentType));
+    }
+
+    private static <T> T[] createEmptyArray(final Class<T> componentType) {
+        T[] a = (T[]) emptyArrayPool.get(componentType);
+
+        if (a == null) {
+            a = N.newArray(componentType, 0);
+            emptyArrayPool.put(componentType, a);
+        }
+
+        return a;
+    }
+
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws IllegalArgumentException the specified <code>a</code> is null.
+     */
     public static <T> ObjectList<T> of(T... a) {
         return new ObjectList<T>(a);
     }
@@ -118,7 +149,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return
      */
     public static <T> ObjectList<T> of(Class<T> targetClass, T[] a) {
-        return new ObjectList<T>(a == null ? (T[]) N.newArray(targetClass, 0) : a);
+        return new ObjectList<T>(a == null ? createEmptyArray(targetClass) : a);
     }
 
     /**
@@ -130,12 +161,12 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return
      */
     public static <T> ObjectList<T> of(Class<T> targetClass, T[] a, int size) {
-        return new ObjectList<T>(a == null ? (T[]) N.newArray(targetClass, 0) : a, size);
+        return new ObjectList<T>(a == null ? createEmptyArray(targetClass) : a, size);
     }
 
     public static <T> ObjectList<T> from(Class<T> cls, Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
-            return of((T[]) N.newArray(cls, 0));
+            return of(createEmptyArray(cls));
         }
 
         return of(c.toArray((T[]) N.newArray(cls, c.size())));
@@ -143,7 +174,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
 
     public static <T> ObjectList<T> from(Class<T> cls, Collection<? extends T> c, T defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return of((T[]) N.newArray(cls, 0));
+            return of(createEmptyArray(cls));
         }
 
         final T[] a = c.toArray((T[]) N.newArray(cls, c.size()));

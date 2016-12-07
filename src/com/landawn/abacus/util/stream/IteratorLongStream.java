@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -461,7 +460,7 @@ final class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public LongStream next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -553,7 +552,7 @@ final class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public LongList next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -576,57 +575,6 @@ final class IteratorLongStream extends AbstractLongStream {
                 return prev = result;
             }
         }, closeHandlers);
-    }
-
-    @Override
-    public LongStream distinct() {
-        final Set<Long> set = new LinkedHashSet<>();
-
-        while (elements.hasNext()) {
-            set.add(elements.next());
-        }
-
-        final long[] a = new long[set.size()];
-        final Iterator<Long> iter = set.iterator();
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = iter.next();
-        }
-
-        return new ArrayLongStream(a, closeHandlers, sorted);
-
-        //        return new IteratorLongStream(new ImmutableLongIterator() {
-        //            private Iterator<Long> distinctIter;
-        //
-        //            @Override
-        //            public boolean hasNext() {
-        //                if (distinctIter == null) {
-        //                    removeDuplicated();
-        //                }
-        //
-        //                return distinctIter.hasNext();
-        //            }
-        //
-        //            @Override
-        //            public long next() {
-        //                if (distinctIter == null) {
-        //                    removeDuplicated();
-        //                }
-        //
-        //                return distinctIter.next();
-        //            }
-        //
-        //            private void removeDuplicated() {
-        //                final Set<Long> set = new LinkedHashSet<>();
-        //
-        //                while (elements.hasNext()) {
-        //                    set.add(elements.next());
-        //                }
-        //
-        //                distinctIter = set.iterator();
-        //            }
-        //
-        //        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1443,12 +1391,12 @@ final class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream parallel(int maxThreadNum, Splitter splitter) {
+    public LongStream parallel(int maxThreadNum, Splitor splitor) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorLongStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorLongStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override

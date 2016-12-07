@@ -2294,11 +2294,11 @@ public final class IOUtil {
         return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
     }
 
-    static java.io.BufferedReader createBufferedReader(String filePath) {
-        return createBufferedReader(new File(filePath));
+    static java.io.BufferedReader newBufferedReader(String filePath) {
+        return newBufferedReader(new File(filePath));
     }
 
-    public static java.io.BufferedReader createBufferedReader(File file) {
+    public static java.io.BufferedReader newBufferedReader(File file) {
         try {
             return new java.io.BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
@@ -2306,7 +2306,7 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedReader createBufferedReader(File file, Charset charset) {
+    public static java.io.BufferedReader newBufferedReader(File file, Charset charset) {
         try {
             return new java.io.BufferedReader(new InputStreamReader(new FileInputStream(file), charset == null ? Charsets.DEFAULT : charset));
         } catch (FileNotFoundException e) {
@@ -2314,19 +2314,35 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedReader createBufferedReader(InputStream is) {
+    public static java.io.BufferedReader newBufferedReader(Path path) {
+        try {
+            return Files.newBufferedReader(path, Charsets.DEFAULT);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    public static java.io.BufferedReader newBufferedReader(Path path, Charset charset) {
+        try {
+            return Files.newBufferedReader(path, charset);
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        }
+    }
+
+    public static java.io.BufferedReader newBufferedReader(InputStream is) {
         return new java.io.BufferedReader(new InputStreamReader(is));
     }
 
-    public static java.io.BufferedReader createBufferedReader(InputStream is, Charset charset) {
+    public static java.io.BufferedReader newBufferedReader(InputStream is, Charset charset) {
         return new java.io.BufferedReader(new InputStreamReader(is, charset == null ? Charsets.DEFAULT : charset));
     }
 
-    static java.io.BufferedWriter createBufferedWriter(String filePath) {
-        return createBufferedWriter(new File(filePath));
+    static java.io.BufferedWriter newBufferedWriter(String filePath) {
+        return newBufferedWriter(new File(filePath));
     }
 
-    public static java.io.BufferedWriter createBufferedWriter(File file) {
+    public static java.io.BufferedWriter newBufferedWriter(File file) {
         try {
             return new java.io.BufferedWriter(new FileWriter(file));
         } catch (IOException e) {
@@ -2334,7 +2350,7 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedWriter createBufferedWriter(File file, Charset charset) {
+    public static java.io.BufferedWriter newBufferedWriter(File file, Charset charset) {
         try {
             return new java.io.BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), charset == null ? Charsets.DEFAULT : charset));
         } catch (IOException e) {
@@ -2342,15 +2358,15 @@ public final class IOUtil {
         }
     }
 
-    public static java.io.BufferedWriter createBufferedWriter(OutputStream os) {
+    public static java.io.BufferedWriter newBufferedWriter(OutputStream os) {
         return new java.io.BufferedWriter(new OutputStreamWriter(os));
     }
 
-    public static java.io.BufferedWriter createBufferedWriter(OutputStream os, Charset charset) {
+    public static java.io.BufferedWriter newBufferedWriter(OutputStream os, Charset charset) {
         return new java.io.BufferedWriter(new OutputStreamWriter(os, charset == null ? Charsets.DEFAULT : charset));
     }
 
-    public static LZ4BlockInputStream createLZ4BlockInputStream(final InputStream is) {
+    public static LZ4BlockInputStream newLZ4BlockInputStream(final InputStream is) {
         try {
             return new LZ4BlockInputStream(is);
         } catch (IOException e) {
@@ -2358,7 +2374,7 @@ public final class IOUtil {
         }
     }
 
-    public static LZ4BlockOutputStream createLZ4BlockOutputStream(final OutputStream os) {
+    public static LZ4BlockOutputStream newLZ4BlockOutputStream(final OutputStream os) {
         try {
             return new LZ4BlockOutputStream(os);
         } catch (IOException e) {
@@ -2369,7 +2385,7 @@ public final class IOUtil {
     /**
      * Creates a new input stream with the specified buffer size.
      */
-    public static LZ4BlockOutputStream createLZ4BlockOutputStream(final OutputStream os, final int blockSize) {
+    public static LZ4BlockOutputStream newLZ4BlockOutputStream(final OutputStream os, final int blockSize) {
         try {
             return new LZ4BlockOutputStream(os, blockSize);
         } catch (IOException e) {
@@ -2377,7 +2393,7 @@ public final class IOUtil {
         }
     }
 
-    public static SnappyInputStream createSnappyInputStream(final InputStream is) {
+    public static SnappyInputStream newSnappyInputStream(final InputStream is) {
         try {
             return new SnappyInputStream(is);
         } catch (IOException e) {
@@ -2385,7 +2401,7 @@ public final class IOUtil {
         }
     }
 
-    public static SnappyOutputStream createSnappyOutputStream(final OutputStream os) {
+    public static SnappyOutputStream newSnappyOutputStream(final OutputStream os) {
         try {
             return new SnappyOutputStream(os);
         } catch (IOException e) {
@@ -2396,7 +2412,7 @@ public final class IOUtil {
     /**
      * Creates a new input stream with the specified buffer size.
      */
-    public static SnappyOutputStream createSnappyOutputStream(final OutputStream os, final int bufferSize) {
+    public static SnappyOutputStream newSnappyOutputStream(final OutputStream os, final int bufferSize) {
         try {
             return new SnappyOutputStream(os, bufferSize);
         } catch (IOException e) {
@@ -2404,7 +2420,7 @@ public final class IOUtil {
         }
     }
 
-    public static GZIPInputStream createGZIPInputStream(final InputStream is) {
+    public static GZIPInputStream newGZIPInputStream(final InputStream is) {
         try {
             return new GZIPInputStream(is);
         } catch (IOException e) {
@@ -2415,7 +2431,7 @@ public final class IOUtil {
     /**
      * Creates a new input stream with the specified buffer size.
      */
-    public static GZIPInputStream createGZIPInputStream(final InputStream is, final int bufferSize) {
+    public static GZIPInputStream newGZIPInputStream(final InputStream is, final int bufferSize) {
         try {
             return new GZIPInputStream(is, bufferSize);
         } catch (IOException e) {
@@ -2423,7 +2439,7 @@ public final class IOUtil {
         }
     }
 
-    public static GZIPOutputStream createGZIPOutputStream(final OutputStream os) {
+    public static GZIPOutputStream newGZIPOutputStream(final OutputStream os) {
         try {
             return new GZIPOutputStream(os);
         } catch (IOException e) {
@@ -2434,7 +2450,7 @@ public final class IOUtil {
     /**
      * Creates a new input stream with the specified buffer size.
      */
-    public static GZIPOutputStream createGZIPOutputStream(final OutputStream os, final int bufferSize) {
+    public static GZIPOutputStream newGZIPOutputStream(final OutputStream os, final int bufferSize) {
         try {
             return new GZIPOutputStream(os, bufferSize);
         } catch (IOException e) {
@@ -3856,10 +3872,10 @@ public final class IOUtil {
         try {
             for (final File subFile : files) {
                 if (subFile.isFile()) {
-                    readers.add(createBufferedReader(subFile));
+                    readers.add(newBufferedReader(subFile));
                 } else {
                     for (final File subSubFile : listFiles(subFile, true, true)) {
-                        readers.add(createBufferedReader(subSubFile));
+                        readers.add(newBufferedReader(subSubFile));
                     }
                 }
             }
@@ -3952,10 +3968,10 @@ public final class IOUtil {
         try {
             for (final File subFile : files) {
                 if (subFile.isFile()) {
-                    readers.add(createBufferedReader(subFile));
+                    readers.add(newBufferedReader(subFile));
                 } else {
                     for (final File subSubFile : listFiles(subFile, true, true)) {
-                        readers.add(createBufferedReader(subSubFile));
+                        readers.add(newBufferedReader(subSubFile));
                     }
                 }
             }

@@ -206,6 +206,16 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public DoubleStream distinct() {
+        return boxed().distinct().mapToDouble(new ToDoubleFunction<Double>() {
+            @Override
+            public double applyAsDouble(Double value) {
+                return value.doubleValue();
+            }
+        });
+    }
+
+    @Override
     public Double sum() {
         // return N.sum(elements, fromIndex, toIndex);
 
@@ -495,6 +505,15 @@ abstract class AbstractDoubleStream extends DoubleStream {
         final double[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public DoubleStream rotate(int distance) {
+        final double[] a = toArray();
+
+        N.rotate(a, distance);
 
         return newStream(a, false);
     }

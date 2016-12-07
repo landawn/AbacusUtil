@@ -77,6 +77,17 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
         return value;
     }
 
+    /**
+     * Sets the value.
+     * 
+     * @param value  the value to set
+     */
+    public MutableFloat setValue(final float value) {
+        this.value = value;
+
+        return this;
+    }
+
     public float getAndSet(final float value) {
         float result = value;
         this.value = value;
@@ -86,15 +97,6 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
     public float setAndGet(final float value) {
         this.value = value;
         return value;
-    }
-
-    /**
-     * Sets the value.
-     * 
-     * @param value  the value to set
-     */
-    public void setValue(final float value) {
-        this.value = value;
     }
 
     //-----------------------------------------------------------------------

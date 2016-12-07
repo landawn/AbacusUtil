@@ -206,6 +206,16 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream distinct() {
+        return boxed().distinct().mapToShort(new ToShortFunction<Short>() {
+            @Override
+            public short applyAsShort(Short value) {
+                return value.shortValue();
+            }
+        });
+    }
+
+    @Override
     public OptionalShort first() {
         final ShortIterator iter = this.shortIterator();
 
@@ -399,6 +409,15 @@ abstract class AbstractShortStream extends ShortStream {
         final short[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public ShortStream rotate(int distance) {
+        final short[] a = toArray();
+
+        N.rotate(a, distance);
 
         return newStream(a, false);
     }

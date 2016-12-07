@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -460,7 +459,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
             @Override
             public FloatStream next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -552,7 +551,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
             @Override
             public FloatList next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -575,57 +574,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
                 return prev = result;
             }
         }, closeHandlers);
-    }
-
-    @Override
-    public FloatStream distinct() {
-        final Set<Float> set = new LinkedHashSet<>();
-
-        while (elements.hasNext()) {
-            set.add(elements.next());
-        }
-
-        final float[] a = new float[set.size()];
-        final Iterator<Float> iter = set.iterator();
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = iter.next();
-        }
-
-        return new ArrayFloatStream(a, closeHandlers, sorted);
-
-        //        return new IteratorFloatStream(new ImmutableFloatIterator() {
-        //            private Iterator<Float> distinctIter;
-        //
-        //            @Override
-        //            public boolean hasNext() {
-        //                if (distinctIter == null) {
-        //                    removeDuplicated();
-        //                }
-        //
-        //                return distinctIter.hasNext();
-        //            }
-        //
-        //            @Override
-        //            public float next() {
-        //                if (distinctIter == null) {
-        //                    removeDuplicated();
-        //                }
-        //
-        //                return distinctIter.next();
-        //            }
-        //
-        //            private void removeDuplicated() {
-        //                final Set<Float> set = new LinkedHashSet<>();
-        //
-        //                while (elements.hasNext()) {
-        //                    set.add(elements.next());
-        //                }
-        //
-        //                distinctIter = set.iterator();
-        //            }
-        //
-        //        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1389,12 +1337,12 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream parallel(int maxThreadNum, Splitter splitter) {
+    public FloatStream parallel(int maxThreadNum, Splitor splitor) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorFloatStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorFloatStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override

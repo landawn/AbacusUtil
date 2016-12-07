@@ -2017,17 +2017,17 @@ public final class SQLExecutor implements Closeable {
         return iterate(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public RowIterator iterate(final Connection conn, final String sql, final Object... parameters) {
+    RowIterator iterate(final Connection conn, final String sql, final Object... parameters) {
         return iterate(conn, sql, null, parameters);
     }
 
-    public RowIterator iterate(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    RowIterator iterate(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return iterate(conn, sql, statementSetter, null, parameters);
     }
 
     /**
      * Remember to close the returned <code>RowIterator</code> to close the underlying <code>ResultSet</code>.
-     * 
+     *
      * @param conn
      * @param sql
      * @param statementSetter
@@ -2035,8 +2035,10 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public RowIterator iterate(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    RowIterator iterate(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
+        // TODO the specified connection will be closed if RowIterator is closed. that means the specified connection can't be held independently.
+
         return query(conn, sql, statementSetter, ROW_ITERATOR_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
     }
 
@@ -2180,6 +2182,8 @@ public final class SQLExecutor implements Closeable {
      */
     List<RowIterator> iterateAll(final Connection conn, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
+        // TODO the specified connection will be closed if RowIterator is closed. that means the specified connection can't be held independently.
+
         N.checkNullOrEmpty(sqls, "sqls");
 
         if (jdbcSettings != null && (jdbcSettings.getOffset() != 0 || jdbcSettings.getCount() != Long.MAX_VALUE)) {
@@ -2269,11 +2273,11 @@ public final class SQLExecutor implements Closeable {
         return stream((Connection) null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public Try<Stream<Object[]>> stream(final Connection conn, final String sql, final Object... parameters) {
+    Try<Stream<Object[]>> stream(final Connection conn, final String sql, final Object... parameters) {
         return stream(conn, sql, null, parameters);
     }
 
-    public Try<Stream<Object[]>> stream(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    Try<Stream<Object[]>> stream(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return stream(conn, sql, statementSetter, null, parameters);
     }
 
@@ -2287,8 +2291,10 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public Try<Stream<Object[]>> stream(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+    Try<Stream<Object[]>> stream(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+
         final RowIterator iterator = this.iterate(conn, sql, statementSetter, jdbcSettings, parameters);
 
         return Stream.of(iterator).onClose(new Runnable() {
@@ -2341,6 +2347,8 @@ public final class SQLExecutor implements Closeable {
      */
     Try<Stream<Object[]>> streamAll(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
@@ -2399,6 +2407,8 @@ public final class SQLExecutor implements Closeable {
      */
     Try<Stream<Object[]>> streamAll(final Connection conn, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
@@ -2444,11 +2454,11 @@ public final class SQLExecutor implements Closeable {
         return stream(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return stream(targetClass, conn, sql, null, parameters);
     }
 
-    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final Object... parameters) {
         return stream(targetClass, conn, sql, statementSetter, null, parameters);
     }
@@ -2463,8 +2473,10 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+
         final RowIterator iterator = this.iterate(conn, sql, statementSetter, jdbcSettings, parameters);
 
         try {
@@ -2562,6 +2574,8 @@ public final class SQLExecutor implements Closeable {
      */
     <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
@@ -2665,6 +2679,8 @@ public final class SQLExecutor implements Closeable {
      */
     <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final Connection conn, final List<String> sqls, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }

@@ -3559,6 +3559,10 @@ public final class Collectors {
         return new CollectorImpl<>(mapSupplier, accumulator, combiner, CH_ID);
     }
 
+    public static <T> Collector<T, ?, DataSet> toDataSet() {
+        return toDataSet(null);
+    }
+
     public static <T> Collector<T, ?, DataSet> toDataSet(final List<String> columnNames) {
         @SuppressWarnings("rawtypes")
         final Collector<T, List<T>, List<T>> collector = (Collector) toList();

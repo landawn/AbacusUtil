@@ -105,7 +105,7 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
      * itself if the stream was already parallel. Any parallel should be closed by try-catch or call tried before last step.
      *
      * @return a parallel stream
-     * @see #parallel(int, Splitter)
+     * @see #parallel(int, Splitor)
      */
     S parallel();
 
@@ -115,22 +115,22 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
      * 
      * @param maxThreadNum
      * @return
-     * @see #parallel(int, Splitter)
+     * @see #parallel(int, Splitor)
      */
     S parallel(int maxThreadNum);
 
     /**
      * Returns an equivalent stream that is parallel. May return
-     * itself if the stream was already parallel with the same <code>splitter</code> as the specified one.
+     * itself if the stream was already parallel with the same <code>splitor</code> as the specified one.
      * 
-     * @param splitter
+     * @param splitor
      * @return
-     * @see #parallel(int, Splitter)
+     * @see #parallel(int, Splitor)
      */
-    S parallel(Splitter splitter);
+    S parallel(Splitor splitor);
 
     /**
-     * Returns an equivalent stream that is parallel. May return itself if the stream was already parallel with the same <code>maxThreadNum</code> and <code>splitter</code> as the specified ones.
+     * Returns an equivalent stream that is parallel. May return itself if the stream was already parallel with the same <code>maxThreadNum</code> and <code>splitor</code> as the specified ones.
      * 
      * <br></br>
      * When to use parallel Streams? 
@@ -163,53 +163,63 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
      *         return result;
      *     };
      * 
-     *     Profiler.run(1, 100, 3, "For loop", () -> {
-     *         long sum = 0;
+     *     final MutableLong sum = MutableLong.of(0);
+     * 
+     *     for (int i = 0, len = strs.length; i < len; i++) {
+     *         sum.add(mapper.apply(strs[i]));
+     *     }
+     * 
+     *     final int threadNum = 1, loopNum = 100, roundNum = 3;
+     * 
+     *     Profiler.run(threadNum, loopNum, roundNum, "For Loop", () -> {
+     *         long result = 0;
      *         for (int i = 0, len = strs.length; i < len; i++) {
-     *             sum += mapper.apply(strs[i]);
+     *             result += mapper.apply(strs[i]);
      *         }
-     *         N.println(sum);
+     *         assertEquals(sum.longValue(), result);
      *     }).printResult();
      * 
-     *     Profiler.run(1, 100, 3, "JDK sequential", () -> java.util.stream.Stream.of(strs).map(mapper).mapToLong(e -> e).sum()).printResult();
+     *     Profiler.run(threadNum, loopNum, roundNum, "JDK Sequential",
+     *             () -> assertEquals(sum.longValue(), java.util.stream.Stream.of(strs).map(mapper).mapToLong(e -> e).sum())).printResult();
      * 
-     *     Profiler.run(1, 100, 3, "JDK parallel", () -> java.util.stream.Stream.of(strs).parallel().map(mapper).mapToLong(e -> e).sum()).printResult();
+     *     Profiler.run(threadNum, loopNum, roundNum, "JDK Parallel",
+     *             () -> assertEquals(sum.longValue(), java.util.stream.Stream.of(strs).parallel().map(mapper).mapToLong(e -> e).sum())).printResult();
      * 
-     *     Profiler.run(1, 100, 3, "Abcus parallel", () -> Stream.of(strs).parallel().map(mapper).mapToLong(e -> e).sum()).printResult();
+     *     Profiler.run(threadNum, loopNum, roundNum, "Abcus Sequential",
+     *             () -> assertEquals(sum.longValue(), Stream.of(strs).map(mapper).mapToLong(e -> e).sum().longValue())).printResult();
      * 
-     *     Profiler.run(1, 100, 3, "Abcus sequential", () -> Stream.of(strs).map(mapper).mapToLong(e -> e).sum()).printResult();
+     *     Profiler.run(threadNum, loopNum, roundNum, "Abcus Parallel",
+     *             () -> assertEquals(sum.longValue(), Stream.of(strs).parallel().map(mapper).mapToLong(e -> e).sum().longValue())).printResult();
      * }
      * </code>
      * </pre>
      * <b>And test result</b>: <i>Unit is milliseconds. N(the number of elements) is 10_000, Q(cost per element of F, the per-element function (usually a lambda), here is <code>mapper</code>) is calculated by: value of 'For loop' / N(10_000).</i>
      * <table>
-     * <tr><th></th><th>  m = 1  </th><th>m = 10</th><th>m = 100</th><th>m = 500</th><th>m = 1000</th><th>m = 5000</th><th>m = 10000</th></tr>
-     * <tr><td>   Q   </td><td>0.00002</td><td>0.0002</td><td>0.002</td><td>0.001</td><td>0.02</td><td>0.01</td><td>0.2</td></tr>
-     * <tr><td>For loop</td><td>0.2</td><td>2.05</td><td>22</td><td>107</td><td>222</td><td>1105</td><td>2186</td></tr>
-     * <tr><td>JDK sequential</td><td>0.2</td><td>2.2</td><td>21</td><td>106</td><td>214</td><td>1104</td><td>2180</td></tr>
-     * <tr><td>JDK parallel</td><td>0.2</td><td>1.3</td><td>11</td><td>52</td><td>121</td><td>615</td><td>1348</td></tr>
-     * <tr><td>Abcus parallel</td><td>77</td><td>93</td><td>86</td><td>93</td><td>172</td><td>720</td><td>1387</td></tr>
-     * <tr><td>Abcus sequential</td><td>0.3</td><td>2.3</td><td>22</td><td>105</td><td>216</td><td>1094</td><td>2173</td></tr>
+     * <tr><th></th><th>  m = 1  </th><th>m = 10</th><th>m = 50</th><th>m = 100</th><th>m = 500</th><th>m = 1000</th></tr>
+     * <tr><td>   Q   </td><td>0.00002</td><td>0.0002</td><td>0.001</td><td>0.002</td><td>0.01</td><td>0.02</td></tr>
+     * <tr><td>For Loop</td><td>0.23</td><td>2.3</td><td>11</td><td>22</td><td>110</td><td>219</td></tr>
+     * <tr><td>JDK Sequential</td><td>0.28</td><td>2.3</td><td>11</td><td>22</td><td>114</td><td>212</td></tr>
+     * <tr><td>JDK Parallel</td><td>0.22</td><td>1.3</td><td>6</td><td>12</td><td>66</td><td>122</td></tr>
+     * <tr><td>Abcus Sequential</td><td>0.3</td><td>2</td><td>11</td><td>22</td><td>112</td><td>212</td></tr>
+     * <tr><td>Abcus Parallel</td><td>11</td><td>11</td><td>11</td><td>16</td><td>77</td><td>128</td></tr>
      * </table>
      *  
      * <b>Comparison:</b>
      * <ul>
      * <li>Again, do NOT and should NOT use parallel Streams if you don't have any problem with sequential Streams, because using parallel Streams has extra cost.</li>
      * <li>Again, consider using parallel Streams only when <a href="http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html">N(the number of elements) * Q(cost per element of F, the per-element function (usually a lambda)) is big enough</a>.</li>
-     * <li>Choose JDK Streams, both sequential and parallel, over the implementation in Abacus if APIs meet the requirements</li>
-     * <li>Consider using Abacus Streams when the APIs not exist in JDK Streams</li>
-     * <li>The implementation of parallel Streams in Abacus is more than 10 times, even 100 times slower than parallel Streams in JDK when Q is tiny(here is less than 0.002 milliseconds by the test): </li>
+     * <li>The implementation of parallel Streams in Abacus is more than 10 times, slower than parallel Streams in JDK when Q is tiny(here is less than 0.0002 milliseconds by the test): </li>
      * <ul>
      *      <li>The implementation of parallel Streams in JDK 8 still can beat the sequential/for loop when Q is tiny(Here is 0.00002 milliseconds by the test). 
      *      That's amazing, considering the extra cost brought by parallel computation. It's well done.</li>      
      *      <li>The implementation of parallel Streams in Abacus is pretty simple and straight forward. 
-     *      The extra cost(starting threads/synchronization/queue...) brought by parallel Streams in Abacus is too bigger to tiny Q(Here is less than 0.02 milliseconds by the test).
-     *      But it starts to be faster than sequential Streams when Q is big enough(Here is 0.001 by the test) and starts to catch the parallel Streams in JDK when Q is bigger(Here is 0.2 by the test).</li>
+     *      The extra cost(starting threads/synchronization/queue...) brought by parallel Streams in Abacus is too bigger to tiny Q(Here is less than 0.001 milliseconds by the test).
+     *      But it starts to be faster than sequential Streams when Q is big enough(Here is 0.001 milliseconds by the test) and starts to catch the parallel Streams in JDK when Q is bigger(Here is 0.01 milliseconds by the test).</li>
      *      <li>Consider using the parallel Streams in Abacus when Q is big enough, specially when IO involved in F. 
      *      Because one IO operation(e.g. DB/web service request..., Reading/Writing file...) usually takes 1 to 1000 milliseconds, or even longer.
      *      By the parallel Streams APIs in Abacus, it's very simple to specify max thread numbers. Sometimes, it's much faster to execute IO/Network requests with a bit more threads.
      *      It's fair to say that the parallel Streams in Abacus is high efficient, may same as or faster than the parallel Streams in JDK when Q is big enough, except F is heavy cpu-used operation. 
-     *      But the reason, most of the times, that Q is big enough to consider using parallel Stream is that IO/Network is involved in F.</li>
+     *      Most of the times, the Q is big enough to consider using parallel Stream is because IO/Network is involved in F.</li>
      * </ul>
      * <li>JDK 7 is supported by the Streams in Abacus. It's perfect to work with <a href="https://github.com/orfjackal/retrolambda">retrolambda</a> on Android</li>
      * <li>All primitive types are supported by Stream APIs in Abacus except boolean</li>
@@ -233,7 +243,7 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
      * count, except(Collection c), intersect(Collection c), forEach(identity, accumulator, predicate)</i>
      * 
      * @param maxThreadNum Default value is the number of cpu-cores. Steps/operations will be executed sequentially if <code>maxThreadNum</code> is 1.
-     * @param splitter The target array is split by ranges for multiple threads if splitter is <code>Splitter.ARRAY</code> and target stream composed by array. It looks like:
+     * @param splitor The target array is split by ranges for multiple threads if splitor is <code>splitor.ARRAY</code> and target stream composed by array. It looks like:
      *        
      * <pre><code>
      * for (int i = 0; i < maxThreadNum; i++) {
@@ -272,15 +282,15 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
      *     }));
      * }
      * </code></pre>       
-     *        Using <code>Splitter.ARRAY</code> only when F (the per-element function (usually a lambda)) is very tiny and the cost of synchronization on the target array/iterator is too big to it.
-     *        For the F involving IO or taking 'long' to complete, choose <code>Splitter.ITERATOR</code>. Default value is <code>Splitter.ITERATOR</code>.
+     *        Using <code>splitor.ARRAY</code> only when F (the per-element function (usually a lambda)) is very tiny and the cost of synchronization on the target array/iterator is too big to it.
+     *        For the F involving IO or taking 'long' to complete, choose <code>splitor.ITERATOR</code>. Default value is <code>splitor.ITERATOR</code>.
      * @return
      * @see Nth
      * @see com.landawn.abacus.util.Profiler#run(int, int, int, String, Runnable)
      * @see <a href="https://www.infoq.com/presentations/parallel-java-se-8#downloadPdf">Understanding Parallel Stream Performance in Java SE 8</a>
      * @see <a href="http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html">When to use parallel Streams</a>
      */
-    S parallel(int maxThreadNum, Splitter splitter);
+    S parallel(int maxThreadNum, Splitor splitor);
 
     /**
      * Return the underlying <code>maxThreadNum</code> if the stream is parallel, otherwise <code>1</code> is returned.
@@ -300,21 +310,21 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
     S maxThreadNum(int maxThreadNum);
 
     /**
-     * Return the underlying <code>splitter</code> if the stream is parallel, otherwise the default value <code>Splitter.ITERATOR</code> is returned.
+     * Return the underlying <code>splitor</code> if the stream is parallel, otherwise the default value <code>splitor.ITERATOR</code> is returned.
      * 
      * @return
      */
-    Splitter splitter();
+    Splitor splitor();
 
     /**
-     * Returns a parallel stream with the specified <code>splitter</code> . Or return
-     * itself, either because the stream was already parallel with same <code>splitter</code>, or because
+     * Returns a parallel stream with the specified <code>splitor</code> . Or return
+     * itself, either because the stream was already parallel with same <code>splitor</code>, or because
      * it's a sequential stream.
      * 
-     * @param splitter
+     * @param splitor
      * @return
      */
-    S splitter(Splitter splitter);
+    S splitor(Splitor splitor);
 
     Try<S> tried();
 
@@ -347,7 +357,7 @@ public interface BaseStream<T, S extends BaseStream<T, S>> extends AutoCloseable
     @Override
     void close();
 
-    public static enum Splitter {
+    public static enum Splitor {
         ARRAY, ITERATOR;
     }
 }

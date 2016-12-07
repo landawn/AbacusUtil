@@ -17,8 +17,6 @@ package com.landawn.abacus.util.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -69,31 +67,31 @@ import com.landawn.abacus.util.function.ToIntFunction;
 final class ParallelIteratorByteStream extends AbstractByteStream {
     private final ImmutableByteIterator elements;
     private final int maxThreadNum;
-    private final Splitter splitter;
+    private final Splitor splitor;
     private volatile IteratorByteStream sequential;
     private volatile Stream<Byte> boxed;
 
-    ParallelIteratorByteStream(ImmutableByteIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
+    ParallelIteratorByteStream(ImmutableByteIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
         this.elements = values;
         this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
-        this.splitter = splitter == null ? DEFAULT_SPILTTER : splitter;
+        this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
         this.sequential = new IteratorByteStream(this.elements, this.closeHandlers, this.sorted);
     }
 
-    ParallelIteratorByteStream(ByteStream stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
-        this(stream.byteIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
+    ParallelIteratorByteStream(ByteStream stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+        this(stream.byteIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
-    ParallelIteratorByteStream(Stream<Byte> stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitter splitter) {
-        this(byteIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitter);
+    ParallelIteratorByteStream(Stream<Byte> stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+        this(byteIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream filter(final BytePredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().filter(predicate, max).byteIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+            return new ParallelIteratorByteStream(sequential().filter(predicate, max).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Byte> stream = boxed().filter(new Predicate<Byte>() {
@@ -103,13 +101,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }
         }, max);
 
-        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream takeWhile(final BytePredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().takeWhile(predicate, max).byteIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+            return new ParallelIteratorByteStream(sequential().takeWhile(predicate, max).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Byte> stream = boxed().takeWhile(new Predicate<Byte>() {
@@ -119,13 +117,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }
         }, max);
 
-        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream dropWhile(final BytePredicate predicate, final long max) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().dropWhile(predicate, max).byteIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+            return new ParallelIteratorByteStream(sequential().dropWhile(predicate, max).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Byte> stream = boxed().dropWhile(new Predicate<Byte>() {
@@ -135,13 +133,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }
         }, max);
 
-        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream map(final ByteUnaryOperator mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().map(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorByteStream(sequential().map(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ByteStream stream = boxed().mapToByte(new ToByteFunction<Byte>() {
@@ -151,13 +149,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }
         });
 
-        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public IntStream mapToInt(final ByteToIntFunction mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final IntStream stream = boxed().mapToInt(new ToIntFunction<Byte>() {
@@ -167,13 +165,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }
         });
 
-        return new ParallelIteratorIntStream(stream, closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorIntStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public <U> Stream<U> mapToObj(final ByteFunction<? extends U> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<U>(sequential().mapToObj(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitter);
+            return new ParallelIteratorStream<U>(sequential().mapToObj(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
         }
 
         return boxed().map(new Function<Byte, U>() {
@@ -187,7 +185,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     @Override
     public ByteStream flatMap(final ByteFunction<? extends ByteStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().flatMap(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorByteStream(sequential().flatMap(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ByteStream stream = boxed().flatMapToByte(new Function<Byte, ByteStream>() {
@@ -197,13 +195,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }
         });
 
-        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public IntStream flatMapToInt(final ByteFunction<? extends IntStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final IntStream stream = boxed().flatMapToInt(new Function<Byte, IntStream>() {
@@ -213,13 +211,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }
         });
 
-        return new ParallelIteratorIntStream(stream, closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorIntStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final ByteFunction<? extends Stream<T>> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitter);
+            return new ParallelIteratorStream<>(sequential().flatMapToObj(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
         }
 
         return boxed().flatMap(new Function<Byte, Stream<T>>() {
@@ -240,7 +238,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
             @Override
             public ByteStream next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -254,7 +252,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                 return new ArrayByteStream(a, 0, cnt, null, sorted);
             }
 
-        }, closeHandlers, false, null, maxThreadNum, splitter);
+        }, closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -303,7 +301,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                 return ByteStream.of(result.array(), 0, result.size());
             }
 
-        }, closeHandlers, false, null, maxThreadNum, splitter);
+        }, closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -332,7 +330,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
             @Override
             public ByteList next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -354,58 +352,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
                 return prev = result;
             }
-        }, closeHandlers, false, null, maxThreadNum, splitter);
-    }
-
-    @Override
-    public ByteStream distinct() {
-        final Set<Byte> set = new LinkedHashSet<>();
-
-        while (elements.hasNext()) {
-            set.add(elements.next());
-        }
-
-        final byte[] a = new byte[set.size()];
-        final Iterator<Byte> iter = set.iterator();
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = iter.next();
-        }
-
-        return new ParallelArrayByteStream(a, 0, a.length, closeHandlers, sorted, maxThreadNum, splitter);
-
-        //        return new ParallelIteratorByteStream(new ImmutableByteIterator() {
-        //            private Iterator<Byte> distinctIter;
-        //
-        //            @Override
-        //            public boolean hasNext() {
-        //                if (distinctIter == null) {
-        //                    removeDuplicated();
-        //                }
-        //
-        //                return distinctIter.hasNext();
-        //            }
-        //
-        //            @Override
-        //            public byte next() {
-        //                if (distinctIter == null) {
-        //                    removeDuplicated();
-        //                }
-        //
-        //                return distinctIter.next();
-        //            }
-        //
-        //            private void removeDuplicated() {
-        //                final Set<Byte> set = new LinkedHashSet<>();
-        //
-        //                while (elements.hasNext()) {
-        //                    set.add(elements.next());
-        //                }
-        //
-        //                distinctIter = set.iterator();
-        //            }
-        //
-        //        }, closeHandlers, sorted, maxThreadNum, splitter);
+        }, closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -476,13 +423,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
                 N.parallelSort(a);
             }
-        }, closeHandlers, true, maxThreadNum, splitter);
+        }, closeHandlers, true, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream peek(final ByteConsumer action) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().peek(action).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
+            return new ParallelIteratorByteStream(sequential().peek(action).byteIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ByteStream stream = boxed().peek(new Consumer<Byte>() {
@@ -497,7 +444,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }
         });
 
-        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
@@ -530,7 +477,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        }, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
@@ -593,7 +540,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
                 return elements.toArray();
             }
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        }, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
@@ -1509,23 +1456,23 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream except(final Collection<?> c) {
-        return new ParallelIteratorByteStream(this.sequential().except(c).byteIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(this.sequential().except(c).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream intersect(final Collection<?> c) {
-        return new ParallelIteratorByteStream(this.sequential().intersect(c).byteIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(this.sequential().intersect(c).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream xor(final Collection<Byte> c) {
-        return new ParallelIteratorByteStream(this.sequential().xor(c).byteIterator(), closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(this.sequential().xor(c).byteIterator(), closeHandlers, false, maxThreadNum, splitor);
     }
 
     //    @Override
     //    public ByteStream exclude(final Collection<?> c) {
     //        if (maxThreadNum <= 1) {
-    //            return new ParallelIteratorByteStream(sequential().exclude(c).byteIterator(), closeHandlers, sorted, maxThreadNum, splitter);
+    //            return new ParallelIteratorByteStream(sequential().exclude(c).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
     //        }
     //
     //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
@@ -1560,7 +1507,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted, maxThreadNum, splitter);
+        }, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
@@ -1568,7 +1515,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         Stream<Byte> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? BYTE_COMPARATOR : null, maxThreadNum, splitter);
+            tmp = new ParallelIteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? BYTE_COMPARATOR : null, maxThreadNum, splitor);
             boxed = tmp;
         }
 
@@ -1577,33 +1524,33 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream append(final ByteStream stream) {
-        return new ParallelIteratorByteStream(ByteStream.concat(this, stream), closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(ByteStream.concat(this, stream), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream merge(final ByteStream b, final ByteBiFunction<Nth> nextSelector) {
-        return new ParallelIteratorByteStream(ByteStream.merge(this, b, nextSelector), closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(ByteStream.merge(this, b, nextSelector), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream zipWith(ByteStream b, ByteBiFunction<Byte> zipFunction) {
-        return new ParallelIteratorByteStream(ByteStream.zip(this, b, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(ByteStream.zip(this, b, zipFunction), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream zipWith(ByteStream b, ByteStream c, ByteTriFunction<Byte> zipFunction) {
-        return new ParallelIteratorByteStream(ByteStream.zip(this, b, c, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(ByteStream.zip(this, b, c, zipFunction), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream zipWith(ByteStream b, byte valueForNoneA, byte valueForNoneB, ByteBiFunction<Byte> zipFunction) {
-        return new ParallelIteratorByteStream(ByteStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), closeHandlers, false, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(ByteStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTriFunction<Byte> zipFunction) {
         return new ParallelIteratorByteStream(ByteStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false,
-                maxThreadNum, splitter);
+                maxThreadNum, splitor);
     }
 
     @Override
@@ -1634,12 +1581,12 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream parallel(int maxThreadNum, Splitter splitter) {
-        if (this.maxThreadNum == maxThreadNum && this.splitter == splitter) {
+    public ByteStream parallel(int maxThreadNum, Splitor splitor) {
+        if (this.maxThreadNum == maxThreadNum && this.splitor == splitor) {
             return this;
         }
 
-        return new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
@@ -1655,21 +1602,21 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             return this;
         }
 
-        return new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
-    public BaseStream.Splitter splitter() {
-        return splitter;
+    public BaseStream.Splitor splitor() {
+        return splitor;
     }
 
     @Override
-    public ByteStream splitter(BaseStream.Splitter splitter) {
-        if (this.splitter == splitter) {
+    public ByteStream splitor(BaseStream.Splitor splitor) {
+        if (this.splitor == splitor) {
             return this;
         }
 
-        return new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
@@ -1682,6 +1629,6 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new ParallelIteratorByteStream(elements, newCloseHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorByteStream(elements, newCloseHandlers, sorted, maxThreadNum, splitor);
     }
 }

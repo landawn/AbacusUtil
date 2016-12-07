@@ -34,6 +34,8 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,12 +53,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
@@ -478,7 +483,11 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract <R> Stream<R> flatMap2(Function<? super T, ? extends Collection<? extends R>> mapper);
 
+    public abstract <U, R> Stream<R> flatMap2(U seed, BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper);
+
     public abstract <R> Stream<R> flatMap3(Function<? super T, ? extends R[]> mapper);
+
+    public abstract <U, R> Stream<R> flatMap3(U seed, BiFunction<? super T, ? super U, ? extends R[]> mapper);
 
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 
@@ -619,6 +628,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller). 
+     * 
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param size
@@ -628,21 +639,25 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param size
      * @return
      */
-    public abstract Stream<List<T>> splitIntoList(int size);
+    public abstract Stream<List<T>> split2(int size);
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param size
      * @return
      */
-    public abstract Stream<Set<T>> splitIntoSet(int size);
+    public abstract Stream<Set<T>> split3(int size);
 
     //    /**
     //     * Split the stream by the specified predicate.
@@ -651,7 +666,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     //     * <code>
     //     * // split the number sequence by window 5.
     //     * final MutableInt border = MutableInt.of(5);
-    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(e -> {
+    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(e -> {
     //     *     if (e <= border.intValue()) {
     //     *         return true;
     //     *     } else {
@@ -677,7 +692,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     //     * <code>
     //     * // split the number sequence by window 5.
     //     * final MutableInt border = MutableInt.of(5);
-    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(e -> {
+    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(e -> {
     //     *     if (e <= border.intValue()) {
     //     *         return true;
     //     *     } else {
@@ -694,7 +709,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     //     * @param predicate
     //     * @return
     //     */
-    //    public abstract Stream<List<T>> splitIntoList(Predicate<? super T> predicate);
+    //    public abstract Stream<List<T>> split2(Predicate<? super T> predicate);
     //
     //    /**
     //     * Split the stream by the specified predicate.
@@ -703,7 +718,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     //     * <code>
     //     * // split the number sequence by window 5.
     //     * final MutableInt border = MutableInt.of(5);
-    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoSet(e -> {
+    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split3(e -> {
     //     *     if (e <= border.intValue()) {
     //     *         return true;
     //     *     } else {
@@ -720,7 +735,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     //     * @param predicate
     //     * @return
     //     */
-    //    public abstract Stream<Set<T>> splitIntoSet(Predicate<? super T> predicate);
+    //    public abstract Stream<Set<T>> split3(Predicate<? super T> predicate);
 
     /**
      * Split the stream by the specified predicate.
@@ -733,6 +748,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * </pre>
      * 
      * This stream should be sorted by value which is used to verify the border.
+     * 
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param identifier
@@ -748,18 +765,20 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
      * This stream should be sorted by value which is used to verify the border.
+     * 
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param boundary
      * @param predicate
      * @return
      */
-    public abstract <U> Stream<List<T>> splitIntoList(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
+    public abstract <U> Stream<List<T>> split2(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
     /**
@@ -768,22 +787,27 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoSet(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split3(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
      * This stream should be sorted by value which is used to verify the border.
+     * 
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param identifier
      * @param predicate
      * @return
      */
-    public abstract <U> Stream<Set<T>> splitIntoSet(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
+    public abstract <U> Stream<Set<T>> split3(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
     /**
      * Split the stream into two pieces at <code>where</code>
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
      * 
      * @param where
      * @return
@@ -793,17 +817,81 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     /**
      * Split the stream into two pieces at <code>where</code>
      * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
      * @param where
      * @return
      */
     public abstract Stream<Stream<T>> splitBy(Predicate<? super T> where);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param windowSize
+     * @return
+     */
     public abstract Stream<List<T>> sliding(int windowSize);
 
+    /**
+     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 1).forEach(N::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [2, 3, 4] <br />
+     * [3, 4, 5] <br />
+     * [4, 5, 6] <br />
+     * [5, 6, 7] <br />
+     * [6, 7, 8] <br />
+     * 
+     * <br>============================================================================</br>
+     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 3).forEach(N::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [4, 5, 6] <br />
+     * [7, 8] <br />
+     * 
+     * <br>============================================================================</br>
+     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 5).sliding(3, 5).forEach(N::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [6, 7, 8] <br />
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param windowSize
+     * @param increment
+     * @return
+     */
     public abstract Stream<List<T>> sliding(int windowSize, int increment);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract Stream<T> reverse();
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
+    public abstract Stream<T> rotate(int distance);
+
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract Stream<T> shuffle();
 
     /**
@@ -830,6 +918,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * or memory utilization with {@code distinct()} in parallel pipelines,
      * switching to sequential execution with {@link #sequential()} may improve
      * performance.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
      *
      * @return the new stream
      */
@@ -839,14 +930,32 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     /**
      * Distinct by the value mapped from <code>keyMapper</code>
+     * <br />
+     * This method only run sequentially, even in parallel stream.
      * 
      * @param keyMapper don't change value of the input parameter.
      * @return
      */
     public abstract Stream<T> distinct(Function<? super T, ?> keyMapper);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract Stream<T> top(int n);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @param comparator
+     * @return
+     */
     public abstract Stream<T> top(int n, Comparator<? super T> comparator);
 
     /**
@@ -994,6 +1103,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     /**
      * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
      * 
      * @param identity
      * @param accumulator
@@ -1197,6 +1309,12 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier);
+
+    /**
+     * 
+     * @return
+     */
+    public abstract DataSet toDataSet();
 
     /**
      * 
@@ -2002,6 +2120,63 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         return of(new RowIterator(resultSet));
     }
 
+    public static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet) {
+        N.requireNonNull(targetClass);
+        N.requireNonNull(resultSet);
+
+        final Type<?> type = N.typeOf(targetClass);
+
+        N.checkArgument(type.isMap() || type.isEntity(), "target class must be Map or entity with getter/setter methods");
+
+        try {
+            final ResultSetMetaData metaData = resultSet.getMetaData();
+            final int columnCount = metaData.getColumnCount();
+            final String[] columnLabels = new String[columnCount];
+
+            for (int i = 0; i < columnCount; i++) {
+                columnLabels[i] = metaData.getColumnLabel(i + 1);
+            }
+
+            final boolean isMap = type.isMap();
+            final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+
+            return Stream.of(resultSet).map(new Function<Object[], T>() {
+                @Override
+                public T apply(Object[] a) {
+                    if (isMap) {
+                        final Map<String, Object> m = (Map<String, Object>) N.newInstance(targetClass);
+
+                        for (int i = 0; i < columnCount; i++) {
+                            m.put(columnLabels[i], a[i]);
+                        }
+
+                        return (T) m;
+                    } else {
+                        final Object entity = N.newInstance(targetClass);
+
+                        for (int i = 0; i < columnCount; i++) {
+                            if (columnLabels[i] == null) {
+                                continue;
+                            }
+
+                            if (N.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                                columnLabels[i] = null;
+                            }
+                        }
+
+                        if (isDirtyMarker) {
+                            ((DirtyMarker) entity).markDirty(false);
+                        }
+
+                        return (T) entity;
+                    }
+                }
+            });
+        } catch (SQLException e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
     static Stream<Object[]> of(final ResultSet resultSet, int startIndex, int endIndex) {
         N.requireNonNull(resultSet);
 
@@ -2009,7 +2184,33 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     public static Try<Stream<String>> of(final File file) {
-        final Reader reader = IOUtil.createBufferedReader(file);
+        return of(file, Charsets.DEFAULT);
+    }
+
+    public static Try<Stream<String>> of(final File file, final Charset charset) {
+        final Reader reader = IOUtil.newBufferedReader(file, charset == null ? Charsets.DEFAULT : charset);
+
+        return of(reader).onClose(new Runnable() {
+            private boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                IOUtil.closeQuietly(reader);
+            }
+        }).tried();
+    }
+
+    public static Try<Stream<String>> of(final Path path) {
+        return of(path, Charsets.DEFAULT);
+    }
+
+    public static Try<Stream<String>> of(final Path path, final Charset charset) {
+        final Reader reader = IOUtil.newBufferedReader(path, charset == null ? Charsets.DEFAULT : charset);
 
         return of(reader).onClose(new Runnable() {
             private boolean isClosed = false;
@@ -2659,7 +2860,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 try {
                     if (next == null && (next = queue.poll()) == null) {
                         while (onGoing.value() && (threadCounter.get() > 0 || queue.size() > 0)) { // (queue.size() > 0 || counter.get() > 0) is wrong. has to check counter first
-                            if ((next = queue.poll(100, TimeUnit.MILLISECONDS)) != null) {
+                            if ((next = queue.poll(1, TimeUnit.MILLISECONDS)) != null) {
                                 break;
                             }
                         }

@@ -312,6 +312,9 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     /**
      * Returns Stream of IntStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
      * @param size
      * @return
      */
@@ -349,11 +352,13 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
      * This stream should be sorted by value which is used to verify the border.
+     * 
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param identifier
@@ -366,6 +371,9 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     /**
      * Split the stream into two pieces at <code>where</code>
      * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
      * @param where
      * @return
      */
@@ -374,31 +382,109 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     /**
      * Split the stream into two pieces at <code>where</code>
      * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
      * @param where
      * @return
      */
     public abstract Stream<IntStream> splitBy(IntPredicate where);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param windowSize
+     * @return
+     */
     public abstract Stream<IntList> sliding(int windowSize);
 
+    /**
+     * <code>IntStream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 1).forEach(N::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [2, 3, 4] <br />
+     * [3, 4, 5] <br />
+     * [4, 5, 6] <br />
+     * [5, 6, 7] <br />
+     * [6, 7, 8] <br />
+     * 
+     * <br>============================================================================</br>
+     * <code>IntStream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 3).forEach(N::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [4, 5, 6] <br />
+     * [7, 8] <br />
+     * 
+     * <br>============================================================================</br>
+     * <code>IntStream.of(1, 2, 3, 4, 5, 6, 7, 5).sliding(3, 5).forEach(N::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [6, 7, 8] <br />
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param windowSize
+     * @param increment
+     * @return
+     */
     public abstract Stream<IntList> sliding(int windowSize, int increment);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract IntStream reverse();
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract IntStream shuffle();
 
     /**
-     * Returns a stream consisting of the distinct elements of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
+    public abstract IntStream rotate(int distance);
+
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
      *
      * @return the new stream
      */
     public abstract IntStream distinct();
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract IntStream top(int n);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @param comparator
+     * @return
+     */
     public abstract IntStream top(final int n, Comparator<? super Integer> comparator);
 
     /**
@@ -1044,14 +1130,6 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     //     * @see IntList#intersect(IntList)
     //     */
     //    public abstract IntStream exclude(Collection<?> c);
-
-    /**
-     * Append the specified stream to the tail of this stream.
-     * @param stream
-     * @return
-     */
-    @Override
-    public abstract IntStream append(IntStream stream);
 
     /**
      * 

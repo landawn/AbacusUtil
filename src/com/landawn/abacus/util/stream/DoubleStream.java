@@ -334,7 +334,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -368,9 +368,32 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
 
     public abstract Stream<DoubleList> sliding(int windowSize, int increment);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract DoubleStream reverse();
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract DoubleStream shuffle();
+
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
+    public abstract DoubleStream rotate(int distance);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -1083,14 +1106,6 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
     //     * @see IntList#intersect(IntList)
     //     */
     //    public abstract DoubleStream exclude(Collection<?> c);
-
-    /**
-     * Append the specified stream to the tail of this stream.
-     * @param stream
-     * @return
-     */
-    @Override
-    public abstract DoubleStream append(DoubleStream stream);
 
     /**
      * 

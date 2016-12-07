@@ -216,15 +216,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public <U, R> Stream<R> flatMap(final U seed, final BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper) {
-        return flatMap(new Function<T, Stream<? extends R>>() {
-            @Override
-            public Stream<? extends R> apply(T t) {
-                return mapper.apply(t, seed);
-            }
-        });
-    }
+    abstract <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper);
 
     @Override
     public <R> Stream<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
@@ -236,7 +228,15 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    abstract <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper);
+    @Override
+    public <U, R> Stream<R> flatMap(final U seed, final BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper) {
+        return flatMap(new Function<T, Stream<? extends R>>() {
+            @Override
+            public Stream<? extends R> apply(T t) {
+                return mapper.apply(t, seed);
+            }
+        });
+    }
 
     @Override
     public <R> Stream<R> flatMap2(final Function<? super T, ? extends Collection<? extends R>> mapper) {
@@ -249,11 +249,31 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <U, R> Stream<R> flatMap2(final U seed, final BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper) {
+        return flatMap2(new Function<T, Collection<? extends R>>() {
+            @Override
+            public Collection<? extends R> apply(T t) {
+                return mapper.apply(t, seed);
+            }
+        });
+    }
+
+    @Override
     public <R> Stream<R> flatMap3(final Function<? super T, ? extends R[]> mapper) {
         return flatMap0(new Function<T, Iterator<? extends R>>() {
             @Override
             public Iterator<? extends R> apply(T t) {
                 return ImmutableIterator.of(mapper.apply(t));
+            }
+        });
+    }
+
+    @Override
+    public <U, R> Stream<R> flatMap3(final U seed, final BiFunction<? super T, ? super U, ? extends R[]> mapper) {
+        return flatMap3(new Function<T, R[]>() {
+            @Override
+            public R[] apply(T t) {
+                return mapper.apply(t, seed);
             }
         });
     }
@@ -567,26 +587,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> split(final int size) {
-        return splitIntoList(size).map(new Function<List<T>, Stream<T>>() {
-            @Override
-            public Stream<T> apply(List<T> t) {
-                return Stream.of(t);
-            }
-        });
-    }
-
-    @Override
-    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
-        return splitIntoList(boundary, predicate, boundaryUpdate).map(new Function<List<T>, Stream<T>>() {
-            @Override
-            public Stream<T> apply(List<T> t) {
-                return Stream.of(t);
-            }
-        });
-    }
-
-    @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
         final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
 
@@ -860,6 +860,79 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> split(final int size) {
+        return split2(size).map(new Function<List<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(List<T> t) {
+                return Stream.of(t);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+        return split2(boundary, predicate, boundaryUpdate).map(new Function<List<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(List<T> t) {
+                return Stream.of(t);
+            }
+        });
+    }
+
+    @Override
+    public Stream<Stream<T>> splitAt(final int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative");
+        }
+
+        final Iterator<T> iter = this.iterator();
+        final List<T> list = new ArrayList<>();
+
+        while (list.size() < n && iter.hasNext()) {
+            list.add(iter.next());
+        }
+
+        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
+
+        return newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<Stream<T>> splitBy(Predicate<? super T> where) {
+        N.requireNonNull(where);
+
+        final Iterator<T> iter = this.iterator();
+        final List<T> list = new ArrayList<>();
+        T next = null;
+        Stream<T> p = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (where.test(next)) {
+                list.add(next);
+            } else {
+                p = Stream.of(next);
+
+                break;
+            }
+        }
+
+        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
+
+        if (p != null) {
+            a[1] = a[1].prepend(p);
+        }
+
+        return this.newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<List<T>> sliding(int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    @Override
     public Stream<T> except(Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
@@ -925,59 +998,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
-
-        final Iterator<T> iter = this.iterator();
-        final List<T> list = new ArrayList<>();
-
-        while (list.size() < n && iter.hasNext()) {
-            list.add(iter.next());
-        }
-
-        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
-
-        return newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<Stream<T>> splitBy(Predicate<? super T> where) {
-        N.requireNonNull(where);
-
-        final Iterator<T> iter = this.iterator();
-        final List<T> list = new ArrayList<>();
-        T next = null;
-        Stream<T> p = null;
-
-        while (iter.hasNext()) {
-            next = iter.next();
-
-            if (where.test(next)) {
-                list.add(next);
-            } else {
-                p = Stream.of(next);
-
-                break;
-            }
-        }
-
-        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
-
-        if (p != null) {
-            a[1] = a[1].prepend(p);
-        }
-
-        return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<List<T>> sliding(int windowSize) {
-        return sliding(windowSize, 1);
-    }
-
-    @Override
     public Stream<T> reverse() {
         final T[] a = (T[]) toArray();
 
@@ -1019,6 +1039,15 @@ abstract class AbstractStream<T> extends Stream<T> {
         final T[] a = (T[]) toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<T> rotate(int distance) {
+        final T[] a = (T[]) toArray();
+
+        N.rotate(a, distance);
 
         return newStream(a, false, null);
     }
@@ -1144,6 +1173,11 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Optional<Map<Percentage, Double>> distribution = a.length == 0 ? Optional.<Map<Percentage, Double>> empty() : Optional.of(N.distribution(a));
 
         return Pair.of(summaryStatistics, distribution);
+    }
+
+    @Override
+    public DataSet toDataSet() {
+        return toDataSet(null);
     }
 
     @Override

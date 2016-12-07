@@ -67,7 +67,7 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public static Try<Stream<String>> stream(final File file) {
-        final Reader reader = IOUtil.createBufferedReader(file);
+        final Reader reader = IOUtil.newBufferedReader(file);
 
         return new Try<Stream<String>>(Stream.of(reader).onClose(new java.lang.Runnable() {
             @Override

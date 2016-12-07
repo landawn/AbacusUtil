@@ -700,7 +700,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     //
     //            @Override
     //            public Stream<T> next() {
-    //                if (elements.hasNext() == false) {
+    //                if (hasNext() == false) {
     //                    throw new NoSuchElementException();
     //                }
     //
@@ -718,7 +718,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     //    }
 
     @Override
-    public Stream<List<T>> splitIntoList(final int size) {
+    public Stream<List<T>> split2(final int size) {
         return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             @Override
             public boolean hasNext() {
@@ -727,7 +727,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public List<T> next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -746,7 +746,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Set<T>> splitIntoSet(final int size) {
+    public Stream<Set<T>> split3(final int size) {
         return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
             @Override
             public boolean hasNext() {
@@ -755,7 +755,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public Set<T> next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -811,7 +811,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     //    }
     //
     //    @Override
-    //    public Stream<List<T>> splitIntoList(final Predicate<? super T> predicate) {
+    //    public Stream<List<T>> split2(final Predicate<? super T> predicate) {
     //        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
     //            private T next = (T) NONE;
     //
@@ -848,7 +848,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     //    }
     //
     //    @Override
-    //    public Stream<Set<T>> splitIntoSet(final Predicate<? super T> predicate) {
+    //    public Stream<Set<T>> split3(final Predicate<? super T> predicate) {
     //        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
     //            private T next = (T) NONE;
     //
@@ -932,8 +932,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     //    }
 
     @Override
-    public <U> Stream<List<T>> splitIntoList(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<List<T>> split2(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -979,8 +978,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Set<T>> splitIntoSet(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<Set<T>> split3(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -1051,7 +1049,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
             @Override
             public List<T> next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -1074,19 +1072,50 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> distinct() {
-        final Set<Object> set = new HashSet<>();
-        final List<T> list = new ArrayList<>();
-        T e = null;
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
+            private final Set<Object> set = new HashSet<>();
+            private boolean hasNext = false;
+            private T next = null;
 
-        while (elements.hasNext()) {
-            e = elements.next();
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false && elements.hasNext()) {
+                    do {
+                        if (set.add(hashKey(next = elements.next()))) {
+                            hasNext = true;
+                            break;
+                        }
+                    } while (elements.hasNext());
+                }
 
-            if (set.add(getHashKey(e))) {
-                list.add(e);
+                return hasNext;
             }
-        }
 
-        return new ArrayStream<T>((T[]) list.toArray(), closeHandlers, sorted, cmp);
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNext = false;
+
+                return next;
+            }
+        }, closeHandlers);
+
+        //        final Set<Object> set = new HashSet<>();
+        //        final List<T> list = new ArrayList<>();
+        //        T e = null;
+        //
+        //        while (elements.hasNext()) {
+        //            e = elements.next();
+        //
+        //            if (set.add(getHashKey(e))) {
+        //                list.add(e);
+        //            }
+        //        }
+        //
+        //        return new ArrayStream<T>((T[]) list.toArray(), closeHandlers, sorted, cmp);
 
         //        return new IteratorStream<T>(new ImmutableIterator<T>() {
         //            T[] a = null;
@@ -1167,19 +1196,50 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
-        final Set<Object> set = new HashSet<>();
-        final List<T> list = new ArrayList<>();
-        T e = null;
+        return new IteratorStream<T>(new ImmutableIterator<T>() {
+            private final Set<Object> set = new HashSet<>();
+            private boolean hasNext = false;
+            private T next = null;
 
-        while (elements.hasNext()) {
-            e = elements.next();
+            @Override
+            public boolean hasNext() {
+                if (hasNext == false && elements.hasNext()) {
+                    do {
+                        if (set.add(hashKey(keyMapper.apply(next = elements.next())))) {
+                            hasNext = true;
+                            break;
+                        }
+                    } while (elements.hasNext());
+                }
 
-            if (set.add(getHashKey(keyMapper.apply(e)))) {
-                list.add(e);
+                return hasNext;
             }
-        }
 
-        return new ArrayStream<T>((T[]) list.toArray(), closeHandlers, sorted, cmp);
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                hasNext = false;
+
+                return next;
+            }
+        }, closeHandlers);
+
+        //        final Set<Object> set = new HashSet<>();
+        //        final List<T> list = new ArrayList<>();
+        //        T e = null;
+        //
+        //        while (elements.hasNext()) {
+        //            e = elements.next();
+        //
+        //            if (set.add(getHashKey(keyMapper.apply(e)))) {
+        //                list.add(e);
+        //            }
+        //        }
+        //
+        //        return new ArrayStream<T>((T[]) list.toArray(), closeHandlers, sorted, cmp);
 
         //        return new IteratorStream<T>(new ImmutableIterator<T>() {
         //            T[] a = null;
@@ -2263,12 +2323,12 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> parallel(int maxThreadNum, Splitter splitter) {
+    public Stream<T> parallel(int maxThreadNum, Splitor splitor) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorStream<T>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitter);
+        return new ParallelIteratorStream<T>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitor);
     }
 
     @Override

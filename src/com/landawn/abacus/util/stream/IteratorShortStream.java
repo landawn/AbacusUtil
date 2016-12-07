@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -360,7 +359,7 @@ final class IteratorShortStream extends AbstractShortStream {
 
             @Override
             public ShortStream next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -452,7 +451,7 @@ final class IteratorShortStream extends AbstractShortStream {
 
             @Override
             public ShortList next() {
-                if (elements.hasNext() == false) {
+                if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
@@ -476,57 +475,6 @@ final class IteratorShortStream extends AbstractShortStream {
             }
 
         }, closeHandlers);
-    }
-
-    @Override
-    public ShortStream distinct() {
-        final Set<Short> set = new LinkedHashSet<>();
-
-        while (elements.hasNext()) {
-            set.add(elements.next());
-        }
-
-        final short[] a = new short[set.size()];
-        final Iterator<Short> iter = set.iterator();
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            a[i] = iter.next();
-        }
-
-        return new ArrayShortStream(a, closeHandlers, sorted);
-
-        //        return new IteratorShortStream(new ImmutableShortIterator() {
-        //            private Iterator<Short> distinctIter;
-        //
-        //            @Override
-        //            public boolean hasNext() {
-        //                if (distinctIter == null) {
-        //                    removeDuplicated();
-        //                }
-        //
-        //                return distinctIter.hasNext();
-        //            }
-        //
-        //            @Override
-        //            public short next() {
-        //                if (distinctIter == null) {
-        //                    removeDuplicated();
-        //                }
-        //
-        //                return distinctIter.next();
-        //            }
-        //
-        //            private void removeDuplicated() {
-        //                final Set<Short> set = new LinkedHashSet<>();
-        //
-        //                while (elements.hasNext()) {
-        //                    set.add(elements.next());
-        //                }
-        //
-        //                distinctIter = set.iterator();
-        //            }
-        //
-        //        }, closeHandlers, sorted);
     }
 
     @Override
@@ -1247,12 +1195,12 @@ final class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream parallel(int maxThreadNum, Splitter splitter) {
+    public ShortStream parallel(int maxThreadNum, Splitor splitor) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override

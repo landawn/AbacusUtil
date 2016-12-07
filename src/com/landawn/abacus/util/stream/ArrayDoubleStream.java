@@ -813,11 +813,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream distinct() {
-        return new ArrayDoubleStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
-    }
-
-    @Override
     public DoubleStream top(int n) {
         return top(n, DOUBLE_COMPARATOR);
     }
@@ -1418,12 +1413,12 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream parallel(int maxThreadNum, Splitter splitter) {
+    public DoubleStream parallel(int maxThreadNum, Splitor splitor) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelArrayDoubleStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override

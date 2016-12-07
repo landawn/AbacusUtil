@@ -812,11 +812,6 @@ final class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream distinct() {
-        return new ArrayFloatStream(N.removeDuplicates(elements, fromIndex, toIndex, sorted), closeHandlers, sorted);
-    }
-
-    @Override
     public FloatStream top(int n) {
         return top(n, FLOAT_COMPARATOR);
     }
@@ -1472,12 +1467,12 @@ final class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream parallel(int maxThreadNum, Splitter splitter) {
+    public FloatStream parallel(int maxThreadNum, Splitor splitor) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelArrayFloatStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitter);
+        return new ParallelArrayFloatStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override

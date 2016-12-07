@@ -301,7 +301,7 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -335,9 +335,32 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
 
     public abstract Stream<ByteList> sliding(int windowSize, int increment);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract ByteStream reverse();
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract ByteStream shuffle();
+
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
+    public abstract ByteStream rotate(int distance);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -969,14 +992,6 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
     //     * @see IntList#intersect(IntList)
     //     */
     //    public abstract ByteStream exclude(Collection<?> c);
-
-    /**
-     * Append the specified stream to the tail of this stream.
-     * @param stream
-     * @return
-     */
-    @Override
-    public abstract ByteStream append(ByteStream stream);
 
     /**
      * 

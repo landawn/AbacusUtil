@@ -207,6 +207,16 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public FloatStream distinct() {
+        return boxed().distinct().mapToFloat(new ToFloatFunction<Float>() {
+            @Override
+            public float applyAsFloat(Float value) {
+                return value.floatValue();
+            }
+        });
+    }
+
+    @Override
     public Double sum() {
         // return N.sum(elements, fromIndex, toIndex);
 
@@ -472,6 +482,15 @@ abstract class AbstractFloatStream extends FloatStream {
         final float[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public FloatStream rotate(int distance) {
+        final float[] a = toArray();
+
+        N.rotate(a, distance);
 
         return newStream(a, false);
     }

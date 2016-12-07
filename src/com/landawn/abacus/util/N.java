@@ -26520,10 +26520,10 @@ public final class N {
         }
 
         final List<T> result = new ArrayList<>();
-        final Set<Object> keySet = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            if (keySet.add(getHashKey(a[i]))) {
+            if (set.add(hashKey(a[i]))) {
                 result.add(a[i]);
             }
         }
@@ -26563,7 +26563,7 @@ public final class N {
         }
 
         final List<T> result = new ArrayList<>();
-        final Set<Object> keySet = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
         T e = null;
 
         if (c instanceof List && c instanceof RandomAccess) {
@@ -26572,7 +26572,7 @@ public final class N {
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                if (keySet.add(getHashKey(e))) {
+                if (set.add(hashKey(e))) {
                     result.add(e);
                 }
             }
@@ -26586,7 +26586,7 @@ public final class N {
                     continue;
                 }
 
-                if (keySet.add(getHashKey(e))) {
+                if (set.add(hashKey(e))) {
                     result.add(e);
                 }
             }
@@ -26633,10 +26633,10 @@ public final class N {
         }
 
         final List<T> result = new ArrayList<>();
-        final Set<Object> keySet = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            if (keySet.add(getHashKey(keyMapper.apply(a[i])))) {
+            if (set.add(hashKey(keyMapper.apply(a[i])))) {
                 result.add(a[i]);
             }
         }
@@ -26682,7 +26682,7 @@ public final class N {
         }
 
         final List<T> result = new ArrayList<>();
-        final Set<Object> keySet = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
         T e = null;
 
         if (c instanceof List && c instanceof RandomAccess) {
@@ -26691,7 +26691,7 @@ public final class N {
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                if (keySet.add(getHashKey(keyMapper.apply(e)))) {
+                if (set.add(hashKey(keyMapper.apply(e)))) {
                     result.add(e);
                 }
             }
@@ -26705,7 +26705,7 @@ public final class N {
                     continue;
                 }
 
-                if (keySet.add(getHashKey(keyMapper.apply(e)))) {
+                if (set.add(hashKey(keyMapper.apply(e)))) {
                     result.add(e);
                 }
             }
@@ -26714,7 +26714,7 @@ public final class N {
         return result;
     }
 
-    private static Object getHashKey(Object obj) {
+    private static Object hashKey(Object obj) {
         return obj == null || obj.getClass().isArray() == false ? obj : Wrapper.of(obj);
     }
 
@@ -32414,7 +32414,7 @@ public final class N {
             final Set<Object> set = new HashSet<>(min(9, initHashCapacity(toIndex - fromIndex)));
 
             for (int i = fromIndex; i < toIndex; i++) {
-                if (set.add(getHashKey(a[i])) == false) {
+                if (set.add(hashKey(a[i])) == false) {
                     return true;
                 }
             }
@@ -32451,7 +32451,7 @@ public final class N {
             final Set<Object> set = new HashSet<>(min(9, initHashCapacity(c.size())));
 
             for (Object e : c) {
-                if (set.add(getHashKey(e)) == false) {
+                if (set.add(hashKey(e)) == false) {
                     return true;
                 }
             }

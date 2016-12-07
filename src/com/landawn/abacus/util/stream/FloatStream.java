@@ -335,7 +335,7 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -369,9 +369,32 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
 
     public abstract Stream<FloatList> sliding(int windowSize, int increment);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract FloatStream reverse();
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract FloatStream shuffle();
+
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
+    public abstract FloatStream rotate(int distance);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream. The
@@ -1083,14 +1106,6 @@ public abstract class FloatStream extends StreamBase<Float, FloatStream> {
      * @see IntList#xor(IntList)
      */
     public abstract FloatStream xor(Collection<Float> c);
-
-    /**
-     * Append the specified stream to the tail of this stream.
-     * @param stream
-     * @return
-     */
-    @Override
-    public abstract FloatStream append(FloatStream stream);
 
     /**
      * 

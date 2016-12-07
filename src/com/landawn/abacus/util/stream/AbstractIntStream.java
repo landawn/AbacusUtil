@@ -206,6 +206,16 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
+    public IntStream distinct() {
+        return boxed().distinct().mapToInt(new ToIntFunction<Integer>() {
+            @Override
+            public int applyAsInt(Integer value) {
+                return value.intValue();
+            }
+        });
+    }
+
+    @Override
     public OptionalInt first() {
         final IntIterator iter = this.intIterator();
 
@@ -399,6 +409,15 @@ abstract class AbstractIntStream extends IntStream {
         final int[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public IntStream rotate(int distance) {
+        final int[] a = toArray();
+
+        N.rotate(a, distance);
 
         return newStream(a, false);
     }

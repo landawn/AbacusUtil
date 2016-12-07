@@ -300,7 +300,7 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitIntoList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -334,9 +334,32 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
 
     public abstract Stream<CharList> sliding(int windowSize, int increment);
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract CharStream reverse();
 
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract CharStream shuffle();
+
+    /**
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
+    public abstract CharStream rotate(int distance);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.
@@ -966,14 +989,6 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
     //    public abstract CharStream exclude(Collection<?> c);
 
     /**
-     * Append the specified stream to the tail of this stream.
-     * @param stream
-     * @return
-     */
-    @Override
-    public abstract CharStream append(CharStream stream);
-
-    /**
      * 
      * @param b
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
@@ -1101,6 +1116,11 @@ public abstract class CharStream extends StreamBase<Character, CharStream> {
             @Override
             public char next() {
                 return str.charAt(cursor++);
+            }
+
+            @Override
+            public long count() {
+                return endIndex - cursor;
             }
         };
 
