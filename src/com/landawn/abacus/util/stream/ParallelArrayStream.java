@@ -1662,7 +1662,37 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<List<T>> sliding(final int windowSize, final int increment) {
+    public Stream<ObjectList<T>> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new ParallelIteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ObjectList<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ObjectList<T> result = ObjectList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
+    public Stream<List<T>> sliding2(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
@@ -1946,8 +1976,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <A> ObjectList<A> toObjectList(Class<A> cls) {
-        return ObjectList.of(toArray((A[]) N.newArray(cls, toIndex - fromIndex)));
+    public ObjectList<T> toObjectList() {
+        return ObjectList.of(N.copyOfRange(elements, fromIndex, toIndex));
     }
 
     @Override

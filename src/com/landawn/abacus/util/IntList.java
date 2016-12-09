@@ -44,9 +44,7 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
     }
 
     public IntList(int initialCapacity) {
-        this();
-
-        elementData = new int[initialCapacity];
+        elementData = initialCapacity == 0 ? N.EMPTY_INT_ARRAY : new int[initialCapacity];
     }
 
     /**
@@ -55,15 +53,10 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
      * @param a
      */
     public IntList(int[] a) {
-        this();
-
-        elementData = a;
-        size = a.length;
+        this(a, a.length);
     }
 
     public IntList(int[] a, int size) {
-        this();
-
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
         }
@@ -354,7 +347,6 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
      * 
      * @return
      */
-    @Override
     public int[] array() {
         return elementData;
     }
@@ -409,7 +401,6 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         size++;
     }
 
-    @Override
     public void addAll(IntList c) {
         int numNew = c.size();
 
@@ -420,7 +411,6 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         size += numNew;
     }
 
-    @Override
     public void addAll(int index, IntList c) {
         rangeCheckForAdd(index);
 

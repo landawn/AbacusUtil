@@ -43,9 +43,7 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
     }
 
     public ByteList(int initialCapacity) {
-        this();
-
-        elementData = new byte[initialCapacity];
+        elementData = initialCapacity == 0 ? N.EMPTY_BYTE_ARRAY : new byte[initialCapacity];
     }
 
     /**
@@ -54,15 +52,10 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
      * @param a
      */
     public ByteList(byte[] a) {
-        this();
-
-        elementData = a;
-        size = a.length;
+        this(a, a.length);
     }
 
     public ByteList(byte[] a, int size) {
-        this();
-
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
         }
@@ -200,7 +193,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
      * 
      * @return
      */
-    @Override
     public byte[] array() {
         return elementData;
     }
@@ -255,7 +247,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         size++;
     }
 
-    @Override
     public void addAll(ByteList c) {
         int numNew = c.size();
 
@@ -266,7 +257,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         size += numNew;
     }
 
-    @Override
     public void addAll(int index, ByteList c) {
         rangeCheckForAdd(index);
 

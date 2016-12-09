@@ -42,9 +42,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public BooleanList(int initialCapacity) {
-        this();
-
-        elementData = new boolean[initialCapacity];
+        elementData = initialCapacity == 0 ? N.EMPTY_BOOLEAN_ARRAY : new boolean[initialCapacity];
     }
 
     /**
@@ -57,8 +55,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public BooleanList(boolean[] a, int size) {
-        this();
-
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
         }
@@ -144,7 +140,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * 
      * @return
      */
-    @Override
     public boolean[] array() {
         return elementData;
     }
@@ -199,7 +194,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         size++;
     }
 
-    @Override
     public void addAll(BooleanList c) {
         int numNew = c.size();
 
@@ -210,7 +204,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         size += numNew;
     }
 
-    @Override
     public void addAll(int index, BooleanList c) {
         rangeCheckForAdd(index);
 

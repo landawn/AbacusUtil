@@ -44,9 +44,7 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
     }
 
     public LongList(int initialCapacity) {
-        this();
-
-        elementData = new long[initialCapacity];
+        elementData = initialCapacity == 0 ? N.EMPTY_LONG_ARRAY : new long[initialCapacity];
     }
 
     /**
@@ -55,15 +53,10 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
      * @param a
      */
     public LongList(long[] a) {
-        this();
-
-        elementData = a;
-        size = a.length;
+        this(a, a.length);
     }
 
     public LongList(long[] a, int size) {
-        this();
-
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
         }
@@ -243,7 +236,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
      * 
      * @return
      */
-    @Override
     public long[] array() {
         return elementData;
     }
@@ -298,7 +290,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         size++;
     }
 
-    @Override
     public void addAll(LongList c) {
         int numNew = c.size();
 
@@ -309,7 +300,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         size += numNew;
     }
 
-    @Override
     public void addAll(int index, LongList c) {
         rangeCheckForAdd(index);
 

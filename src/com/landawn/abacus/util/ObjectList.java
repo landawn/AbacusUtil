@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiFunction;
@@ -49,16 +48,16 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> {
+    private T[] elementData = (T[]) N.EMPTY_OBJECT_ARRAY;
+    private int size = 0;
 
-    private static final Map<Class<?>, Object[]> emptyArrayPool = N.newConcurrentHashMap();
-
-    static {
-        emptyArrayPool.put(Object.class, N.EMPTY_OBJECT_ARRAY);
-        emptyArrayPool.put(String.class, N.EMPTY_STRING_ARRAY);
+    public ObjectList() {
+        super();
     }
 
-    private T[] elementData = null;
-    private int size = 0;
+    public ObjectList(int initialCapacity) {
+        elementData = initialCapacity == 0 ? (T[]) N.EMPTY_OBJECT_ARRAY : (T[]) new Object[initialCapacity];
+    }
 
     /**
      * The specified array is used as the element array for this list without copying action.
@@ -67,14 +66,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
     public ObjectList(T[] a) {
-        super();
-
-        if (a == null) {
-            throw new IllegalArgumentException("The specified array can't be null");
-        }
-
-        elementData = a;
-        size = a.length;
+        this(a, a.length);
     }
 
     /**
@@ -84,12 +76,6 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
     public ObjectList(T[] a, int size) {
-        super();
-
-        if (a == null) {
-            throw new IllegalArgumentException("The specified array can't be null");
-        }
-
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
         }
@@ -104,20 +90,8 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return
      * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
-    public static <T> ObjectList<T> empty(Class<T[]> cls) {
-        final Class<T> componentType = (Class<T>) cls.getComponentType();
-        return of(createEmptyArray(componentType));
-    }
-
-    private static <T> T[] createEmptyArray(final Class<T> componentType) {
-        T[] a = (T[]) emptyArrayPool.get(componentType);
-
-        if (a == null) {
-            a = N.newArray(componentType, 0);
-            emptyArrayPool.put(componentType, a);
-        }
-
-        return a;
+    public static <T> ObjectList<T> empty() {
+        return new ObjectList<T>((T[]) N.EMPTY_OBJECT_ARRAY);
     }
 
     /**
@@ -141,43 +115,20 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return new ObjectList<T>(a, size);
     }
 
-    /**
-     * Create an empty array of specified <code>targetClass</code> if the specified <code>a</code> is null.
-     * 
-     * @param targetClass
-     * @param a
-     * @return
-     */
-    public static <T> ObjectList<T> of(Class<T> targetClass, T[] a) {
-        return new ObjectList<T>(a == null ? createEmptyArray(targetClass) : a);
-    }
-
-    /**
-     * Create an empty array of specified <code>targetClass</code> if the specified <code>a</code> is null.
-     * 
-     * @param targetClass
-     * @param a
-     * @param size
-     * @return
-     */
-    public static <T> ObjectList<T> of(Class<T> targetClass, T[] a, int size) {
-        return new ObjectList<T>(a == null ? createEmptyArray(targetClass) : a, size);
-    }
-
-    public static <T> ObjectList<T> from(Class<T> cls, Collection<? extends T> c) {
+    public static <T> ObjectList<T> from(Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
-            return of(createEmptyArray(cls));
+            return empty();
         }
 
-        return of(c.toArray((T[]) N.newArray(cls, c.size())));
+        return of((T[]) c.toArray());
     }
 
-    public static <T> ObjectList<T> from(Class<T> cls, Collection<? extends T> c, T defaultValueForNull) {
+    public static <T> ObjectList<T> from(Collection<? extends T> c, T defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return of(createEmptyArray(cls));
+            return empty();
         }
 
-        final T[] a = c.toArray((T[]) N.newArray(cls, c.size()));
+        final T[] a = (T[]) c.toArray();
 
         for (int i = 0, len = a.length; i < len; i++) {
             if (a[i] == null) {
@@ -261,8 +212,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * 
      * @return
      */
-    @Override
-    public T[] array() {
+    public Object[] array() {
         return elementData;
     }
 
@@ -325,8 +275,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         size++;
     }
 
-    @Override
-    public void addAll(ObjectList<T> c) {
+    public void addAll(ObjectList<? extends T> c) {
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -336,8 +285,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         size += numNew;
     }
 
-    @Override
-    public void addAll(int index, ObjectList<T> c) {
+    public void addAll(int index, ObjectList<? extends T> c) {
         rangeCheckForAdd(index);
 
         int numNew = c.size();
@@ -454,7 +402,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     @Override
-    public boolean removeAll(T[] a) {
+    public boolean removeAll(Object[] a) {
         if (N.isNullOrEmpty(a)) {
             return false;
         }
@@ -1026,11 +974,11 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
     }
 
-    public void forEach(IndexedConsumer<T, T[]> action) {
+    public void forEach(IndexedConsumer<T, ObjectList<T>> action) {
         forEach(0, size(), action);
     }
 
-    public void forEach(final int fromIndex, final int toIndex, final IndexedConsumer<? super T, T[]> action) {
+    public void forEach(final int fromIndex, final int toIndex, final IndexedConsumer<? super T, ObjectList<T>> action) {
         if (fromIndex <= toIndex) {
             checkIndex(fromIndex, toIndex);
         } else {
@@ -1040,11 +988,11 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         if (size > 0) {
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    action.accept(i, elementData[i], elementData);
+                    action.accept(i, elementData[i], this);
                 }
             } else {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
-                    action.accept(i, elementData[i], elementData);
+                    action.accept(i, elementData[i], this);
                 }
             }
         }
@@ -1097,7 +1045,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return result;
     }
 
-    public <R> R forEach(final R identity, IndexedBiFunction<? super T, T[], R, R> accumulator, final Predicate<? super R> predicate) {
+    public <R> R forEach(final R identity, IndexedBiFunction<? super T, ObjectList<T>, R, R> accumulator, final Predicate<? super R> predicate) {
         return forEach(0, size(), identity, accumulator, predicate);
     }
 
@@ -1111,7 +1059,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public <R> R forEach(final int fromIndex, final int toIndex, final R identity, IndexedBiFunction<? super T, T[], R, R> accumulator,
+    public <R> R forEach(final int fromIndex, final int toIndex, final R identity, IndexedBiFunction<? super T, ObjectList<T>, R, R> accumulator,
             final Predicate<? super R> predicate) {
         if (fromIndex <= toIndex) {
             checkIndex(fromIndex, toIndex);
@@ -1124,7 +1072,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         if (size > 0) {
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    result = accumulator.apply(i, elementData[i], elementData, result);
+                    result = accumulator.apply(i, elementData[i], this, result);
 
                     if (predicate.test(result) == false) {
                         break;
@@ -1132,7 +1080,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
                 }
             } else {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
-                    result = accumulator.apply(i, elementData[i], elementData, result);
+                    result = accumulator.apply(i, elementData[i], this, result);
 
                     if (predicate.test(result) == false) {
                         break;

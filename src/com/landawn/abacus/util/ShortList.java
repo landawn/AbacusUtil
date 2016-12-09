@@ -44,9 +44,7 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
     }
 
     public ShortList(int initialCapacity) {
-        this();
-
-        elementData = new short[initialCapacity];
+        elementData = initialCapacity == 0 ? N.EMPTY_SHORT_ARRAY : new short[initialCapacity];
     }
 
     /**
@@ -55,15 +53,10 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
      * @param a
      */
     public ShortList(short[] a) {
-        this();
-
-        elementData = a;
-        size = a.length;
+        this(a, a.length);
     }
 
     public ShortList(short[] a, int size) {
-        this();
-
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
         }
@@ -199,7 +192,6 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
      * 
      * @return
      */
-    @Override
     public short[] array() {
         return elementData;
     }
@@ -254,7 +246,6 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         size++;
     }
 
-    @Override
     public void addAll(ShortList c) {
         int numNew = c.size();
 
@@ -265,7 +256,6 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         size += numNew;
     }
 
-    @Override
     public void addAll(int index, ShortList c) {
         rangeCheckForAdd(index);
 

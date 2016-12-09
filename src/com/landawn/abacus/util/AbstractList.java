@@ -56,25 +56,6 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
     }
 
     /**
-     *
-     * @return the element array shared with this List.
-     */
-    public abstract A array();
-
-    /**
-     * 
-     * @param l
-     */
-    public abstract void addAll(L l);
-
-    /**
-     * 
-     * @param index
-     * @param l
-     */
-    public abstract void addAll(int index, L l);
-
-    /**
      * 
      * @param a
      */

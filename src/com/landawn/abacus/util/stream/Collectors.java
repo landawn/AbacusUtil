@@ -406,11 +406,11 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
-    public static <T> Collector<T, ?, ObjectList<T>> toObjectList(final Class<T> cls) {
+    public static <T> Collector<T, ?, ObjectList<T>> toObjectList() {
         final Supplier<ObjectList<T>> supplier = new Supplier<ObjectList<T>>() {
             @Override
             public ObjectList<T> get() {
-                return new ObjectList<T>((T[]) N.newArray(cls, 0));
+                return new ObjectList<T>();
             }
         };
 
@@ -470,7 +470,7 @@ public final class Collectors {
         final Function<ObjectList<A>, A[]> finisher = new Function<ObjectList<A>, A[]>() {
             @Override
             public A[] apply(ObjectList<A> t) {
-                return t.array() == array ? array : t.trimToSize().array();
+                return t.array() == array ? array : (A[]) t.trimToSize().array();
             }
         };
 

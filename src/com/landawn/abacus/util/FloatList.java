@@ -44,9 +44,7 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
     }
 
     public FloatList(int initialCapacity) {
-        this();
-
-        elementData = new float[initialCapacity];
+        elementData = initialCapacity == 0 ? N.EMPTY_FLOAT_ARRAY : new float[initialCapacity];
     }
 
     /**
@@ -55,15 +53,10 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
      * @param a
      */
     public FloatList(float[] a) {
-        this();
-
-        elementData = a;
-        size = a.length;
+        this(a, a.length);
     }
 
     public FloatList(float[] a, int size) {
-        this();
-
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
         }
@@ -223,7 +216,6 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
      * 
      * @return
      */
-    @Override
     public float[] array() {
         return elementData;
     }
@@ -278,7 +270,6 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         size++;
     }
 
-    @Override
     public void addAll(FloatList c) {
         int numNew = c.size();
 
@@ -289,7 +280,6 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         size += numNew;
     }
 
-    @Override
     public void addAll(int index, FloatList c) {
         rangeCheckForAdd(index);
 

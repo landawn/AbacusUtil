@@ -61,6 +61,7 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectFactory;
+import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -908,8 +909,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<List<T>> sliding(int windowSize) {
+    public Stream<ObjectList<T>> sliding(int windowSize) {
         return sliding(windowSize, 1);
+    }
+
+    @Override
+    public Stream<List<T>> sliding2(int windowSize) {
+        return sliding2(windowSize, 1);
     }
 
     @Override

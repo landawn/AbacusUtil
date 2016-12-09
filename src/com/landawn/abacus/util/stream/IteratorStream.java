@@ -765,7 +765,61 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<List<T>> sliding(final int windowSize, final int increment) {
+    public Stream<ObjectList<T>> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+            private ObjectList<T> prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public ObjectList<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ObjectList<T> result = new ObjectList<>(windowSize);
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+
+                    if (cnt <= 3) {
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        result.addAll(prev.subList(windowSize - cnt, windowSize));
+                    }
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                return prev = result;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<List<T>> sliding2(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
@@ -799,7 +853,14 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
-                    result.addAll(prev.subList(windowSize - cnt, windowSize));
+
+                    if (cnt <= 3) {
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        result.addAll(prev.subList(windowSize - cnt, windowSize));
+                    }
                 }
 
                 while (cnt++ < windowSize && elements.hasNext()) {
@@ -1166,8 +1227,8 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <A> ObjectList<A> toObjectList(Class<A> cls) {
-        return ObjectList.of(toArray((A[]) N.newArray(cls, 0)));
+    public ObjectList<T> toObjectList() {
+        return ObjectList.of((T[]) toArray());
     }
 
     @Override

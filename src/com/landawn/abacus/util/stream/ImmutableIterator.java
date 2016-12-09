@@ -136,7 +136,7 @@ public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
             list.add((A) next());
         }
 
-        return list.array() == a ? a : list.trimToSize().array();
+        return list.array() == a ? a : (A[]) list.trimToSize().array();
     }
 
     static abstract class QueuedIterator<T> extends ImmutableIterator<T> {

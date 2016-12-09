@@ -43,9 +43,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public CharList(int initialCapacity) {
-        this();
-
-        elementData = new char[initialCapacity];
+        elementData = initialCapacity == 0 ? N.EMPTY_CHAR_ARRAY : new char[initialCapacity];
     }
 
     /**
@@ -54,15 +52,10 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @param a
      */
     public CharList(char[] a) {
-        this();
-
-        elementData = a;
-        size = a.length;
+        this(a, a.length);
     }
 
     public CharList(char[] a, int size) {
-        this();
-
         if (a.length < size) {
             throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
         }
@@ -231,7 +224,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * 
      * @return
      */
-    @Override
     public char[] array() {
         return elementData;
     }
@@ -286,7 +278,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         size++;
     }
 
-    @Override
     public void addAll(CharList c) {
         int numNew = c.size();
 
@@ -297,7 +288,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         size += numNew;
     }
 
-    @Override
     public void addAll(int index, CharList c) {
         rangeCheckForAdd(index);
 

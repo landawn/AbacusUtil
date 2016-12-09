@@ -239,7 +239,7 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class Stream<T>
-        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, OptionalNullable<T>, Indexed<T>, Stream<T>> {
+        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, ObjectList<T>, OptionalNullable<T>, Indexed<T>, Stream<T>> {
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY);
 
@@ -605,6 +605,10 @@ public abstract class Stream<T>
     public abstract <U> Stream<Set<T>> split3(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate);
 
+    public abstract Stream<List<T>> sliding2(int windowSize);
+
+    public abstract Stream<List<T>> sliding2(int windowSize, int increment);
+
     /**
      * Distinct by the value mapped from <code>keyMapper</code>
      * <br />
@@ -694,7 +698,7 @@ public abstract class Stream<T>
      */
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
 
-    public abstract <A> ObjectList<A> toObjectList(Class<A> cls);
+    public abstract ObjectList<T> toObjectList();
 
     /**
      * 
