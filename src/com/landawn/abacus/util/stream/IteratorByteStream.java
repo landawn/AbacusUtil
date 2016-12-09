@@ -71,15 +71,14 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream filter(final BytePredicate predicate, final long max) {
+    public ByteStream filter(final BytePredicate predicate) {
         return new IteratorByteStream(new ImmutableByteIterator() {
             private boolean hasNext = false;
             private byte next = 0;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
+                if (hasNext == false) {
                     while (elements.hasNext()) {
                         next = elements.next();
 
@@ -99,7 +98,6 @@ final class IteratorByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -108,25 +106,21 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream takeWhile(final BytePredicate predicate, final long max) {
+    public ByteStream takeWhile(final BytePredicate predicate) {
         return new IteratorByteStream(new ImmutableByteIterator() {
+            private boolean hasMore = true;
             private boolean hasNext = false;
             private byte next = 0;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
-                    while (elements.hasNext()) {
-                        next = elements.next();
+                if (hasNext == false && hasMore && elements.hasNext()) {
+                    next = elements.next();
 
-                        if (predicate.test(next)) {
-                            hasNext = true;
-                            break;
-                        } else {
-                            cnt = Long.MAX_VALUE; // no more loop.
-                            break;
-                        }
+                    if (predicate.test(next)) {
+                        hasNext = true;
+                    } else {
+                        hasMore = false;
                     }
                 }
 
@@ -139,7 +133,6 @@ final class IteratorByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -149,16 +142,15 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream dropWhile(final BytePredicate predicate, final long max) {
+    public ByteStream dropWhile(final BytePredicate predicate) {
         return new IteratorByteStream(new ImmutableByteIterator() {
             private boolean hasNext = false;
             private byte next = 0;
-            private long cnt = 0;
             private boolean dropped = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
+                if (hasNext == false) {
                     if (dropped == false) {
                         while (elements.hasNext()) {
                             next = elements.next();
@@ -187,7 +179,6 @@ final class IteratorByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -557,30 +548,9 @@ final class IteratorByteStream extends AbstractByteStream {
             public byte next() {
                 final byte next = elements.next();
 
-                //    try {
-                //        action.accept(next);
-                //    } catch (Throwable e) {
-                //        // ignore.
-                //    }
-
                 action.accept(next);
                 return next;
             }
-
-            //    @Override
-            //    public long count() {
-            //        return elements.count();
-            //    }
-            //
-            //    @Override
-            //    public void skip(long n) {
-            //        elements.skip(n);
-            //    }
-            //
-            //    @Override
-            //    public byte[] toArray() {
-            //        return elements.toArray();
-            //    }
         }, closeHandlers, sorted);
     }
 
@@ -686,17 +656,6 @@ final class IteratorByteStream extends AbstractByteStream {
             action.accept(elements.next());
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(ByteFunction<Boolean> action) {
-    //        while (elements.hasNext()) {
-    //            if (action.apply(elements.next()).booleanValue() == false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
 
     @Override
     public byte[] toArray() {
@@ -1027,11 +986,6 @@ final class IteratorByteStream extends AbstractByteStream {
         return true;
     }
 
-    //    @Override
-    //    public OptionalByte findFirst() {
-    //        return elements.hasNext() ? OptionalByte.empty() : OptionalByte.of(elements.next());
-    //    }
-
     @Override
     public OptionalByte findFirst(BytePredicate predicate) {
         while (elements.hasNext()) {
@@ -1044,21 +998,6 @@ final class IteratorByteStream extends AbstractByteStream {
 
         return OptionalByte.empty();
     }
-
-    //    @Override
-    //    public OptionalByte findLast() {
-    //        if (elements.hasNext() == false) {
-    //            return OptionalByte.empty();
-    //        }
-    //
-    //        byte e = 0;
-    //
-    //        while (elements.hasNext()) {
-    //            e = elements.next();
-    //        }
-    //
-    //        return OptionalByte.of(e);
-    //    }
 
     @Override
     public OptionalByte findLast(BytePredicate predicate) {
@@ -1082,11 +1021,6 @@ final class IteratorByteStream extends AbstractByteStream {
         return hasResult ? OptionalByte.of(result) : OptionalByte.empty();
     }
 
-    //    @Override
-    //    public OptionalByte findAny() {
-    //        return count() == 0 ? OptionalByte.empty() : OptionalByte.of(elements.next());
-    //    }
-
     @Override
     public OptionalByte findAny(BytePredicate predicate) {
         while (elements.hasNext()) {
@@ -1099,18 +1033,6 @@ final class IteratorByteStream extends AbstractByteStream {
 
         return OptionalByte.empty();
     }
-
-    //    @Override
-    //    public ByteStream exclude(Collection<?> c) {
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new BytePredicate() {
-    //            @Override
-    //            public boolean test(byte value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public IntStream asIntStream() {

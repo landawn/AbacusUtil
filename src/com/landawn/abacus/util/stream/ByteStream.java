@@ -25,14 +25,12 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.ByteIterator;
@@ -41,10 +39,7 @@ import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
-import com.landawn.abacus.util.IntList;
-import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -54,7 +49,6 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
@@ -66,7 +60,6 @@ import com.landawn.abacus.util.function.ByteSupplier;
 import com.landawn.abacus.util.function.ByteToIntFunction;
 import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -100,99 +93,13 @@ import com.landawn.abacus.util.function.ToByteFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
+public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate, ByteConsumer, ByteList, OptionalByte, IndexedByte, ByteStream> {
 
     private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY);
 
     ByteStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
     }
-
-    /**
-     * Returns a stream consisting of the elements of this stream that match
-     * the given predicate.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param predicate a <a href="package-summary.html#NonByteerference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to each element to determine if it
-     *                  should be included
-     * @return the new stream
-     */
-    public abstract ByteStream filter(final BytePredicate predicate);
-
-    /**
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract ByteStream filter(final BytePredicate predicate, final long max);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract ByteStream takeWhile(final BytePredicate predicate);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract ByteStream takeWhile(final BytePredicate predicate, final long max);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract ByteStream dropWhile(final BytePredicate predicate);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract ByteStream dropWhile(final BytePredicate predicate, final long max);
-
-    /**
-     * Take away and consume the specified <code>n</code> elements.
-     * 
-     * @param n
-     * @param action
-     * @return
-     * @see #dropWhile(BytePredicate)
-     */
-    public abstract ByteStream drop(final long n, final ByteConsumer action);
-
-    /**
-     * Take away and consume elements while <code>predicate</code> returns true.
-     * 
-     * @param predicate
-     * @param action
-     * @return
-     * @see  #dropWhile(BytePredicate)
-     */
-    public abstract ByteStream dropWhile(final BytePredicate predicate, final ByteConsumer action);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -261,268 +168,7 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
 
     public abstract <T> Stream<T> flatMapToObj(ByteFunction<? extends Stream<T>> mapper);
 
-    /**
-     * Returns Stream of ByteStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
-     * 
-     * @param size
-     * @return
-     */
-    public abstract Stream<ByteStream> split(int size);
-    //
-    //    /**
-    //     * Split the stream by the specified predicate.
-    //     * 
-    //     * <pre>
-    //     * <code>
-    //     * // split the number sequence by window 5.
-    //     * final MutableInt border = MutableInt.of(5);
-    //     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
-    //     *     if (e <= border.intValue()) {
-    //     *         return true;
-    //     *     } else {
-    //     *         border.addAndGet(5);
-    //     *         return false;
-    //     *     }
-    //     * }).map(s -> s.toArray()).forEach(N::println);
-    //     * </code>
-    //     * </pre>
-    //     * 
-    //     * This stream should be sorted by value which is used to verify the border.
-    //     * This method only run sequentially, even in parallel stream.
-    //     * 
-    //     * @param predicate
-    //     * @return
-    //     */
-    //    public abstract Stream<ByteStream> split(BytePredicate predicate);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This stream should be sorted by value which is used to verify the border.
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param identifier
-     * @param predicate
-     * @return
-     */
-    public abstract <U> Stream<ByteStream> split(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<ByteStream> splitAt(int where);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<ByteStream> splitBy(BytePredicate where);
-
-    public abstract Stream<ByteList> sliding(int windowSize);
-
-    public abstract Stream<ByteList> sliding(int windowSize, int increment);
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract ByteStream reverse();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract ByteStream shuffle();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract ByteStream rotate(int distance);
-
-    /**
-     * Returns a stream consisting of the distinct elements of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @return the new stream
-     */
-    public abstract ByteStream distinct();
-
-    /**
-     * Returns a stream consisting of the elements of this stream in sorted
-     * order.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @return the new stream
-     */
-    public abstract ByteStream sorted();
-
-    /**
-     * Returns a stream consisting of the elements of this stream, additionally
-     * performing the provided action on each element as elements are consumed
-     * from the resulting stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, the action may be called at
-     * whatever time and in whatever thread the element is made available by the
-     * upstream operation.  If the action modifies shared state,
-     * it is responsible for providing the required synchronization.
-     *
-     * @apiNote This method exists mainly to support debugging, where you want
-     * to see the elements as they flow past a certain point in a pipeline:
-     * <pre>{@code
-     *     ByteStream.of(1, 2, 3, 4)
-     *         .filter(e -> e > 2)
-     *         .peek(e -> System.out.println("Filtered value: " + e))
-     *         .map(e -> e * e)
-     *         .peek(e -> System.out.println("Mapped value: " + e))
-     *         .sum();
-     * }</pre>
-     *
-     * @param action a <a href="package-summary.html#NonByteerference">
-     *               non-interfering</a> action to perform on the elements as
-     *               they are consumed from the stream
-     * @return the new stream
-     */
-    public abstract ByteStream peek(ByteConsumer action);
-
-    /**
-     * Returns a stream consisting of the elements of this stream, truncated
-     * to be no longer than {@code maxSize} in length.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">byte-circuiting
-     * stateful intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code limit()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code maxSize}, since {@code limit(n)}
-     * is constrained to return not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code limit()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code limit()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param maxSize the number of elements the stream should be limited to
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code maxSize} is negative
-     */
-    public abstract ByteStream limit(long maxSize);
-
-    /**
-     * Returns a stream consisting of the remaining elements of this stream
-     * after discarding the first {@code n} elements of the stream.
-     * If this stream contains fewer than {@code n} elements then an
-     * empty stream will be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code skip()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code n}, since {@code skip(n)}
-     * is constrained to skip not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code skip()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code skip()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param n the number of leading elements to skip
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code n} is negative
-     */
-    public abstract ByteStream skip(long n);
-
-    /**
-     * Performs an action for each element of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, this operation does <em>not</em>
-     * guarantee to respect the encounter order of the stream, as doing so
-     * would sacrifice the benefit of parallelism.  For any given element, the
-     * action may be performed at whatever time and in whatever thread the
-     * library chooses.  If the action accesses shared state, it is
-     * responsible for providing the required synchronization.
-     *
-     * @param action a <a href="package-summary.html#NonByteerference">
-     *               non-interfering</a> action to perform on the elements
-     */
-    public abstract void forEach(ByteConsumer action);
-
-    //    /**
-    //     * In parallel Streams, the elements after the first element which <code>action</code> returns false may be executed by action too.
-    //     * 
-    //     * @param action break if the action returns false.
-    //     * @return false if it breaks, otherwise true.
-    //     */
-    //    public abstract boolean forEach2(ByteFunction<Boolean> action);
-
-    /**
-     * Returns an array containing the elements of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an array containing the elements of this stream
-     */
-    public abstract byte[] toArray();
-
     public abstract ByteList toByteList();
-
-    public abstract List<Byte> toList();
-
-    public abstract List<Byte> toList(Supplier<? extends List<Byte>> supplier);
-
-    public abstract Set<Byte> toSet();
-
-    public abstract Set<Byte> toSet(Supplier<? extends Set<Byte>> supplier);
-
-    public abstract Multiset<Byte> toMultiset();
-
-    public abstract Multiset<Byte> toMultiset(Supplier<? extends Multiset<Byte>> supplier);
-
-    public abstract LongMultiset<Byte> toLongMultiset();
-
-    public abstract LongMultiset<Byte> toLongMultiset(Supplier<? extends LongMultiset<Byte>> supplier);
 
     /**
      * 
@@ -826,172 +472,9 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
 
     public abstract OptionalDouble average();
 
-    /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
-     * equivalent to:
-     * <pre>{@code
-     *     return mapToLong(e -> 1L).sum();
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
-     *
-     * @return the count of elements in this stream
-     */
-    public abstract long count();
-
-    public abstract Optional<Map<Percentage, Byte>> distribution();
-
     public abstract ByteSummaryStatistics summarize();
 
     public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarize2();
-
-    public abstract String join(CharSequence delimiter);
-
-    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
-
-    /**
-     * Returns whether any elements of this stream match the provided
-     * predicate.  May not evaluate the predicate on all elements if not
-     * necessary for determining the result.  If the stream is empty then
-     * {@code false} is returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">byte-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>existential quantification</em> of the
-     * predicate over the elements of the stream (for some x P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonByteerference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if any elements of the stream match the provided
-     * predicate, otherwise {@code false}
-     */
-    public abstract boolean anyMatch(BytePredicate predicate);
-
-    /**
-     * Returns whether all elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">byte-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * predicate over the elements of the stream (for all x P(x)).  If the
-     * stream is empty, the quantification is said to be <em>vacuously
-     * satisfied</em> and is always {@code true} (regardless of P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonByteerference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either all elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean allMatch(BytePredicate predicate);
-
-    /**
-     * Returns whether no elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">byte-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * negated predicate over the elements of the stream (for all x ~P(x)).  If
-     * the stream is empty, the quantification is said to be vacuously satisfied
-     * and is always {@code true}, regardless of P(x).
-     *
-     * @param predicate a <a href="package-summary.html#NonByteerference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either no elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean noneMatch(BytePredicate predicate);
-
-    /**
-     * Returns an {@link OptionalByte} describing the first element of this
-     * stream, or an empty {@code OptionalByte} if the stream is empty.  If the
-     * stream has no encounter order, then any element may be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">byte-circuiting
-     * terminal operation</a>.
-     *
-     * @return an {@code OptionalByte} describing the first element of this stream,
-     * or an empty {@code OptionalByte} if the stream is empty
-     */
-    // public abstract OptionalByte findFirst();
-
-    public abstract OptionalByte findFirst(BytePredicate predicate);
-
-    // public abstract OptionalByte findLast();
-
-    public abstract OptionalByte findLast(BytePredicate predicate);
-
-    /**
-     * Returns an {@link OptionalByte} describing some element of the stream, or
-     * an empty {@code OptionalByte} if the stream is empty.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">byte-circuiting
-     * terminal operation</a>.
-     *
-     * <p>The behavior of this operation is explicitly nondeterministic; it is
-     * free to select any element in the stream.  This is to allow for maximal
-     * performance in parallel operations; the cost is that multiple invocations
-     * on the same source may not return the same result.  (If a stable result
-     * is desired, use {@link #findFirst()} instead.)
-     *
-     * @return an {@code OptionalByte} describing some element of this stream, or
-     * an empty {@code OptionalByte} if the stream is empty
-     * @see #findFirst()
-     */
-    // public abstract OptionalByte findAny();
-
-    public abstract OptionalByte findAny(BytePredicate predicate);
-
-    public abstract OptionalByte first();
-
-    public abstract OptionalByte last();
-
-    //    public abstract OptionalByte any();
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#except(IntList)
-     */
-    public abstract ByteStream except(Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public abstract ByteStream intersect(Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#xor(IntList)
-     */
-    public abstract ByteStream xor(Collection<Byte> c);
-
-    //    /**
-    //     * Skill All the elements in the specified collection.
-    //     * 
-    //     * @param c
-    //     * @return
-    //     * @see IntList#intersect(IntList)
-    //     */
-    //    public abstract ByteStream exclude(Collection<?> c);
 
     /**
      * 
@@ -1034,16 +517,10 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      */
     public abstract Stream<Byte> boxed();
 
-    public abstract ByteStream cached();
-
-    public abstract Stream<IndexedByte> indexed();
-
     @Override
     public abstract ImmutableIterator<Byte> iterator();
 
     public abstract ImmutableByteIterator byteIterator();
-
-    // Static factories
 
     public static ByteStream empty() {
         return EMPTY;
@@ -1114,11 +591,6 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
             return empty();
         }
 
-        //        if (endExclusive > startInclusive != by > 0) {
-        //            throw new IllegalArgumentException(
-        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        //        }
-
         return new IteratorByteStream(new ImmutableByteIterator() {
             private byte next = startInclusive;
             private int cnt = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
@@ -1178,11 +650,6 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
         } else if (endInclusive > startInclusive != by > 0) {
             return empty();
         }
-
-        //        if (endInclusive > startInclusive != by > 0) {
-        //            throw new IllegalArgumentException(
-        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        //        }
 
         return new IteratorByteStream(new ImmutableByteIterator() {
             private byte next = startInclusive;
@@ -1440,9 +907,38 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
         });
     }
 
-    public static ByteStream concat(final ByteStream... a) {
+    public static ByteStream concat(final ByteIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
-            private final Iterator<ByteStream> iter = N.asList(a).iterator();
+            private final Iterator<? extends ByteIterator> iter = N.asList(a).iterator();
+            private ByteIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public byte next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static ByteStream concat(final ByteStream... a) {
+        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
+    }
+
+    public static ByteStream concat(final Collection<? extends ByteStream> c) {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
+            private final Iterator<? extends ByteStream> iter = c.iterator();
             private ImmutableByteIterator cur;
 
             @Override
@@ -1467,7 +963,7 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (ByteStream stream : a) {
+                for (ByteStream stream : c) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -1486,35 +982,6 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
         });
     }
 
-    public static ByteStream concat(final ByteIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
-    }
-
-    public static ByteStream concat(final Collection<? extends ByteIterator> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
-            private final Iterator<? extends ByteIterator> iter = c.iterator();
-            private ByteIterator cur;
-
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public byte next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-        });
-    }
-
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
      * Each pair of values is combined into a single value using the supplied zipFunction function.
@@ -1524,14 +991,7 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @return
      */
     public static ByteStream zip(final byte[] a, final byte[] b, final ByteBiFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToByte(mapper);
+        return Stream.zip(a, b, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1543,52 +1003,7 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @return
      */
     public static ByteStream zip(final byte[] a, final byte[] b, final byte[] c, final ByteTriFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, zipFunction).mapToByte(mapper);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteBiFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToByte(mapper);
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTriFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, zipFunction).mapToByte(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1600,14 +1015,7 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @return
      */
     public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteBiFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToByte(mapper);
+        return Stream.zip(a, b, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1619,14 +1027,31 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @return
      */
     public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteTriFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
+        return Stream.zip(a, b, c, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    }
 
-        return Stream.zip(a, b, c, zipFunction).mapToByte(mapper);
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteBiFunction<Byte> zipFunction) {
+        return Stream.zip(a, b, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTriFunction<Byte> zipFunction) {
+        return Stream.zip(a, b, c, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1637,15 +1062,8 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @param zipFunction
      * @return
      */
-    public static ByteStream zip(final Collection<? extends ByteIterator> c, final ByteNFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(c, zipFunction).mapToByte(mapper);
+    public static ByteStream zip(final Collection<? extends ByteStream> c, final ByteNFunction<Byte> zipFunction) {
+        return Stream.zip(c, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1659,16 +1077,8 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @param zipFunction
      * @return
      */
-    public static ByteStream zip(final ByteStream a, final ByteStream b, final byte valueForNoneA, final byte valueForNoneB,
-            final ByteBiFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToByte(mapper);
+    public static ByteStream zip(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB, final ByteBiFunction<Byte> zipFunction) {
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1684,16 +1094,9 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @param zipFunction
      * @return
      */
-    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final byte valueForNoneA, final byte valueForNoneB,
-            final byte valueForNoneC, final ByteTriFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToByte(mapper);
+    public static ByteStream zip(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB, final byte valueForNoneC,
+            final ByteTriFunction<Byte> zipFunction) {
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1709,14 +1112,7 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      */
     public static ByteStream zip(final ByteIterator a, final ByteIterator b, final byte valueForNoneA, final byte valueForNoneB,
             final ByteBiFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToByte(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1734,14 +1130,41 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      */
     public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final ByteTriFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    }
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToByte(mapper);
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final byte valueForNoneA, final byte valueForNoneB,
+            final ByteBiFunction<Byte> zipFunction) {
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC, final ByteTriFunction<Byte> zipFunction) {
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1753,15 +1176,8 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @param zipFunction
      * @return
      */
-    public static ByteStream zip(final Collection<? extends ByteIterator> c, final byte[] valuesForNone, final ByteNFunction<Byte> zipFunction) {
-        final ToByteFunction<Byte> mapper = new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        };
-
-        return Stream.zip(c, valuesForNone, zipFunction).mapToByte(mapper);
+    public static ByteStream zip(final Collection<? extends ByteStream> c, final byte[] valuesForNone, final ByteNFunction<Byte> zipFunction) {
+        return Stream.zip(c, valuesForNone, zipFunction).mapToByte(ToByteFunction.UNBOX);
     }
 
     /**
@@ -1814,41 +1230,12 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * 
      * @param a
      * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static ByteStream merge(final ByteStream a, final ByteStream b, final ByteBiFunction<Nth> nextSelector) {
-        final ByteIterator iterA = a.byteIterator();
-        final ByteIterator iterB = b.byteIterator();
-
-        if (iterA.hasNext() == false) {
-            return b;
-        } else if (iterB.hasNext() == false) {
-            return a;
-        }
-
-        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static ByteStream merge(final byte[] a, final byte[] b, final byte[] c, final ByteBiFunction<Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).byteIterator(), ByteStream.of(c).byteIterator(), nextSelector);
     }
 
     /**
@@ -1928,30 +1315,29 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static ByteStream merge(final ByteStream[] a, final ByteBiFunction<Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
+    public static ByteStream merge(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteBiFunction<Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).byteIterator(), c, nextSelector);
+    }
 
-        final ByteIterator[] iters = new ByteIterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].byteIterator();
-        }
-
-        return merge(iters, nextSelector).onClose(new Runnable() {
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static ByteStream merge(final ByteStream a, final ByteStream b, final ByteBiFunction<Nth> nextSelector) {
+        return merge(a.byteIterator(), b.byteIterator(), nextSelector).onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (ByteStream stream : a) {
+                for (ByteStream stream : N.asList(a, b)) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -1973,19 +1359,13 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static ByteStream merge(final ByteIterator[] a, final ByteBiFunction<Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        return merge(Arrays.asList(a), nextSelector);
+    public static ByteStream merge(final ByteStream a, final ByteStream b, final ByteStream c, final ByteBiFunction<Nth> nextSelector) {
+        return merge(N.asList(a, b, c), nextSelector);
     }
 
     /**
@@ -1994,68 +1374,29 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static ByteStream merge(final Collection<? extends ByteIterator> c, final ByteBiFunction<Nth> nextSelector) {
+    public static ByteStream merge(final Collection<? extends ByteStream> c, final ByteBiFunction<Nth> nextSelector) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
-            return of(c.iterator().next());
+            return c.iterator().next();
         } else if (c.size() == 2) {
-            final Iterator<? extends ByteIterator> iter = c.iterator();
+            final Iterator<? extends ByteStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
         }
 
-        final Iterator<? extends ByteIterator> iter = c.iterator();
-        ByteStream result = merge(iter.next(), iter.next(), nextSelector);
+        final Iterator<? extends ByteStream> iter = c.iterator();
+        ByteStream result = merge(iter.next().byteIterator(), iter.next().byteIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.byteIterator(), iter.next(), nextSelector);
+            result = merge(result.byteIterator(), iter.next().byteIterator(), nextSelector);
         }
 
-        return result;
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static ByteStream parallelMerge(final ByteStream[] a, final ByteBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static ByteStream parallelMerge(final ByteStream[] a, final ByteBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        final ByteIterator[] iters = new ByteIterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].byteIterator();
-        }
-
-        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+        return result.onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (ByteStream stream : a) {
+                for (ByteStream stream : c) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -2076,44 +1417,11 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
 
     /**
      * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static ByteStream parallelMerge(final ByteIterator[] a, final ByteBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static ByteStream parallelMerge(final ByteIterator[] a, final ByteBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
-    }
-
-    /**
-     * 
      * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static ByteStream parallelMerge(final Collection<? extends ByteIterator> c, final ByteBiFunction<Nth> nextSelector) {
+    public static ByteStream parallelMerge(final Collection<? extends ByteStream> c, final ByteBiFunction<Nth> nextSelector) {
         return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
@@ -2124,7 +1432,7 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
      * @param maxThreadNum
      * @return
      */
-    public static ByteStream parallelMerge(final Collection<? extends ByteIterator> c, final ByteBiFunction<Nth> nextSelector, final int maxThreadNum) {
+    public static ByteStream parallelMerge(final Collection<? extends ByteStream> c, final ByteBiFunction<Nth> nextSelector, final int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
@@ -2132,15 +1440,20 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
-            return of(c.iterator().next());
+            return c.iterator().next();
         } else if (c.size() == 2) {
-            final Iterator<? extends ByteIterator> iter = c.iterator();
+            final Iterator<? extends ByteStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
         } else if (maxThreadNum <= 1) {
             return merge(c, nextSelector);
         }
 
-        final Queue<ByteIterator> queue = N.newLinkedList(c);
+        final Queue<ByteIterator> queue = N.newLinkedList();
+
+        for (ByteStream e : c) {
+            queue.add(e.byteIterator());
+        }
+
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
@@ -2196,6 +1509,27 @@ public abstract class ByteStream extends StreamBase<Byte, ByteStream> {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector);
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ByteStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
     }
 }

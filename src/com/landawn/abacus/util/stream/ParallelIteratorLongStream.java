@@ -94,9 +94,9 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream filter(final LongPredicate predicate, final long max) {
+    public LongStream filter(final LongPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().filter(predicate, max).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorLongStream(sequential().filter(predicate).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Long> stream = boxed().filter(new Predicate<Long>() {
@@ -104,15 +104,15 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
             public boolean test(Long value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorLongStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public LongStream takeWhile(final LongPredicate predicate, final long max) {
+    public LongStream takeWhile(final LongPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().takeWhile(predicate, max).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorLongStream(sequential().takeWhile(predicate).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Long> stream = boxed().takeWhile(new Predicate<Long>() {
@@ -120,15 +120,15 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
             public boolean test(Long value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorLongStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public LongStream dropWhile(final LongPredicate predicate, final long max) {
+    public LongStream dropWhile(final LongPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().dropWhile(predicate, max).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorLongStream(sequential().dropWhile(predicate).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Long> stream = boxed().dropWhile(new Predicate<Long>() {
@@ -136,7 +136,7 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
             public boolean test(Long value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorLongStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -525,12 +525,7 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
             public void accept(Long t) {
                 action.accept(t);
             }
-        }).sequential().mapToLong(new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        });
+        }).sequential().mapToLong(ToLongFunction.UNBOX);
 
         return new ParallelIteratorLongStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -679,59 +674,6 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
         }
     }
 
-    //    @Override
-    //    public boolean forEach2(final LongFunction<Boolean> action) {
-    //        if (maxThreadNum <= 1) {
-    //            return sequential().forEach2(action);
-    //        }
-    //
-    //        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-    //        final Holder<Throwable> eHolder = new Holder<>();
-    //        final MutableBoolean result = MutableBoolean.of(true);
-    //
-    //        for (int i = 0; i < maxThreadNum; i++) {
-    //            futureList.add(asyncExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    long next = 0;
-    //
-    //                    try {
-    //                        while (result.isTrue() && eHolder.value() == null) {
-    //                            synchronized (elements) {
-    //                                if (elements.hasNext()) {
-    //                                    next = elements.next();
-    //                                } else {
-    //                                    break;
-    //                                }
-    //                            }
-    //
-    //                            if (action.apply(next) == false) {
-    //                                result.setFalse();
-    //                                break;
-    //                            }
-    //                        }
-    //                    } catch (Throwable e) {
-    //                        setError(eHolder, e);
-    //                    }
-    //                }
-    //            }));
-    //        }
-    //
-    //        if (eHolder.value() != null) {
-    //            throw N.toRuntimeException(eHolder.value());
-    //        }
-    //
-    //        try {
-    //            for (CompletableFuture<Void> future : futureList) {
-    //                future.get();
-    //            }
-    //        } catch (Exception e) {
-    //            throw N.toRuntimeException(e);
-    //        }
-    //
-    //        return result.value();
-    //    }
-
     @Override
     public long[] toArray() {
         return elements.toArray();
@@ -874,7 +816,6 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
             final Supplier<Multimap<K, U, V>> mapSupplier) {
-
         if (maxThreadNum <= 1) {
             return sequential().toMultimap(keyMapper, valueMapper, mapSupplier);
         }
@@ -1331,11 +1272,6 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
         return result.value();
     }
 
-    //    @Override
-    //    public OptionalLong findFirst() {
-    //        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalLong findFirst(final LongPredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1401,11 +1337,6 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
 
         return resultHolder.value() == null ? OptionalLong.empty() : OptionalLong.of(resultHolder.value().right);
     }
-
-    //    @Override
-    //    public OptionalLong findLast() {
-    //        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[toIndex - 1]);
-    //    }
 
     @Override
     public OptionalLong findLast(final LongPredicate predicate) {
@@ -1473,11 +1404,6 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
         return resultHolder.value() == null ? OptionalLong.empty() : OptionalLong.of(resultHolder.value().right);
     }
 
-    //    @Override
-    //    public OptionalLong findAny() {
-    //        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalLong findAny(final LongPredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1541,37 +1467,6 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
 
         return resultHolder.value() == NONE ? OptionalLong.empty() : OptionalLong.of((Long) resultHolder.value());
     }
-
-    @Override
-    public LongStream except(final Collection<?> c) {
-        return new ParallelIteratorLongStream(this.sequential().except(c).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public LongStream intersect(final Collection<?> c) {
-        return new ParallelIteratorLongStream(this.sequential().intersect(c).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public LongStream xor(final Collection<Long> c) {
-        return new ParallelIteratorLongStream(this.sequential().xor(c).longIterator(), closeHandlers, false, maxThreadNum, splitor);
-    }
-
-    //    @Override
-    //    public LongStream exclude(final Collection<?> c) {
-    //        if (maxThreadNum <= 1) {
-    //            return new ParallelIteratorLongStream(sequential().exclude(c).longIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    //        }
-    //
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new LongPredicate() {
-    //            @Override
-    //            public boolean test(long value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public FloatStream asFloatStream() {
@@ -1695,6 +1590,10 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream parallel(int maxThreadNum, Splitor splitor) {
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
+        }
+
         if (this.maxThreadNum == maxThreadNum && this.splitor == splitor) {
             return this;
         }
@@ -1711,7 +1610,9 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
     public LongStream maxThreadNum(int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        } else if (this.maxThreadNum == maxThreadNum) {
+        }
+
+        if (this.maxThreadNum == maxThreadNum) {
             return this;
         }
 

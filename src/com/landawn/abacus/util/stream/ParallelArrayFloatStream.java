@@ -91,9 +91,9 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream filter(final FloatPredicate predicate, final long max) {
+    public FloatStream filter(final FloatPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().filter(predicate, max).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorFloatStream(sequential().filter(predicate).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Float> stream = boxed().filter(new Predicate<Float>() {
@@ -101,15 +101,15 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             public boolean test(Float value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorFloatStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public FloatStream takeWhile(final FloatPredicate predicate, final long max) {
+    public FloatStream takeWhile(final FloatPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().takeWhile(predicate, max).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorFloatStream(sequential().takeWhile(predicate).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Float> stream = boxed().takeWhile(new Predicate<Float>() {
@@ -117,15 +117,15 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             public boolean test(Float value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorFloatStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public FloatStream dropWhile(final FloatPredicate predicate, final long max) {
+    public FloatStream dropWhile(final FloatPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().dropWhile(predicate, max).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorFloatStream(sequential().dropWhile(predicate).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Float> stream = boxed().dropWhile(new Predicate<Float>() {
@@ -133,7 +133,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             public boolean test(Float value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorFloatStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -360,6 +360,20 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public Stream<FloatStream> splitAt(final int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative");
+        }
+
+        final FloatStream[] a = new FloatStream[2];
+        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        a[0] = middleIndex == fromIndex ? FloatStream.empty() : new ArrayFloatStream(elements, fromIndex, middleIndex, null, sorted);
+        a[1] = middleIndex == toIndex ? FloatStream.empty() : new ArrayFloatStream(elements, middleIndex, toIndex, null, sorted);
+
+        return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public Stream<FloatList> sliding(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
@@ -432,12 +446,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             public void accept(Float t) {
                 action.accept(t);
             }
-        }).sequential().mapToFloat(new ToFloatFunction<Float>() {
-            @Override
-            public float applyAsFloat(Float value) {
-                return value.floatValue();
-            }
-        });
+        }).sequential().mapToFloat(ToFloatFunction.UNBOX);
 
         return new ParallelIteratorFloatStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -541,88 +550,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             throw N.toRuntimeException(e);
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(final FloatFunction<Boolean> action) {
-    //        if (maxThreadNum <= 1) {
-    //            return sequential().forEach2(action);
-    //        }
-    //
-    //        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-    //        final Holder<Throwable> eHolder = new Holder<>();
-    //        final MutableBoolean result = MutableBoolean.of(true);
-    //
-    //        if (splitor == splitor.ARRAY) {
-    //            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-    //
-    //            for (int i = 0; i < maxThreadNum; i++) {
-    //                final int sliceIndex = i;
-    //
-    //                futureList.add(asyncExecutor.execute(new Runnable() {
-    //                    @Override
-    //                    public void run() {
-    //                        int cursor = fromIndex + sliceIndex * sliceSize;
-    //                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-    //
-    //                        try {
-    //                            while (cursor < to && result.isTrue() && eHolder.value() == null) {
-    //                                if (action.apply(elements[cursor++]) == false) {
-    //                                    result.setFalse();
-    //                                    break;
-    //                                }
-    //                            }
-    //                        } catch (Throwable e) {
-    //                            setError(eHolder, e);
-    //                        }
-    //                    }
-    //                }));
-    //            }
-    //        } else {
-    //            final MutableInt cursor = MutableInt.of(fromIndex);
-    //
-    //            for (int i = 0; i < maxThreadNum; i++) {
-    //                futureList.add(asyncExecutor.execute(new Runnable() {
-    //                    @Override
-    //                    public void run() {
-    //                        float next = 0;
-    //
-    //                        try {
-    //                            while (result.isTrue() && eHolder.value() == null) {
-    //                                synchronized (elements) {
-    //                                    if (cursor.intValue() < toIndex) {
-    //                                        next = elements[cursor.getAndIncrement()];
-    //                                    } else {
-    //                                        break;
-    //                                    }
-    //                                }
-    //
-    //                                if (action.apply(next) == false) {
-    //                                    result.setFalse();
-    //                                    break;
-    //                                }
-    //                            }
-    //                        } catch (Throwable e) {
-    //                            setError(eHolder, e);
-    //                        }
-    //                    }
-    //                }));
-    //            }
-    //        }
-    //
-    //        if (eHolder.value() != null) {
-    //            throw N.toRuntimeException(eHolder.value());
-    //        }
-    //
-    //        try {
-    //            for (CompletableFuture<Void> future : futureList) {
-    //                future.get();
-    //            }
-    //        } catch (Exception e) {
-    //            throw N.toRuntimeException(e);
-    //        }
-    //
-    //        return result.value();
-    //    }
 
     @Override
     public float[] toArray() {
@@ -766,7 +693,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final FloatFunction<? extends K> keyMapper,
             final FloatFunction<? extends U> valueMapper, final Supplier<Multimap<K, U, V>> mapSupplier) {
-
         if (maxThreadNum <= 1) {
             return sequential().toMultimap(keyMapper, valueMapper, mapSupplier);
         }
@@ -1666,11 +1592,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         return result.value();
     }
 
-    //    @Override
-    //    public OptionalFloat findFirst() {
-    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalFloat findFirst(final FloatPredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1775,11 +1696,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
         return resultHolder.value() == null ? OptionalFloat.empty() : OptionalFloat.of(resultHolder.value().right);
     }
-
-    //    @Override
-    //    public OptionalFloat findLast() {
-    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[toIndex - 1]);
-    //    }
 
     @Override
     public OptionalFloat findLast(final FloatPredicate predicate) {
@@ -1886,11 +1802,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         return resultHolder.value() == null ? OptionalFloat.empty() : OptionalFloat.of(resultHolder.value().right);
     }
 
-    //    @Override
-    //    public OptionalFloat findAny() {
-    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalFloat findAny(final FloatPredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1993,37 +1904,6 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
         return resultHolder.value() == NONE ? OptionalFloat.empty() : OptionalFloat.of((Float) resultHolder.value());
     }
-
-    @Override
-    public FloatStream except(final Collection<?> c) {
-        return new ParallelIteratorFloatStream(this.sequential().except(c).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public FloatStream intersect(final Collection<?> c) {
-        return new ParallelIteratorFloatStream(this.sequential().intersect(c).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public FloatStream xor(final Collection<Float> c) {
-        return new ParallelIteratorFloatStream(this.sequential().xor(c).floatIterator(), closeHandlers, false, maxThreadNum, splitor);
-    }
-
-    //    @Override
-    //    public FloatStream exclude(final Collection<?> c) {
-    //        if (maxThreadNum <= 1) {
-    //            return new ParallelIteratorFloatStream(sequential().exclude(c).floatIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    //        }
-    //
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new FloatPredicate() {
-    //            @Override
-    //            public boolean test(float value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public DoubleStream asDoubleStream() {
@@ -2146,6 +2026,10 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream parallel(int maxThreadNum, Splitor splitor) {
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
+        }
+
         if (this.maxThreadNum == maxThreadNum && this.splitor == splitor) {
             return this;
         }
@@ -2162,7 +2046,9 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     public FloatStream maxThreadNum(int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        } else if (this.maxThreadNum == maxThreadNum) {
+        }
+
+        if (this.maxThreadNum == maxThreadNum) {
             return this;
         }
 

@@ -1,3 +1,14 @@
+========Changes in 0.9.37=========================================================================
+
+1, Refactoring concat/parallelConcat/merge/ParallelMerge/zip/ParallelZip in Stream/IntStream/DoubleStream/...
+
+2, Add field 'EMPTY' to ByteIterator/IntIterator/...
+
+3, Remove filter(predicate, max)/takeWhile(predicate, max)/dropWhile(predicate, max) from Stream/IntStream/DoubleStream/...
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.36=========================================================================
 
 1, Rename BaseStream.Splitter to BaseStream.Splitor

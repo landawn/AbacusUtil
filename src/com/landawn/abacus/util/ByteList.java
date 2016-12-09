@@ -107,26 +107,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         return of(elementData);
     }
 
-    //    public static ByteList from(String... a) {
-    //        return a == null ? empty() : from(a, 0, a.length);
-    //    }
-    //
-    //    public static ByteList from(String[] a, final int startIndex, final int endIndex) {
-    //        if (a == null && (startIndex == 0 && endIndex == 0)) {
-    //            return empty();
-    //        }
-    //
-    //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
-    //
-    //        final byte[] elementData = new byte[endIndex - startIndex];
-    //
-    //        for (int i = startIndex; i < endIndex; i++) {
-    //            elementData[i - startIndex] = N.asByte(a[i]);
-    //        }
-    //
-    //        return of(elementData);
-    //    }
-
     static ByteList from(List<String> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -224,24 +204,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
     public byte[] array() {
         return elementData;
     }
-
-    //    /**
-    //     * Return the first element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalByte findFirst() {
-    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[0]);
-    //    }
-
-    //    /**
-    //     * Return the last element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalByte findLast() {
-    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[size - 1]);
-    //    }
 
     public byte get(int index) {
         rangeCheck(index);
@@ -802,15 +764,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         }
     }
 
-    //    /**
-    //     * Return the first element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalByte findFirst() {
-    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[0]);
-    //    }
-
     public OptionalByte findFirst(BytePredicate predicate) {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
@@ -820,15 +773,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
 
         return OptionalByte.empty();
     }
-
-    //    /**
-    //     * Return the last element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalByte findLast() {
-    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[size - 1]);
-    //    }
 
     public OptionalByte findLast(BytePredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -910,157 +854,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
 
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
-
-    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
-
-    //    public <R> List<R> map(final ByteFunction<? extends R> func) {
-    //        return map(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> map(final int fromIndex, final int toIndex, final ByteFunction<? extends R> func) {
-    //        return map(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final ByteFunction<? extends R> func) {
-    //        return map(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final ByteFunction<? extends R> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.add(func.apply(elementData[i]));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> flatMap(final ByteFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final ByteFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final ByteFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final ByteFunction<? extends Collection<? extends R>> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.addAll(func.apply(elementData[i]));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> flatMap2(final ByteFunction<R[]> func) {
-    //        return flatMap2(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final ByteFunction<R[]> func) {
-    //        return flatMap2(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final ByteFunction<R[]> func) {
-    //        return flatMap2(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final ByteFunction<R[]> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.addAll(Arrays.asList(func.apply(elementData[i])));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <K> Map<K, List<Byte>> groupBy(final ByteFunction<? extends K> func) {
-    //        return groupBy(0, size(), func);
-    //    }
-    //
-    //    public <K> Map<K, List<Byte>> groupBy(final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
-    //        return groupBy(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final ByteFunction<? extends K> func) {
-    //        return groupBy(HashMap.class, collClass, 0, size(), func);
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public <K, V extends Collection<Byte>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-    //            final ByteFunction<? extends K> func) {
-    //        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-    //            final ByteFunction<? extends K> func) {
-    //
-    //        return groupBy(outputClass, collClass, 0, size(), func);
-    //    }
-    //
-    //    public <K, V extends Collection<Byte>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-    //            final int fromIndex, final int toIndex, final ByteFunction<? extends K> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final M outputResult = N.newInstance(outputClass);
-    //
-    //        K key = null;
-    //        V values = null;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            key = func.apply(elementData[i]);
-    //            values = outputResult.get(key);
-    //
-    //            if (values == null) {
-    //                values = N.newInstance(collClass);
-    //                outputResult.put(key, values);
-    //            }
-    //
-    //            values.add(elementData[i]);
-    //        }
-    //
-    //        return outputResult;
-    //    }
-    //
-    //    public OptionalByte reduce(final ByteBinaryOperator accumulator) {
-    //        return size() == 0 ? OptionalByte.empty() : OptionalByte.of(reduce((byte) 0, accumulator));
-    //    }
-    //
-    //    public OptionalByte reduce(final int fromIndex, final int toIndex, final ByteBinaryOperator accumulator) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(reduce(fromIndex, toIndex, (byte) 0, accumulator));
-    //    }
-    //
-    //    public byte reduce(final byte identity, final ByteBinaryOperator accumulator) {
-    //        return reduce(0, size(), identity, accumulator);
-    //    }
-    //
-    //    public byte reduce(final int fromIndex, final int toIndex, final byte identity, final ByteBinaryOperator accumulator) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        byte result = identity;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            result = accumulator.applyAsByte(result, elementData[i]);
-    //        }
-    //
-    //        return result;
-    //    }
 
     @Override
     public ByteList distinct(final int fromIndex, final int toIndex) {
@@ -1150,13 +943,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
     public ByteList copy() {
         return new ByteList(N.copyOfRange(elementData, 0, size));
     }
-
-    //    @Override
-    //    public ByteList copy(final int fromIndex, final int toIndex) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
-    //    }
 
     @Override
     public List<ByteList> split(final int fromIndex, final int toIndex, final int size) {
@@ -1296,70 +1082,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
 
         return multiset;
     }
-
-    // Replaced with Stream.toMap(...)/toMultimap(...).
-
-    //    public <K, U> Map<K, U> toMap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
-    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-    //
-    //        return toMap(keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, M extends Map<K, U>> M toMap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper,
-    //            final IntFunction<M> supplier) {
-    //        return toMap(0, size(), keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
-    //            final ByteFunction<? extends U> valueMapper) {
-    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-    //
-    //        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
-    //            final ByteFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-    //        }
-    //
-    //        return (M) map;
-    //    }
-    //
-    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper) {
-    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-    //
-    //        return toMultimap(keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final ByteFunction<? extends K> keyMapper, final ByteFunction<? extends U> valueMapper,
-    //            final IntFunction<Multimap<K, U, V>> supplier) {
-    //        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
-    //            final ByteFunction<? extends U> valueMapper) {
-    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-    //
-    //        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final ByteFunction<? extends K> keyMapper,
-    //            final ByteFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-    //        }
-    //
-    //        return multimap;
-    //    }
 
     public ByteStream stream() {
         return stream(0, size());

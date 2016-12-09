@@ -89,17 +89,14 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream filter(final DoublePredicate predicate, final long max) {
-        // return new ArrayDoubleStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
-
+    public DoubleStream filter(final DoublePredicate predicate) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex && cnt < max) {
+                if (hasNext == false && cursor < toIndex) {
                     do {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
@@ -119,7 +116,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return elements[cursor++];
@@ -128,36 +124,19 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream takeWhile(final DoublePredicate predicate, final long max) {
-        //        final DoubleList list = DoubleList.of(new double[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
-        //
-        //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
-        //            if (predicate.test(elements[i])) {
-        //                list.add(elements[i]);
-        //                cnt++;
-        //            } else {
-        //                break;
-        //            }
-        //        }
-        //
-        //        return new ArrayDoubleStream(list.trimToSize().array(), closeHandlers, sorted);
-
+    public DoubleStream takeWhile(final DoublePredicate predicate) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex && cnt < max) {
-                    do {
-                        if (predicate.test(elements[cursor])) {
-                            hasNext = true;
-                            break;
-                        } else {
-                            cursor = Integer.MAX_VALUE;
-                        }
-                    } while (cursor < toIndex);
+                if (hasNext == false && cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        hasNext = true;
+                    } else {
+                        cursor = Integer.MAX_VALUE;
+                    }
                 }
 
                 return hasNext;
@@ -169,7 +148,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return elements[cursor++];
@@ -178,32 +156,15 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream dropWhile(final DoublePredicate predicate, final long max) {
-        //        int cursor = fromIndex;
-        //        while (cursor < toIndex && predicate.test(elements[cursor])) {
-        //            cursor++;
-        //        }
-        //
-        //        final DoubleList list = DoubleList.of(new double[N.min(9, toInt(max), (toIndex - cursor))], 0);
-        //        int cnt = 0;
-        //
-        //        while (cursor < toIndex && cnt < max) {
-        //            list.add(elements[cursor]);
-        //            cursor++;
-        //            cnt++;
-        //        }
-        //
-        //        return new ArrayDoubleStream(list.trimToSize().array(), closeHandlers, sorted);
-
+    public DoubleStream dropWhile(final DoublePredicate predicate) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
-            private long cnt = 0;
             private boolean dropped = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex && cnt < max) {
+                if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
                         do {
                             if (predicate.test(elements[cursor]) == false) {
@@ -229,7 +190,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return elements[cursor++];
@@ -239,14 +199,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream map(final DoubleUnaryOperator mapper) {
-        //        final double[] a = new double[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = mapper.applyAsDouble(elements[i]);
-        //        }
-        //
-        //        return new ArrayDoubleStream(a, closeHandlers);
-
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             int cursor = fromIndex;
 
@@ -289,14 +241,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public IntStream mapToInt(final DoubleToIntFunction mapper) {
-        //        final int[] a = new int[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = mapper.applyAsInt(elements[i]);
-        //        }
-        //
-        //        return new ArrayIntStream(a, closeHandlers);
-
         return new IteratorIntStream(new ImmutableIntIterator() {
             int cursor = fromIndex;
 
@@ -339,14 +283,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public LongStream mapToLong(final DoubleToLongFunction mapper) {
-        //        final long[] a = new long[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = mapper.applyAsLong(elements[i]);
-        //        }
-        //
-        //        return new ArrayLongStream(a, closeHandlers);
-
         return new IteratorLongStream(new ImmutableLongIterator() {
             int cursor = fromIndex;
 
@@ -389,14 +325,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public FloatStream mapToFloat(final DoubleToFloatFunction mapper) {
-        //        final float[] a = new float[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = mapper.applyAsFloat(elements[i]);
-        //        }
-        //
-        //        return new ArrayFloatStream(a, closeHandlers);
-
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             int cursor = fromIndex;
 
@@ -439,14 +367,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <U> Stream<U> mapToObj(final DoubleFunction<? extends U> mapper) {
-        //        final Object[] a = new Object[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = mapper.apply(elements[i]);
-        //        }
-        //
-        //        return new ArrayStream<U>((U[]) a, closeHandlers);
-
         return new IteratorStream<U>(new ImmutableIterator<U>() {
             int cursor = fromIndex;
 
@@ -489,24 +409,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream flatMap(final DoubleFunction<? extends DoubleStream> mapper) {
-        //        final List<double[]> listOfArray = new ArrayList<double[]>();
-        //
-        //        int lengthOfAll = 0;
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            final double[] tmp = mapper.apply(elements[i]).toArray();
-        //            lengthOfAll += tmp.length;
-        //            listOfArray.add(tmp);
-        //        }
-        //
-        //        final double[] arrayOfAll = new double[lengthOfAll];
-        //        int from = 0;
-        //        for (double[] tmp : listOfArray) {
-        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-        //            from += tmp.length;
-        //        }
-        //
-        //        return new ArrayDoubleStream(arrayOfAll, closeHandlers);
-
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private int cursor = fromIndex;
             private ImmutableDoubleIterator cur = null;
@@ -533,24 +435,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public IntStream flatMapToInt(final DoubleFunction<? extends IntStream> mapper) {
-        //        final List<int[]> listOfArray = new ArrayList<int[]>();
-        //
-        //        int lengthOfAll = 0;
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            final int[] tmp = mapper.apply(elements[i]).toArray();
-        //            lengthOfAll += tmp.length;
-        //            listOfArray.add(tmp);
-        //        }
-        //
-        //        final int[] arrayOfAll = new int[lengthOfAll];
-        //        int from = 0;
-        //        for (int[] tmp : listOfArray) {
-        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-        //            from += tmp.length;
-        //        }
-        //
-        //        return new ArrayIntStream(arrayOfAll, closeHandlers);
-
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int cursor = fromIndex;
             private ImmutableIntIterator cur = null;
@@ -577,24 +461,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public LongStream flatMapToLong(final DoubleFunction<? extends LongStream> mapper) {
-        //        final List<long[]> listOfArray = new ArrayList<long[]>();
-        //
-        //        int lengthOfAll = 0;
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            final long[] tmp = mapper.apply(elements[i]).toArray();
-        //            lengthOfAll += tmp.length;
-        //            listOfArray.add(tmp);
-        //        }
-        //
-        //        final long[] arrayOfAll = new long[lengthOfAll];
-        //        int from = 0;
-        //        for (long[] tmp : listOfArray) {
-        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-        //            from += tmp.length;
-        //        }
-        //
-        //        return new ArrayLongStream(arrayOfAll, closeHandlers);
-
         return new IteratorLongStream(new ImmutableLongIterator() {
             private int cursor = fromIndex;
             private ImmutableLongIterator cur = null;
@@ -621,24 +487,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public FloatStream flatMapToFloat(final DoubleFunction<? extends FloatStream> mapper) {
-        //        final List<float[]> listOfArray = new ArrayList<float[]>();
-        //
-        //        int lengthOfAll = 0;
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            final float[] tmp = mapper.apply(elements[i]).toArray();
-        //            lengthOfAll += tmp.length;
-        //            listOfArray.add(tmp);
-        //        }
-        //
-        //        final float[] arrayOfAll = new float[lengthOfAll];
-        //        int from = 0;
-        //        for (float[] tmp : listOfArray) {
-        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-        //            from += tmp.length;
-        //        }
-        //
-        //        return new ArrayFloatStream(arrayOfAll, closeHandlers);
-
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private int cursor = fromIndex;
             private ImmutableFloatIterator cur = null;
@@ -665,25 +513,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final DoubleFunction<? extends Stream<T>> mapper) {
-        //        final List<Object[]> listOfArray = new ArrayList<Object[]>();
-        //        int lengthOfAll = 0;
-        //
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            final Object[] tmp = mapper.apply(elements[i]).toArray();
-        //            lengthOfAll += tmp.length;
-        //            listOfArray.add(tmp);
-        //        }
-        //
-        //        final Object[] arrayOfAll = new Object[lengthOfAll];
-        //        int from = 0;
-        //
-        //        for (Object[] tmp : listOfArray) {
-        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-        //            from += tmp.length;
-        //        }
-        //
-        //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
-
         return new IteratorStream<T>(new ImmutableIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
@@ -710,15 +539,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<DoubleStream> split(final int size) {
-        //        final List<double[]> tmp = N.split(elements, fromIndex, toIndex, size);
-        //        final DoubleStream[] a = new DoubleStream[tmp.size()];
-        //
-        //        for (int i = 0, len = a.length; i < len; i++) {
-        //            a[i] = new ArrayDoubleStream(tmp.get(i), null, sorted);
-        //        }
-        //
-        //        return new ArrayStream<DoubleStream>(a, closeHandlers);
-
         return new IteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
             private int cursor = fromIndex;
 
@@ -783,6 +603,20 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleStream> splitAt(final int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative");
+        }
+
+        final DoubleStream[] a = new DoubleStream[2];
+        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        a[0] = middleIndex == fromIndex ? DoubleStream.empty() : new ArrayDoubleStream(elements, fromIndex, middleIndex, null, sorted);
+        a[1] = middleIndex == toIndex ? DoubleStream.empty() : new ArrayDoubleStream(elements, middleIndex, toIndex, null, sorted);
+
+        return new ArrayStream<>(a, closeHandlers);
+    }
+
+    @Override
     public Stream<DoubleList> sliding(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
@@ -843,25 +677,8 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
         return new ArrayDoubleStream(a, closeHandlers, true);
     }
 
-    //    @Override
-    //    public DoubleStream parallelSorted() {
-    //        if (sorted) {
-    //            return this;
-    //        }
-    //
-    //        final double[] a = N.copyOfRange(elements, fromIndex, toIndex);
-    //        N.parallelSort(a);
-    //        return new ArrayDoubleStream(a, closeHandlers, true);
-    //    }
-
     @Override
     public DoubleStream peek(final DoubleConsumer action) {
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            action.accept(elements[i]);
-        //        }
-        // 
-        //        return this;
-
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             int cursor = fromIndex;
 
@@ -880,16 +697,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
                 return elements[cursor++];
             }
-
-            //    @Override
-            //    public long count() {
-            //        return toIndex - cursor;
-            //    }
-            //
-            //    @Override
-            //    public void skip(long n) {
-            //        cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
-            //    }
 
             @Override
             public double[] toArray() {
@@ -938,17 +745,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
             action.accept(elements[i]);
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(DoubleFunction<Boolean> action) {
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            if (action.apply(elements[i]).booleanValue() == false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
 
     @Override
     public double[] toArray() {
@@ -1264,11 +1060,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
         return true;
     }
 
-    //    @Override
-    //    public OptionalDouble findFirst() {
-    //        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalDouble findFirst(final DoublePredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
@@ -1279,11 +1070,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
         return OptionalDouble.empty();
     }
-
-    //    @Override
-    //    public OptionalDouble findLast() {
-    //        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[toIndex - 1]);
-    //    }
 
     @Override
     public OptionalDouble findLast(final DoublePredicate predicate) {
@@ -1296,11 +1082,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
         return OptionalDouble.empty();
     }
 
-    //    @Override
-    //    public OptionalDouble findAny() {
-    //        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalDouble findAny(final DoublePredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
@@ -1311,18 +1092,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
         return OptionalDouble.empty();
     }
-
-    //    @Override
-    //    public DoubleStream exclude(Collection<?> c) {
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new DoublePredicate() {
-    //            @Override
-    //            public boolean test(double value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public Stream<Double> boxed() {

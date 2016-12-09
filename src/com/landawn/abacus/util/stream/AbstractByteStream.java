@@ -16,9 +16,11 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.ByteIterator;
@@ -58,21 +60,6 @@ abstract class AbstractByteStream extends ByteStream {
 
     AbstractByteStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
-    }
-
-    @Override
-    public ByteStream filter(BytePredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public ByteStream takeWhile(BytePredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public ByteStream dropWhile(BytePredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -206,12 +193,14 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream distinct() {
-        return boxed().distinct().mapToByte(new ToByteFunction<Byte>() {
+        return newStream(this.sequential().filter(new BytePredicate() {
+            private final Set<Object> set = new HashSet<>();
+
             @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
+            public boolean test(byte value) {
+                return set.add(value);
             }
-        });
+        }).byteIterator(), sorted);
     }
 
     @Override
@@ -238,40 +227,35 @@ abstract class AbstractByteStream extends ByteStream {
         return OptionalByte.of(next);
     }
 
-    //    @Override
-    //    public OptionalByte any() {
-    //        return findAny(BytePredicate.ALWAYS_TRUE);
-    //    }
-
     @Override
-    public ByteStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public ByteStream except(final Collection<?> c) {
+        return newStream(this.sequential().filter(new BytePredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new BytePredicate() {
             @Override
             public boolean test(byte value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        });
+        }).byteIterator(), sorted);
     }
 
     @Override
-    public ByteStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public ByteStream intersect(final Collection<?> c) {
+        return newStream(this.sequential().filter(new BytePredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new BytePredicate() {
             @Override
             public boolean test(byte value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        });
+        }).byteIterator(), sorted);
     }
 
     @Override
-    public ByteStream xor(Collection<Byte> c) {
+    public ByteStream xor(final Collection<Byte> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new BytePredicate() {
+        return newStream(this.sequential().filter(new BytePredicate() {
             @Override
             public boolean test(byte value) {
                 return multiset.getAndRemove(value) < 1;
@@ -281,12 +265,7 @@ abstract class AbstractByteStream extends ByteStream {
             public boolean test(Byte value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToByte(new ToByteFunction<Byte>() {
-            @Override
-            public byte applyAsByte(Byte value) {
-                return value.byteValue();
-            }
-        }));
+        }).mapToByte(ToByteFunction.UNBOX)).byteIterator(), false);
     }
 
     @Override
@@ -369,10 +348,6 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public ByteStream reverse() {
         final byte[] a = toArray();
-
-        //         N.reverse(a);
-        //
-        //         return newStream(a, false);
 
         return newStream(new ImmutableByteIterator() {
             private int cursor = a.length;
@@ -482,14 +457,14 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<IndexedByte> indexed() {
-        final MutableLong idx = new MutableLong();
+        return newStream(this.sequential().mapToObj(new ByteFunction<IndexedByte>() {
+            final MutableLong idx = new MutableLong();
 
-        return mapToObj(new ByteFunction<IndexedByte>() {
             @Override
             public IndexedByte apply(byte t) {
                 return IndexedByte.of(idx.getAndIncrement(), t);
             }
-        });
+        }).iterator(), false, null);
     }
 
     @Override

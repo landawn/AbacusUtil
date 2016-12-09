@@ -77,15 +77,14 @@ final class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public IntStream filter(final IntPredicate predicate, final long max) {
+    public IntStream filter(final IntPredicate predicate) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private boolean hasNext = false;
             private int next = 0;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
+                if (hasNext == false) {
                     while (elements.hasNext()) {
                         next = elements.next();
 
@@ -105,7 +104,6 @@ final class IteratorIntStream extends AbstractIntStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -114,25 +112,21 @@ final class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public IntStream takeWhile(final IntPredicate predicate, final long max) {
+    public IntStream takeWhile(final IntPredicate predicate) {
         return new IteratorIntStream(new ImmutableIntIterator() {
+            private boolean hasMore = true;
             private boolean hasNext = false;
             private int next = 0;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
-                    while (elements.hasNext()) {
-                        next = elements.next();
+                if (hasNext == false && hasMore && elements.hasNext()) {
+                    next = elements.next();
 
-                        if (predicate.test(next)) {
-                            hasNext = true;
-                            break;
-                        } else {
-                            cnt = Long.MAX_VALUE; // no more loop.
-                            break;
-                        }
+                    if (predicate.test(next)) {
+                        hasNext = true;
+                    } else {
+                        hasMore = false;
                     }
                 }
 
@@ -145,7 +139,6 @@ final class IteratorIntStream extends AbstractIntStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -155,16 +148,15 @@ final class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public IntStream dropWhile(final IntPredicate predicate, final long max) {
+    public IntStream dropWhile(final IntPredicate predicate) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private boolean hasNext = false;
             private int next = 0;
-            private long cnt = 0;
             private boolean dropped = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
+                if (hasNext == false) {
                     if (dropped == false) {
                         while (elements.hasNext()) {
                             next = elements.next();
@@ -193,7 +185,6 @@ final class IteratorIntStream extends AbstractIntStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -820,77 +811,6 @@ final class IteratorIntStream extends AbstractIntStream {
         }, closeHandlers, true);
     }
 
-    //    @Override
-    //    public IntStream parallelSorted() {
-    //        if (sorted) {
-    //            return this;
-    //        }
-    //
-    //        return new IteratorIntStream(new ImmutableIntIterator() {
-    //            int[] a = null;
-    //            int cursor = 0;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                return cursor < a.length;
-    //            }
-    //
-    //            @Override
-    //            public int next() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                if (cursor >= a.length) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                return a[cursor++];
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                return a.length - cursor;
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
-    //            }
-    //
-    //            @Override
-    //            public int[] toArray() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                if (cursor == 0) {
-    //                    return a;
-    //                } else {
-    //                    return N.copyOfRange(a, cursor, a.length);
-    //                }
-    //            }
-    //
-    //            private void parallelSort() {
-    //                a = elements.toArray();
-    //
-    //                N.parallelSort(a);
-    //            }
-    //        }, closeHandlers, true);
-    //    }
-
     @Override
     public IntStream peek(final IntConsumer action) {
         return new IteratorIntStream(new ImmutableIntIterator() {
@@ -902,31 +822,9 @@ final class IteratorIntStream extends AbstractIntStream {
             @Override
             public int next() {
                 final int next = elements.next();
-
-                //    try {
-                //        action.accept(next);
-                //    } catch (Throwable e) {
-                //        // ignore.
-                //    }
-
                 action.accept(next);
                 return next;
             }
-
-            //    @Override
-            //    public long count() {
-            //        return elements.count();
-            //    }
-            //
-            //    @Override
-            //    public void skip(long n) {
-            //        elements.skip(n);
-            //    }
-            //
-            //    @Override
-            //    public int[] toArray() {
-            //        return elements.toArray();
-            //    }
         }, closeHandlers, sorted);
     }
 
@@ -1032,17 +930,6 @@ final class IteratorIntStream extends AbstractIntStream {
             action.accept(elements.next());
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(IntFunction<Boolean> action) {
-    //        while (elements.hasNext()) {
-    //            if (action.apply(elements.next()).booleanValue() == false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
 
     @Override
     public int[] toArray() {
@@ -1373,11 +1260,6 @@ final class IteratorIntStream extends AbstractIntStream {
         return true;
     }
 
-    //    @Override
-    //    public OptionalInt findFirst() {
-    //        return elements.hasNext() ? OptionalInt.empty() : OptionalInt.of(elements.next());
-    //    }
-
     @Override
     public OptionalInt findFirst(IntPredicate predicate) {
         while (elements.hasNext()) {
@@ -1390,21 +1272,6 @@ final class IteratorIntStream extends AbstractIntStream {
 
         return OptionalInt.empty();
     }
-
-    //    @Override
-    //    public OptionalInt findLast() {
-    //        if (elements.hasNext() == false) {
-    //            return OptionalInt.empty();
-    //        }
-    //
-    //        int e = 0;
-    //
-    //        while (elements.hasNext()) {
-    //            e = elements.next();
-    //        }
-    //
-    //        return OptionalInt.of(e);
-    //    }
 
     @Override
     public OptionalInt findLast(IntPredicate predicate) {
@@ -1428,11 +1295,6 @@ final class IteratorIntStream extends AbstractIntStream {
         return hasResult ? OptionalInt.of(result) : OptionalInt.empty();
     }
 
-    //    @Override
-    //    public OptionalInt findAny() {
-    //        return count() == 0 ? OptionalInt.empty() : OptionalInt.of(elements.next());
-    //    }
-
     @Override
     public OptionalInt findAny(IntPredicate predicate) {
         while (elements.hasNext()) {
@@ -1445,18 +1307,6 @@ final class IteratorIntStream extends AbstractIntStream {
 
         return OptionalInt.empty();
     }
-
-    //    @Override
-    //    public IntStream exclude(Collection<?> c) {
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new IntPredicate() {
-    //            @Override
-    //            public boolean test(int value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public LongStream asLongStream() {

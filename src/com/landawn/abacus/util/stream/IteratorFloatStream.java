@@ -73,15 +73,14 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream filter(final FloatPredicate predicate, final long max) {
+    public FloatStream filter(final FloatPredicate predicate) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private boolean hasNext = false;
             private float next = 0;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
+                if (hasNext == false) {
                     while (elements.hasNext()) {
                         next = elements.next();
 
@@ -101,7 +100,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -110,25 +108,21 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream takeWhile(final FloatPredicate predicate, final long max) {
+    public FloatStream takeWhile(final FloatPredicate predicate) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private boolean hasMore = true;
             private boolean hasNext = false;
             private float next = 0;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
-                    while (elements.hasNext()) {
-                        next = elements.next();
+                if (hasNext == false && hasMore && elements.hasNext()) {
+                    next = elements.next();
 
-                        if (predicate.test(next)) {
-                            hasNext = true;
-                            break;
-                        } else {
-                            cnt = Long.MAX_VALUE; // no more loop.
-                            break;
-                        }
+                    if (predicate.test(next)) {
+                        hasNext = true;
+                    } else {
+                        hasMore = false;
                     }
                 }
 
@@ -141,7 +135,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -151,16 +144,15 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream dropWhile(final FloatPredicate predicate, final long max) {
+    public FloatStream dropWhile(final FloatPredicate predicate) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private boolean hasNext = false;
             private float next = 0;
-            private long cnt = 0;
             private boolean dropped = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
+                if (hasNext == false) {
                     if (dropped == false) {
                         while (elements.hasNext()) {
                             next = elements.next();
@@ -189,7 +181,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -666,77 +657,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
         }, closeHandlers, true);
     }
 
-    //    @Override
-    //    public FloatStream parallelSorted() {
-    //        if (sorted) {
-    //            return this;
-    //        }
-    //
-    //        return new IteratorFloatStream(new ImmutableFloatIterator() {
-    //            float[] a = null;
-    //            int cursor = 0;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                return cursor < a.length;
-    //            }
-    //
-    //            @Override
-    //            public float next() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                if (cursor >= a.length) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                return a[cursor++];
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                return a.length - cursor;
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
-    //            }
-    //
-    //            @Override
-    //            public float[] toArray() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                if (cursor == 0) {
-    //                    return a;
-    //                } else {
-    //                    return N.copyOfRange(a, cursor, a.length);
-    //                }
-    //            }
-    //
-    //            private void parallelSort() {
-    //                a = elements.toArray();
-    //
-    //                N.parallelSort(a);
-    //            }
-    //        }, closeHandlers, true);
-    //    }
-
     @Override
     public FloatStream peek(final FloatConsumer action) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
@@ -748,31 +668,9 @@ final class IteratorFloatStream extends AbstractFloatStream {
             @Override
             public float next() {
                 final float next = elements.next();
-
-                //    try {
-                //        action.accept(next);
-                //    } catch (Throwable e) {
-                //        // ignore.
-                //    }
-
                 action.accept(next);
                 return next;
             }
-
-            //    @Override
-            //    public long count() {
-            //        return elements.count();
-            //    }
-            //
-            //    @Override
-            //    public void skip(long n) {
-            //        elements.skip(n);
-            //    }
-            //
-            //    @Override
-            //    public float[] toArray() {
-            //        return elements.toArray();
-            //    }
         }, closeHandlers, sorted);
     }
 
@@ -878,17 +776,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
             action.accept(elements.next());
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(FloatFunction<Boolean> action) {
-    //        while (elements.hasNext()) {
-    //            if (action.apply(elements.next()).booleanValue() == false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
 
     @Override
     public float[] toArray() {
@@ -1191,11 +1078,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
         return true;
     }
 
-    //    @Override
-    //    public OptionalFloat findFirst() {
-    //        return elements.hasNext() ? OptionalFloat.empty() : OptionalFloat.of(elements.next());
-    //    }
-
     @Override
     public OptionalFloat findFirst(FloatPredicate predicate) {
         while (elements.hasNext()) {
@@ -1208,21 +1090,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
         return OptionalFloat.empty();
     }
-
-    //    @Override
-    //    public OptionalFloat findLast() {
-    //        if (elements.hasNext() == false) {
-    //            return OptionalFloat.empty();
-    //        }
-    //
-    //        float e = 0;
-    //
-    //        while (elements.hasNext()) {
-    //            e = elements.next();
-    //        }
-    //
-    //        return OptionalFloat.of(e);
-    //    }
 
     @Override
     public OptionalFloat findLast(FloatPredicate predicate) {
@@ -1246,11 +1113,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
         return hasResult ? OptionalFloat.of(result) : OptionalFloat.empty();
     }
 
-    //    @Override
-    //    public OptionalFloat findAny() {
-    //        return count() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elements.next());
-    //    }
-
     @Override
     public OptionalFloat findAny(FloatPredicate predicate) {
         while (elements.hasNext()) {
@@ -1263,18 +1125,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
         return OptionalFloat.empty();
     }
-
-    //    @Override
-    //    public FloatStream exclude(Collection<?> c) {
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new FloatPredicate() {
-    //            @Override
-    //            public boolean test(float value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public DoubleStream asDoubleStream() {

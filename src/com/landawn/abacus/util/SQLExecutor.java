@@ -1371,7 +1371,7 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators))
+        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
                 .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
 
             final NamedSQL namedSQL = getNamedSQL(sql);
@@ -1460,7 +1460,7 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators))
+        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
                 .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
 
             final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
@@ -1872,7 +1872,7 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators))
+        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
                 .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
 
             final NamedSQL namedSQL = getNamedSQL(sql);
@@ -1936,7 +1936,7 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators))
+        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
                 .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
 
             final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
@@ -2356,7 +2356,7 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
 
-        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators)).skip(jdbcSettings.getOffset())
+        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators)).skip(jdbcSettings.getOffset())
                 .limit(jdbcSettings.getCount()).onClose(new Runnable() {
                     private boolean isClosed = false;
 
@@ -2416,7 +2416,7 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
 
-        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators)).skip(jdbcSettings.getOffset())
+        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators)).skip(jdbcSettings.getOffset())
                 .limit(jdbcSettings.getCount()).onClose(new Runnable() {
                     private boolean isClosed = false;
 
@@ -2591,7 +2591,7 @@ public final class SQLExecutor implements Closeable {
             final boolean isMap = Map.class.isAssignableFrom(targetClass);
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
 
-            return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators))
+            return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
                     .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount()).map(new Function<Object[], T>() {
                         @Override
                         public T apply(Object[] a) {
@@ -2696,7 +2696,7 @@ public final class SQLExecutor implements Closeable {
             final boolean isMap = Map.class.isAssignableFrom(targetClass);
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
 
-            return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat(iterators, iterators.size()) : Stream.concat(iterators))
+            return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
                     .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount()).map(new Function<Object[], T>() {
                         @Override
                         public T apply(Object[] a) {

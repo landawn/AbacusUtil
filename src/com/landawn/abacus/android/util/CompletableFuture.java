@@ -80,6 +80,22 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
         return futureTask.get(timeout, unit);
     }
 
+    public T get2() {
+        try {
+            return futureTask.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
+    public T get2(long timeout, TimeUnit unit) {
+        try {
+            return futureTask.get(timeout, unit);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
     public T get(final Callback.Action<T> action) {
         try {
             final T result = get();

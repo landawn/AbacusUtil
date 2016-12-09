@@ -89,9 +89,9 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream filter(final CharPredicate predicate, final long max) {
+    public CharStream filter(final CharPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().filter(predicate, max).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().filter(predicate).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Character> stream = boxed().filter(new Predicate<Character>() {
@@ -99,15 +99,15 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
             public boolean test(Character value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorCharStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public CharStream takeWhile(final CharPredicate predicate, final long max) {
+    public CharStream takeWhile(final CharPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().takeWhile(predicate, max).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().takeWhile(predicate).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Character> stream = boxed().takeWhile(new Predicate<Character>() {
@@ -115,15 +115,15 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
             public boolean test(Character value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorCharStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public CharStream dropWhile(final CharPredicate predicate, final long max) {
+    public CharStream dropWhile(final CharPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().dropWhile(predicate, max).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().dropWhile(predicate).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Character> stream = boxed().dropWhile(new Predicate<Character>() {
@@ -131,7 +131,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
             public boolean test(Character value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorCharStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -437,12 +437,7 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
             public void accept(Character t) {
                 action.accept(t);
             }
-        }).sequential().mapToChar(new ToCharFunction<Character>() {
-            @Override
-            public char applyAsChar(Character value) {
-                return value.charValue();
-            }
-        });
+        }).sequential().mapToChar(ToCharFunction.UNBOX);
 
         return new ParallelIteratorCharStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -591,59 +586,6 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         }
     }
 
-    //    @Override
-    //    public boolean forEach2(final CharFunction<Boolean> action) {
-    //        if (maxThreadNum <= 1) {
-    //            return sequential().forEach2(action);
-    //        }
-    //
-    //        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-    //        final Holder<Throwable> eHolder = new Holder<>();
-    //        final MutableBoolean result = MutableBoolean.of(true);
-    //
-    //        for (int i = 0; i < maxThreadNum; i++) {
-    //            futureList.add(asyncExecutor.execute(new Runnable() {
-    //                @Override
-    //                public void run() {
-    //                    char next = 0;
-    //
-    //                    try {
-    //                        while (result.isTrue() && eHolder.value() == null) {
-    //                            synchronized (elements) {
-    //                                if (elements.hasNext()) {
-    //                                    next = elements.next();
-    //                                } else {
-    //                                    break;
-    //                                }
-    //                            }
-    //
-    //                            if (action.apply(next) == false) {
-    //                                result.setFalse();
-    //                                break;
-    //                            }
-    //                        }
-    //                    } catch (Throwable e) {
-    //                        setError(eHolder, e);
-    //                    }
-    //                }
-    //            }));
-    //        }
-    //
-    //        if (eHolder.value() != null) {
-    //            throw N.toRuntimeException(eHolder.value());
-    //        }
-    //
-    //        try {
-    //            for (CompletableFuture<Void> future : futureList) {
-    //                future.get();
-    //            }
-    //        } catch (Exception e) {
-    //            throw N.toRuntimeException(e);
-    //        }
-    //
-    //        return result.value();
-    //    }
-
     @Override
     public char[] toArray() {
         return elements.toArray();
@@ -786,7 +728,6 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
             final Supplier<Multimap<K, U, V>> mapSupplier) {
-
         if (maxThreadNum <= 1) {
             return sequential().toMultimap(keyMapper, valueMapper, mapSupplier);
         }
@@ -1243,11 +1184,6 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         return result.value();
     }
 
-    //    @Override
-    //    public OptionalChar findFirst() {
-    //        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalChar findFirst(final CharPredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1313,11 +1249,6 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
         return resultHolder.value() == null ? OptionalChar.empty() : OptionalChar.of(resultHolder.value().right);
     }
-
-    //    @Override
-    //    public OptionalChar findLast() {
-    //        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[toIndex - 1]);
-    //    }
 
     @Override
     public OptionalChar findLast(final CharPredicate predicate) {
@@ -1385,11 +1316,6 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         return resultHolder.value() == null ? OptionalChar.empty() : OptionalChar.of(resultHolder.value().right);
     }
 
-    //    @Override
-    //    public OptionalChar findAny() {
-    //        return count() == 0 ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalChar findAny(final CharPredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1453,37 +1379,6 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
         return resultHolder.value() == NONE ? OptionalChar.empty() : OptionalChar.of((Character) resultHolder.value());
     }
-
-    @Override
-    public CharStream except(final Collection<?> c) {
-        return new ParallelIteratorCharStream(this.sequential().except(c).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public CharStream intersect(final Collection<?> c) {
-        return new ParallelIteratorCharStream(this.sequential().intersect(c).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public CharStream xor(final Collection<Character> c) {
-        return new ParallelIteratorCharStream(this.sequential().xor(c).charIterator(), closeHandlers, false, maxThreadNum, splitor);
-    }
-
-    //    @Override
-    //    public CharStream exclude(final Collection<?> c) {
-    //        if (maxThreadNum <= 1) {
-    //            return new ParallelIteratorCharStream(sequential().exclude(c).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    //        }
-    //
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new CharPredicate() {
-    //            @Override
-    //            public boolean test(char value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public IntStream asIntStream() {
@@ -1582,6 +1477,10 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream parallel(int maxThreadNum, Splitor splitor) {
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
+        }
+
         if (this.maxThreadNum == maxThreadNum && this.splitor == splitor) {
             return this;
         }
@@ -1598,7 +1497,9 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     public CharStream maxThreadNum(int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        } else if (this.maxThreadNum == maxThreadNum) {
+        }
+
+        if (this.maxThreadNum == maxThreadNum) {
             return this;
         }
 

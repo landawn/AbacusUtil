@@ -25,7 +25,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
@@ -42,9 +40,7 @@ import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
-import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -54,9 +50,7 @@ import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBinaryOperator;
@@ -105,98 +99,13 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class IntStream extends StreamBase<Integer, IntStream> {
+public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntStream> {
 
     private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY);
 
     IntStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
     }
-
-    /**
-     * Returns a stream consisting of the elements of this stream that match
-     * the given predicate.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to each element to determine if it
-     *                  should be included
-     * @return the new stream
-     */
-    public abstract IntStream filter(final IntPredicate predicate);
-
-    /**
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract IntStream filter(final IntPredicate predicate, final long max);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract IntStream takeWhile(final IntPredicate predicate);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract IntStream takeWhile(final IntPredicate predicate, final long max);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract IntStream dropWhile(final IntPredicate predicate);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract IntStream dropWhile(final IntPredicate predicate, final long max);
-
-    /**
-     * Take away and consume the specified <code>n</code> elements.
-     * 
-     * @param n
-     * @param action
-     * @return
-     * @see #dropWhile(IntPredicate)
-     */
-    public abstract IntStream drop(final long n, final IntConsumer action);
-
-    /**
-     * Take away and consume elements while <code>predicate</code> returns true.
-     * 
-     * @param predicate
-     * @param action
-     * @return
-     * @see  #dropWhile(IntPredicate)
-     */
-    public abstract IntStream dropWhile(IntPredicate predicate, IntConsumer action);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -310,163 +219,6 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     public abstract <T> Stream<T> flatMapToObj(IntFunction<? extends Stream<T>> mapper);
 
     /**
-     * Returns Stream of IntStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param size
-     * @return
-     */
-    public abstract Stream<IntStream> split(int size);
-
-    //    /**
-    //     * Split the stream by the specified predicate.
-    //     * 
-    //     * <pre>
-    //     * <code>
-    //     * // split the number sequence by window 5.
-    //     * final MutableInt border = MutableInt.of(5);
-    //     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
-    //     *     if (e <= border.intValue()) {
-    //     *         return true;
-    //     *     } else {
-    //     *         border.addAndGet(5);
-    //     *         return false;
-    //     *     }
-    //     * }).map(s -> s.toArray()).forEach(N::println);
-    //     * </code>
-    //     * </pre>
-    //     * 
-    //     * This stream should be sorted by value which is used to verify the border.
-    //     * This method only run sequentially, even in parallel stream.
-    //     * 
-    //     * @param predicate
-    //     * @return
-    //     */
-    //    public abstract Stream<IntStream> split(IntPredicate predicate);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This stream should be sorted by value which is used to verify the border.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param identifier
-     * @param predicate
-     * @return
-     */
-    public abstract <U> Stream<IntStream> split(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<IntStream> splitAt(int where);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<IntStream> splitBy(IntPredicate where);
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param windowSize
-     * @return
-     */
-    public abstract Stream<IntList> sliding(int windowSize);
-
-    /**
-     * <code>IntStream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 1).forEach(N::println)</code>
-     * <br /> output: <br />
-     * [1, 2, 3] <br />
-     * [2, 3, 4] <br />
-     * [3, 4, 5] <br />
-     * [4, 5, 6] <br />
-     * [5, 6, 7] <br />
-     * [6, 7, 8] <br />
-     * 
-     * <br>============================================================================</br>
-     * <code>IntStream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 3).forEach(N::println)</code>
-     * <br /> output: <br />
-     * [1, 2, 3] <br />
-     * [4, 5, 6] <br />
-     * [7, 8] <br />
-     * 
-     * <br>============================================================================</br>
-     * <code>IntStream.of(1, 2, 3, 4, 5, 6, 7, 5).sliding(3, 5).forEach(N::println)</code>
-     * <br /> output: <br />
-     * [1, 2, 3] <br />
-     * [6, 7, 8] <br />
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param windowSize
-     * @param increment
-     * @return
-     */
-    public abstract Stream<IntList> sliding(int windowSize, int increment);
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract IntStream reverse();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract IntStream shuffle();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract IntStream rotate(int distance);
-
-    /**
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     *
-     * @return the new stream
-     */
-    public abstract IntStream distinct();
-
-    /**
      * 
      * <br />
      * This method only run sequentially, even in parallel stream.
@@ -487,159 +239,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      */
     public abstract IntStream top(final int n, Comparator<? super Integer> comparator);
 
-    /**
-     * Returns a stream consisting of the elements of this stream in sorted
-     * order.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @return the new stream
-     */
-    public abstract IntStream sorted();
-
-    // public abstract IntStream parallelSorted();
-
-    /**
-     * Returns a stream consisting of the elements of this stream, additionally
-     * performing the provided action on each element as elements are consumed
-     * from the resulting stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, the action may be called at
-     * whatever time and in whatever thread the element is made available by the
-     * upstream operation.  If the action modifies shared state,
-     * it is responsible for providing the required synchronization.
-     *
-     * @apiNote This method exists mainly to support debugging, where you want
-     * to see the elements as they flow past a certain point in a pipeline:
-     * <pre>{@code
-     *     IntStream.of(1, 2, 3, 4)
-     *         .filter(e -> e > 2)
-     *         .peek(e -> System.out.println("Filtered value: " + e))
-     *         .map(e -> e * e)
-     *         .peek(e -> System.out.println("Mapped value: " + e))
-     *         .sum();
-     * }</pre>
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *               non-interfering</a> action to perform on the elements as
-     *               they are consumed from the stream
-     * @return the new stream
-     */
-    public abstract IntStream peek(IntConsumer action);
-
-    /**
-     * Returns a stream consisting of the elements of this stream, truncated
-     * to be no longer than {@code maxSize} in length.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * stateful intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code limit()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code maxSize}, since {@code limit(n)}
-     * is constrained to return not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code limit()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code limit()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param maxSize the number of elements the stream should be limited to
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code maxSize} is negative
-     */
-    public abstract IntStream limit(long maxSize);
-
-    /**
-     * Returns a stream consisting of the remaining elements of this stream
-     * after discarding the first {@code n} elements of the stream.
-     * If this stream contains fewer than {@code n} elements then an
-     * empty stream will be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code skip()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code n}, since {@code skip(n)}
-     * is constrained to skip not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code skip()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code skip()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param n the number of leading elements to skip
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code n} is negative
-     */
-    public abstract IntStream skip(long n);
-
-    /**
-     * Performs an action for each element of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, this operation does <em>not</em>
-     * guarantee to respect the encounter order of the stream, as doing so
-     * would sacrifice the benefit of parallelism.  For any given element, the
-     * action may be performed at whatever time and in whatever thread the
-     * library chooses.  If the action accesses shared state, it is
-     * responsible for providing the required synchronization.
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *               non-interfering</a> action to perform on the elements
-     */
-    public abstract void forEach(IntConsumer action);
-
-    //    /**
-    //     * In parallel Streams, the elements after the first element which <code>action</code> returns false may be executed by action too.
-    //     * 
-    //     * @param action break if the action returns false.
-    //     * @return false if it breaks, otherwise true.
-    //     */
-    //    public abstract boolean forEach2(IntFunction<Boolean> action);
-
-    /**
-     * Returns an array containing the elements of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an array containing the elements of this stream
-     */
-    public abstract int[] toArray();
-
     public abstract IntList toIntList();
-
-    public abstract List<Integer> toList();
-
-    public abstract List<Integer> toList(Supplier<? extends List<Integer>> supplier);
-
-    public abstract Set<Integer> toSet();
-
-    public abstract Set<Integer> toSet(Supplier<? extends Set<Integer>> supplier);
-
-    public abstract Multiset<Integer> toMultiset();
-
-    public abstract Multiset<Integer> toMultiset(Supplier<? extends Multiset<Integer>> supplier);
-
-    public abstract LongMultiset<Integer> toLongMultiset();
-
-    public abstract LongMultiset<Integer> toLongMultiset(Supplier<? extends LongMultiset<Integer>> supplier);
 
     /**
      * 
@@ -964,172 +564,9 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      */
     public abstract OptionalDouble average();
 
-    /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
-     * equivalent to:
-     * <pre>{@code
-     *     return mapToLong(e -> 1L).sum();
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
-     *
-     * @return the count of elements in this stream
-     */
-    public abstract long count();
-
-    public abstract Optional<Map<Percentage, Integer>> distribution();
-
     public abstract IntSummaryStatistics summarize();
 
     public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarize2();
-
-    public abstract String join(CharSequence delimiter);
-
-    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
-
-    /**
-     * Returns whether any elements of this stream match the provided
-     * predicate.  May not evaluate the predicate on all elements if not
-     * necessary for determining the result.  If the stream is empty then
-     * {@code false} is returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>existential quantification</em> of the
-     * predicate over the elements of the stream (for some x P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if any elements of the stream match the provided
-     * predicate, otherwise {@code false}
-     */
-    public abstract boolean anyMatch(IntPredicate predicate);
-
-    /**
-     * Returns whether all elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * predicate over the elements of the stream (for all x P(x)).  If the
-     * stream is empty, the quantification is said to be <em>vacuously
-     * satisfied</em> and is always {@code true} (regardless of P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either all elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean allMatch(IntPredicate predicate);
-
-    /**
-     * Returns whether no elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * negated predicate over the elements of the stream (for all x ~P(x)).  If
-     * the stream is empty, the quantification is said to be vacuously satisfied
-     * and is always {@code true}, regardless of P(x).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either no elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean noneMatch(IntPredicate predicate);
-
-    /**
-     * Returns an {@link OptionalInt} describing the first element of this
-     * stream, or an empty {@code OptionalInt} if the stream is empty.  If the
-     * stream has no encounter order, then any element may be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @return an {@code OptionalInt} describing the first element of this stream,
-     * or an empty {@code OptionalInt} if the stream is empty
-     */
-    // public abstract OptionalInt findFirst();
-
-    public abstract OptionalInt findFirst(IntPredicate predicate);
-
-    // public abstract OptionalInt findLast();
-
-    public abstract OptionalInt findLast(IntPredicate predicate);
-
-    /**
-     * Returns an {@link OptionalInt} describing some element of the stream, or
-     * an empty {@code OptionalInt} if the stream is empty.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * <p>The behavior of this operation is explicitly nondeterministic; it is
-     * free to select any element in the stream.  This is to allow for maximal
-     * performance in parallel operations; the cost is that multiple invocations
-     * on the same source may not return the same result.  (If a stable result
-     * is desired, use {@link #findFirst()} instead.)
-     *
-     * @return an {@code OptionalInt} describing some element of this stream, or
-     * an empty {@code OptionalInt} if the stream is empty
-     * @see #findFirst()
-     */
-    // public abstract OptionalInt findAny();
-
-    public abstract OptionalInt findAny(IntPredicate predicate);
-
-    public abstract OptionalInt first();
-
-    public abstract OptionalInt last();
-
-    //    public abstract OptionalInt any();
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#except(IntList)
-     */
-    public abstract IntStream except(Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public abstract IntStream intersect(Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#xor(IntList)
-     */
-    public abstract IntStream xor(Collection<Integer> c);
-
-    //    /**
-    //     * Skill All the elements in the specified collection.
-    //     * 
-    //     * @param c
-    //     * @return
-    //     * @see IntList#intersect(IntList)
-    //     */
-    //    public abstract IntStream exclude(Collection<?> c);
 
     /**
      * 
@@ -1195,16 +632,10 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      */
     public abstract Stream<Integer> boxed();
 
-    public abstract IntStream cached();
-
-    public abstract Stream<IndexedInt> indexed();
-
     @Override
     public abstract ImmutableIterator<Integer> iterator();
 
     public abstract ImmutableIntIterator intIterator();
-
-    // Static factories
 
     public static IntStream empty() {
         return EMPTY;
@@ -1257,53 +688,6 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : ArrayCharStream.of(a, startIndex, endIndex).asIntStream();
     }
 
-    //    /**
-    //     * Takes the chars in the specified String as the elements of the Stream
-    //     * 
-    //     * @param str
-    //     * @return
-    //     */
-    //    public static IntStream from(final CharSequence str) {
-    //        return N.isNullOrEmpty(str) ? empty() : from(str, 0, str.length());
-    //    }
-    //
-    //    /**
-    //     * Takes the chars in the specified String as the elements of the Stream
-    //     * 
-    //     * @param str
-    //     * @param startIndex
-    //     * @param endIndex
-    //     * @return
-    //     */
-    //    @SuppressWarnings("deprecation")
-    //    public static IntStream from(final CharSequence str, final int startIndex, final int endIndex) {
-    //        checkIndex(startIndex, endIndex, str == null ? 0 : str.length());
-    //
-    //        if (N.isNullOrEmpty(str)) {
-    //            return empty();
-    //        }
-    //
-    //        if (str instanceof String) {
-    //            from(N.getCharsForReadOnly((String) str), startIndex, endIndex);
-    //        }
-    //
-    //        final ImmutableIntIterator iter = new ImmutableIntIterator() {
-    //            private int cursor = startIndex;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                return cursor < endIndex;
-    //            }
-    //
-    //            @Override
-    //            public int next() {
-    //                return str.charAt(cursor++);
-    //            }
-    //        };
-    //
-    //        return new IteratorIntStream(iter);
-    //    }
-
     public static IntStream range(final int startInclusive, final int endExclusive) {
         if (startInclusive >= endExclusive) {
             return empty();
@@ -1337,11 +721,6 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
         if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return empty();
         }
-
-        //        if (endExclusive > startInclusive != by > 0) {
-        //            throw new IllegalArgumentException(
-        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        //        }
 
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int next = startInclusive;
@@ -1403,11 +782,6 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
             return empty();
         }
 
-        //        if (endInclusive > startInclusive != by > 0) {
-        //            throw new IllegalArgumentException(
-        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        //        }
-
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int next = startInclusive;
             private long cnt = (endInclusive * 1L - startInclusive) / by + 1;
@@ -1465,22 +839,6 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
             }
         });
     }
-
-    //    /**
-    //     * Returns random numbers between 0 (inclusive) and the specified value (exclusive).
-    //     * 
-    //     * @param bound
-    //     * @return
-    //     * @see java.util.Random#nextInt(int)
-    //     */
-    //    public static IntStream random(final int bound) {
-    //        return iterate(new IntSupplier() {
-    //            @Override
-    //            public int getAsInt() {
-    //                return RAND.nextInt(bound);
-    //            }
-    //        });
-    //    }
 
     public static IntStream random(final int startInclusive, final int endInclusive) {
         if (startInclusive > endInclusive) {
@@ -1715,9 +1073,38 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
         });
     }
 
-    public static IntStream concat(final IntStream... a) {
+    public static IntStream concat(final IntIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new ImmutableIntIterator() {
-            private final Iterator<IntStream> iter = N.asList(a).iterator();
+            private final Iterator<? extends IntIterator> iter = N.asList(a).iterator();
+            private IntIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static IntStream concat(final IntStream... a) {
+        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
+    }
+
+    public static IntStream concat(final Collection<? extends IntStream> c) {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorIntStream(new ImmutableIntIterator() {
+            private final Iterator<? extends IntStream> iter = c.iterator();
             private ImmutableIntIterator cur;
 
             @Override
@@ -1742,7 +1129,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (IntStream stream : a) {
+                for (IntStream stream : c) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -1761,35 +1148,6 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
         });
     }
 
-    public static IntStream concat(final IntIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
-    }
-
-    public static IntStream concat(final Collection<? extends IntIterator> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorIntStream(new ImmutableIntIterator() {
-            private final Iterator<? extends IntIterator> iter = c.iterator();
-            private IntIterator cur;
-
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public int next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-        });
-    }
-
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
      * Each pair of values is combined into a single value using the supplied zipFunction function.
@@ -1799,14 +1157,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @return
      */
     public static IntStream zip(final int[] a, final int[] b, final IntBiFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToInt(mapper);
+        return Stream.zip(a, b, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -1818,52 +1169,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @return
      */
     public static IntStream zip(final int[] a, final int[] b, final int[] c, final IntTriFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, zipFunction).mapToInt(mapper);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static IntStream zip(final IntStream a, final IntStream b, final IntBiFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToInt(mapper);
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, zipFunction).mapToInt(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -1875,14 +1181,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @return
      */
     public static IntStream zip(final IntIterator a, final IntIterator b, final IntBiFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToInt(mapper);
+        return Stream.zip(a, b, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -1894,14 +1193,31 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @return
      */
     public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final IntTriFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
+        return Stream.zip(a, b, c, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    }
 
-        return Stream.zip(a, b, c, zipFunction).mapToInt(mapper);
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static IntStream zip(final IntStream a, final IntStream b, final IntBiFunction<Integer> zipFunction) {
+        return Stream.zip(a, b, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<Integer> zipFunction) {
+        return Stream.zip(a, b, c, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -1912,15 +1228,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @param zipFunction
      * @return
      */
-    public static IntStream zip(final Collection<? extends IntIterator> c, final IntNFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(c, zipFunction).mapToInt(mapper);
+    public static IntStream zip(final Collection<? extends IntStream> c, final IntNFunction<Integer> zipFunction) {
+        return Stream.zip(c, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -1934,16 +1243,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @param zipFunction
      * @return
      */
-    public static IntStream zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB,
-            final IntBiFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(mapper);
+    public static IntStream zip(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB, final IntBiFunction<Integer> zipFunction) {
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -1959,16 +1260,9 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @param zipFunction
      * @return
      */
-    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
-            final int valueForNoneC, final IntTriFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(mapper);
+    public static IntStream zip(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC,
+            final IntTriFunction<Integer> zipFunction) {
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -1984,14 +1278,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      */
     public static IntStream zip(final IntIterator a, final IntIterator b, final int valueForNoneA, final int valueForNoneB,
             final IntBiFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -2009,14 +1296,41 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      */
     public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final IntTriFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    }
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(mapper);
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static IntStream zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB,
+            final IntBiFunction<Integer> zipFunction) {
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC, final IntTriFunction<Integer> zipFunction) {
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -2028,15 +1342,8 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @param zipFunction
      * @return
      */
-    public static IntStream zip(final Collection<? extends IntIterator> c, final int[] valuesForNone, final IntNFunction<Integer> zipFunction) {
-        final ToIntFunction<Integer> mapper = new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        };
-
-        return Stream.zip(c, valuesForNone, zipFunction).mapToInt(mapper);
+    public static IntStream zip(final Collection<? extends IntStream> c, final int[] valuesForNone, final IntNFunction<Integer> zipFunction) {
+        return Stream.zip(c, valuesForNone, zipFunction).mapToInt(ToIntFunction.UNBOX);
     }
 
     /**
@@ -2089,41 +1396,12 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * 
      * @param a
      * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static IntStream merge(final IntStream a, final IntStream b, final IntBiFunction<Nth> nextSelector) {
-        final IntIterator iterA = a.intIterator();
-        final IntIterator iterB = b.intIterator();
-
-        if (iterA.hasNext() == false) {
-            return b;
-        } else if (iterB.hasNext() == false) {
-            return a;
-        }
-
-        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (IntStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static IntStream merge(final int[] a, final int[] b, final int[] c, final IntBiFunction<Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).intIterator(), IntStream.of(c).intIterator(), nextSelector);
     }
 
     /**
@@ -2203,30 +1481,29 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static IntStream merge(final IntStream[] a, final IntBiFunction<Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
+    public static IntStream merge(final IntIterator a, final IntIterator b, final IntIterator c, final IntBiFunction<Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).intIterator(), c, nextSelector);
+    }
 
-        final IntIterator[] iters = new IntIterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].intIterator();
-        }
-
-        return merge(iters, nextSelector).onClose(new Runnable() {
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static IntStream merge(final IntStream a, final IntStream b, final IntBiFunction<Nth> nextSelector) {
+        return merge(a.intIterator(), b.intIterator(), nextSelector).onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (IntStream stream : a) {
+                for (IntStream stream : N.asList(a, b)) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -2248,19 +1525,13 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static IntStream merge(final IntIterator[] a, final IntBiFunction<Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        return merge(Arrays.asList(a), nextSelector);
+    public static IntStream merge(final IntStream a, final IntStream b, final IntStream c, final IntBiFunction<Nth> nextSelector) {
+        return merge(N.asList(a, b, c), nextSelector);
     }
 
     /**
@@ -2269,68 +1540,29 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static IntStream merge(final Collection<? extends IntIterator> c, final IntBiFunction<Nth> nextSelector) {
+    public static IntStream merge(final Collection<? extends IntStream> c, final IntBiFunction<Nth> nextSelector) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
-            return of(c.iterator().next());
+            return c.iterator().next();
         } else if (c.size() == 2) {
-            final Iterator<? extends IntIterator> iter = c.iterator();
+            final Iterator<? extends IntStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
         }
 
-        final Iterator<? extends IntIterator> iter = c.iterator();
-        IntStream result = merge(iter.next(), iter.next(), nextSelector);
+        final Iterator<? extends IntStream> iter = c.iterator();
+        IntStream result = merge(iter.next().intIterator(), iter.next().intIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.intIterator(), iter.next(), nextSelector);
+            result = merge(result.intIterator(), iter.next().intIterator(), nextSelector);
         }
 
-        return result;
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static IntStream parallelMerge(final IntStream[] a, final IntBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static IntStream parallelMerge(final IntStream[] a, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        final IntIterator[] iters = new IntIterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].intIterator();
-        }
-
-        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+        return result.onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (IntStream stream : a) {
+                for (IntStream stream : c) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -2351,44 +1583,11 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
 
     /**
      * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static IntStream parallelMerge(final IntIterator[] a, final IntBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static IntStream parallelMerge(final IntIterator[] a, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
-    }
-
-    /**
-     * 
      * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static IntStream parallelMerge(final Collection<? extends IntIterator> c, final IntBiFunction<Nth> nextSelector) {
+    public static IntStream parallelMerge(final Collection<? extends IntStream> c, final IntBiFunction<Nth> nextSelector) {
         return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
@@ -2399,7 +1598,7 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
      * @param maxThreadNum
      * @return
      */
-    public static IntStream parallelMerge(final Collection<? extends IntIterator> c, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
+    public static IntStream parallelMerge(final Collection<? extends IntStream> c, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
@@ -2407,15 +1606,20 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
-            return of(c.iterator().next());
+            return c.iterator().next();
         } else if (c.size() == 2) {
-            final Iterator<? extends IntIterator> iter = c.iterator();
+            final Iterator<? extends IntStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
         } else if (maxThreadNum <= 1) {
             return merge(c, nextSelector);
         }
 
-        final Queue<IntIterator> queue = N.newLinkedList(c);
+        final Queue<IntIterator> queue = N.newLinkedList();
+
+        for (IntStream e : c) {
+            queue.add(e.intIterator());
+        }
+
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
@@ -2471,6 +1675,27 @@ public abstract class IntStream extends StreamBase<Integer, IntStream> {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector);
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
     }
 }

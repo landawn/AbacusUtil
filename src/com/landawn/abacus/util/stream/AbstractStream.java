@@ -102,11 +102,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> filter(final Predicate<? super T> predicate) {
-        return filter(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public <U> Stream<T> filter(final U check, final BiPredicate<? super T, ? super U> predicate) {
         return filter(new Predicate<T>() {
             @Override
@@ -117,11 +112,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> takeWhile(final Predicate<? super T> predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
     public <U> Stream<T> takeWhile(final U check, final BiPredicate<? super T, ? super U> predicate) {
         return filter(new Predicate<T>() {
             @Override
@@ -129,11 +119,6 @@ abstract class AbstractStream<T> extends Stream<T> {
                 return predicate.test(value, check);
             }
         });
-    }
-
-    @Override
-    public Stream<T> dropWhile(final Predicate<? super T> predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -849,11 +834,6 @@ abstract class AbstractStream<T> extends Stream<T> {
         return OptionalNullable.of(next);
     }
 
-    //    @Override
-    //    public OptionalNullable<T> any() {
-    //        return findAny(Predicate.ALWAYS_TRUE);
-    //    }
-
     @Override
     public Stream<T> skipNull() {
         return filter(Predicate.NOT_NULL);
@@ -933,77 +913,73 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public Stream<T> except(final Collection<?> c) {
+        return newStream(this.sequential().filter(new Predicate<T>() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        });
+        }).iterator(), sorted, cmp);
     }
 
     @Override
     public Stream<T> except(final Function<? super T, ?> mapper, final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        return newStream(this.sequential().filter(new Predicate<T>() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(mapper.apply(value)) < 1;
             }
-        });
+        }).iterator(), sorted, cmp);
     }
 
     @Override
-    public Stream<T> intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public Stream<T> intersect(final Collection<?> c) {
+        return newStream(this.sequential().filter(new Predicate<T>() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        });
+        }).iterator(), sorted, cmp);
     }
 
     @Override
     public Stream<T> intersect(final Function<? super T, ?> mapper, final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        return newStream(this.sequential().filter(new Predicate<T>() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(mapper.apply(value)) > 0;
             }
-        });
+        }).iterator(), sorted, cmp);
     }
 
     @Override
-    public Stream<T> xor(final Collection<? extends T> c) {
+    public Stream<T> xor(final Collection<T> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new Predicate<T>() {
+        return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).append((Stream<T>) Stream.of(c).filter(new Predicate<T>() {
+        }).append(Stream.of(c).filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }));
+        })).iterator(), false, null);
     }
 
     @Override
     public Stream<T> reverse() {
         final T[] a = (T[]) toArray();
-
-        //        N.reverse(a);
-        //
-        //        return newStream((T[]) a, false, null);
 
         return newStream(new ImmutableIterator<T>() {
             private int cursor = a.length;
@@ -1050,6 +1026,30 @@ abstract class AbstractStream<T> extends Stream<T> {
         N.rotate(a, distance);
 
         return newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<T> distinct() {
+        return newStream(this.sequential().filter(new Predicate<T>() {
+            private final Set<Object> set = new HashSet<>();
+
+            @Override
+            public boolean test(T value) {
+                return set.add(hashKey(value));
+            }
+        }).iterator(), sorted, cmp);
+    }
+
+    @Override
+    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
+        return newStream(this.sequential().filter(new Predicate<T>() {
+            private final Set<Object> set = new HashSet<>();
+
+            @Override
+            public boolean test(T value) {
+                return set.add(hashKey(keyMapper.apply(value)));
+            }
+        }).iterator(), sorted, cmp);
     }
 
     @Override
@@ -1237,14 +1237,14 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Indexed<T>> indexed() {
-        final MutableLong idx = new MutableLong();
+        return newStream(this.sequential().map(new Function<T, Indexed<T>>() {
+            final MutableLong idx = new MutableLong();
 
-        return map(new Function<T, Indexed<T>>() {
             @Override
             public Indexed<T> apply(T t) {
                 return Indexed.of(idx.getAndIncrement(), t);
             }
-        });
+        }).iterator(), false, null);
     }
 
     @Override

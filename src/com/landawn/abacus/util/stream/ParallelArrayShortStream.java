@@ -87,9 +87,9 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream filter(final ShortPredicate predicate, final long max) {
+    public ShortStream filter(final ShortPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().filter(predicate, max).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().filter(predicate).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Short> stream = boxed().filter(new Predicate<Short>() {
@@ -97,15 +97,15 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             public boolean test(Short value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorShortStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public ShortStream takeWhile(final ShortPredicate predicate, final long max) {
+    public ShortStream takeWhile(final ShortPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().takeWhile(predicate, max).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().takeWhile(predicate).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Short> stream = boxed().takeWhile(new Predicate<Short>() {
@@ -113,15 +113,15 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             public boolean test(Short value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorShortStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public ShortStream dropWhile(final ShortPredicate predicate, final long max) {
+    public ShortStream dropWhile(final ShortPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().dropWhile(predicate, max).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().dropWhile(predicate).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Short> stream = boxed().dropWhile(new Predicate<Short>() {
@@ -129,7 +129,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             public boolean test(Short value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorShortStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -292,6 +292,20 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortStream> splitAt(final int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative");
+        }
+
+        final ShortStream[] a = new ShortStream[2];
+        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        a[0] = middleIndex == fromIndex ? ShortStream.empty() : new ArrayShortStream(elements, fromIndex, middleIndex, null, sorted);
+        a[1] = middleIndex == toIndex ? ShortStream.empty() : new ArrayShortStream(elements, middleIndex, toIndex, null, sorted);
+
+        return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public Stream<ShortList> sliding(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
@@ -364,12 +378,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             public void accept(Short t) {
                 action.accept(t);
             }
-        }).sequential().mapToShort(new ToShortFunction<Short>() {
-            @Override
-            public short applyAsShort(Short value) {
-                return value.shortValue();
-            }
-        });
+        }).sequential().mapToShort(ToShortFunction.UNBOX);
 
         return new ParallelIteratorShortStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -474,88 +483,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             throw N.toRuntimeException(e);
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(final ShortFunction<Boolean> action) {
-    //        if (maxThreadNum <= 1) {
-    //            return sequential().forEach2(action);
-    //        }
-    //
-    //        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-    //        final Holder<Throwable> eHolder = new Holder<>();
-    //        final MutableBoolean result = MutableBoolean.of(true);
-    //
-    //        if (splitor == splitor.ARRAY) {
-    //            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-    //
-    //            for (int i = 0; i < maxThreadNum; i++) {
-    //                final int sliceIndex = i;
-    //
-    //                futureList.add(asyncExecutor.execute(new Runnable() {
-    //                    @Override
-    //                    public void run() {
-    //                        int cursor = fromIndex + sliceIndex * sliceSize;
-    //                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-    //
-    //                        try {
-    //                            while (cursor < to && result.isTrue() && eHolder.value() == null) {
-    //                                if (action.apply(elements[cursor++]) == false) {
-    //                                    result.setFalse();
-    //                                    break;
-    //                                }
-    //                            }
-    //                        } catch (Throwable e) {
-    //                            setError(eHolder, e);
-    //                        }
-    //                    }
-    //                }));
-    //            }
-    //        } else {
-    //            final MutableInt cursor = MutableInt.of(fromIndex);
-    //
-    //            for (int i = 0; i < maxThreadNum; i++) {
-    //                futureList.add(asyncExecutor.execute(new Runnable() {
-    //                    @Override
-    //                    public void run() {
-    //                        short next = 0;
-    //
-    //                        try {
-    //                            while (result.isTrue() && eHolder.value() == null) {
-    //                                synchronized (elements) {
-    //                                    if (cursor.intValue() < toIndex) {
-    //                                        next = elements[cursor.getAndIncrement()];
-    //                                    } else {
-    //                                        break;
-    //                                    }
-    //                                }
-    //
-    //                                if (action.apply(next) == false) {
-    //                                    result.setFalse();
-    //                                    break;
-    //                                }
-    //                            }
-    //                        } catch (Throwable e) {
-    //                            setError(eHolder, e);
-    //                        }
-    //                    }
-    //                }));
-    //            }
-    //        }
-    //
-    //        if (eHolder.value() != null) {
-    //            throw N.toRuntimeException(eHolder.value());
-    //        }
-    //
-    //        try {
-    //            for (CompletableFuture<Void> future : futureList) {
-    //                future.get();
-    //            }
-    //        } catch (Exception e) {
-    //            throw N.toRuntimeException(e);
-    //        }
-    //
-    //        return result.value();
-    //    }
 
     @Override
     public short[] toArray() {
@@ -699,7 +626,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final ShortFunction<? extends K> keyMapper,
             final ShortFunction<? extends U> valueMapper, final Supplier<Multimap<K, U, V>> mapSupplier) {
-
         if (maxThreadNum <= 1) {
             return sequential().toMultimap(keyMapper, valueMapper, mapSupplier);
         }
@@ -1502,11 +1428,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         return result.value();
     }
 
-    //    @Override
-    //    public OptionalShort findFirst() {
-    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalShort findFirst(final ShortPredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1611,11 +1532,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
         return resultHolder.value() == null ? OptionalShort.empty() : OptionalShort.of(resultHolder.value().right);
     }
-
-    //    @Override
-    //    public OptionalShort findLast() {
-    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[toIndex - 1]);
-    //    }
 
     @Override
     public OptionalShort findLast(final ShortPredicate predicate) {
@@ -1722,11 +1638,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         return resultHolder.value() == null ? OptionalShort.empty() : OptionalShort.of(resultHolder.value().right);
     }
 
-    //    @Override
-    //    public OptionalShort findAny() {
-    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalShort findAny(final ShortPredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1829,37 +1740,6 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
         return resultHolder.value() == NONE ? OptionalShort.empty() : OptionalShort.of((Short) resultHolder.value());
     }
-
-    @Override
-    public ShortStream except(final Collection<?> c) {
-        return new ParallelIteratorShortStream(this.sequential().except(c).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public ShortStream intersect(final Collection<?> c) {
-        return new ParallelIteratorShortStream(this.sequential().intersect(c).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public ShortStream xor(final Collection<Short> c) {
-        return new ParallelIteratorShortStream(this.sequential().xor(c).shortIterator(), closeHandlers, false, maxThreadNum, splitor);
-    }
-
-    //    @Override
-    //    public ShortStream exclude(final Collection<?> c) {
-    //        if (maxThreadNum <= 1) {
-    //            return new ParallelIteratorShortStream(sequential().exclude(c).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    //        }
-    //
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new ShortPredicate() {
-    //            @Override
-    //            public boolean test(short value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public IntStream asIntStream() {
@@ -1982,6 +1862,10 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream parallel(int maxThreadNum, Splitor splitor) {
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
+        }
+
         if (this.maxThreadNum == maxThreadNum && this.splitor == splitor) {
             return this;
         }
@@ -1998,7 +1882,9 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     public ShortStream maxThreadNum(int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        } else if (this.maxThreadNum == maxThreadNum) {
+        }
+
+        if (this.maxThreadNum == maxThreadNum) {
             return this;
         }
 

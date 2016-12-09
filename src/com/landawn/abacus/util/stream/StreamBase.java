@@ -70,7 +70,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
  * 
  * @author Haiyang Li
  */
-abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T, S> {
+abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, C, PL, OT, IT, S>> implements BaseStream<T, A, P, C, PL, OT, IT, S> {
     static final Logger logger = LoggerFactory.getLogger(StreamBase.class);
 
     static final Object NONE = new Object();
@@ -520,6 +520,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
             return new ParallelIteratorCharStream(charIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
+
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
@@ -529,6 +530,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 public char next() {
                     return iter.next();
                 }
+
             };
 
             return new IteratorCharStream(charIter, closeHandlers, sorted);
@@ -560,6 +562,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
             return new ParallelIteratorByteStream(byteIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableByteIterator byteIter = iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
+
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
@@ -569,6 +572,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 public byte next() {
                     return iter.next();
                 }
+
             };
 
             return new IteratorByteStream(byteIter, closeHandlers, sorted);
@@ -600,6 +604,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
             return new ParallelIteratorShortStream(shortIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableShortIterator shortIter = iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
+
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
@@ -609,6 +614,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 public short next() {
                     return iter.next();
                 }
+
             };
 
             return new IteratorShortStream(shortIter, closeHandlers, sorted);
@@ -640,6 +646,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
             return new ParallelIteratorIntStream(intIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableIntIterator intIter = iter instanceof ImmutableIntIterator ? (ImmutableIntIterator) iter : new ImmutableIntIterator() {
+
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
@@ -649,6 +656,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 public int next() {
                     return iter.next();
                 }
+
             };
 
             return new IteratorIntStream(intIter, closeHandlers, sorted);
@@ -680,6 +688,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
             return new ParallelIteratorLongStream(longIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableLongIterator longIter = iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
+
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
@@ -689,6 +698,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 public long next() {
                     return iter.next();
                 }
+
             };
 
             return new IteratorLongStream(longIter, closeHandlers, sorted);
@@ -720,6 +730,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
             return new ParallelIteratorFloatStream(floatIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
             final ImmutableFloatIterator floatIter = iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
+
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
@@ -729,6 +740,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                 public float next() {
                     return iter.next();
                 }
+
             };
 
             return new IteratorFloatStream(floatIter, closeHandlers, sorted);
@@ -762,6 +774,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
         } else {
             final ImmutableDoubleIterator doubleIter = iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter
                     : new ImmutableDoubleIterator() {
+
                         @Override
                         public boolean hasNext() {
                             return iter.hasNext();
@@ -771,6 +784,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
                         public double next() {
                             return iter.next();
                         }
+
                     };
 
             return new IteratorDoubleStream(doubleIter, closeHandlers, sorted);
@@ -1033,7 +1047,7 @@ abstract class StreamBase<T, S extends StreamBase<T, S>> implements BaseStream<T
         return doubleIter;
     }
 
-    static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?> stream, Set<Runnable> closeHandlers) {
+    static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?, ?, ?, ?, ?, ?, ?> stream, Set<Runnable> closeHandlers) {
         if (N.isNullOrEmpty(closeHandlers) && N.isNullOrEmpty(stream.closeHandlers)) {
             return null;
         }

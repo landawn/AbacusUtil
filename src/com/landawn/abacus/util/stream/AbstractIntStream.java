@@ -16,9 +16,11 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.IndexedInt;
@@ -58,21 +60,6 @@ abstract class AbstractIntStream extends IntStream {
 
     AbstractIntStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
-    }
-
-    @Override
-    public IntStream filter(final IntPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public IntStream takeWhile(final IntPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public IntStream dropWhile(final IntPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -207,12 +194,14 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream distinct() {
-        return boxed().distinct().mapToInt(new ToIntFunction<Integer>() {
+        return newStream(this.sequential().filter(new IntPredicate() {
+            private final Set<Object> set = new HashSet<>();
+
             @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
+            public boolean test(int value) {
+                return set.add(value);
             }
-        });
+        }).intIterator(), sorted);
     }
 
     @Override
@@ -239,40 +228,35 @@ abstract class AbstractIntStream extends IntStream {
         return OptionalInt.of(next);
     }
 
-    //    @Override
-    //    public OptionalInt any() {
-    //        return findAny(IntPredicate.ALWAYS_TRUE);
-    //    }
-
     @Override
-    public IntStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public IntStream except(final Collection<?> c) {
+        return newStream(this.sequential().filter(new IntPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new IntPredicate() {
             @Override
             public boolean test(int value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        });
+        }).intIterator(), sorted);
     }
 
     @Override
-    public IntStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public IntStream intersect(final Collection<?> c) {
+        return newStream(this.sequential().filter(new IntPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new IntPredicate() {
             @Override
             public boolean test(int value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        });
+        }).intIterator(), sorted);
     }
 
     @Override
-    public IntStream xor(Collection<Integer> c) {
+    public IntStream xor(final Collection<Integer> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new IntPredicate() {
+        return newStream(this.sequential().filter(new IntPredicate() {
             @Override
             public boolean test(int value) {
                 return multiset.getAndRemove(value) < 1;
@@ -282,12 +266,7 @@ abstract class AbstractIntStream extends IntStream {
             public boolean test(Integer value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToInt(new ToIntFunction<Integer>() {
-            @Override
-            public int applyAsInt(Integer value) {
-                return value.intValue();
-            }
-        }));
+        }).mapToInt(ToIntFunction.UNBOX)).intIterator(), false);
     }
 
     @Override
@@ -370,10 +349,6 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public IntStream reverse() {
         final int[] a = toArray();
-
-        //        N.reverse(a);
-        //
-        //        return newStream(a, false);
 
         return newStream(new ImmutableIntIterator() {
             private int cursor = a.length;
@@ -483,14 +458,14 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public Stream<IndexedInt> indexed() {
-        final MutableLong idx = new MutableLong();
+        return newStream(this.sequential().mapToObj(new IntFunction<IndexedInt>() {
+            final MutableLong idx = new MutableLong();
 
-        return mapToObj(new IntFunction<IndexedInt>() {
             @Override
             public IndexedInt apply(int t) {
                 return IndexedInt.of(idx.getAndIncrement(), t);
             }
-        });
+        }).iterator(), false, null);
     }
 
     @Override

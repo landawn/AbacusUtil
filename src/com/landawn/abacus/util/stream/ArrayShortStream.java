@@ -88,17 +88,14 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream filter(final ShortPredicate predicate, final long max) {
-        // return new ArrayShortStream(N.filter(elements, fromIndex, toIndex, predicate, toInt(max)), closeHandlers, sorted);
-
+    public ShortStream filter(final ShortPredicate predicate) {
         return new IteratorShortStream(new ImmutableShortIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex && cnt < max) {
+                if (hasNext == false && cursor < toIndex) {
                     do {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
@@ -118,7 +115,6 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return elements[cursor++];
@@ -127,36 +123,19 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream takeWhile(final ShortPredicate predicate, final long max) {
-        //        final ShortList list = ShortList.of(new short[N.min(9, toInt(max), (toIndex - fromIndex))], 0);
-        //
-        //        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
-        //            if (predicate.test(elements[i])) {
-        //                list.add(elements[i]);
-        //                cnt++;
-        //            } else {
-        //                break;
-        //            }
-        //        }
-        //
-        //        return new ArrayShortStream(list.trimToSize().array(), closeHandlers, sorted);
-
+    public ShortStream takeWhile(final ShortPredicate predicate) {
         return new IteratorShortStream(new ImmutableShortIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex && cnt < max) {
-                    do {
-                        if (predicate.test(elements[cursor])) {
-                            hasNext = true;
-                            break;
-                        } else {
-                            cursor = Integer.MAX_VALUE;
-                        }
-                    } while (cursor < toIndex);
+                if (hasNext == false && cursor < toIndex) {
+                    if (predicate.test(elements[cursor])) {
+                        hasNext = true;
+                    } else {
+                        cursor = Integer.MAX_VALUE;
+                    }
                 }
 
                 return hasNext;
@@ -168,7 +147,6 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return elements[cursor++];
@@ -177,32 +155,15 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream dropWhile(final ShortPredicate predicate, final long max) {
-        //        int cursor = fromIndex;
-        //        while (cursor < toIndex && predicate.test(elements[cursor])) {
-        //            cursor++;
-        //        }
-        //
-        //        final ShortList list = ShortList.of(new short[N.min(9, toInt(max), (toIndex - cursor))], 0);
-        //        int cnt = 0;
-        //
-        //        while (cursor < toIndex && cnt < max) {
-        //            list.add(elements[cursor]);
-        //            cursor++;
-        //            cnt++;
-        //        }
-        //
-        //        return new ArrayShortStream(list.trimToSize().array(), closeHandlers, sorted);
-
+    public ShortStream dropWhile(final ShortPredicate predicate) {
         return new IteratorShortStream(new ImmutableShortIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
-            private long cnt = 0;
             private boolean dropped = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex && cnt < max) {
+                if (hasNext == false && cursor < toIndex) {
                     if (dropped == false) {
                         do {
                             if (predicate.test(elements[cursor]) == false) {
@@ -228,7 +189,6 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return elements[cursor++];
@@ -238,14 +198,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream map(final ShortUnaryOperator mapper) {
-        //        final short[] a = new short[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = mapper.applyAsShort(elements[i]);
-        //        }
-        //
-        //        return new ArrayShortStream(a, closeHandlers);
-
         return new IteratorShortStream(new ImmutableShortIterator() {
             int cursor = fromIndex;
 
@@ -288,14 +240,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public IntStream mapToInt(final ShortToIntFunction mapper) {
-        //        final int[] a = new int[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = mapper.applyAsInt(elements[i]);
-        //        }
-        //
-        //        return new ArrayIntStream(a, closeHandlers);
-
         return new IteratorIntStream(new ImmutableIntIterator() {
             int cursor = fromIndex;
 
@@ -338,14 +282,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ShortFunction<? extends U> mapper) {
-        //        final Object[] a = new Object[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = mapper.apply(elements[i]);
-        //        }
-        //
-        //        return new ArrayStream<U>((U[]) a, closeHandlers);
-
         return new IteratorStream<U>(new ImmutableIterator<U>() {
             int cursor = fromIndex;
 
@@ -388,24 +324,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
-        //        final List<short[]> listOfArray = new ArrayList<short[]>();
-        //
-        //        int lengthOfAll = 0;
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            final short[] tmp = mapper.apply(elements[i]).toArray();
-        //            lengthOfAll += tmp.length;
-        //            listOfArray.add(tmp);
-        //        }
-        //
-        //        final short[] arrayOfAll = new short[lengthOfAll];
-        //        int from = 0;
-        //        for (short[] tmp : listOfArray) {
-        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-        //            from += tmp.length;
-        //        }
-        //
-        //        return new ArrayShortStream(arrayOfAll, closeHandlers);
-
         return new IteratorShortStream(new ImmutableShortIterator() {
             private int cursor = fromIndex;
             private ImmutableShortIterator cur = null;
@@ -432,24 +350,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
-        //        final List<int[]> listOfArray = new ArrayList<int[]>();
-        //
-        //        int lengthOfAll = 0;
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            final int[] tmp = mapper.apply(elements[i]).toArray();
-        //            lengthOfAll += tmp.length;
-        //            listOfArray.add(tmp);
-        //        }
-        //
-        //        final int[] arrayOfAll = new int[lengthOfAll];
-        //        int from = 0;
-        //        for (int[] tmp : listOfArray) {
-        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-        //            from += tmp.length;
-        //        }
-        //
-        //        return new ArrayIntStream(arrayOfAll, closeHandlers);
-
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int cursor = fromIndex;
             private ImmutableIntIterator cur = null;
@@ -476,25 +376,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final ShortFunction<? extends Stream<T>> mapper) {
-        //        final List<Object[]> listOfArray = new ArrayList<Object[]>();
-        //        int lengthOfAll = 0;
-        //
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            final Object[] tmp = mapper.apply(elements[i]).toArray();
-        //            lengthOfAll += tmp.length;
-        //            listOfArray.add(tmp);
-        //        }
-        //
-        //        final Object[] arrayOfAll = new Object[lengthOfAll];
-        //        int from = 0;
-        //
-        //        for (Object[] tmp : listOfArray) {
-        //            N.copy(tmp, 0, arrayOfAll, from, tmp.length);
-        //            from += tmp.length;
-        //        }
-        //
-        //        return new ArrayStream<T>((T[]) arrayOfAll, closeHandlers);
-
         return new IteratorStream<T>(new ImmutableIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
@@ -521,15 +402,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Stream<ShortStream> split(final int size) {
-        //        final List<short[]> tmp = N.split(elements, fromIndex, toIndex, size);
-        //        final ShortStream[] a = new ShortStream[tmp.size()];
-        //
-        //        for (int i = 0, len = a.length; i < len; i++) {
-        //            a[i] = new ArrayShortStream(tmp.get(i), null, sorted);
-        //        }
-        //
-        //        return new ArrayStream<ShortStream>(a, closeHandlers);
-
         return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
             private int cursor = fromIndex;
 
@@ -591,6 +463,20 @@ final class ArrayShortStream extends AbstractShortStream {
             }
 
         }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ShortStream> splitAt(final int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative");
+        }
+
+        final ShortStream[] a = new ShortStream[2];
+        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        a[0] = middleIndex == fromIndex ? ShortStream.empty() : new ArrayShortStream(elements, fromIndex, middleIndex, null, sorted);
+        a[1] = middleIndex == toIndex ? ShortStream.empty() : new ArrayShortStream(elements, middleIndex, toIndex, null, sorted);
+
+        return new ArrayStream<>(a, closeHandlers);
     }
 
     @Override
@@ -656,12 +542,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream peek(final ShortConsumer action) {
-        //        for (int i = fromIndex; i < toIndex; i++) {
-        //            action.accept(elements[i]);
-        //        }
-        // 
-        //        return this;
-
         return new IteratorShortStream(new ImmutableShortIterator() {
             int cursor = fromIndex;
 
@@ -680,16 +560,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
                 return elements[cursor++];
             }
-
-            //    @Override
-            //    public long count() {
-            //        return toIndex - cursor;
-            //    }
-            //
-            //    @Override
-            //    public void skip(long n) {
-            //        cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
-            //    }
 
             @Override
             public short[] toArray() {
@@ -738,17 +608,6 @@ final class ArrayShortStream extends AbstractShortStream {
             action.accept(elements[i]);
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(ShortFunction<Boolean> action) {
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            if (action.apply(elements[i]).booleanValue() == false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
 
     @Override
     public short[] toArray() {
@@ -1078,11 +937,6 @@ final class ArrayShortStream extends AbstractShortStream {
         return true;
     }
 
-    //    @Override
-    //    public OptionalShort findFirst() {
-    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalShort findFirst(final ShortPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
@@ -1093,11 +947,6 @@ final class ArrayShortStream extends AbstractShortStream {
 
         return OptionalShort.empty();
     }
-
-    //    @Override
-    //    public OptionalShort findLast() {
-    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[toIndex - 1]);
-    //    }
 
     @Override
     public OptionalShort findLast(final ShortPredicate predicate) {
@@ -1110,11 +959,6 @@ final class ArrayShortStream extends AbstractShortStream {
         return OptionalShort.empty();
     }
 
-    //    @Override
-    //    public OptionalShort findAny() {
-    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalShort findAny(final ShortPredicate predicate) {
         for (int i = fromIndex; i < toIndex; i++) {
@@ -1126,33 +970,8 @@ final class ArrayShortStream extends AbstractShortStream {
         return OptionalShort.empty();
     }
 
-    //    @Override
-    //    public ShortStream exclude(Collection<?> c) {
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new ShortPredicate() {
-    //            @Override
-    //            public boolean test(short value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
-
-    //    @Override
-    //    public OptionalShort findAny() {
-    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
-    //    }
-
     @Override
     public IntStream asIntStream() {
-        //        final int[] a = new int[toIndex - fromIndex];
-        //
-        //        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-        //            a[j] = elements[i];
-        //        }
-        //
-        //        return new ArrayIntStream(a, closeHandlers, sorted);
-
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int cursor = fromIndex;
 
@@ -1197,23 +1016,6 @@ final class ArrayShortStream extends AbstractShortStream {
     public Stream<Short> boxed() {
         return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null);
     }
-
-    //    @Override
-    //    public ShortStream exclude(Collection<?> c) {
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new ShortPredicate() {
-    //            @Override
-    //            public boolean test(short value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
-
-    //    @Override
-    //    public OptionalShort findAny() {
-    //        return count() == 0 ? OptionalShort.empty() : OptionalShort.of(elements[fromIndex]);
-    //    }
 
     @Override
     public ShortStream cached() {

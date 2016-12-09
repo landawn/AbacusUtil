@@ -37,7 +37,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -75,10 +74,8 @@ import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.LongIterator;
-import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -241,36 +238,14 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * @see DoubleStream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
+public abstract class Stream<T>
+        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, OptionalNullable<T>, Indexed<T>, Stream<T>> {
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY);
 
     Stream(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
         super(closeHandlers, sorted, cmp);
     }
-
-    /**
-     * Returns a stream consisting of the elements of this stream that match
-     * the given predicate.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to each element to determine if it
-     *                  should be included
-     * @return the new stream
-     */
-    public abstract Stream<T> filter(final Predicate<? super T> predicate);
-
-    /**
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract Stream<T> filter(final Predicate<? super T> predicate, final long max);
 
     /**
      * 
@@ -281,27 +256,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract <U> Stream<T> filter(final U check, final BiPredicate<? super T, ? super U> predicate);
 
     /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract Stream<T> takeWhile(final Predicate<? super T> predicate);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract Stream<T> takeWhile(final Predicate<? super T> predicate, final long max);
-
-    /**
      * 
      * @param check initial value to check if the value match the condition.
      * @param predicate
@@ -310,53 +264,12 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract <U> Stream<T> takeWhile(final U check, final BiPredicate<? super T, ? super U> predicate);
 
     /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract Stream<T> dropWhile(final Predicate<? super T> predicate);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract Stream<T> dropWhile(final Predicate<? super T> predicate, final long max);
-
-    /**
      * 
      * @param check initial value to check if the value match the condition.
      * @param predicate
      * @return
      */
     public abstract <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate);
-
-    /**
-     * Take away and consume the specified <code>n</code> elements.
-     * 
-     * @param n
-     * @param action
-     * @return
-     * @see #dropWhile(Predicate)
-     */
-    public abstract Stream<T> drop(final long n, final Consumer<? super T> action);
-
-    /**
-     * Take away and consume elements while <code>predicate</code> returns true.
-     * 
-     * @param predicate
-     * @param action
-     * @return
-     * @see  #dropWhile(Predicate)
-     */
-    public abstract Stream<T> dropWhile(final Predicate<? super T> predicate, final Consumer<? super T> action);
 
     /**
      * Take away and consume elements while <code>predicate</code> returns true.
@@ -627,17 +540,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapSupplier);
 
     /**
-     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller). 
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param size
-     * @return
-     */
-    public abstract Stream<Stream<T>> split(int size);
-
-    /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 
      * <br />
@@ -658,106 +560,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @return
      */
     public abstract Stream<Set<T>> split3(int size);
-
-    //    /**
-    //     * Split the stream by the specified predicate.
-    //     * 
-    //     * <pre>
-    //     * <code>
-    //     * // split the number sequence by window 5.
-    //     * final MutableInt border = MutableInt.of(5);
-    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(e -> {
-    //     *     if (e <= border.intValue()) {
-    //     *         return true;
-    //     *     } else {
-    //     *         border.addAndGet(5);
-    //     *         return false;
-    //     *     }
-    //     * }).forEach(N::println);
-    //     * </code>
-    //     * </pre>
-    //     * 
-    //     * This stream should be sorted by value which is used to verify the border.
-    //     * This method only run sequentially, even in parallel stream.
-    //     * 
-    //     * @param predicate
-    //     * @return
-    //     */
-    //    public abstract Stream<Stream<T>> split(Predicate<? super T> predicate);
-    //
-    //    /**
-    //     * Split the stream by the specified predicate.
-    //     * 
-    //     * <pre>
-    //     * <code>
-    //     * // split the number sequence by window 5.
-    //     * final MutableInt border = MutableInt.of(5);
-    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(e -> {
-    //     *     if (e <= border.intValue()) {
-    //     *         return true;
-    //     *     } else {
-    //     *         border.addAndGet(5);
-    //     *         return false;
-    //     *     }
-    //     * }).forEach(N::println);
-    //     * </code>
-    //     * </pre>
-    //     * 
-    //     * This stream should be sorted by value which is used to verify the border.
-    //     * This method only run sequentially, even in parallel stream.
-    //     * 
-    //     * @param predicate
-    //     * @return
-    //     */
-    //    public abstract Stream<List<T>> split2(Predicate<? super T> predicate);
-    //
-    //    /**
-    //     * Split the stream by the specified predicate.
-    //     * 
-    //     * <pre>
-    //     * <code>
-    //     * // split the number sequence by window 5.
-    //     * final MutableInt border = MutableInt.of(5);
-    //     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split3(e -> {
-    //     *     if (e <= border.intValue()) {
-    //     *         return true;
-    //     *     } else {
-    //     *         border.addAndGet(5);
-    //     *         return false;
-    //     *     }
-    //     * }).forEach(N::println);
-    //     * </code>
-    //     * </pre>
-    //     * 
-    //     * This stream should be sorted by value which is used to verify the border.
-    //     * This method only run sequentially, even in parallel stream.
-    //     * 
-    //     * @param predicate
-    //     * @return
-    //     */
-    //    public abstract Stream<Set<T>> split3(Predicate<? super T> predicate);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This stream should be sorted by value which is used to verify the border.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param identifier
-     * @param predicate
-     * @return
-     */
-    public abstract <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate);
 
     /**
      * Split the stream by the specified predicate.
@@ -804,131 +606,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             final Consumer<? super U> boundaryUpdate);
 
     /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<Stream<T>> splitAt(int where);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<Stream<T>> splitBy(Predicate<? super T> where);
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param windowSize
-     * @return
-     */
-    public abstract Stream<List<T>> sliding(int windowSize);
-
-    /**
-     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 1).forEach(N::println)</code>
-     * <br /> output: <br />
-     * [1, 2, 3] <br />
-     * [2, 3, 4] <br />
-     * [3, 4, 5] <br />
-     * [4, 5, 6] <br />
-     * [5, 6, 7] <br />
-     * [6, 7, 8] <br />
-     * 
-     * <br>============================================================================</br>
-     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 3).forEach(N::println)</code>
-     * <br /> output: <br />
-     * [1, 2, 3] <br />
-     * [4, 5, 6] <br />
-     * [7, 8] <br />
-     * 
-     * <br>============================================================================</br>
-     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 5).sliding(3, 5).forEach(N::println)</code>
-     * <br /> output: <br />
-     * [1, 2, 3] <br />
-     * [6, 7, 8] <br />
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param windowSize
-     * @param increment
-     * @return
-     */
-    public abstract Stream<List<T>> sliding(int windowSize, int increment);
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract Stream<T> reverse();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract Stream<T> rotate(int distance);
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract Stream<T> shuffle();
-
-    /**
-     * Returns a stream consisting of the distinct elements (according to
-     * {@link Object#equals(Object)}) of this stream.
-     *
-     * <p>For ordered streams, the selection of distinct elements is stable
-     * (for duplicated elements, the element appearing first in the encounter
-     * order is preserved.)  For unordered streams, no stability guarantees
-     * are made.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @apiNote
-     * Preserving stability for {@code distinct()} in parallel pipelines is
-     * relatively expensive (requires that the operation act as a full barrier,
-     * with substantial buffering overhead), and stability is often not needed.
-     * Using an unordered stream source
-     * or removing the ordering constraint with {@link #unordered()} may result
-     * in significantly more efficient execution for {@code distinct()} in parallel
-     * pipelines, if the semantics of your situation permit.  If consistency
-     * with encounter order is required, and you are experiencing poor performance
-     * or memory utilization with {@code distinct()} in parallel pipelines,
-     * switching to sequential execution with {@link #sequential()} may improve
-     * performance.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     *
-     * @return the new stream
-     */
-    public abstract Stream<T> distinct();
-
-    // public abstract Stream<T> distinct(Comparator<? super T> comparator);
-
-    /**
      * Distinct by the value mapped from <code>keyMapper</code>
      * <br />
      * This method only run sequentially, even in parallel stream.
@@ -960,22 +637,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     /**
      * Returns a stream consisting of the elements of this stream, sorted
-     * according to natural order.  If the elements of this stream are not
-     * {@code Comparable}, a {@code java.lang.ClassCastException} may be thrown
-     * when the terminal operation is executed.
-     *
-     * <p>For ordered streams, the sort is stable.  For unordered streams, no
-     * stability guarantees are made.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @return the new stream
-     */
-    public abstract Stream<T> sorted();
-
-    /**
-     * Returns a stream consisting of the elements of this stream, sorted
      * according to the provided {@code Comparator}.
      *
      * <p>For ordered streams, the sort is stable.  For unordered streams, no
@@ -991,116 +652,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public abstract Stream<T> sorted(Comparator<? super T> comparator);
 
-    //    public abstract Stream<T> parallelSorted();
-    //
-    //    public abstract Stream<T> parallelSorted(Comparator<? super T> comparator);
-
-    /**
-     * Returns a stream consisting of the elements of this stream, additionally
-     * performing the provided action on each element as elements are consumed
-     * from the resulting stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, the action may be called at
-     * whatever time and in whatever thread the element is made available by the
-     * upstream operation.  If the action modifies shared state,
-     * it is responsible for providing the required synchronization.
-     *
-     * @apiNote This method exists mainly to support debugging, where you want
-     * to see the elements as they flow past a certain point in a pipeline:
-     * <pre>{@code
-     *     Stream.of("one", "two", "three", "four")
-     *         .filter(e -> e.length() > 3)
-     *         .peek(e -> System.out.println("Filtered value: " + e))
-     *         .map(String::toUpperCase)
-     *         .peek(e -> System.out.println("Mapped value: " + e))
-     *         .collect(Collectors.toList());
-     * }</pre>
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *                 non-interfering</a> action to perform on the elements as
-     *                 they are consumed from the stream
-     * @return this stream or a new stream with same elements.
-     */
-    public abstract Stream<T> peek(Consumer<? super T> action);
-
-    /**
-     * Returns a stream consisting of the elements of this stream, truncated
-     * to be no longer than {@code maxSize} in length.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * stateful intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code limit()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code maxSize}, since {@code limit(n)}
-     * is constrained to return not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code limit()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code limit()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param maxSize the number of elements the stream should be limited to
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code maxSize} is negative
-     */
-    public abstract Stream<T> limit(long maxSize);
-
-    /**
-     * Returns a stream consisting of the remaining elements of this stream
-     * after discarding the first {@code n} elements of the stream.
-     * If this stream contains fewer than {@code n} elements then an
-     * empty stream will be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code skip()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code n}, since {@code skip(n)}
-     * is constrained to skip not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code skip()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code skip()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param n the number of leading elements to skip
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code n} is negative
-     */
-    public abstract Stream<T> skip(long n);
-
-    /**
-     * Performs an action for each element of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * <p>The behavior of this operation is explicitly nondeterministic.
-     * For parallel stream pipelines, this operation does <em>not</em>
-     * guarantee to respect the encounter order of the stream, as doing so
-     * would sacrifice the benefit of parallelism.  For any given element, the
-     * action may be performed at whatever time and in whatever thread the
-     * library chooses.  If the action accesses shared state, it is
-     * responsible for providing the required synchronization.
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *               non-interfering</a> action to perform on the elements
-     */
-    public abstract void forEach(Consumer<? super T> action);
-
     /**
      * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
@@ -1113,24 +664,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @return
      */
     public abstract <U> U forEach(final U identity, BiFunction<U, ? super T, U> accumulator, final Predicate<? super U> predicate);
-
-    //    /**
-    //     * In parallel Streams, the elements after the first element which <code>action</code> returns false may be executed by action too.
-    //     * 
-    //     * @param action break if the action returns false.
-    //     * @return false if it breaks, otherwise true.
-    //     */
-    //    public abstract boolean forEach2(Function<? super T, Boolean> action);
-
-    /**
-     * Returns an array containing the elements of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an array containing the elements of this stream
-     */
-    public abstract Object[] toArray();
 
     /**
      * Returns an array containing the elements of this stream, using the
@@ -1162,22 +695,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
 
     public abstract <A> ObjectList<A> toObjectList(Class<A> cls);
-
-    public abstract List<T> toList();
-
-    public abstract List<T> toList(Supplier<? extends List<T>> supplier);
-
-    public abstract Set<T> toSet();
-
-    public abstract Set<T> toSet(Supplier<? extends Set<T>> supplier);
-
-    public abstract Multiset<T> toMultiset();
-
-    public abstract Multiset<T> toMultiset(Supplier<? extends Multiset<T>> supplier);
-
-    public abstract LongMultiset<T> toLongMultiset();
-
-    public abstract LongMultiset<T> toLongMultiset(Supplier<? extends LongMultiset<T>> supplier);
 
     /**
      * 
@@ -1639,22 +1156,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper);
 
-    /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
-     * equivalent to:
-     * <pre>{@code
-     *     return mapToLong(e -> 1L).sum();
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
-     *
-     * @return the count of elements in this stream
-     */
-    public abstract long count();
-
-    public abstract Optional<Map<Percentage, T>> distribution();
-
     public abstract Optional<Map<Percentage, T>> distribution(Comparator<? super T> comparator);
 
     public abstract Stream<List<T>> permutation();
@@ -1693,135 +1194,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeDouble2(ToDoubleFunction<? super T> mapper);
 
-    public abstract String join(CharSequence delimiter);
-
-    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
-
     public abstract boolean hasDuplicates();
 
-    /**
-     * Returns whether any elements of this stream match the provided
-     * predicate.  May not evaluate the predicate on all elements if not
-     * necessary for determining the result.  If the stream is empty then
-     * {@code false} is returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>existential quantification</em> of the
-     * predicate over the elements of the stream (for some x P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if any elements of the stream match the provided
-     * predicate, otherwise {@code false}
-     */
-    public abstract boolean anyMatch(Predicate<? super T> predicate);
-
-    /**
-     * Returns whether all elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * predicate over the elements of the stream (for all x P(x)).  If the
-     * stream is empty, the quantification is said to be <em>vacuously
-     * satisfied</em> and is always {@code true} (regardless of P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either all elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean allMatch(Predicate<? super T> predicate);
-
-    /**
-     * Returns whether no elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * negated predicate over the elements of the stream (for all x ~P(x)).  If
-     * the stream is empty, the quantification is said to be vacuously satisfied
-     * and is always {@code true}, regardless of P(x).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either no elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean noneMatch(Predicate<? super T> predicate);
-
-    /**
-     * Returns an {@link Optional} describing the first element of this stream,
-     * or an empty {@code Optional} if the stream is empty.  If the stream has
-     * no encounter order, then any element may be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @return an {@code Optional} describing the first element of this stream,
-     * or an empty {@code Optional} if the stream is empty
-     * @throws NullPointerException if the element selected is null
-     */
-    // public abstract OptionalNullable<T> findFirst();
-
-    public abstract OptionalNullable<T> findFirst(Predicate<? super T> predicate);
-
-    // public abstract OptionalNullable<T> findLast();
-
-    public abstract OptionalNullable<T> findLast(Predicate<? super T> predicate);
-
-    /**
-     * Returns an {@link Optional} describing some element of the stream, or an
-     * empty {@code Optional} if the stream is empty.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * <p>The behavior of this operation is explicitly nondeterministic; it is
-     * free to select any element in the stream.  This is to allow for maximal
-     * performance in parallel operations; the cost is that multiple invocations
-     * on the same source may not return the same result.  (If a stable result
-     * is desired, use {@link #findFirst()} instead.)
-     *
-     * @return an {@code Optional} describing some element of this stream, or an
-     * empty {@code Optional} if the stream is empty
-     * @throws NullPointerException if the element selected is null
-     * @see #findFirst()
-     */
-    // public abstract OptionalNullable<T> findAny();
-
-    public abstract OptionalNullable<T> findAny(Predicate<? super T> predicate);
-
-    public abstract OptionalNullable<T> first();
-
-    public abstract OptionalNullable<T> last();
-
-    //    public abstract OptionalNullable<T> any();
-
     public abstract Stream<T> skipNull();
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#except(IntList)
-     */
-    public abstract Stream<T> except(Collection<?> c);
 
     /**
      * Except with the specified Collection by the values mapped by <code>mapper</code>
@@ -1834,13 +1209,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     public abstract Stream<T> except(Function<? super T, ?> mapper, Collection<?> c);
 
     /**
-     * @param c
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public abstract Stream<T> intersect(Collection<?> c);
-
-    /**
      * Intersect with the specified Collection by the values mapped by <code>mapper</code>
      * 
      * @param mapper
@@ -1849,67 +1217,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @see IntList#intersect(IntList)
      */
     public abstract Stream<T> intersect(Function<? super T, ?> mapper, Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#xor(IntList)
-     */
-    public abstract Stream<T> xor(Collection<? extends T> c);
-
-    public abstract Stream<Indexed<T>> indexed();
-
-    //    /**
-    //     * Skip all the elements in the specified collection.
-    //     * 
-    //     * @param c
-    //     * @return
-    //     */
-    //    public abstract Stream<T> exclude(Collection<?> c);
-    //
-    //    /**
-    //     * Skip all from the specified Collection by the values mapped by <code>mapper</code>
-    //     * 
-    //     * @param mapper
-    //     * @param c
-    //     * @return
-    //     */
-    //    public abstract Stream<T> exclude(Function<? super T, ?> mapper, Collection<?> c);
-
-    //    /**
-    //     * Skip all the <code>null</code> elements in the stream.
-    //     * 
-    //     * @return
-    //     */
-    //    public abstract Stream<T> skipNull();
-    //
-    //    /**
-    //     * Break the iteration of the Stream if null element occurs
-    //     *  
-    //     * @return
-    //     * @see NullBreakIterator
-    //     */
-    //    public abstract Stream<T> breakWhileNull();
-    //
-    //    /**
-    //     * Break the iteration of the Stream if errors occurs
-    //     * 
-    //     * @return
-    //     * @see ErrorBreakIterator
-    //     */
-    //    public abstract Stream<T> breakWhileError();
-    //
-    //    /**
-    //     * Break the iteration of the Stream if error still occurs after retry specified <code>maxRetries</code> times.
-    //     * 
-    //     * @param maxRetries Default value is 0, no retry.
-    //     * @param retryInterval
-    //     * @return
-    //     * @see ErrorBreakIterator
-    //     */
-    //    public abstract Stream<T> breakWhileError(int maxRetries, long retryInterval);
-
-    public abstract Stream<T> cached();
 
     /**
      * Returns a reusable stream which can be repeatedly used.
@@ -1961,10 +1268,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     @Override
     public abstract ImmutableIterator<T> iterator();
-
-    // Static factories
-
-    // Static factories
 
     public static <T> Stream<T> empty() {
         return EMPTY;
@@ -2456,44 +1759,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         });
     }
 
-    //    public static <T> Stream<T> queued(Stream<? extends T> stream) {
-    //        return queued(stream, DEFAULT_QUEUE_SIZE);
-    //    }
-    //
-    //    /**
-    //     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
-    //     * 
-    //     * @param stream
-    //     * @param queueSize Default value is 8
-    //     * @return
-    //     */
-    //    public static <T> Stream<T> queued(Stream<? extends T> stream, int queueSize) {
-    //        if (stream.iterator() instanceof QueuedIterator && ((QueuedIterator<? extends T>) stream.iterator()).max() >= queueSize) {
-    //            return (Stream<T>) stream;
-    //        } else {
-    //            return parallelConcat(N.asArray(stream), 1, queueSize);
-    //        }
-    //    }
-    //
-    //    public static <T> Stream<T> queued(Iterator<? extends T> iterator) {
-    //        return queued(iterator, DEFAULT_QUEUE_SIZE);
-    //    }
-    //
-    //    /**
-    //     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterator asynchronously.
-    //     * 
-    //     * @param iterator
-    //     * @param queueSize Default value is 8
-    //     * @return
-    //     */
-    //    public static <T> Stream<T> queued(Iterator<? extends T> iterator, int queueSize) {
-    //        if (iterator instanceof QueuedIterator && ((QueuedIterator<? extends T>) iterator).max() >= queueSize) {
-    //            return of(iterator);
-    //        } else {
-    //            return parallelConcat(N.asArray(iterator), 1, queueSize);
-    //        }
-    //    }
-
     /**
      * 
      * @param startTimeInMillis first time value in milliseconds.
@@ -2552,44 +1817,64 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             return empty();
         }
 
-        final Iterator<? extends T>[] iter = new Iterator[a.length];
+        final Iterator<? extends T>[] iters = new Iterator[a.length];
 
         for (int i = 0, len = a.length; i < len; i++) {
-            iter[i] = ImmutableIterator.of(a[i]);
+            iters[i] = ImmutableIterator.of(a[i]);
         }
 
-        return concat(iter);
+        return concat(iters);
     }
 
-    //    static <T> Stream<T> concat(Collection<? extends T>... a) {
-    //        final List<Iterator<? extends T>> iterators = new ArrayList<>(a.length);
-    //
-    //        for (int i = 0, len = a.length; i < len; i++) {
-    //            iterators.add(a[i].iterator());
-    //        }
-    //
-    //        return concat(iterators);
-    //    }
+    public static <T> Stream<T> concat(final Collection<? extends T>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        final Iterator<? extends T>[] iters = new Iterator[a.length];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            iters[i] = a[i].iterator();
+        }
+
+        return concat(iters);
+    }
+
+    public static <T> Stream<T> concat(final Iterator<? extends T>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return concat2(N.asList(a));
+    }
 
     public static <T> Stream<T> concat(final Stream<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        final Iterator<? extends T>[] iter = new Iterator[a.length];
+        return concat(N.asList(a));
+    }
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            iter[i] = a[i].iterator();
+    public static <T> Stream<T> concat(final Collection<? extends Stream<? extends T>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return empty();
         }
 
-        return concat(iter).onClose(new Runnable() {
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+
+        for (Stream<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return concat2(iterList).onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (Stream<? extends T> stream : a) {
+                for (Stream<? extends T> e : c) {
                     try {
-                        stream.close();
+                        e.close();
                     } catch (Throwable throwable) {
                         if (runtimeException == null) {
                             runtimeException = N.toRuntimeException(throwable);
@@ -2606,15 +1891,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         });
     }
 
-    public static <T> Stream<T> concat(final Iterator<? extends T>... a) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        }
-
-        return concat(N.asList(a));
-    }
-
-    public static <T> Stream<T> concat(final Collection<? extends Iterator<? extends T>> c) {
+    public static <T> Stream<T> concat2(final Collection<? extends Iterator<? extends T>> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -2641,6 +1918,139 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 return cur.next();
             }
         });
+    }
+
+    // NO NEED.
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T> Stream<T> parallelConcat(final T[]... a) {
+    //        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, calculateQueueSize(a.length));
+    //    }
+    //
+    //    /**
+    //     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
+    //     * 
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param readThreadNum - count of threads used to read elements from iterator to queue. Default value is min(8, a.length)
+    //     * @param queueSize Default value is N.min(128, a.length * 16)
+    //     * @return
+    //     */
+    //    public static <T> Stream<T> parallelConcat(final T[][] a, final int readThreadNum, final int queueSize) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return empty();
+    //        }
+    //
+    //        final Iterator<? extends T>[] iters = new Iterator[a.length];
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            iters[i] = ImmutableIterator.of(a[i]);
+    //        }
+    //
+    //        return parallelConcat(iters, readThreadNum, queueSize);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @return
+    //     */
+    //    public static <T> Stream<T> parallelConcat(final Collection<? extends T>... a) {
+    //        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, calculateQueueSize(a.length));
+    //    }
+    //
+    //    /**
+    //     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
+    //     * 
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param readThreadNum - count of threads used to read elements from iterator to queue. Default value is min(8, a.length)
+    //     * @param queueSize Default value is N.min(128, a.length * 16)
+    //     * @return
+    //     */
+    //    public static <T> Stream<T> parallelConcat(final Collection<? extends T>[] a, final int readThreadNum, final int queueSize) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return empty();
+    //        }
+    //
+    //        final Iterator<? extends T>[] iters = new Iterator[a.length];
+    //
+    //        for (int i = 0, len = a.length; i < len; i++) {
+    //            iters[i] = a[i].iterator();
+    //        }
+    //
+    //        return parallelConcat(iters, readThreadNum, queueSize);
+    //    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Iterator<? extends T>... a) {
+        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, calculateQueueSize(a.length));
+    }
+
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
+     * 
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param readThreadNum - count of threads used to read elements from iterator to queue. Default value is min(8, a.length)
+     * @param queueSize Default value is N.min(128, a.length * 16)
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Iterator<? extends T>[] a, final int readThreadNum, final int queueSize) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return parallelConcat2(N.asList(a), readThreadNum, queueSize);
     }
 
     /**
@@ -2680,20 +2090,77 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
             return empty();
         }
 
-        final Iterator<? extends T>[] iter = new Iterator[a.length];
+        return parallelConcat(N.asList(a), readThreadNum, queueSize);
+    }
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            iter[i] = a[i].iterator();
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Collection<? extends Stream<? extends T>> c) {
+        return parallelConcat(c, DEFAULT_READING_THREAD_NUM);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @param readThreadNum
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Collection<? extends Stream<? extends T>> c, final int readThreadNum) {
+        return parallelConcat(c, readThreadNum, calculateQueueSize(c.size()));
+    }
+
+    /**
+     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
+     * 
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param readThreadNum - count of threads used to read elements from iterator to queue. Default value is min(8, c.size())
+     * @param queueSize Default value is N.min(128, c.size() * 16)
+     * @return
+     */
+    public static <T> Stream<T> parallelConcat(final Collection<? extends Stream<? extends T>> c, final int readThreadNum, final int queueSize) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
         }
 
-        return parallelConcat(N.asList(iter), readThreadNum, queueSize).onClose(new Runnable() {
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+
+        for (Stream<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return parallelConcat2(iterList, readThreadNum, queueSize).onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (Stream<? extends T> stream : a) {
+                for (Stream<? extends T> e : c) {
                     try {
-                        stream.close();
+                        e.close();
                     } catch (Throwable throwable) {
                         if (runtimeException == null) {
                             runtimeException = N.toRuntimeException(throwable);
@@ -2719,51 +2186,11 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      *        }
      * </code>
      * 
-     * @param a
-     * @return
-     */
-    public static <T> Stream<T> parallelConcat(final Iterator<? extends T>... a) {
-        return parallelConcat(a, DEFAULT_READING_THREAD_NUM, calculateQueueSize(a.length));
-    }
-
-    /**
-     * Returns a Stream with elements from a temporary queue which is filled by reading the elements from the specified iterators in parallel.
-     * 
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param readThreadNum - count of threads used to read elements from iterator to queue. Default value is min(8, a.length)
-     * @param queueSize Default value is N.min(128, a.length * 16)
-     * @return
-     */
-    public static <T> Stream<T> parallelConcat(final Iterator<? extends T>[] a, final int readThreadNum, final int queueSize) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        }
-
-        return parallelConcat(N.asList(a), readThreadNum, queueSize);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelConcat(a,b, ...)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
      * @param c
      * @return
      */
-    public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c) {
-        return parallelConcat(c, DEFAULT_READING_THREAD_NUM);
+    public static <T> Stream<T> parallelConcat2(final Collection<? extends Iterator<? extends T>> c) {
+        return parallelConcat2(c, DEFAULT_READING_THREAD_NUM);
     }
 
     /**
@@ -2779,8 +2206,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param readThreadNum
      * @return
      */
-    public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int readThreadNum) {
-        return parallelConcat(c, readThreadNum, calculateQueueSize(c.size()));
+    public static <T> Stream<T> parallelConcat2(final Collection<? extends Iterator<? extends T>> c, final int readThreadNum) {
+        return parallelConcat2(c, readThreadNum, calculateQueueSize(c.size()));
     }
 
     /**
@@ -2799,7 +2226,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize Default value is N.min(128, c.size() * 16)
      * @return
      */
-    public static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int readThreadNum, final int queueSize) {
+    public static <T> Stream<T> parallelConcat2(final Collection<? extends Iterator<? extends T>> c, final int readThreadNum, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -2807,6 +2234,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         final AsyncExecutor asyncExecutor = new AsyncExecutor(N.min(readThreadNum, c.size()), 300L, TimeUnit.SECONDS);
 
         return parallelConcat(c, queueSize, asyncExecutor);
+    }
+
+    static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final AsyncExecutor asyncExecutor) {
+        return parallelConcat(c, calculateQueueSize(c.size()), asyncExecutor);
     }
 
     static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int queueSize, final AsyncExecutor asyncExecutor) {
@@ -2894,10 +2325,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         });
     }
 
-    static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final AsyncExecutor asyncExecutor) {
-        return parallelConcat(c, calculateQueueSize(c.size()), asyncExecutor);
-    }
-
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
      * Each pair of values is combined into a single value using the supplied zipFunction function.
@@ -2920,90 +2347,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <R> Stream<R> zip(final char[] a, final char[] b, final char[] c, final CharTriFunction<R> zipFunction) {
         return zip(ImmutableCharIterator.of(a), ImmutableCharIterator.of(b), ImmutableCharIterator.of(c), zipFunction);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharBiFunction<R> zipFunction) {
-        return zip(a.charIterator(), b.charIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharStream c, final CharTriFunction<R> zipFunction) {
-        return zip(a.charIterator(), b.charIterator(), c.charIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
     }
 
     /**
@@ -3051,6 +2394,72 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharBiFunction<R> zipFunction) {
+        return zip(a.charIterator(), b.charIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (CharStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharStream c, final CharTriFunction<R> zipFunction) {
+        return zip(a.charIterator(), b.charIterator(), c.charIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (CharStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -3058,18 +2467,23 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends CharIterator> c, final CharNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends CharStream> c, final CharNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
         final int len = c.size();
+        final List<CharIterator> iterList = new ArrayList<>(len);
+
+        for (CharStream e : c) {
+            iterList.add(e.charIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
-
             @Override
             public boolean hasNext() {
-                for (CharIterator e : c) {
+                for (CharIterator e : iterList) {
                     if (e.hasNext() == false) {
                         return false;
                     }
@@ -3083,11 +2497,32 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 final char[] args = new char[len];
                 int idx = 0;
 
-                for (CharIterator e : c) {
+                for (CharIterator e : iterList) {
                     args[idx++] = e.next();
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (CharStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -3103,34 +2538,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final CharStream a, final CharStream b, final char valueForNoneA, final char valueForNoneB,
-            final CharBiFunction<R> zipFunction) {
-        return zip(a.charIterator(), b.charIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static <R> Stream<R> zip(final char[] a, final char[] b, final char valueForNoneA, final char valueForNoneB, final CharBiFunction<R> zipFunction) {
+        return zip(ImmutableCharIterator.of(a), ImmutableCharIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -3146,44 +2555,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharStream c, final char valueForNoneA, final char valueForNoneB,
+    public static <R> Stream<R> zip(final char[] a, final char[] b, final char[] c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final CharTriFunction<R> zipFunction) {
-        return zip(a.charIterator(), b.charIterator(), c.charIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableCharIterator.of(a), ImmutableCharIterator.of(b), ImmutableCharIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     /**
@@ -3250,6 +2625,82 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final CharStream a, final CharStream b, final char valueForNoneA, final char valueForNoneB,
+            final CharBiFunction<R> zipFunction) {
+        return zip(a.charIterator(), b.charIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (CharStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharStream c, final char valueForNoneA, final char valueForNoneB,
+            final char valueForNoneC, final CharTriFunction<R> zipFunction) {
+        return zip(a.charIterator(), b.charIterator(), c.charIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (CharStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -3258,21 +2709,28 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends CharIterator> c, final char[] valuesForNone, final CharNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends CharStream> c, final char[] valuesForNone, final CharNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final int len = c.size();
+        final List<CharIterator> iterList = new ArrayList<>(len);
+
+        for (CharStream e : c) {
+            iterList.add(e.charIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
-                for (CharIterator e : c) {
+                for (CharIterator e : iterList) {
                     if (e.hasNext()) {
                         return true;
                     }
@@ -3287,14 +2745,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 int idx = 0;
                 boolean hasNext = false;
 
-                for (CharIterator e : c) {
+                for (CharIterator e : iterList) {
                     if (e.hasNext()) {
                         hasNext = true;
-                        args[idx] = e.next();
+                        args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx++] = valuesForNone[idx];
                     }
-                    idx++;
                 }
 
                 if (hasNext == false) {
@@ -3302,6 +2759,27 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (CharStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -3328,90 +2806,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <R> Stream<R> zip(final byte[] a, final byte[] b, final byte[] c, final ByteTriFunction<R> zipFunction) {
         return zip(ImmutableByteIterator.of(a), ImmutableByteIterator.of(b), ImmutableByteIterator.of(c), zipFunction);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteBiFunction<R> zipFunction) {
-        return zip(a.byteIterator(), b.byteIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTriFunction<R> zipFunction) {
-        return zip(a.byteIterator(), b.byteIterator(), c.byteIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
     }
 
     /**
@@ -3459,6 +2853,72 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteBiFunction<R> zipFunction) {
+        return zip(a.byteIterator(), b.byteIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ByteStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTriFunction<R> zipFunction) {
+        return zip(a.byteIterator(), b.byteIterator(), c.byteIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ByteStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -3466,18 +2926,23 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends ByteIterator> c, final ByteNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends ByteStream> c, final ByteNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
         final int len = c.size();
+        final List<ByteIterator> iterList = new ArrayList<>(len);
+
+        for (ByteStream e : c) {
+            iterList.add(e.byteIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
-
             @Override
             public boolean hasNext() {
-                for (ByteIterator e : c) {
+                for (ByteIterator e : iterList) {
                     if (e.hasNext() == false) {
                         return false;
                     }
@@ -3491,11 +2956,32 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 final byte[] args = new byte[len];
                 int idx = 0;
 
-                for (ByteIterator e : c) {
+                for (ByteIterator e : iterList) {
                     args[idx++] = e.next();
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ByteStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -3511,34 +2997,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final byte valueForNoneA, final byte valueForNoneB,
-            final ByteBiFunction<R> zipFunction) {
-        return zip(a.byteIterator(), b.byteIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static <R> Stream<R> zip(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB, final ByteBiFunction<R> zipFunction) {
+        return zip(ImmutableByteIterator.of(a), ImmutableByteIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -3554,44 +3014,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteStream c, final byte valueForNoneA, final byte valueForNoneB,
+    public static <R> Stream<R> zip(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final ByteTriFunction<R> zipFunction) {
-        return zip(a.byteIterator(), b.byteIterator(), c.byteIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableByteIterator.of(a), ImmutableByteIterator.of(b), ImmutableByteIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     /**
@@ -3658,6 +3084,82 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final byte valueForNoneA, final byte valueForNoneB,
+            final ByteBiFunction<R> zipFunction) {
+        return zip(a.byteIterator(), b.byteIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ByteStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteStream c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC, final ByteTriFunction<R> zipFunction) {
+        return zip(a.byteIterator(), b.byteIterator(), c.byteIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ByteStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -3666,21 +3168,28 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends ByteIterator> c, final byte[] valuesForNone, final ByteNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends ByteStream> c, final byte[] valuesForNone, final ByteNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final int len = c.size();
+        final List<ByteIterator> iterList = new ArrayList<>(len);
+
+        for (ByteStream e : c) {
+            iterList.add(e.byteIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
-                for (ByteIterator e : c) {
+                for (ByteIterator e : iterList) {
                     if (e.hasNext()) {
                         return true;
                     }
@@ -3695,14 +3204,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 int idx = 0;
                 boolean hasNext = false;
 
-                for (ByteIterator e : c) {
+                for (ByteIterator e : iterList) {
                     if (e.hasNext()) {
                         hasNext = true;
-                        args[idx] = e.next();
+                        args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx++] = valuesForNone[idx];
                     }
-                    idx++;
                 }
 
                 if (hasNext == false) {
@@ -3710,6 +3218,27 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ByteStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -3736,90 +3265,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <R> Stream<R> zip(final short[] a, final short[] b, final short[] c, final ShortTriFunction<R> zipFunction) {
         return zip(ImmutableShortIterator.of(a), ImmutableShortIterator.of(b), ImmutableShortIterator.of(c), zipFunction);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortBiFunction<R> zipFunction) {
-        return zip(a.shortIterator(), b.shortIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortStream c, final ShortTriFunction<R> zipFunction) {
-        return zip(a.shortIterator(), b.shortIterator(), c.shortIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
     }
 
     /**
@@ -3867,6 +3312,72 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortBiFunction<R> zipFunction) {
+        return zip(a.shortIterator(), b.shortIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortStream c, final ShortTriFunction<R> zipFunction) {
+        return zip(a.shortIterator(), b.shortIterator(), c.shortIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -3874,18 +3385,23 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends ShortIterator> c, final ShortNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends ShortStream> c, final ShortNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
         final int len = c.size();
+        final List<ShortIterator> iterList = new ArrayList<>(len);
+
+        for (ShortStream e : c) {
+            iterList.add(e.shortIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
-
             @Override
             public boolean hasNext() {
-                for (ShortIterator e : c) {
+                for (ShortIterator e : iterList) {
                     if (e.hasNext() == false) {
                         return false;
                     }
@@ -3899,11 +3415,32 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 final short[] args = new short[len];
                 int idx = 0;
 
-                for (ShortIterator e : c) {
+                for (ShortIterator e : iterList) {
                     args[idx++] = e.next();
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -3919,34 +3456,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final short valueForNoneA, final short valueForNoneB,
+    public static <R> Stream<R> zip(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB,
             final ShortBiFunction<R> zipFunction) {
-        return zip(a.shortIterator(), b.shortIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableShortIterator.of(a), ImmutableShortIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -3962,44 +3474,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortStream c, final short valueForNoneA, final short valueForNoneB,
+    public static <R> Stream<R> zip(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final ShortTriFunction<R> zipFunction) {
-        return zip(a.shortIterator(), b.shortIterator(), c.shortIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableShortIterator.of(a), ImmutableShortIterator.of(b), ImmutableShortIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     /**
@@ -4066,6 +3544,82 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final short valueForNoneA, final short valueForNoneB,
+            final ShortBiFunction<R> zipFunction) {
+        return zip(a.shortIterator(), b.shortIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortStream c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC, final ShortTriFunction<R> zipFunction) {
+        return zip(a.shortIterator(), b.shortIterator(), c.shortIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -4074,21 +3628,28 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends ShortIterator> c, final short[] valuesForNone, final ShortNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends ShortStream> c, final short[] valuesForNone, final ShortNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final int len = c.size();
+        final List<ShortIterator> iterList = new ArrayList<>(len);
+
+        for (ShortStream e : c) {
+            iterList.add(e.shortIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
-                for (ShortIterator e : c) {
+                for (ShortIterator e : iterList) {
                     if (e.hasNext()) {
                         return true;
                     }
@@ -4103,14 +3664,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 int idx = 0;
                 boolean hasNext = false;
 
-                for (ShortIterator e : c) {
+                for (ShortIterator e : iterList) {
                     if (e.hasNext()) {
                         hasNext = true;
-                        args[idx] = e.next();
+                        args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx++] = valuesForNone[idx];
                     }
-                    idx++;
                 }
 
                 if (hasNext == false) {
@@ -4118,6 +3678,27 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (ShortStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -4144,90 +3725,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <R> Stream<R> zip(final int[] a, final int[] b, final int[] c, final IntTriFunction<R> zipFunction) {
         return zip(ImmutableIntIterator.of(a), ImmutableIntIterator.of(b), ImmutableIntIterator.of(c), zipFunction);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntBiFunction<R> zipFunction) {
-        return zip(a.intIterator(), b.intIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<R> zipFunction) {
-        return zip(a.intIterator(), b.intIterator(), c.intIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
     }
 
     /**
@@ -4275,6 +3772,72 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntBiFunction<R> zipFunction) {
+        return zip(a.intIterator(), b.intIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<R> zipFunction) {
+        return zip(a.intIterator(), b.intIterator(), c.intIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -4282,18 +3845,23 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends IntIterator> c, final IntNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends IntStream> c, final IntNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
         final int len = c.size();
+        final List<IntIterator> iterList = new ArrayList<>(len);
+
+        for (IntStream e : c) {
+            iterList.add(e.intIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
-
             @Override
             public boolean hasNext() {
-                for (IntIterator e : c) {
+                for (IntIterator e : iterList) {
                     if (e.hasNext() == false) {
                         return false;
                     }
@@ -4307,11 +3875,32 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 final int[] args = new int[len];
                 int idx = 0;
 
-                for (IntIterator e : c) {
+                for (IntIterator e : iterList) {
                     args[idx++] = e.next();
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -4327,34 +3916,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB,
-            final IntBiFunction<R> zipFunction) {
-        return zip(a.intIterator(), b.intIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static <R> Stream<R> zip(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB, final IntBiFunction<R> zipFunction) {
+        return zip(ImmutableIntIterator.of(a), ImmutableIntIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -4370,44 +3933,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
-            final int valueForNoneC, final IntTriFunction<R> zipFunction) {
-        return zip(a.intIterator(), b.intIterator(), c.intIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static <R> Stream<R> zip(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC,
+            final IntTriFunction<R> zipFunction) {
+        return zip(ImmutableIntIterator.of(a), ImmutableIntIterator.of(b), ImmutableIntIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     /**
@@ -4474,6 +4003,82 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB,
+            final IntBiFunction<R> zipFunction) {
+        return zip(a.intIterator(), b.intIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC, final IntTriFunction<R> zipFunction) {
+        return zip(a.intIterator(), b.intIterator(), c.intIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -4482,21 +4087,28 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends IntIterator> c, final int[] valuesForNone, final IntNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends IntStream> c, final int[] valuesForNone, final IntNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final int len = c.size();
+        final List<IntIterator> iterList = new ArrayList<>(len);
+
+        for (IntStream e : c) {
+            iterList.add(e.intIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
-                for (IntIterator e : c) {
+                for (IntIterator e : iterList) {
                     if (e.hasNext()) {
                         return true;
                     }
@@ -4511,14 +4123,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 int idx = 0;
                 boolean hasNext = false;
 
-                for (IntIterator e : c) {
+                for (IntIterator e : iterList) {
                     if (e.hasNext()) {
                         hasNext = true;
-                        args[idx] = e.next();
+                        args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx++] = valuesForNone[idx];
                     }
-                    idx++;
                 }
 
                 if (hasNext == false) {
@@ -4526,6 +4137,27 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (IntStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -4552,90 +4184,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <R> Stream<R> zip(final long[] a, final long[] b, final long[] c, final LongTriFunction<R> zipFunction) {
         return zip(ImmutableLongIterator.of(a), ImmutableLongIterator.of(b), ImmutableLongIterator.of(c), zipFunction);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongBiFunction<R> zipFunction) {
-        return zip(a.longIterator(), b.longIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<R> zipFunction) {
-        return zip(a.longIterator(), b.longIterator(), c.longIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
     }
 
     /**
@@ -4683,6 +4231,72 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongBiFunction<R> zipFunction) {
+        return zip(a.longIterator(), b.longIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<R> zipFunction) {
+        return zip(a.longIterator(), b.longIterator(), c.longIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -4690,18 +4304,23 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends LongIterator> c, final LongNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends LongStream> c, final LongNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
         final int len = c.size();
+        final List<LongIterator> iterList = new ArrayList<>(len);
+
+        for (LongStream e : c) {
+            iterList.add(e.longIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
-
             @Override
             public boolean hasNext() {
-                for (LongIterator e : c) {
+                for (LongIterator e : iterList) {
                     if (e.hasNext() == false) {
                         return false;
                     }
@@ -4715,11 +4334,32 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 final long[] args = new long[len];
                 int idx = 0;
 
-                for (LongIterator e : c) {
+                for (LongIterator e : iterList) {
                     args[idx++] = e.next();
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -4735,34 +4375,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final LongStream a, final LongStream b, final long valueForNoneA, final long valueForNoneB,
-            final LongBiFunction<R> zipFunction) {
-        return zip(a.longIterator(), b.longIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static <R> Stream<R> zip(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB, final LongBiFunction<R> zipFunction) {
+        return zip(ImmutableLongIterator.of(a), ImmutableLongIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -4778,44 +4392,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongStream c, final long valueForNoneA, final long valueForNoneB,
+    public static <R> Stream<R> zip(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final LongTriFunction<R> zipFunction) {
-        return zip(a.longIterator(), b.longIterator(), c.longIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableLongIterator.of(a), ImmutableLongIterator.of(b), ImmutableLongIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     /**
@@ -4882,6 +4462,82 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final LongStream a, final LongStream b, final long valueForNoneA, final long valueForNoneB,
+            final LongBiFunction<R> zipFunction) {
+        return zip(a.longIterator(), b.longIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongStream c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC, final LongTriFunction<R> zipFunction) {
+        return zip(a.longIterator(), b.longIterator(), c.longIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -4890,21 +4546,28 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends LongIterator> c, final long[] valuesForNone, final LongNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends LongStream> c, final long[] valuesForNone, final LongNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final int len = c.size();
+        final List<LongIterator> iterList = new ArrayList<>(len);
+
+        for (LongStream e : c) {
+            iterList.add(e.longIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
-                for (LongIterator e : c) {
+                for (LongIterator e : iterList) {
                     if (e.hasNext()) {
                         return true;
                     }
@@ -4919,14 +4582,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 int idx = 0;
                 boolean hasNext = false;
 
-                for (LongIterator e : c) {
+                for (LongIterator e : iterList) {
                     if (e.hasNext()) {
                         hasNext = true;
-                        args[idx] = e.next();
+                        args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx++] = valuesForNone[idx];
                     }
-                    idx++;
                 }
 
                 if (hasNext == false) {
@@ -4934,6 +4596,27 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -4960,90 +4643,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <R> Stream<R> zip(final float[] a, final float[] b, final float[] c, final FloatTriFunction<R> zipFunction) {
         return zip(ImmutableFloatIterator.of(a), ImmutableFloatIterator.of(b), ImmutableFloatIterator.of(c), zipFunction);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatBiFunction<R> zipFunction) {
-        return zip(a.floatIterator(), b.floatIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatStream c, final FloatTriFunction<R> zipFunction) {
-        return zip(a.floatIterator(), b.floatIterator(), c.floatIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
     }
 
     /**
@@ -5091,6 +4690,72 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatBiFunction<R> zipFunction) {
+        return zip(a.floatIterator(), b.floatIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (FloatStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatStream c, final FloatTriFunction<R> zipFunction) {
+        return zip(a.floatIterator(), b.floatIterator(), c.floatIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (FloatStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -5098,18 +4763,23 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends FloatIterator> c, final FloatNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends FloatStream> c, final FloatNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
         final int len = c.size();
+        final List<FloatIterator> iterList = new ArrayList<>(len);
+
+        for (FloatStream e : c) {
+            iterList.add(e.floatIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
-
             @Override
             public boolean hasNext() {
-                for (FloatIterator e : c) {
+                for (FloatIterator e : iterList) {
                     if (e.hasNext() == false) {
                         return false;
                     }
@@ -5123,11 +4793,32 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 final float[] args = new float[len];
                 int idx = 0;
 
-                for (FloatIterator e : c) {
+                for (FloatIterator e : iterList) {
                     args[idx++] = e.next();
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (FloatStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -5143,34 +4834,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final float valueForNoneA, final float valueForNoneB,
+    public static <R> Stream<R> zip(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB,
             final FloatBiFunction<R> zipFunction) {
-        return zip(a.floatIterator(), b.floatIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableFloatIterator.of(a), ImmutableFloatIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -5186,44 +4852,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatStream c, final float valueForNoneA, final float valueForNoneB,
+    public static <R> Stream<R> zip(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final FloatTriFunction<R> zipFunction) {
-        return zip(a.floatIterator(), b.floatIterator(), c.floatIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableFloatIterator.of(a), ImmutableFloatIterator.of(b), ImmutableFloatIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     /**
@@ -5290,6 +4922,82 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final float valueForNoneA, final float valueForNoneB,
+            final FloatBiFunction<R> zipFunction) {
+        return zip(a.floatIterator(), b.floatIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (FloatStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatStream c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC, final FloatTriFunction<R> zipFunction) {
+        return zip(a.floatIterator(), b.floatIterator(), c.floatIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (FloatStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -5298,21 +5006,28 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends FloatIterator> c, final float[] valuesForNone, final FloatNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends FloatStream> c, final float[] valuesForNone, final FloatNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final int len = c.size();
+        final List<FloatIterator> iterList = new ArrayList<>(len);
+
+        for (FloatStream e : c) {
+            iterList.add(e.floatIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
-                for (FloatIterator e : c) {
+                for (FloatIterator e : iterList) {
                     if (e.hasNext()) {
                         return true;
                     }
@@ -5327,14 +5042,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 int idx = 0;
                 boolean hasNext = false;
 
-                for (FloatIterator e : c) {
+                for (FloatIterator e : iterList) {
                     if (e.hasNext()) {
                         hasNext = true;
-                        args[idx] = e.next();
+                        args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx++] = valuesForNone[idx];
                     }
-                    idx++;
                 }
 
                 if (hasNext == false) {
@@ -5342,6 +5056,27 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (FloatStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -5368,90 +5103,6 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      */
     public static <R> Stream<R> zip(final double[] a, final double[] b, final double[] c, final DoubleTriFunction<R> zipFunction) {
         return zip(ImmutableDoubleIterator.of(a), ImmutableDoubleIterator.of(b), ImmutableDoubleIterator.of(c), zipFunction);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<R> zipFunction) {
-        return zip(a.doubleIterator(), b.doubleIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<R> zipFunction) {
-        return zip(a.doubleIterator(), b.doubleIterator(), c.doubleIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
     }
 
     /**
@@ -5499,6 +5150,72 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<R> zipFunction) {
+        return zip(a.doubleIterator(), b.doubleIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (DoubleStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<R> zipFunction) {
+        return zip(a.doubleIterator(), b.doubleIterator(), c.doubleIterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (DoubleStream stream : N.asList(a, b, c)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -5506,18 +5223,23 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends DoubleIterator> c, final DoubleNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends DoubleStream> c, final DoubleNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
         final int len = c.size();
+        final List<DoubleIterator> iterList = new ArrayList<>(len);
+
+        for (DoubleStream e : c) {
+            iterList.add(e.doubleIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
-
             @Override
             public boolean hasNext() {
-                for (DoubleIterator e : c) {
+                for (DoubleIterator e : iterList) {
                     if (e.hasNext() == false) {
                         return false;
                     }
@@ -5531,11 +5253,32 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 final double[] args = new double[len];
                 int idx = 0;
 
-                for (DoubleIterator e : c) {
+                for (DoubleIterator e : iterList) {
                     args[idx++] = e.next();
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (DoubleStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -5551,34 +5294,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final double valueForNoneA, final double valueForNoneB,
+    public static <R> Stream<R> zip(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
             final DoubleBiFunction<R> zipFunction) {
-        return zip(a.doubleIterator(), b.doubleIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableDoubleIterator.of(a), ImmutableDoubleIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -5594,45 +5312,10 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final double valueForNoneA, final double valueForNoneB,
+    public static <R> Stream<R> zip(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC, final DoubleTriFunction<R> zipFunction) {
-        return zip(a.doubleIterator(), b.doubleIterator(), c.doubleIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
-                .onClose(new Runnable() {
-                    @Override
-                    public void run() {
-                        RuntimeException runtimeException = null;
-
-                        try {
-                            a.close();
-                        } catch (Throwable throwable) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        }
-
-                        try {
-                            b.close();
-                        } catch (Throwable throwable) {
-                            if (runtimeException == null) {
-                                runtimeException = N.toRuntimeException(throwable);
-                            } else {
-                                runtimeException.addSuppressed(throwable);
-                            }
-                        }
-
-                        try {
-                            c.close();
-                        } catch (Throwable throwable) {
-                            if (runtimeException == null) {
-                                runtimeException = N.toRuntimeException(throwable);
-                            } else {
-                                runtimeException.addSuppressed(throwable);
-                            }
-                        }
-
-                        if (runtimeException != null) {
-                            throw runtimeException;
-                        }
-                    }
-                });
+        return zip(ImmutableDoubleIterator.of(a), ImmutableDoubleIterator.of(b), ImmutableDoubleIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
+                zipFunction);
     }
 
     /**
@@ -5699,6 +5382,83 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final double valueForNoneA, final double valueForNoneB,
+            final DoubleBiFunction<R> zipFunction) {
+        return zip(a.doubleIterator(), b.doubleIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (DoubleStream stream : N.asList(a, b)) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC, final DoubleTriFunction<R> zipFunction) {
+        return zip(a.doubleIterator(), b.doubleIterator(), c.doubleIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(new Runnable() {
+                    @Override
+                    public void run() {
+                        RuntimeException runtimeException = null;
+
+                        for (DoubleStream stream : N.asList(a, b, c)) {
+                            try {
+                                stream.close();
+                            } catch (Throwable throwable) {
+                                if (runtimeException == null) {
+                                    runtimeException = N.toRuntimeException(throwable);
+                                } else {
+                                    runtimeException.addSuppressed(throwable);
+                                }
+                            }
+                        }
+
+                        if (runtimeException != null) {
+                            throw runtimeException;
+                        }
+                    }
+                });
+    }
+
+    /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -5707,21 +5467,28 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <R> Stream<R> zip(final Collection<? extends DoubleIterator> c, final double[] valuesForNone, final DoubleNFunction<R> zipFunction) {
+    @SuppressWarnings("resource")
+    public static <R> Stream<R> zip(final Collection<? extends DoubleStream> c, final double[] valuesForNone, final DoubleNFunction<R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        final int len = c.size();
+        final List<DoubleIterator> iterList = new ArrayList<>(len);
+
+        for (DoubleStream e : c) {
+            iterList.add(e.doubleIterator());
+        }
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
-                for (DoubleIterator e : c) {
+                for (DoubleIterator e : iterList) {
                     if (e.hasNext()) {
                         return true;
                     }
@@ -5736,14 +5503,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 int idx = 0;
                 boolean hasNext = false;
 
-                for (DoubleIterator e : c) {
+                for (DoubleIterator e : iterList) {
                     if (e.hasNext()) {
                         hasNext = true;
-                        args[idx] = e.next();
+                        args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx++] = valuesForNone[idx];
                     }
-                    idx++;
                 }
 
                 if (hasNext == false) {
@@ -5751,6 +5517,27 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 }
 
                 return zipFunction.apply(args);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (DoubleStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
             }
         });
     }
@@ -5780,88 +5567,29 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Zip together the "a" and "b" arrays until one of them runs out of values.
      * Each pair of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static <A, B, R> Stream<R> zip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static <A, B, R> Stream<R> zip(final Collection<? extends A> a, final Collection<? extends B> b,
+            final BiFunction<? super A, ? super B, R> zipFunction) {
+        return zip(a.iterator(), b.iterator(), zipFunction);
     }
 
     /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Zip together the "a", "b" and "c" arrays until one of them runs out of values.
      * Each triple of values is combined into a single value using the supplied zipFunction function.
      * 
      * @param a
      * @param b
      * @return
      */
-    public static <A, B, C, R> Stream<R> zip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
+    public static <A, B, C, R> Stream<R> zip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), c.iterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.iterator(), b.iterator(), c.iterator(), zipFunction);
     }
 
     /**
@@ -5910,6 +5638,73 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        return zip(a.iterator(), b.iterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : N.asList(a, b)) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return zip(a.iterator(), b.iterator(), c.iterator(), zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : N.asList(a, b, c)) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until one of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -5917,7 +5712,43 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> zip(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
+    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final NFunction<? super T, R> zipFunction) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+
+        for (Stream<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return zip2(iterList, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : c) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5925,10 +5756,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
         final int len = c.size();
 
         return new IteratorStream<R>(new ImmutableIterator<R>() {
-
             @Override
             public boolean hasNext() {
-                for (Iterator<?> e : c) {
+                for (Iterator<? extends T> e : c) {
                     if (e.hasNext() == false) {
                         return false;
                     }
@@ -5942,7 +5772,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 final Object[] args = new Object[len];
                 int idx = 0;
 
-                for (Iterator<?> e : c) {
+                for (Iterator<? extends T> e : c) {
                     args[idx++] = e.next();
                 }
 
@@ -5962,34 +5792,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <A, B, R> Stream<R> zip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, R> Stream<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(ImmutableIterator.of(a), ImmutableIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -6005,44 +5810,43 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <A, B, C, R> Stream<R> zip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
-            final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
+    public static <A, B, C, R> Stream<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return zip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
 
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, R> Stream<R> zip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA, final B valueForNoneB,
+            final BiFunction<? super A, ? super B, R> zipFunction) {
+        return zip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction);
+    }
 
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
+            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return zip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -6109,6 +5913,82 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     }
 
     /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final A valueForNoneA, final B valueForNoneB,
+            final BiFunction<? super A, ? super B, R> zipFunction) {
+        return zip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : N.asList(a, b)) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c, final A valueForNoneA,
+            final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return zip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : N.asList(a, b, c)) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
      * Zip together the iterators until all of them runs out of values.
      * Each array of values is combined into a single value using the supplied zipFunction function.
      * 
@@ -6117,22 +5997,71 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> zip(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
             final NFunction<? super T, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
 
-        if (c.size() != valuesForNone.length) {
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
+        }
+
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+
+        for (Stream<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return zip2(iterList, valuesForNone, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : c) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param c
+     * @param valuesForNone value to fill for any iterator runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+            final NFunction<? super T, R> zipFunction) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
         }
 
         final int len = c.size();
 
+        if (len != valuesForNone.length) {
+            throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
+        }
+
         return new IteratorStream<R>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
-                for (Iterator<?> e : c) {
+                for (Iterator<? extends T> e : c) {
                     if (e.hasNext()) {
                         return true;
                     }
@@ -6147,14 +6076,13 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
                 int idx = 0;
                 boolean hasNext = false;
 
-                for (Iterator<?> e : c) {
+                for (Iterator<? extends T> e : c) {
                     if (e.hasNext()) {
                         hasNext = true;
-                        args[idx] = e.next();
+                        args[idx++] = e.next();
                     } else {
-                        args[idx] = valuesForNone[idx];
+                        args[idx++] = valuesForNone[idx];
                     }
-                    idx++;
                 }
 
                 if (hasNext == false) {
@@ -6180,7 +6108,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
         return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6199,37 +6127,75 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction,
-            final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), zipFunction, queueSize).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
+        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), zipFunction, queueSize);
     }
 
-    public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
+    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
+            final int queueSize) {
+        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), zipFunction, queueSize);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b,
+            final BiFunction<? super A, ? super B, R> zipFunction) {
+        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b,
+            final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), zipFunction, queueSize);
+    }
+
+    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
@@ -6250,44 +6216,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
+    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize);
     }
 
     /**
@@ -6524,11 +6455,117 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      *        }
      * </code>
      * 
+     * @param a
+     * @param b
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction,
+            final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), zipFunction, queueSize).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : N.asList(a, b)) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : N.asList(a, b, c)) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
      * @param c
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final NFunction<? super T, R> zipFunction) {
         return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6548,7 +6585,77 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction,
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final NFunction<? super T, R> zipFunction,
+            final int queueSize) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+
+        for (Stream<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return parallelZip2(iterList, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : c) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @param zipFunction
+     * @return
+     */
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
+        return parallelZip2(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction,
             final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -6657,7 +6764,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
         return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
@@ -6679,34 +6786,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
-
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -6727,8 +6809,8 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param zipFunction
      * @return
      */
-    public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
-            final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6751,44 +6833,100 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
-            final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
+    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
+        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
 
-                try {
-                    a.close();
-                } catch (Throwable throwable) {
-                    runtimeException = N.toRuntimeException(throwable);
-                }
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA,
+            final B valueForNoneB, final BiFunction<? super A, ? super B, R> zipFunction) {
+        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
 
-                try {
-                    b.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA,
+            final B valueForNoneB, final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction);
+    }
 
-                try {
-                    c.close();
-                } catch (Throwable throwable) {
-                    if (runtimeException == null) {
-                        runtimeException = N.toRuntimeException(throwable);
-                    } else {
-                        runtimeException.addSuppressed(throwable);
-                    }
-                }
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param valueForNoneC
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
+            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
 
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param valueForNoneC
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
+            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
+            final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -7037,12 +7175,144 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      *        }
      * </code>
      * 
+     * @param a
+     * @param b
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
+            final BiFunction<? super A, ? super B, R> zipFunction) {
+        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
+            final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : N.asList(a, b)) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param valueForNoneC
+     * @param zipFunction
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA
+     * @param valueForNoneB
+     * @param valueForNoneC
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : N.asList(a, b, c)) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
      * @param c
      * @param valuesForNone
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
             final NFunction<? super T, R> zipFunction) {
         return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
@@ -7062,7 +7332,83 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
+            final NFunction<? super T, R> zipFunction, final int queueSize) {
+        if (N.isNullOrEmpty(c)) {
+            return Stream.empty();
+        }
+
+        final int len = c.size();
+
+        if (len != valuesForNone.length) {
+            throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
+        }
+
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
+
+        for (Stream<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return parallelZip2(iterList, valuesForNone, zipFunction).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<?> e : c) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @param valuesForNone
+     * @param zipFunction
+     * @return
+     */
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+            final NFunction<? super T, R> zipFunction) {
+        return parallelZip2(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    /**
+     * Put the stream in try-catch to stop the back-end reading thread if error happens
+     * <br />
+     * <code>
+     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+     *            stream.forEach(N::println);
+     *        }
+     * </code>
+     * 
+     * @param c
+     * @param valuesForNone
+     * @param zipFunction
+     * @param queueSize for each iterator. Default value is 8
+     * @return
+     */
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
             final NFunction<? super T, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -7207,41 +7553,37 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * 
      * @param a
      * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        final Iterator<? extends T> iterA = a.iterator();
-        final Iterator<? extends T> iterB = b.iterator();
+    public static <T> Stream<T> merge(final T[] a, final T[] b, final T[] c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).iterator(), Stream.of(c).iterator(), nextSelector);
+    }
 
-        if (iterA.hasNext() == false) {
-            return (Stream<T>) b;
-        } else if (iterB.hasNext() == false) {
-            return (Stream<T>) a;
-        }
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
+            final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return merge(a.iterator(), b.iterator(), nextSelector);
+    }
 
-        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<? extends T> stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final Collection<? extends T> a, final Collection<? extends T> b, final Collection<? extends T> c,
+            final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return merge(a.iterator(), b.iterator(), c.iterator(), nextSelector);
     }
 
     /**
@@ -7321,32 +7663,59 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> merge(final Stream<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return (Stream<T>) a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
+    public static <T> Stream<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b, final Iterator<? extends T> c,
+            final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).iterator(), c, nextSelector);
+    }
 
-        final Iterator<? extends T>[] iters = new Iterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].iterator();
-        }
-
-        return merge(iters, nextSelector).onClose(new Runnable() {
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return merge(a.iterator(), b.iterator(), nextSelector).onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (Stream<? extends T> stream : a) {
+                for (Stream<? extends T> e : N.asList(a, b)) {
                     try {
-                        stream.close();
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
+    }
+
+    public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final Stream<? extends T> c,
+            final BiFunction<? super T, ? super T, Nth> nextSelector) {
+
+        return merge(a.iterator(), b.iterator(), c.iterator(), nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<? extends T> e : N.asList(a, b, c)) {
+                    try {
+                        e.close();
                     } catch (Throwable throwable) {
                         if (runtimeException == null) {
                             runtimeException = N.toRuntimeException(throwable);
@@ -7365,20 +7734,50 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     /**
      * 
-     * @param a
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> merge(final Iterator<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
+    public static <T> Stream<T> merge(final Collection<? extends Stream<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        N.requireNonNull(nextSelector);
+
+        if (N.isNullOrEmpty(c)) {
             return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
+        } else if (c.size() == 1) {
+            return (Stream<T>) c.iterator().next();
+        } else if (c.size() == 2) {
+            final Iterator<? extends Stream<? extends T>> iter = c.iterator();
+            return merge(iter.next(), iter.next(), nextSelector);
         }
 
-        return merge(Arrays.asList(a), nextSelector);
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
+
+        for (Stream<? extends T> e : c) {
+            iterList.add(e.iterator());
+        }
+
+        return merge2(iterList, nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (Stream<? extends T> e : c) {
+                    try {
+                        e.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
     }
 
     /**
@@ -7387,7 +7786,9 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> merge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+    public static <T> Stream<T> merge2(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        N.requireNonNull(nextSelector);
+
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
@@ -7409,48 +7810,49 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     /**
      * 
-     * @param a
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> parallelMerge(final Stream<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
+    public static <T> Stream<T> parallelMerge(final Collection<? extends Stream<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
      * 
-     * @param a
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @param maxThreadNum
      * @return
      */
-    public static <T> Stream<T> parallelMerge(final Stream<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector, final int maxThreadNum) {
+    public static <T> Stream<T> parallelMerge(final Collection<? extends Stream<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
+            final int maxThreadNum) {
+        N.requireNonNull(nextSelector);
+
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(c)) {
             return empty();
-        } else if (a.length == 1) {
-            return (Stream<T>) a[0];
-        } else if (a.length == 2) {
-            return merge(a[0].queued(), a[1].queued(), nextSelector);
+        } else if (c.size() == 1) {
+            return (Stream<T>) c.iterator().next();
         }
 
-        final Iterator<? extends T>[] iters = new Iterator[a.length];
+        final List<Iterator<? extends T>> iterList = new ArrayList<>(c.size());
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].iterator();
+        for (Stream<? extends T> e : c) {
+            iterList.add(e.iterator());
         }
 
-        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+        return parallelMerge2(iterList, nextSelector).onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (Stream<? extends T> stream : a) {
+                for (Stream<? extends T> e : c) {
                     try {
-                        stream.close();
+                        e.close();
                     } catch (Throwable throwable) {
                         if (runtimeException == null) {
                             runtimeException = N.toRuntimeException(throwable);
@@ -7469,47 +7871,12 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
 
     /**
      * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static <T> Stream<T> parallelMerge(final Iterator<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static <T> Stream<T> parallelMerge(final Iterator<? extends T>[] a, final BiFunction<? super T, ? super T, Nth> nextSelector,
-            final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0] instanceof QueuedIterator ? a[0] : Stream.of(a[0]).queued().iterator(),
-                    a[1] instanceof QueuedIterator ? a[1] : Stream.of(a[1]).queued().iterator(), nextSelector);
-        }
-
-        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
-    }
-
-    /**
-     * 
      * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> parallelMerge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
+    public static <T> Stream<T> parallelMerge2(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return parallelMerge2(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -7519,7 +7886,7 @@ public abstract class Stream<T> extends StreamBase<T, Stream<T>> {
      * @param maxThreadNum
      * @return
      */
-    public static <T> Stream<T> parallelMerge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
+    public static <T> Stream<T> parallelMerge2(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);

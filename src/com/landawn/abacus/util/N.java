@@ -536,6 +536,9 @@ public final class N {
     @SuppressWarnings("rawtypes")
     public static final Map EMPTY_MAP = Collections.EMPTY_MAP;
 
+    @SuppressWarnings("rawtypes")
+    public static final Iterator EMPTY_ITERATOR = EMPTY_LIST.iterator();
+
     // ...
     public static final String EMPTY_STRING = "".intern();
     static final String NULL_STRING = "null".intern();
@@ -28456,7 +28459,7 @@ public final class N {
     }
 
     public static <T> Iterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
-        final Iterator<T> iter = (Iterator<T>) Stream.concat(c).iterator();
+        final Iterator<T> iter = (Iterator<T>) Stream.concat2(c).iterator();
 
         return iter;
     }
@@ -35855,6 +35858,14 @@ public final class N {
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
         IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
+    }
+
+    public static <T> Comparator<T> reverseOrder() {
+        return Collections.reverseOrder(N.OBJECT_COMPARATOR);
+    }
+
+    public static <T> Comparator<T> reverseOrder(Comparator<T> cmp) {
+        return Collections.reverseOrder(cmp);
     }
 
     public static <E> Set<Set<E>> powerSet(Set<E> set) {

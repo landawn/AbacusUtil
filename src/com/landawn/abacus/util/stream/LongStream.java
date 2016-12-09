@@ -26,7 +26,6 @@ package com.landawn.abacus.util.stream;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -34,19 +33,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
-import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
-import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -56,9 +51,7 @@ import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongBinaryOperator;
@@ -104,98 +97,13 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class LongStream extends StreamBase<Long, LongStream> {
+public abstract class LongStream extends StreamBase<Long, long[], LongPredicate, LongConsumer, LongList, OptionalLong, IndexedLong, LongStream> {
 
     private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY);
 
     LongStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
     }
-
-    /**
-     * Returns a stream consisting of the elements of this stream that match
-     * the given predicate.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to each element to determine if it
-     *                  should be included
-     * @return the new stream
-     */
-    public abstract LongStream filter(final LongPredicate predicate);
-
-    /**
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract LongStream filter(final LongPredicate predicate, final long max);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract LongStream takeWhile(final LongPredicate predicate);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract LongStream takeWhile(final LongPredicate predicate, final long max);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract LongStream dropWhile(final LongPredicate predicate);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract LongStream dropWhile(final LongPredicate predicate, final long max);
-
-    /**
-     * Take away and consume the specified <code>n</code> elements.
-     * 
-     * @param n
-     * @param action
-     * @return
-     * @see #dropWhile(LongPredicate)
-     */
-    public abstract LongStream drop(final long n, final LongConsumer action);
-
-    /**
-     * Take away and consume elements while <code>predicate</code> returns true.
-     * 
-     * @param predicate
-     * @param action
-     * @return
-     * @see  #dropWhile(LongPredicate)
-     */
-    public abstract LongStream dropWhile(final LongPredicate predicate, final LongConsumer action);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -296,274 +204,13 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     public abstract <T> Stream<T> flatMapToObj(LongFunction<? extends Stream<T>> mapper);
 
-    /**
-     * Returns Stream of LongStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
-     * 
-     * @param size
-     * @return
-     */
-    public abstract Stream<LongStream> split(int size);
-
-    //    /**
-    //     * Split the stream by the specified predicate.
-    //     * 
-    //     * <pre>
-    //     * <code>
-    //     * // split the number sequence by window 5.
-    //     * final MutableInt border = MutableInt.of(5);
-    //     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
-    //     *     if (e <= border.intValue()) {
-    //     *         return true;
-    //     *     } else {
-    //     *         border.addAndGet(5);
-    //     *         return false;
-    //     *     }
-    //     * }).map(s -> s.toArray()).forEach(N::println);
-    //     * </code>
-    //     * </pre>
-    //     * 
-    //     * This stream should be sorted by value which is used to verify the border.
-    //     * This method only run sequentially, even in parallel stream.
-    //     * 
-    //     * @param predicate
-    //     * @return
-    //     */
-    //    public abstract Stream<LongStream> split(LongPredicate predicate);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This stream should be sorted by value which is used to verify the border.
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param identifier
-     * @param predicate
-     * @return
-     */
-    public abstract <U> Stream<LongStream> split(final U boundary, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<LongStream> splitAt(int where);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<LongStream> splitBy(LongPredicate where);
-
-    public abstract Stream<LongList> sliding(int windowSize);
-
-    public abstract Stream<LongList> sliding(int windowSize, int increment);
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract LongStream reverse();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract LongStream shuffle();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract LongStream rotate(int distance);
-
-    /**
-     * Returns a stream consisting of the distinct elements of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @return the new stream
-     */
-    public abstract LongStream distinct();
-
     public abstract LongStream top(int n);
 
     public abstract LongStream top(final int n, Comparator<? super Long> comparator);
 
-    /**
-     * Returns a stream consisting of the elements of this stream in sorted
-     * order.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @return the new stream
-     */
-    public abstract LongStream sorted();
-
     // public abstract LongStream parallelSorted();
 
-    /**
-     * Returns a stream consisting of the elements of this stream, additionally
-     * performing the provided action on each element as elements are consumed
-     * from the resulting stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, the action may be called at
-     * whatever time and in whatever thread the element is made available by the
-     * upstream operation.  If the action modifies shared state,
-     * it is responsible for providing the required synchronization.
-     *
-     * @apiNote This method exists mainly to support debugging, where you want
-     * to see the elements as they flow past a certain point in a pipeline:
-     * <pre>{@code
-     *     LongStream.of(1, 2, 3, 4)
-     *         .filter(e -> e > 2)
-     *         .peek(e -> System.out.println("Filtered value: " + e))
-     *         .map(e -> e * e)
-     *         .peek(e -> System.out.println("Mapped value: " + e))
-     *         .sum();
-     * }</pre>
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *               non-interfering</a> action to perform on the elements as
-     *               they are consumed from the stream
-     * @return the new stream
-     */
-    public abstract LongStream peek(LongConsumer action);
-
-    /**
-     * Returns a stream consisting of the elements of this stream, truncated
-     * to be no longer than {@code maxSize} in length.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * stateful intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code limit()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code maxSize}, since {@code limit(n)}
-     * is constrained to return not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code limit()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code limit()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param maxSize the number of elements the stream should be limited to
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code maxSize} is negative
-     */
-    public abstract LongStream limit(long maxSize);
-
-    /**
-     * Returns a stream consisting of the remaining elements of this stream
-     * after discarding the first {@code n} elements of the stream.
-     * If this stream contains fewer than {@code n} elements then an
-     * empty stream will be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code skip()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code n}, since {@code skip(n)}
-     * is constrained to skip not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code skip()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code skip()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param n the number of leading elements to skip
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code n} is negative
-     */
-    public abstract LongStream skip(long n);
-
-    /**
-     * Performs an action for each element of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, this operation does <em>not</em>
-     * guarantee to respect the encounter order of the stream, as doing so
-     * would sacrifice the benefit of parallelism.  For any given element, the
-     * action may be performed at whatever time and in whatever thread the
-     * library chooses.  If the action accesses shared state, it is
-     * responsible for providing the required synchronization.
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *               non-interfering</a> action to perform on the elements
-     */
-    public abstract void forEach(LongConsumer action);
-
-    //    /**
-    //     * In parallel Streams, the elements after the first element which <code>action</code> returns false may be executed by action too.
-    //     * 
-    //     * @param action break if the action returns false.
-    //     * @return false if it breaks, otherwise true.
-    //     */
-    //    public abstract boolean forEach2(LongFunction<Boolean> action);
-
-    /**
-     * Returns an array containing the elements of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an array containing the elements of this stream
-     */
-    public abstract long[] toArray();
-
     public abstract LongList toLongList();
-
-    public abstract List<Long> toList();
-
-    public abstract List<Long> toList(Supplier<? extends List<Long>> supplier);
-
-    public abstract Set<Long> toSet();
-
-    public abstract Set<Long> toSet(Supplier<? extends Set<Long>> supplier);
-
-    public abstract Multiset<Long> toMultiset();
-
-    public abstract Multiset<Long> toMultiset(Supplier<? extends Multiset<Long>> supplier);
-
-    public abstract LongMultiset<Long> toLongMultiset();
-
-    public abstract LongMultiset<Long> toLongMultiset(Supplier<? extends LongMultiset<Long>> supplier);
 
     /**
      * 
@@ -888,172 +535,9 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      */
     public abstract OptionalDouble average();
 
-    /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
-     * equivalent to:
-     * <pre>{@code
-     *     return map(e -> 1L).sum();
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
-     *
-     * @return the count of elements in this stream
-     */
-    public abstract long count();
-
-    public abstract Optional<Map<Percentage, Long>> distribution();
-
     public abstract LongSummaryStatistics summarize();
 
     public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarize2();
-
-    public abstract String join(CharSequence delimiter);
-
-    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
-
-    /**
-     * Returns whether any elements of this stream match the provided
-     * predicate.  May not evaluate the predicate on all elements if not
-     * necessary for determining the result.  If the stream is empty then
-     * {@code false} is returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>existential quantification</em> of the
-     * predicate over the elements of the stream (for some x P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if any elements of the stream match the provided
-     * predicate, otherwise {@code false}
-     */
-    public abstract boolean anyMatch(LongPredicate predicate);
-
-    /**
-     * Returns whether all elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * predicate over the elements of the stream (for all x P(x)).  If the
-     * stream is empty, the quantification is said to be <em>vacuously
-     * satisfied</em> and is always {@code true} (regardless of P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either all elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean allMatch(LongPredicate predicate);
-
-    /**
-     * Returns whether no elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * negated predicate over the elements of the stream (for all x ~P(x)).  If
-     * the stream is empty, the quantification is said to be vacuously satisfied
-     * and is always {@code true}, regardless of P(x).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either no elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean noneMatch(LongPredicate predicate);
-
-    /**
-     * Returns an {@link OptionalLong} describing the first element of this
-     * stream, or an empty {@code OptionalLong} if the stream is empty.  If the
-     * stream has no encounter order, then any element may be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @return an {@code OptionalLong} describing the first element of this
-     * stream, or an empty {@code OptionalLong} if the stream is empty
-     */
-    // public abstract OptionalLong findFirst();
-
-    public abstract OptionalLong findFirst(LongPredicate predicate);
-
-    // public abstract OptionalLong findLast();
-
-    public abstract OptionalLong findLast(LongPredicate predicate);
-
-    /**
-     * Returns an {@link OptionalLong} describing some element of the stream, or
-     * an empty {@code OptionalLong} if the stream is empty.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * <p>The behavior of this operation is explicitly nondeterministic; it is
-     * free to select any element in the stream.  This is to allow for maximal
-     * performance in parallel operations; the cost is that multiple invocations
-     * on the same source may not return the same result.  (If a stable result
-     * is desired, use {@link #findFirst()} instead.)
-     *
-     * @return an {@code OptionalLong} describing some element of this stream,
-     * or an empty {@code OptionalLong} if the stream is empty
-     * @see #findFirst()
-     */
-    // public abstract OptionalLong findAny();
-
-    public abstract OptionalLong findAny(LongPredicate predicate);
-
-    public abstract OptionalLong first();
-
-    public abstract OptionalLong last();
-
-    //    public abstract OptionalLong any();
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#except(IntList)
-     */
-    public abstract LongStream except(Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public abstract LongStream intersect(Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#xor(IntList)
-     */
-    public abstract LongStream xor(Collection<Long> c);
-
-    //    /**
-    //     * Skill All the elements in the specified collection.
-    //     * 
-    //     * @param c
-    //     * @return
-    //     * @see IntList#intersect(IntList)
-    //     */
-    //    public abstract LongStream exclude(Collection<?> c);
 
     /**
      * 
@@ -1108,16 +592,10 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      */
     public abstract Stream<Long> boxed();
 
-    public abstract LongStream cached();
-
-    public abstract Stream<IndexedLong> indexed();
-
     @Override
     public abstract ImmutableIterator<Long> iterator();
 
     public abstract ImmutableLongIterator longIterator();
-
-    // Static factories
 
     public static LongStream empty() {
         return EMPTY;
@@ -1183,11 +661,6 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
         if (endExclusive == startInclusive || endExclusive > startInclusive != by > 0) {
             return empty();
         }
-
-        //        if (endExclusive > startInclusive != by > 0) {
-        //            throw new IllegalArgumentException(
-        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endExclusive + ") are not consistent with by (" + by + ").");
-        //        }
 
         if ((by > 0 && endExclusive - startInclusive < 0) || (by < 0 && startInclusive - endExclusive < 0)) {
             long m = BigInteger.valueOf(endExclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
@@ -1264,11 +737,6 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
         } else if (endInclusive > startInclusive != by > 0) {
             return empty();
         }
-
-        //        if (endInclusive > startInclusive != by > 0) {
-        //            throw new IllegalArgumentException(
-        //                    "The input 'startInclusive' (" + startInclusive + ") and 'endExclusive' (" + endInclusive + ") are not consistent with by (" + by + ").");
-        //        }
 
         if ((by > 0 && endInclusive - startInclusive < 0) || (by < 0 && startInclusive - endInclusive < 0) || ((endInclusive - startInclusive) / by + 1 <= 0)) {
             long m = BigInteger.valueOf(endInclusive).subtract(BigInteger.valueOf(startInclusive)).divide(BigInteger.valueOf(3)).longValue();
@@ -1572,9 +1040,38 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
         });
     }
 
-    public static LongStream concat(final LongStream... a) {
+    public static LongStream concat(final LongIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
-            private final Iterator<LongStream> iter = N.asList(a).iterator();
+            private final Iterator<? extends LongIterator> iter = N.asList(a).iterator();
+            private LongIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public long next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static LongStream concat(final LongStream... a) {
+        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
+    }
+
+    public static LongStream concat(final Collection<? extends LongStream> c) {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
+            private final Iterator<? extends LongStream> iter = c.iterator();
             private ImmutableLongIterator cur;
 
             @Override
@@ -1599,7 +1096,7 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (LongStream stream : a) {
+                for (LongStream stream : c) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -1618,35 +1115,6 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
         });
     }
 
-    public static LongStream concat(final LongIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
-    }
-
-    public static LongStream concat(final Collection<? extends LongIterator> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
-            private final Iterator<? extends LongIterator> iter = c.iterator();
-            private LongIterator cur;
-
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public long next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-        });
-    }
-
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
      * Each pair of values is combined into a single value using the supplied zipFunction function.
@@ -1656,14 +1124,7 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @return
      */
     public static LongStream zip(final long[] a, final long[] b, final LongBiFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToLong(mapper);
+        return Stream.zip(a, b, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1675,52 +1136,7 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @return
      */
     public static LongStream zip(final long[] a, final long[] b, final long[] c, final LongTriFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, zipFunction).mapToLong(mapper);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static LongStream zip(final LongStream a, final LongStream b, final LongBiFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToLong(mapper);
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, zipFunction).mapToLong(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1732,14 +1148,7 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @return
      */
     public static LongStream zip(final LongIterator a, final LongIterator b, final LongBiFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToLong(mapper);
+        return Stream.zip(a, b, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1751,14 +1160,31 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @return
      */
     public static LongStream zip(final LongIterator a, final LongIterator b, final LongIterator c, final LongTriFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
+        return Stream.zip(a, b, c, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    }
 
-        return Stream.zip(a, b, c, zipFunction).mapToLong(mapper);
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static LongStream zip(final LongStream a, final LongStream b, final LongBiFunction<Long> zipFunction) {
+        return Stream.zip(a, b, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<Long> zipFunction) {
+        return Stream.zip(a, b, c, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1769,15 +1195,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @param zipFunction
      * @return
      */
-    public static LongStream zip(final Collection<? extends LongIterator> c, final LongNFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(c, zipFunction).mapToLong(mapper);
+    public static LongStream zip(final Collection<? extends LongStream> c, final LongNFunction<Long> zipFunction) {
+        return Stream.zip(c, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1791,16 +1210,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @param zipFunction
      * @return
      */
-    public static LongStream zip(final LongStream a, final LongStream b, final long valueForNoneA, final long valueForNoneB,
-            final LongBiFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(mapper);
+    public static LongStream zip(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB, final LongBiFunction<Long> zipFunction) {
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1816,16 +1227,9 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @param zipFunction
      * @return
      */
-    public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final long valueForNoneA, final long valueForNoneB,
-            final long valueForNoneC, final LongTriFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(mapper);
+    public static LongStream zip(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB, final long valueForNoneC,
+            final LongTriFunction<Long> zipFunction) {
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1841,14 +1245,7 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      */
     public static LongStream zip(final LongIterator a, final LongIterator b, final long valueForNoneA, final long valueForNoneB,
             final LongBiFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1866,14 +1263,41 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      */
     public static LongStream zip(final LongIterator a, final LongIterator b, final LongIterator c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final LongTriFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    }
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(mapper);
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static LongStream zip(final LongStream a, final LongStream b, final long valueForNoneA, final long valueForNoneB,
+            final LongBiFunction<Long> zipFunction) {
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC, final LongTriFunction<Long> zipFunction) {
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1885,15 +1309,8 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @param zipFunction
      * @return
      */
-    public static LongStream zip(final Collection<? extends LongIterator> c, final long[] valuesForNone, final LongNFunction<Long> zipFunction) {
-        final ToLongFunction<Long> mapper = new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        };
-
-        return Stream.zip(c, valuesForNone, zipFunction).mapToLong(mapper);
+    public static LongStream zip(final Collection<? extends LongStream> c, final long[] valuesForNone, final LongNFunction<Long> zipFunction) {
+        return Stream.zip(c, valuesForNone, zipFunction).mapToLong(ToLongFunction.UNBOX);
     }
 
     /**
@@ -1946,41 +1363,12 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * 
      * @param a
      * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static LongStream merge(final LongStream a, final LongStream b, final LongBiFunction<Nth> nextSelector) {
-        final LongIterator iterA = a.longIterator();
-        final LongIterator iterB = b.longIterator();
-
-        if (iterA.hasNext() == false) {
-            return b;
-        } else if (iterB.hasNext() == false) {
-            return a;
-        }
-
-        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static LongStream merge(final long[] a, final long[] b, final long[] c, final LongBiFunction<Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).longIterator(), LongStream.of(c).longIterator(), nextSelector);
     }
 
     /**
@@ -2060,30 +1448,29 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static LongStream merge(final LongStream[] a, final LongBiFunction<Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
+    public static LongStream merge(final LongIterator a, final LongIterator b, final LongIterator c, final LongBiFunction<Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).longIterator(), c, nextSelector);
+    }
 
-        final LongIterator[] iters = new LongIterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].longIterator();
-        }
-
-        return merge(iters, nextSelector).onClose(new Runnable() {
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static LongStream merge(final LongStream a, final LongStream b, final LongBiFunction<Nth> nextSelector) {
+        return merge(a.longIterator(), b.longIterator(), nextSelector).onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (LongStream stream : a) {
+                for (LongStream stream : N.asList(a, b)) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -2105,19 +1492,13 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static LongStream merge(final LongIterator[] a, final LongBiFunction<Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        return merge(Arrays.asList(a), nextSelector);
+    public static LongStream merge(final LongStream a, final LongStream b, final LongStream c, final LongBiFunction<Nth> nextSelector) {
+        return merge(N.asList(a, b, c), nextSelector);
     }
 
     /**
@@ -2126,68 +1507,29 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static LongStream merge(final Collection<? extends LongIterator> c, final LongBiFunction<Nth> nextSelector) {
+    public static LongStream merge(final Collection<? extends LongStream> c, final LongBiFunction<Nth> nextSelector) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
-            return of(c.iterator().next());
+            return c.iterator().next();
         } else if (c.size() == 2) {
-            final Iterator<? extends LongIterator> iter = c.iterator();
+            final Iterator<? extends LongStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
         }
 
-        final Iterator<? extends LongIterator> iter = c.iterator();
-        LongStream result = merge(iter.next(), iter.next(), nextSelector);
+        final Iterator<? extends LongStream> iter = c.iterator();
+        LongStream result = merge(iter.next().longIterator(), iter.next().longIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.longIterator(), iter.next(), nextSelector);
+            result = merge(result.longIterator(), iter.next().longIterator(), nextSelector);
         }
 
-        return result;
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static LongStream parallelMerge(final LongStream[] a, final LongBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static LongStream parallelMerge(final LongStream[] a, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        final LongIterator[] iters = new LongIterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].longIterator();
-        }
-
-        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+        return result.onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (LongStream stream : a) {
+                for (LongStream stream : c) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -2208,44 +1550,11 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
 
     /**
      * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static LongStream parallelMerge(final LongIterator[] a, final LongBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static LongStream parallelMerge(final LongIterator[] a, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
-    }
-
-    /**
-     * 
      * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static LongStream parallelMerge(final Collection<? extends LongIterator> c, final LongBiFunction<Nth> nextSelector) {
+    public static LongStream parallelMerge(final Collection<? extends LongStream> c, final LongBiFunction<Nth> nextSelector) {
         return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
@@ -2256,7 +1565,7 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
      * @param maxThreadNum
      * @return
      */
-    public static LongStream parallelMerge(final Collection<? extends LongIterator> c, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
+    public static LongStream parallelMerge(final Collection<? extends LongStream> c, final LongBiFunction<Nth> nextSelector, final int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
@@ -2264,15 +1573,20 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
-            return of(c.iterator().next());
+            return c.iterator().next();
         } else if (c.size() == 2) {
-            final Iterator<? extends LongIterator> iter = c.iterator();
+            final Iterator<? extends LongStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
         } else if (maxThreadNum <= 1) {
             return merge(c, nextSelector);
         }
 
-        final Queue<LongIterator> queue = N.newLinkedList(c);
+        final Queue<LongIterator> queue = N.newLinkedList();
+
+        for (LongStream e : c) {
+            queue.add(e.longIterator());
+        }
+
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
@@ -2328,6 +1642,27 @@ public abstract class LongStream extends StreamBase<Long, LongStream> {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector);
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (LongStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
     }
 }

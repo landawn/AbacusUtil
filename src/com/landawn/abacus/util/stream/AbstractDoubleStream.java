@@ -16,9 +16,11 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.DoubleIterator;
@@ -58,21 +60,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     AbstractDoubleStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
-    }
-
-    @Override
-    public DoubleStream filter(final DoublePredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public DoubleStream takeWhile(final DoublePredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public DoubleStream dropWhile(final DoublePredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -207,29 +194,18 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream distinct() {
-        return boxed().distinct().mapToDouble(new ToDoubleFunction<Double>() {
+        return newStream(this.sequential().filter(new DoublePredicate() {
+            private final Set<Object> set = new HashSet<>();
+
             @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
+            public boolean test(double value) {
+                return set.add(value);
             }
-        });
+        }).doubleIterator(), sorted);
     }
 
     @Override
     public Double sum() {
-        // return N.sum(elements, fromIndex, toIndex);
-
-        //        double[] summation = collect(() -> new double[3], (ll, d) -> {
-        //            Collectors.sumWithCompensation(ll, d);
-        //            ll[2] += d;
-        //        }, (ll, rr) -> {
-        //            Collectors.sumWithCompensation(ll, rr[0]);
-        //            Collectors.sumWithCompensation(ll, rr[1]);
-        //            ll[2] += rr[2];
-        //        });
-        //
-        //        return Collectors.computeFinalSum(summation);
-
         final Supplier<double[]> supplier = new Supplier<double[]>() {
             @Override
             public double[] get() {
@@ -261,25 +237,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble average() {
-        //        if (count() == 0) {
-        //            return OptionalDouble.empty();
-        //        }
-        //
-        //        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
-
-        //        double[] avg = collect(() -> new double[4], (ll, d) -> {
-        //            ll[2]++;
-        //            Collectors.sumWithCompensation(ll, d);
-        //            ll[3] += d;
-        //        }, (ll, rr) -> {
-        //            Collectors.sumWithCompensation(ll, rr[0]);
-        //            Collectors.sumWithCompensation(ll, rr[1]);
-        //            ll[2] += rr[2];
-        //            ll[3] += rr[3];
-        //        });
-        //        
-        //        return avg[2] > 0 ? OptionalDouble.of(Collectors.computeFinalSum(avg) / avg[2]) : OptionalDouble.empty();
-
         final Supplier<double[]> supplier = new Supplier<double[]>() {
             @Override
             public double[] get() {
@@ -335,40 +292,35 @@ abstract class AbstractDoubleStream extends DoubleStream {
         return OptionalDouble.of(next);
     }
 
-    //    @Override
-    //    public OptionalDouble any() {
-    //        return findAny(DoublePredicate.ALWAYS_TRUE);
-    //    }
-
     @Override
-    public DoubleStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public DoubleStream except(final Collection<?> c) {
+        return newStream(this.sequential().filter(new DoublePredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new DoublePredicate() {
             @Override
             public boolean test(double value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        });
+        }).doubleIterator(), sorted);
     }
 
     @Override
-    public DoubleStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public DoubleStream intersect(final Collection<?> c) {
+        return newStream(this.sequential().filter(new DoublePredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new DoublePredicate() {
             @Override
             public boolean test(double value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        });
+        }).doubleIterator(), sorted);
     }
 
     @Override
-    public DoubleStream xor(Collection<Double> c) {
+    public DoubleStream xor(final Collection<Double> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new DoublePredicate() {
+        return newStream(this.sequential().filter(new DoublePredicate() {
             @Override
             public boolean test(double value) {
                 return multiset.getAndRemove(value) < 1;
@@ -378,12 +330,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             public boolean test(Double value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToDouble(new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        }));
+        }).mapToDouble(ToDoubleFunction.UNBOX)).doubleIterator(), false);
     }
 
     @Override
@@ -466,11 +413,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public DoubleStream reverse() {
         final double[] a = toArray();
-
-        //        N.reverse(a);
-        //
-        //        return newStream(a, false);
-
         return newStream(new ImmutableDoubleIterator() {
             private int cursor = a.length;
 
@@ -579,14 +521,14 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Stream<IndexedDouble> indexed() {
-        final MutableLong idx = new MutableLong();
+        return newStream(this.sequential().mapToObj(new DoubleFunction<IndexedDouble>() {
+            final MutableLong idx = new MutableLong();
 
-        return mapToObj(new DoubleFunction<IndexedDouble>() {
             @Override
             public IndexedDouble apply(double t) {
                 return IndexedDouble.of(idx.getAndIncrement(), t);
             }
-        });
+        }).iterator(), false, null);
     }
 
     @Override

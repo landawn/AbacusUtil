@@ -25,7 +25,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-import java.util.Set;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
@@ -42,10 +40,7 @@ import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedDouble;
-import com.landawn.abacus.util.IntList;
-import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
-import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -54,9 +49,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
@@ -102,98 +95,14 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  * @see Stream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
+public abstract class DoubleStream
+        extends StreamBase<Double, double[], DoublePredicate, DoubleConsumer, DoubleList, OptionalDouble, IndexedDouble, DoubleStream> {
 
     private static final DoubleStream EMPTY = new ArrayDoubleStream(N.EMPTY_DOUBLE_ARRAY);
 
     DoubleStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
     }
-
-    /**
-     * Returns a stream consisting of the elements of this stream that match
-     * the given predicate.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to each element to determine if it
-     *                  should be included
-     * @return the new stream
-     */
-    public abstract DoubleStream filter(final DoublePredicate predicate);
-
-    /**
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract DoubleStream filter(final DoublePredicate predicate, final long max);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract DoubleStream takeWhile(final DoublePredicate predicate);
-
-    /**
-     * Keep the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns false, any element y behind x: <code>predicate.text(y)</code> should returns false.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract DoubleStream takeWhile(final DoublePredicate predicate, final long max);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @return
-     */
-    public abstract DoubleStream dropWhile(final DoublePredicate predicate);
-
-    /**
-     * Remove the elements until the given predicate returns false. The stream should be sorted, which means if x is the first element: <code>predicate.text(x)</code> returns true, any element y behind x: <code>predicate.text(y)</code> should returns true.
-     * 
-     * In parallel Streams, the elements after the first element which <code>predicate</code> returns false may be tested by predicate too.
-     * 
-     * @param predicate
-     * @param max the maximum elements number to the new Stream.
-     * @return
-     */
-    public abstract DoubleStream dropWhile(final DoublePredicate predicate, final long max);
-
-    /**
-     * Take away and consume the specified <code>n</code> elements.
-     * 
-     * @param n
-     * @param action
-     * @return
-     * @see #dropWhile(DoublePredicate)
-     */
-    public abstract DoubleStream drop(final long n, final DoubleConsumer action);
-
-    /**
-     * Take away and consume elements while <code>predicate</code> returns true.
-     * 
-     * @param predicate
-     * @param action
-     * @return
-     * @see  #dropWhile(DoublePredicate)
-     */
-    public abstract DoubleStream dropWhile(final DoublePredicate predicate, final DoubleConsumer action);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -294,277 +203,11 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
 
     public abstract <T> Stream<T> flatMapToObj(DoubleFunction<? extends Stream<T>> mapper);
 
-    /**
-     * Returns Stream of DoubleStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
-     * 
-     * @param size
-     * @return
-     */
-    public abstract Stream<DoubleStream> split(int size);
-
-    //    /**
-    //     * Split the stream by the specified predicate.
-    //     * 
-    //     * <pre>
-    //     * <code>
-    //     * // split the number sequence by window 5.
-    //     * final MutableInt border = MutableInt.of(5);
-    //     * IntStream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
-    //     *     if (e <= border.intValue()) {
-    //     *         return true;
-    //     *     } else {
-    //     *         border.addAndGet(5);
-    //     *         return false;
-    //     *     }
-    //     * }).map(s -> s.toArray()).forEach(N::println);
-    //     * </code>
-    //     * </pre>
-    //     * 
-    //     * This stream should be sorted by value which is used to verify the border.
-    //     * This method only run sequentially, even in parallel stream.
-    //     * 
-    //     * @param predicate
-    //     * @return
-    //     */
-    //    public abstract Stream<DoubleStream> split(DoublePredicate predicate);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This stream should be sorted by value which is used to verify the border.
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param identifier
-     * @param predicate
-     * @return
-     */
-    public abstract <U> Stream<DoubleStream> split(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<DoubleStream> splitAt(int where);
-
-    /**
-     * Split the stream into two pieces at <code>where</code>
-     * 
-     * @param where
-     * @return
-     */
-    public abstract Stream<DoubleStream> splitBy(DoublePredicate where);
-
-    public abstract Stream<DoubleList> sliding(int windowSize);
-
-    public abstract Stream<DoubleList> sliding(int windowSize, int increment);
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract DoubleStream reverse();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract DoubleStream shuffle();
-
-    /**
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
-     * 
-     * @return
-     */
-    public abstract DoubleStream rotate(int distance);
-
-    /**
-     * Returns a stream consisting of the distinct elements of this stream. The
-     * elements are compared for equality according to
-     * {@link java.lang.Double#compare(double, double)}.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @return the result stream
-     */
-    public abstract DoubleStream distinct();
-
     public abstract DoubleStream top(int n);
 
     public abstract DoubleStream top(final int n, Comparator<? super Double> comparator);
 
-    /**
-     * Returns a stream consisting of the elements of this stream in sorted
-     * order. The elements are compared for equality according to
-     * {@link java.lang.Double#compare(double, double)}.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @return the result stream
-     */
-    public abstract DoubleStream sorted();
-
-    // public abstract DoubleStream parallelSorted();
-
-    /**
-     * Returns a stream consisting of the elements of this stream, additionally
-     * performing the provided action on each element as elements are consumed
-     * from the resulting stream.
-     *
-     * <p>This is an <a href="package-summary.html#StreamOps">intermediate
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, the action may be called at
-     * whatever time and in whatever thread the element is made available by the
-     * upstream operation.  If the action modifies shared state,
-     * it is responsible for providing the required synchronization.
-     *
-     * @apiNote This method exists mainly to support debugging, where you want
-     * to see the elements as they flow past a certain point in a pipeline:
-     * <pre>{@code
-     *     DoubleStream.of(1, 2, 3, 4)
-     *         .filter(e -> e > 2)
-     *         .peek(e -> System.out.println("Filtered value: " + e))
-     *         .map(e -> e * e)
-     *         .peek(e -> System.out.println("Mapped value: " + e))
-     *         .sum();
-     * }</pre>
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *               non-interfering</a> action to perform on the elements as
-     *               they are consumed from the stream
-     * @return the new stream
-     */
-    public abstract DoubleStream peek(DoubleConsumer action);
-
-    /**
-     * Returns a stream consisting of the elements of this stream, truncated
-     * to be no longer than {@code maxSize} in length.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * stateful intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code limit()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code maxSize}, since {@code limit(n)}
-     * is constrained to return not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code limit()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code limit()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param maxSize the number of elements the stream should be limited to
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code maxSize} is negative
-     */
-    public abstract DoubleStream limit(long maxSize);
-
-    /**
-     * Returns a stream consisting of the remaining elements of this stream
-     * after discarding the first {@code n} elements of the stream.
-     * If this stream contains fewer than {@code n} elements then an
-     * empty stream will be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
-     *
-     * @apiNote
-     * While {@code skip()} is generally a cheap operation on sequential
-     * stream pipelines, it can be quite expensive on ordered parallel pipelines,
-     * especially for large values of {@code n}, since {@code skip(n)}
-     * is constrained to skip not just any <em>n</em> elements, but the
-     * <em>first n</em> elements in the encounter order.  Using an unordered
-     * stream source or removing the
-     * ordering constraint with {@link #unordered()} may result in significant
-     * speedups of {@code skip()} in parallel pipelines, if the semantics of
-     * your situation permit.  If consistency with encounter order is required,
-     * and you are experiencing poor performance or memory utilization with
-     * {@code skip()} in parallel pipelines, switching to sequential execution
-     * with {@link #sequential()} may improve performance.
-     *
-     * @param n the number of leading elements to skip
-     * @return the new stream
-     * @throws IllegalArgumentException if {@code n} is negative
-     */
-    public abstract DoubleStream skip(long n);
-
-    /**
-     * Performs an action for each element of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * <p>For parallel stream pipelines, this operation does <em>not</em>
-     * guarantee to respect the encounter order of the stream, as doing so
-     * would sacrifice the benefit of parallelism.  For any given element, the
-     * action may be performed at whatever time and in whatever thread the
-     * library chooses.  If the action accesses shared state, it is
-     * responsible for providing the required synchronization.
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *               non-interfering</a> action to perform on the elements
-     */
-    public abstract void forEach(DoubleConsumer action);
-
-    //    /**
-    //     * In parallel Streams, the elements after the first element which <code>action</code> returns false may be executed by action too.
-    //     * 
-    //     * @param action break if the action returns false.
-    //     * @return false if it breaks, otherwise true.
-    //     */
-    //    public abstract boolean forEach2(DoubleFunction<Boolean> action);
-
-    /**
-     * Returns an array containing the elements of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * @return an array containing the elements of this stream
-     */
-    public abstract double[] toArray();
-
     public abstract DoubleList toDoubleList();
-
-    public abstract List<Double> toList();
-
-    public abstract List<Double> toList(Supplier<? extends List<Double>> supplier);
-
-    public abstract Set<Double> toSet();
-
-    public abstract Set<Double> toSet(Supplier<? extends Set<Double>> supplier);
-
-    public abstract Multiset<Double> toMultiset();
-
-    public abstract Multiset<Double> toMultiset(Supplier<? extends Multiset<Double>> supplier);
-
-    public abstract LongMultiset<Double> toLongMultiset();
-
-    public abstract LongMultiset<Double> toLongMultiset(Supplier<? extends LongMultiset<Double>> supplier);
 
     /**
      * 
@@ -940,172 +583,9 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      */
     public abstract OptionalDouble average();
 
-    /**
-     * Returns the count of elements in this stream.  This is a special case of
-     * a <a href="package-summary.html#Reduction">reduction</a> and is
-     * equivalent to:
-     * <pre>{@code
-     *     return mapToLong(e -> 1L).sum();
-     * }</pre>
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal operation</a>.
-     *
-     * @return the count of elements in this stream
-     */
-    public abstract long count();
-
-    public abstract Optional<Map<Percentage, Double>> distribution();
-
     public abstract DoubleSummaryStatistics summarize();
 
     public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarize2();
-
-    public abstract String join(CharSequence delimiter);
-
-    public abstract String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix);
-
-    /**
-     * Returns whether any elements of this stream match the provided
-     * predicate.  May not evaluate the predicate on all elements if not
-     * necessary for determining the result.  If the stream is empty then
-     * {@code false} is returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>existential quantification</em> of the
-     * predicate over the elements of the stream (for some x P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if any elements of the stream match the provided
-     * predicate, otherwise {@code false}
-     */
-    public abstract boolean anyMatch(DoublePredicate predicate);
-
-    /**
-     * Returns whether all elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * predicate over the elements of the stream (for all x P(x)).  If the
-     * stream is empty, the quantification is said to be <em>vacuously
-     * satisfied</em> and is always {@code true} (regardless of P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either all elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean allMatch(DoublePredicate predicate);
-
-    /**
-     * Returns whether no elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * negated predicate over the elements of the stream (for all x ~P(x)).  If
-     * the stream is empty, the quantification is said to be vacuously satisfied
-     * and is always {@code true}, regardless of P(x).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either no elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    public abstract boolean noneMatch(DoublePredicate predicate);
-
-    /**
-     * Returns an {@link OptionalDouble} describing the first element of this
-     * stream, or an empty {@code OptionalDouble} if the stream is empty.  If
-     * the stream has no encounter order, then any element may be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @return an {@code OptionalDouble} describing the first element of this
-     * stream, or an empty {@code OptionalDouble} if the stream is empty
-     */
-    // public abstract OptionalDouble findFirst();
-
-    public abstract OptionalDouble findFirst(DoublePredicate predicate);
-
-    // public abstract OptionalDouble findLast();
-
-    public abstract OptionalDouble findLast(DoublePredicate predicate);
-
-    /**
-     * Returns an {@link OptionalDouble} describing some element of the stream,
-     * or an empty {@code OptionalDouble} if the stream is empty.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * <p>The behavior of this operation is explicitly nondeterministic; it is
-     * free to select any element in the stream.  This is to allow for maximal
-     * performance in parallel operations; the cost is that multiple invocations
-     * on the same source may not return the same result.  (If a stable result
-     * is desired, use {@link #findFirst()} instead.)
-     *
-     * @return an {@code OptionalDouble} describing some element of this stream,
-     * or an empty {@code OptionalDouble} if the stream is empty
-     * @see #findFirst()
-     */
-    // public abstract OptionalDouble findAny();
-
-    public abstract OptionalDouble findAny(DoublePredicate predicate);
-
-    public abstract OptionalDouble first();
-
-    public abstract OptionalDouble last();
-
-    //    public abstract OptionalDouble any();
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#except(IntList)
-     */
-    public abstract DoubleStream except(Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public abstract DoubleStream intersect(Collection<?> c);
-
-    /**
-     * @param c
-     * @return
-     * @see IntList#xor(IntList)
-     */
-    public abstract DoubleStream xor(Collection<Double> c);
-
-    //    /**
-    //     * Skill All the elements in the specified collection.
-    //     * 
-    //     * @param c
-    //     * @return
-    //     * @see IntList#intersect(IntList)
-    //     */
-    //    public abstract DoubleStream exclude(Collection<?> c);
 
     /**
      * 
@@ -1136,16 +616,10 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      */
     public abstract Stream<Double> boxed();
 
-    public abstract DoubleStream cached();
-
-    public abstract Stream<IndexedDouble> indexed();
-
     @Override
     public abstract ImmutableIterator<Double> iterator();
 
     public abstract ImmutableDoubleIterator doubleIterator();
-
-    // Static factories
 
     public static DoubleStream empty() {
         return EMPTY;
@@ -1408,9 +882,38 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
         });
     }
 
-    public static DoubleStream concat(final DoubleStream... a) {
+    public static DoubleStream concat(final DoubleIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
-            private final Iterator<DoubleStream> iter = N.asList(a).iterator();
+            private final Iterator<? extends DoubleIterator> iter = N.asList(a).iterator();
+            private DoubleIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public double next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
+    }
+
+    public static DoubleStream concat(final DoubleStream... a) {
+        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
+    }
+
+    public static DoubleStream concat(final Collection<? extends DoubleStream> c) {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private final Iterator<? extends DoubleStream> iter = c.iterator();
             private ImmutableDoubleIterator cur;
 
             @Override
@@ -1435,7 +938,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (DoubleStream stream : a) {
+                for (DoubleStream stream : c) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -1454,35 +957,6 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
         });
     }
 
-    public static DoubleStream concat(final DoubleIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
-    }
-
-    public static DoubleStream concat(final Collection<? extends DoubleIterator> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
-            private final Iterator<? extends DoubleIterator> iter = c.iterator();
-            private DoubleIterator cur;
-
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public double next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-        });
-    }
-
     /**
      * Zip together the "a" and "b" arrays until one of them runs out of values.
      * Each pair of values is combined into a single value using the supplied zipFunction function.
@@ -1492,14 +966,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream zip(final double[] a, final double[] b, final DoubleBiFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToDouble(mapper);
+        return Stream.zip(a, b, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1511,52 +978,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream zip(final double[] a, final double[] b, final double[] c, final DoubleTriFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, zipFunction).mapToDouble(mapper);
-    }
-
-    /**
-     * Zip together the "a" and "b" streams until one of them runs out of values.
-     * Each pair of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToDouble(mapper);
-    }
-
-    /**
-     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
-     * Each triple of values is combined into a single value using the supplied zipFunction function.
-     * 
-     * @param a
-     * @param b
-     * @return
-     */
-    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, zipFunction).mapToDouble(mapper);
+        return Stream.zip(a, b, c, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1568,14 +990,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleBiFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(a, b, zipFunction).mapToDouble(mapper);
+        return Stream.zip(a, b, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1587,14 +1002,31 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @return
      */
     public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleTriFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
+        return Stream.zip(a, b, c, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    }
 
-        return Stream.zip(a, b, c, zipFunction).mapToDouble(mapper);
+    /**
+     * Zip together the "a" and "b" streams until one of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Double> zipFunction) {
+        return Stream.zip(a, b, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" streams until one of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<Double> zipFunction) {
+        return Stream.zip(a, b, c, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1605,15 +1037,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @param zipFunction
      * @return
      */
-    public static DoubleStream zip(final Collection<? extends DoubleIterator> c, final DoubleNFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(c, zipFunction).mapToDouble(mapper);
+    public static DoubleStream zip(final Collection<? extends DoubleStream> c, final DoubleNFunction<Double> zipFunction) {
+        return Stream.zip(c, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1627,16 +1052,9 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @param zipFunction
      * @return
      */
-    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final double valueForNoneA, final double valueForNoneB,
+    public static DoubleStream zip(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
             final DoubleBiFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1652,16 +1070,9 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @param zipFunction
      * @return
      */
-    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final double valueForNoneA, final double valueForNoneB,
+    public static DoubleStream zip(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC, final DoubleTriFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(mapper);
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1677,14 +1088,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      */
     public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final double valueForNoneA, final double valueForNoneB,
             final DoubleBiFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(mapper);
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1702,14 +1106,41 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      */
     public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final DoubleTriFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    }
 
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(mapper);
+    /**
+     * Zip together the "a" and "b" iterators until all of them runs out of values.
+     * Each pair of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param valueForNoneA value to fill if "a" runs out of values first.
+     * @param valueForNoneB value to fill if "b" runs out of values first.
+     * @param zipFunction
+     * @return
+     */
+    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final double valueForNoneA, final double valueForNoneB,
+            final DoubleBiFunction<Double> zipFunction) {
+        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    }
+
+    /**
+     * Zip together the "a", "b" and "c" iterators until all of them runs out of values.
+     * Each triple of values is combined into a single value using the supplied zipFunction function.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param valueForNoneA value to fill if "a" runs out of values.
+     * @param valueForNoneB value to fill if "b" runs out of values.
+     * @param valueForNoneC value to fill if "c" runs out of values.
+     * @param zipFunction
+     * @return
+     */
+    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC, final DoubleTriFunction<Double> zipFunction) {
+        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1721,15 +1152,8 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @param zipFunction
      * @return
      */
-    public static DoubleStream zip(final Collection<? extends DoubleIterator> c, final double[] valuesForNone, final DoubleNFunction<Double> zipFunction) {
-        final ToDoubleFunction<Double> mapper = new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        };
-
-        return Stream.zip(c, valuesForNone, zipFunction).mapToDouble(mapper);
+    public static DoubleStream zip(final Collection<? extends DoubleStream> c, final double[] valuesForNone, final DoubleNFunction<Double> zipFunction) {
+        return Stream.zip(c, valuesForNone, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
     }
 
     /**
@@ -1782,41 +1206,12 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * 
      * @param a
      * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static DoubleStream merge(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Nth> nextSelector) {
-        final DoubleIterator iterA = a.doubleIterator();
-        final DoubleIterator iterB = b.doubleIterator();
-
-        if (iterA.hasNext() == false) {
-            return b;
-        } else if (iterB.hasNext() == false) {
-            return a;
-        }
-
-        return merge(iterA, iterB, nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+    public static DoubleStream merge(final double[] a, final double[] b, final double[] c, final DoubleBiFunction<Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).doubleIterator(), DoubleStream.of(c).doubleIterator(), nextSelector);
     }
 
     /**
@@ -1896,30 +1291,29 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static DoubleStream merge(final DoubleStream[] a, final DoubleBiFunction<Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
+    public static DoubleStream merge(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleBiFunction<Nth> nextSelector) {
+        return merge(merge(a, b, nextSelector).doubleIterator(), c, nextSelector);
+    }
 
-        final DoubleIterator[] iters = new DoubleIterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].doubleIterator();
-        }
-
-        return merge(iters, nextSelector).onClose(new Runnable() {
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
+     * @return
+     */
+    public static DoubleStream merge(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Nth> nextSelector) {
+        return merge(a.doubleIterator(), b.doubleIterator(), nextSelector).onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (DoubleStream stream : a) {
+                for (DoubleStream stream : N.asList(a, b)) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -1941,19 +1335,13 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
     /**
      * 
      * @param a
+     * @param b
+     * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static DoubleStream merge(final DoubleIterator[] a, final DoubleBiFunction<Nth> nextSelector) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        return merge(Arrays.asList(a), nextSelector);
+    public static DoubleStream merge(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleBiFunction<Nth> nextSelector) {
+        return merge(N.asList(a, b, c), nextSelector);
     }
 
     /**
@@ -1962,68 +1350,29 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static DoubleStream merge(final Collection<? extends DoubleIterator> c, final DoubleBiFunction<Nth> nextSelector) {
+    public static DoubleStream merge(final Collection<? extends DoubleStream> c, final DoubleBiFunction<Nth> nextSelector) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
-            return of(c.iterator().next());
+            return c.iterator().next();
         } else if (c.size() == 2) {
-            final Iterator<? extends DoubleIterator> iter = c.iterator();
+            final Iterator<? extends DoubleStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
         }
 
-        final Iterator<? extends DoubleIterator> iter = c.iterator();
-        DoubleStream result = merge(iter.next(), iter.next(), nextSelector);
+        final Iterator<? extends DoubleStream> iter = c.iterator();
+        DoubleStream result = merge(iter.next().doubleIterator(), iter.next().doubleIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.doubleIterator(), iter.next(), nextSelector);
+            result = merge(result.doubleIterator(), iter.next().doubleIterator(), nextSelector);
         }
 
-        return result;
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static DoubleStream parallelMerge(final DoubleStream[] a, final DoubleBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static DoubleStream parallelMerge(final DoubleStream[] a, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return a[0];
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        final DoubleIterator[] iters = new DoubleIterator[a.length];
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].doubleIterator();
-        }
-
-        return parallelMerge(iters, nextSelector, maxThreadNum).onClose(new Runnable() {
+        return result.onClose(new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
-                for (DoubleStream stream : a) {
+                for (DoubleStream stream : c) {
                     try {
                         stream.close();
                     } catch (Throwable throwable) {
@@ -2044,44 +1393,11 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
 
     /**
      * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @return
-     */
-    public static DoubleStream parallelMerge(final DoubleIterator[] a, final DoubleBiFunction<Nth> nextSelector) {
-        return parallelMerge(a, nextSelector, DEFAULT_MAX_THREAD_NUM);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
-     * @param maxThreadNum
-     * @return
-     */
-    public static DoubleStream parallelMerge(final DoubleIterator[] a, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        } else if (a.length == 1) {
-            return of(a[0]);
-        } else if (a.length == 2) {
-            return merge(a[0], a[1], nextSelector);
-        }
-
-        return parallelMerge(Arrays.asList(a), nextSelector, maxThreadNum);
-    }
-
-    /**
-     * 
      * @param c
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static DoubleStream parallelMerge(final Collection<? extends DoubleIterator> c, final DoubleBiFunction<Nth> nextSelector) {
+    public static DoubleStream parallelMerge(final Collection<? extends DoubleStream> c, final DoubleBiFunction<Nth> nextSelector) {
         return parallelMerge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
@@ -2092,7 +1408,7 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
      * @param maxThreadNum
      * @return
      */
-    public static DoubleStream parallelMerge(final Collection<? extends DoubleIterator> c, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
+    public static DoubleStream parallelMerge(final Collection<? extends DoubleStream> c, final DoubleBiFunction<Nth> nextSelector, final int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
@@ -2100,15 +1416,20 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
         if (N.isNullOrEmpty(c)) {
             return empty();
         } else if (c.size() == 1) {
-            return of(c.iterator().next());
+            return c.iterator().next();
         } else if (c.size() == 2) {
-            final Iterator<? extends DoubleIterator> iter = c.iterator();
+            final Iterator<? extends DoubleStream> iter = c.iterator();
             return merge(iter.next(), iter.next(), nextSelector);
         } else if (maxThreadNum <= 1) {
             return merge(c, nextSelector);
         }
 
-        final Queue<DoubleIterator> queue = N.newLinkedList(c);
+        final Queue<DoubleIterator> queue = N.newLinkedList();
+
+        for (DoubleStream e : c) {
+            queue.add(e.doubleIterator());
+        }
+
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
@@ -2164,6 +1485,27 @@ public abstract class DoubleStream extends StreamBase<Double, DoubleStream> {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector);
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (DoubleStream stream : c) {
+                    try {
+                        stream.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        });
     }
 }

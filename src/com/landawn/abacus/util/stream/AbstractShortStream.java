@@ -16,9 +16,11 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.IndexedShort;
@@ -58,21 +60,6 @@ abstract class AbstractShortStream extends ShortStream {
 
     AbstractShortStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
-    }
-
-    @Override
-    public ShortStream filter(final ShortPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public ShortStream takeWhile(final ShortPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public ShortStream dropWhile(final ShortPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -207,12 +194,14 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream distinct() {
-        return boxed().distinct().mapToShort(new ToShortFunction<Short>() {
+        return newStream(this.sequential().filter(new ShortPredicate() {
+            private final Set<Object> set = new HashSet<>();
+
             @Override
-            public short applyAsShort(Short value) {
-                return value.shortValue();
+            public boolean test(short value) {
+                return set.add(value);
             }
-        });
+        }).shortIterator(), sorted);
     }
 
     @Override
@@ -239,40 +228,35 @@ abstract class AbstractShortStream extends ShortStream {
         return OptionalShort.of(next);
     }
 
-    //    @Override
-    //    public OptionalShort any() {
-    //        return findAny(ShortPredicate.ALWAYS_TRUE);
-    //    }
-
     @Override
-    public ShortStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public ShortStream except(final Collection<?> c) {
+        return newStream(this.sequential().filter(new ShortPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new ShortPredicate() {
             @Override
             public boolean test(short value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        });
+        }).shortIterator(), sorted);
     }
 
     @Override
-    public ShortStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public ShortStream intersect(final Collection<?> c) {
+        return newStream(this.sequential().filter(new ShortPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new ShortPredicate() {
             @Override
             public boolean test(short value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        });
+        }).shortIterator(), sorted);
     }
 
     @Override
-    public ShortStream xor(Collection<Short> c) {
+    public ShortStream xor(final Collection<Short> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new ShortPredicate() {
+        return newStream(this.sequential().filter(new ShortPredicate() {
             @Override
             public boolean test(short value) {
                 return multiset.getAndRemove(value) < 1;
@@ -282,12 +266,7 @@ abstract class AbstractShortStream extends ShortStream {
             public boolean test(Short value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToShort(new ToShortFunction<Short>() {
-            @Override
-            public short applyAsShort(Short value) {
-                return value.shortValue();
-            }
-        }));
+        }).mapToShort(ToShortFunction.UNBOX)).shortIterator(), false);
     }
 
     @Override
@@ -370,11 +349,6 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public ShortStream reverse() {
         final short[] a = toArray();
-
-        //        N.reverse(a);
-        //
-        //        return newStream(a, false);
-
         return newStream(new ImmutableShortIterator() {
             private int cursor = a.length;
 
@@ -483,14 +457,14 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Stream<IndexedShort> indexed() {
-        final MutableLong idx = new MutableLong();
+        return newStream(this.sequential().mapToObj(new ShortFunction<IndexedShort>() {
+            final MutableLong idx = new MutableLong();
 
-        return mapToObj(new ShortFunction<IndexedShort>() {
             @Override
             public IndexedShort apply(short t) {
                 return IndexedShort.of(idx.getAndIncrement(), t);
             }
-        });
+        }).iterator(), false, null);
     }
 
     @Override

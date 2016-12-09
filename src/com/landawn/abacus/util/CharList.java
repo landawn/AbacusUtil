@@ -107,32 +107,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return of(elementData);
     }
 
-    //    public static CharList from(String... a) {
-    //        return a == null ? empty() : from(a, 0, a.length);
-    //    }
-    //
-    //    public static CharList from(String[] a, int startIndex, int endIndex) {
-    //        if (a == null && (startIndex == 0 && endIndex == 0)) {
-    //            return empty();
-    //        }
-    //
-    //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
-    //
-    //        final char[] elementData = new char[endIndex - startIndex];
-    //
-    //        for (int i = startIndex; i < endIndex; i++) {
-    //            if (a[i] == null) {
-    //                elementData[i - startIndex] = 0;
-    //            } else if (a[i].length() == 1) {
-    //                elementData[i - startIndex] = a[i].charAt(0);
-    //            } else {
-    //                throw new IllegalArgumentException("Invalid char: " + a[i]);
-    //            }
-    //        }
-    //
-    //        return of(elementData);
-    //    }
-
     static CharList from(List<String> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -216,22 +190,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return of(a);
     }
 
-    //    public static CharList random(CharPredicate predicate, final int len) {
-    //        final char[] a = new char[len];
-    //        final int mod = Character.MAX_VALUE + 1;
-    //        char ch = 0;
-    //
-    //        for (int i = 0; i < len;) {
-    //            ch = (char) Math.abs(RAND.nextInt() % mod);
-    //
-    //            if (predicate.test(ch)) {
-    //                a[i++] = ch;
-    //            }
-    //        }
-    //
-    //        return of(a);
-    //    }
-
     public static CharList random(final char startInclusive, final char endInclusive, final int len) {
         if (startInclusive > endInclusive) {
             throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
@@ -250,30 +208,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
         return of(a);
     }
-
-    //    public static CharList random(final char startInclusive, final char endInclusive, CharPredicate predicate, final int len) {
-    //        if (startInclusive > endInclusive) {
-    //            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
-    //        }
-    //
-    //        if (startInclusive == endInclusive) {
-    //            return repeat(startInclusive, len);
-    //        }
-    //
-    //        final char[] a = new char[len];
-    //        final int mod = endInclusive - startInclusive + 1;
-    //        char ch = 0;
-    //
-    //        for (int i = 0; i < len;) {
-    //            ch = (char) (Math.abs(RAND.nextInt() % mod) + startInclusive);
-    //
-    //            if (predicate.test(ch)) {
-    //                a[i++] = ch;
-    //            }
-    //        }
-    //
-    //        return of(a);
-    //    }
 
     public static CharList random(final char[] candicates, final int len) {
         if (N.isNullOrEmpty(candicates) || candicates.length >= Integer.MAX_VALUE) {
@@ -301,24 +235,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     public char[] array() {
         return elementData;
     }
-
-    //    /**
-    //     * Return the first element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalChar findFirst() {
-    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[0]);
-    //    }
-
-    //    /**
-    //     * Return the last element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalChar findLast() {
-    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[size - 1]);
-    //    }
 
     public char get(int index) {
         rangeCheck(index);
@@ -713,12 +629,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @see IntList#xor(IntList)
      */
     public CharList xor(CharList b) {
-        //        final CharList result = this.except(b);
-        //
-        //        result.addAll(b.except(this));
-        //
-        //        return result;
-
         final Multiset<Character> bOccurrences = b.toMultiset();
 
         final CharList c = new CharList(N.max(9, Math.abs(size() - b.size())));
@@ -881,15 +791,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         }
     }
 
-    //    /**
-    //     * Return the first element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalChar findFirst() {
-    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[0]);
-    //    }
-
     public OptionalChar findFirst(CharPredicate predicate) {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
@@ -899,15 +800,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
         return OptionalChar.empty();
     }
-
-    //    /**
-    //     * Return the last element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalChar findLast() {
-    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(elementData[size - 1]);
-    //    }
 
     public OptionalChar findLast(CharPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -989,157 +881,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
-
-    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
-
-    //    public <R> List<R> map(final CharFunction<? extends R> func) {
-    //        return map(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> map(final int fromIndex, final int toIndex, final CharFunction<? extends R> func) {
-    //        return map(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final CharFunction<? extends R> func) {
-    //        return map(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final CharFunction<? extends R> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.add(func.apply(elementData[i]));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> flatMap(final CharFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final CharFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final CharFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final CharFunction<? extends Collection<? extends R>> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.addAll(func.apply(elementData[i]));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> flatMap2(final CharFunction<R[]> func) {
-    //        return flatMap2(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final CharFunction<R[]> func) {
-    //        return flatMap2(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final CharFunction<R[]> func) {
-    //        return flatMap2(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final CharFunction<R[]> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.addAll(Arrays.asList(func.apply(elementData[i])));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <K> Map<K, List<Character>> groupBy(final CharFunction<? extends K> func) {
-    //        return groupBy(0, size(), func);
-    //    }
-    //
-    //    public <K> Map<K, List<Character>> groupBy(final int fromIndex, final int toIndex, final CharFunction<? extends K> func) {
-    //        return groupBy(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public <K, V extends Collection<Character>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final CharFunction<? extends K> func) {
-    //        return groupBy(HashMap.class, collClass, 0, size(), func);
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public <K, V extends Collection<Character>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-    //            final CharFunction<? extends K> func) {
-    //        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <K, V extends Collection<Character>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-    //            final CharFunction<? extends K> func) {
-    //
-    //        return groupBy(outputClass, collClass, 0, size(), func);
-    //    }
-    //
-    //    public <K, V extends Collection<Character>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-    //            final int fromIndex, final int toIndex, final CharFunction<? extends K> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final M outputResult = N.newInstance(outputClass);
-    //
-    //        K key = null;
-    //        V values = null;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            key = func.apply(elementData[i]);
-    //            values = outputResult.get(key);
-    //
-    //            if (values == null) {
-    //                values = N.newInstance(collClass);
-    //                outputResult.put(key, values);
-    //            }
-    //
-    //            values.add(elementData[i]);
-    //        }
-    //
-    //        return outputResult;
-    //    }
-    //
-    //    public OptionalChar reduce(final CharBinaryOperator accumulator) {
-    //        return size() == 0 ? OptionalChar.empty() : OptionalChar.of(reduce((char) 0, accumulator));
-    //    }
-    //
-    //    public OptionalChar reduce(final int fromIndex, final int toIndex, final CharBinaryOperator accumulator) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(reduce(fromIndex, toIndex, (char) 0, accumulator));
-    //    }
-    //
-    //    public char reduce(final char identity, final CharBinaryOperator accumulator) {
-    //        return reduce(0, size(), identity, accumulator);
-    //    }
-    //
-    //    public char reduce(final int fromIndex, final int toIndex, final char identity, final CharBinaryOperator accumulator) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        char result = identity;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            result = accumulator.applyAsChar(result, elementData[i]);
-    //        }
-    //
-    //        return result;
-    //    }
 
     @Override
     public CharList distinct(final int fromIndex, final int toIndex) {
@@ -1229,13 +970,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     public CharList copy() {
         return new CharList(N.copyOfRange(elementData, 0, size));
     }
-
-    //    @Override
-    //    public CharList copy(final int fromIndex, final int toIndex) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return new CharList(N.copyOfRange(elementData, fromIndex, toIndex));
-    //    }
 
     @Override
     public List<CharList> split(final int fromIndex, final int toIndex, final int size) {
@@ -1376,70 +1110,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
         return multiset;
     }
-
-    // Replaced with Stream.toMap(...)/toMultimap(...).
-
-    //    public <K, U> Map<K, U> toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
-    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-    //
-    //        return toMap(keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, M extends Map<K, U>> M toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
-    //            final IntFunction<M> supplier) {
-    //        return toMap(0, size(), keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
-    //            final CharFunction<? extends U> valueMapper) {
-    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-    //
-    //        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
-    //            final CharFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-    //        }
-    //
-    //        return (M) map;
-    //    }
-    //
-    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper) {
-    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-    //
-    //        return toMultimap(keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
-    //            final IntFunction<Multimap<K, U, V>> supplier) {
-    //        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
-    //            final CharFunction<? extends U> valueMapper) {
-    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-    //
-    //        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final CharFunction<? extends K> keyMapper,
-    //            final CharFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-    //        }
-    //
-    //        return multimap;
-    //    }
 
     public CharStream stream() {
         return stream(0, size());

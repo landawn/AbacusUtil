@@ -152,26 +152,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         return of(elementData);
     }
 
-    //    public static LongList from(String... a) {
-    //        return a == null ? empty() : from(a, 0, a.length);
-    //    }
-    //
-    //    public static LongList from(String[] a, int startIndex, int endIndex) {
-    //        if (a == null && (startIndex == 0 && endIndex == 0)) {
-    //            return empty();
-    //        }
-    //
-    //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
-    //
-    //        final long[] elementData = new long[endIndex - startIndex];
-    //
-    //        for (int i = startIndex; i < endIndex; i++) {
-    //            elementData[i - startIndex] = N.asLong(a[i]);
-    //        }
-    //
-    //        return of(elementData);
-    //    }
-
     static LongList from(List<String> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -267,24 +247,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
     public long[] array() {
         return elementData;
     }
-
-    //    /**
-    //     * Return the first element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalLong findFirst() {
-    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[0]);
-    //    }
-
-    //    /**
-    //     * Return the last element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalLong findLast() {
-    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[size - 1]);
-    //    }
 
     public long get(int index) {
         rangeCheck(index);
@@ -844,15 +806,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         }
     }
 
-    //    /**
-    //     * Return the first element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalLong findFirst() {
-    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[0]);
-    //    }
-
     public OptionalLong findFirst(LongPredicate predicate) {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
@@ -862,15 +815,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
 
         return OptionalLong.empty();
     }
-
-    //    /**
-    //     * Return the last element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalLong findLast() {
-    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[size - 1]);
-    //    }
 
     public OptionalLong findLast(LongPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -952,157 +896,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
 
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
-
-    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
-
-    //    public <R> List<R> map(final LongFunction<? extends R> func) {
-    //        return map(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> map(final int fromIndex, final int toIndex, final LongFunction<? extends R> func) {
-    //        return map(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final LongFunction<? extends R> func) {
-    //        return map(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final LongFunction<? extends R> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.add(func.apply(elementData[i]));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> flatMap(final LongFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final LongFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final LongFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final LongFunction<? extends Collection<? extends R>> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.addAll(func.apply(elementData[i]));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> flatMap2(final LongFunction<R[]> func) {
-    //        return flatMap2(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final LongFunction<R[]> func) {
-    //        return flatMap2(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final LongFunction<R[]> func) {
-    //        return flatMap2(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex, final LongFunction<R[]> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.addAll(Arrays.asList(func.apply(elementData[i])));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <K> Map<K, List<Long>> groupBy(final LongFunction<? extends K> func) {
-    //        return groupBy(0, size(), func);
-    //    }
-    //
-    //    public <K> Map<K, List<Long>> groupBy(final int fromIndex, final int toIndex, final LongFunction<? extends K> func) {
-    //        return groupBy(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public <K, V extends Collection<Long>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final LongFunction<? extends K> func) {
-    //        return groupBy(HashMap.class, collClass, 0, size(), func);
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public <K, V extends Collection<Long>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-    //            final LongFunction<? extends K> func) {
-    //        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <K, V extends Collection<Long>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-    //            final LongFunction<? extends K> func) {
-    //
-    //        return groupBy(outputClass, collClass, 0, size(), func);
-    //    }
-    //
-    //    public <K, V extends Collection<Long>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-    //            final int fromIndex, final int toIndex, final LongFunction<? extends K> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final M outputResult = N.newInstance(outputClass);
-    //
-    //        K key = null;
-    //        V values = null;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            key = func.apply(elementData[i]);
-    //            values = outputResult.get(key);
-    //
-    //            if (values == null) {
-    //                values = N.newInstance(collClass);
-    //                outputResult.put(key, values);
-    //            }
-    //
-    //            values.add(elementData[i]);
-    //        }
-    //
-    //        return outputResult;
-    //    }
-    //
-    //    public OptionalLong reduce(final LongBinaryOperator accumulator) {
-    //        return size() == 0 ? OptionalLong.empty() : OptionalLong.of(reduce(0, accumulator));
-    //    }
-    //
-    //    public OptionalLong reduce(final int fromIndex, final int toIndex, final LongBinaryOperator accumulator) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(reduce(fromIndex, toIndex, 0, accumulator));
-    //    }
-    //
-    //    public long reduce(final long identity, final LongBinaryOperator accumulator) {
-    //        return reduce(0, size(), identity, accumulator);
-    //    }
-    //
-    //    public long reduce(final int fromIndex, final int toIndex, final long identity, final LongBinaryOperator accumulator) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        long result = identity;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            result = accumulator.applyAsLong(result, elementData[i]);
-    //        }
-    //
-    //        return result;
-    //    }
 
     @Override
     public LongList distinct(final int fromIndex, final int toIndex) {
@@ -1212,13 +1005,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
     public LongList copy() {
         return new LongList(N.copyOfRange(elementData, 0, size));
     }
-
-    //    @Override
-    //    public LongList copy(final int fromIndex, final int toIndex) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return new LongList(N.copyOfRange(elementData, fromIndex, toIndex));
-    //    }
 
     @Override
     public List<LongList> split(final int fromIndex, final int toIndex, final int size) {
@@ -1358,70 +1144,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
 
         return multiset;
     }
-
-    // Replaced with Stream.toMap(...)/toMultimap(...).
-
-    //    public <K, U> Map<K, U> toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
-    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-    //
-    //        return toMap(keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, M extends Map<K, U>> M toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
-    //            final IntFunction<M> supplier) {
-    //        return toMap(0, size(), keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
-    //            final LongFunction<? extends U> valueMapper) {
-    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-    //
-    //        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
-    //            final LongFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-    //        }
-    //
-    //        return (M) map;
-    //    }
-    //
-    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper) {
-    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-    //
-    //        return toMultimap(keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
-    //            final IntFunction<Multimap<K, U, V>> supplier) {
-    //        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
-    //            final LongFunction<? extends U> valueMapper) {
-    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-    //
-    //        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final LongFunction<? extends K> keyMapper,
-    //            final LongFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-    //        }
-    //
-    //        return multimap;
-    //    }
 
     public LongStream stream() {
         return stream(0, size());

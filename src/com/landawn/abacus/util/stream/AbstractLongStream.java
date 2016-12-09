@@ -16,9 +16,11 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.IndexedLong;
@@ -58,21 +60,6 @@ abstract class AbstractLongStream extends LongStream {
 
     AbstractLongStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
-    }
-
-    @Override
-    public LongStream filter(final LongPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public LongStream takeWhile(final LongPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public LongStream dropWhile(final LongPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -206,12 +193,14 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream distinct() {
-        return boxed().distinct().mapToLong(new ToLongFunction<Long>() {
+        return newStream(this.sequential().filter(new LongPredicate() {
+            private final Set<Object> set = new HashSet<>();
+
             @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
+            public boolean test(long value) {
+                return set.add(value);
             }
-        });
+        }).longIterator(), sorted);
     }
 
     @Override
@@ -238,40 +227,35 @@ abstract class AbstractLongStream extends LongStream {
         return OptionalLong.of(next);
     }
 
-    //    @Override
-    //    public OptionalLong any() {
-    //        return findAny(LongPredicate.ALWAYS_TRUE);
-    //    }
-
     @Override
-    public LongStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public LongStream except(final Collection<?> c) {
+        return newStream(this.sequential().filter(new LongPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new LongPredicate() {
             @Override
             public boolean test(long value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        });
+        }).longIterator(), sorted);
     }
 
     @Override
-    public LongStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public LongStream intersect(final Collection<?> c) {
+        return newStream(this.sequential().filter(new LongPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new LongPredicate() {
             @Override
             public boolean test(long value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        });
+        }).longIterator(), sorted);
     }
 
     @Override
-    public LongStream xor(Collection<Long> c) {
+    public LongStream xor(final Collection<Long> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new LongPredicate() {
+        return newStream(this.sequential().filter(new LongPredicate() {
             @Override
             public boolean test(long value) {
                 return multiset.getAndRemove(value) < 1;
@@ -281,12 +265,7 @@ abstract class AbstractLongStream extends LongStream {
             public boolean test(Long value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToLong(new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        }));
+        }).mapToLong(ToLongFunction.UNBOX)).longIterator(), false);
     }
 
     @Override
@@ -369,11 +348,6 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public LongStream reverse() {
         final long[] a = toArray();
-
-        //        N.reverse(a);
-        //
-        //        return newStream(a, false);
-
         return newStream(new ImmutableLongIterator() {
             private int cursor = a.length;
 
@@ -482,14 +456,14 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Stream<IndexedLong> indexed() {
-        final MutableLong idx = new MutableLong();
+        return newStream(this.sequential().mapToObj(new LongFunction<IndexedLong>() {
+            final MutableLong idx = new MutableLong();
 
-        return mapToObj(new LongFunction<IndexedLong>() {
             @Override
             public IndexedLong apply(long t) {
                 return IndexedLong.of(idx.getAndIncrement(), t);
             }
-        });
+        }).iterator(), false, null);
     }
 
     @Override

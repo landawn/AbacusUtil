@@ -90,9 +90,9 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream filter(final DoublePredicate predicate, final long max) {
+    public DoubleStream filter(final DoublePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().filter(predicate, max).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorDoubleStream(sequential().filter(predicate).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Double> stream = boxed().filter(new Predicate<Double>() {
@@ -100,15 +100,15 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             public boolean test(Double value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorDoubleStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public DoubleStream takeWhile(final DoublePredicate predicate, final long max) {
+    public DoubleStream takeWhile(final DoublePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().takeWhile(predicate, max).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorDoubleStream(sequential().takeWhile(predicate).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Double> stream = boxed().takeWhile(new Predicate<Double>() {
@@ -116,15 +116,15 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             public boolean test(Double value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorDoubleStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
-    public DoubleStream dropWhile(final DoublePredicate predicate, final long max) {
+    public DoubleStream dropWhile(final DoublePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().dropWhile(predicate, max).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorDoubleStream(sequential().dropWhile(predicate).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Double> stream = boxed().dropWhile(new Predicate<Double>() {
@@ -132,7 +132,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             public boolean test(Double value) {
                 return predicate.test(value);
             }
-        }, max);
+        });
 
         return new ParallelIteratorDoubleStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -359,6 +359,20 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleStream> splitAt(final int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("'n' can't be negative");
+        }
+
+        final DoubleStream[] a = new DoubleStream[2];
+        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        a[0] = middleIndex == fromIndex ? DoubleStream.empty() : new ArrayDoubleStream(elements, fromIndex, middleIndex, null, sorted);
+        a[1] = middleIndex == toIndex ? DoubleStream.empty() : new ArrayDoubleStream(elements, middleIndex, toIndex, null, sorted);
+
+        return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public Stream<DoubleList> sliding(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
@@ -431,12 +445,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             public void accept(Double t) {
                 action.accept(t);
             }
-        }).sequential().mapToDouble(new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value.doubleValue();
-            }
-        });
+        }).sequential().mapToDouble(ToDoubleFunction.UNBOX);
 
         return new ParallelIteratorDoubleStream(stream, closeHandlers, false, maxThreadNum, splitor);
     }
@@ -540,88 +549,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
             throw N.toRuntimeException(e);
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(final DoubleFunction<Boolean> action) {
-    //        if (maxThreadNum <= 1) {
-    //            return sequential().forEach2(action);
-    //        }
-    //
-    //        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-    //        final Holder<Throwable> eHolder = new Holder<>();
-    //        final MutableBoolean result = MutableBoolean.of(true);
-    //
-    //        if (splitor == splitor.ARRAY) {
-    //            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
-    //
-    //            for (int i = 0; i < maxThreadNum; i++) {
-    //                final int sliceIndex = i;
-    //
-    //                futureList.add(asyncExecutor.execute(new Runnable() {
-    //                    @Override
-    //                    public void run() {
-    //                        int cursor = fromIndex + sliceIndex * sliceSize;
-    //                        final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
-    //
-    //                        try {
-    //                            while (cursor < to && result.isTrue() && eHolder.value() == null) {
-    //                                if (action.apply(elements[cursor++]) == false) {
-    //                                    result.setFalse();
-    //                                    break;
-    //                                }
-    //                            }
-    //                        } catch (Throwable e) {
-    //                            setError(eHolder, e);
-    //                        }
-    //                    }
-    //                }));
-    //            }
-    //        } else {
-    //            final MutableInt cursor = MutableInt.of(fromIndex);
-    //
-    //            for (int i = 0; i < maxThreadNum; i++) {
-    //                futureList.add(asyncExecutor.execute(new Runnable() {
-    //                    @Override
-    //                    public void run() {
-    //                        double next = 0;
-    //
-    //                        try {
-    //                            while (result.isTrue() && eHolder.value() == null) {
-    //                                synchronized (elements) {
-    //                                    if (cursor.intValue() < toIndex) {
-    //                                        next = elements[cursor.getAndIncrement()];
-    //                                    } else {
-    //                                        break;
-    //                                    }
-    //                                }
-    //
-    //                                if (action.apply(next) == false) {
-    //                                    result.setFalse();
-    //                                    break;
-    //                                }
-    //                            }
-    //                        } catch (Throwable e) {
-    //                            setError(eHolder, e);
-    //                        }
-    //                    }
-    //                }));
-    //            }
-    //        }
-    //
-    //        if (eHolder.value() != null) {
-    //            throw N.toRuntimeException(eHolder.value());
-    //        }
-    //
-    //        try {
-    //            for (CompletableFuture<Void> future : futureList) {
-    //                future.get();
-    //            }
-    //        } catch (Exception e) {
-    //            throw N.toRuntimeException(e);
-    //        }
-    //
-    //        return result.value();
-    //    }
 
     @Override
     public double[] toArray() {
@@ -765,7 +692,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final DoubleFunction<? extends K> keyMapper,
             final DoubleFunction<? extends U> valueMapper, final Supplier<Multimap<K, U, V>> mapSupplier) {
-
         if (maxThreadNum <= 1) {
             return sequential().toMultimap(keyMapper, valueMapper, mapSupplier);
         }
@@ -1665,11 +1591,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         return result.value();
     }
 
-    //    @Override
-    //    public OptionalDouble findFirst() {
-    //        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalDouble findFirst(final DoublePredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1774,11 +1695,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
-
-    //    @Override
-    //    public OptionalDouble findLast() {
-    //        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[toIndex - 1]);
-    //    }
 
     @Override
     public OptionalDouble findLast(final DoublePredicate predicate) {
@@ -1885,11 +1801,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
 
-    //    @Override
-    //    public OptionalDouble findAny() {
-    //        return count() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
-    //    }
-
     @Override
     public OptionalDouble findAny(final DoublePredicate predicate) {
         if (maxThreadNum <= 1) {
@@ -1994,37 +1905,6 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream except(final Collection<?> c) {
-        return new ParallelIteratorDoubleStream(this.sequential().except(c).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public DoubleStream intersect(final Collection<?> c) {
-        return new ParallelIteratorDoubleStream(this.sequential().intersect(c).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public DoubleStream xor(final Collection<Double> c) {
-        return new ParallelIteratorDoubleStream(this.sequential().xor(c).doubleIterator(), closeHandlers, false, maxThreadNum, splitor);
-    }
-
-    //    @Override
-    //    public DoubleStream exclude(final Collection<?> c) {
-    //        if (maxThreadNum <= 1) {
-    //            return new ParallelIteratorDoubleStream(sequential().exclude(c).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
-    //        }
-    //
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new DoublePredicate() {
-    //            @Override
-    //            public boolean test(double value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
-
-    @Override
     public Stream<Double> boxed() {
         Stream<Double> tmp = boxed;
 
@@ -2103,6 +1983,10 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream parallel(int maxThreadNum, Splitor splitor) {
+        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
+            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
+        }
+
         if (this.maxThreadNum == maxThreadNum && this.splitor == splitor) {
             return this;
         }
@@ -2119,7 +2003,9 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     public DoubleStream maxThreadNum(int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        } else if (this.maxThreadNum == maxThreadNum) {
+        }
+
+        if (this.maxThreadNum == maxThreadNum) {
             return this;
         }
 

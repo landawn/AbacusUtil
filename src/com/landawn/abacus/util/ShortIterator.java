@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util;
 
+import java.util.NoSuchElementException;
+
 /**
  * 
  * @since 0.8
@@ -21,6 +23,22 @@ package com.landawn.abacus.util;
  * @author Haiyang Li
  */
 public interface ShortIterator {
+    public static final ShortIterator EMPTY = new ShortIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public short next() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public void remove() {
+            throw new IllegalStateException();
+        }
+    };
 
     boolean hasNext();
 

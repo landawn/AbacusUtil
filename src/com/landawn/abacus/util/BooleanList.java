@@ -79,26 +79,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return a == null && size == 0 ? empty() : new BooleanList(a, size);
     }
 
-    //    public static BooleanList from(String... a) {
-    //        return a == null ? empty() : from(a, 0, a.length);
-    //    }
-    //
-    //    public static BooleanList from(String[] a, int startIndex, int endIndex) {
-    //        if (a == null && (startIndex == 0 && endIndex == 0)) {
-    //            return empty();
-    //        }
-    //
-    //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
-    //
-    //        final boolean[] elementData = new boolean[endIndex - startIndex];
-    //
-    //        for (int i = startIndex; i < endIndex; i++) {
-    //            elementData[i - startIndex] = Boolean.valueOf(a[i]);
-    //        }
-    //
-    //        return of(elementData);
-    //    }
-
     static BooleanList from(List<String> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -168,24 +148,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     public boolean[] array() {
         return elementData;
     }
-
-    //    /**
-    //     * Return the first element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalBoolean findFirst() {
-    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[0]);
-    //    }
-
-    //    /**
-    //     * Return the last element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalBoolean findLast() {
-    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[size - 1]);
-    //    }
 
     public boolean get(int index) {
         rangeCheck(index);
@@ -688,15 +650,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         }
     }
 
-    //    /**
-    //     * Return the first element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalBoolean findFirst() {
-    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[0]);
-    //    }
-
     public OptionalBoolean findFirst(BooleanPredicate predicate) {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
@@ -706,15 +659,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
         return OptionalBoolean.empty();
     }
-
-    //    /**
-    //     * Return the last element of the array list.
-    //     * @return
-    //     */
-    //    @Beta
-    //    public OptionalBoolean findLast() {
-    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[size - 1]);
-    //    }
 
     public OptionalBoolean findLast(BooleanPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -803,158 +747,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
-    // TODO 1, replace with Stream APIs. 2, "final Class<? extends V> collClass" should be replaced with IntFunction<List<R>> supplier
-
-    //    public <R> List<R> map(final BooleanFunction<? extends R> func) {
-    //        return map(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> map(final int fromIndex, final int toIndex, final BooleanFunction<? extends R> func) {
-    //        return map(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final BooleanFunction<? extends R> func) {
-    //        return map(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<R>> V map(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final BooleanFunction<? extends R> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.add(func.apply(elementData[i]));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> flatMap(final BooleanFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> flatMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<? super R>> V flatMap(final Class<? extends V> collClass, final BooleanFunction<? extends Collection<? extends R>> func) {
-    //        return flatMap(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<? super R>> V flatMap(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final BooleanFunction<? extends Collection<? extends R>> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.addAll(func.apply(elementData[i]));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> flatMap2(final BooleanFunction<R[]> func) {
-    //        return flatMap2(0, size(), func);
-    //    }
-    //
-    //    public <R> List<R> flatMap2(final int fromIndex, final int toIndex, final BooleanFunction<R[]> func) {
-    //        return flatMap2(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <R, V extends Collection<? super R>> V flatMap2(final Class<? extends V> collClass, final BooleanFunction<R[]> func) {
-    //        return flatMap2(collClass, 0, size(), func);
-    //    }
-    //
-    //    public <R, V extends Collection<? super R>> V flatMap2(final Class<? extends V> collClass, final int fromIndex, final int toIndex,
-    //            final BooleanFunction<R[]> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final V res = N.newInstance(collClass);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            res.addAll(Arrays.asList(func.apply(elementData[i])));
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <K> Map<K, List<Boolean>> groupBy(final BooleanFunction<? extends K> func) {
-    //        return groupBy(0, size(), func);
-    //    }
-    //
-    //    public <K> Map<K, List<Boolean>> groupBy(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> func) {
-    //        return groupBy(List.class, fromIndex, toIndex, func);
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public <K, V extends Collection<Boolean>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final BooleanFunction<? extends K> func) {
-    //        return groupBy(HashMap.class, collClass, 0, size(), func);
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public <K, V extends Collection<Boolean>> Map<K, V> groupBy(final Class<? extends Collection> collClass, final int fromIndex, final int toIndex,
-    //            final BooleanFunction<? extends K> func) {
-    //        return groupBy(HashMap.class, collClass, fromIndex, toIndex, func);
-    //    }
-    //
-    //    public <K, V extends Collection<Boolean>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-    //            final BooleanFunction<? extends K> func) {
-    //
-    //        return groupBy(outputClass, collClass, 0, size(), func);
-    //    }
-    //
-    //    public <K, V extends Collection<Boolean>, M extends Map<? super K, V>> M groupBy(final Class<M> outputClass, final Class<? extends V> collClass,
-    //            final int fromIndex, final int toIndex, final BooleanFunction<? extends K> func) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final M outputResult = N.newInstance(outputClass);
-    //
-    //        K key = null;
-    //        V values = null;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            key = func.apply(elementData[i]);
-    //            values = outputResult.get(key);
-    //
-    //            if (values == null) {
-    //                values = N.newInstance(collClass);
-    //                outputResult.put(key, values);
-    //            }
-    //
-    //            values.add(elementData[i]);
-    //        }
-    //
-    //        return outputResult;
-    //    }
-    //
-    //    public OptionalBoolean reduce(final BooleanBinaryOperator accumulator) {
-    //        return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(reduce(false, accumulator));
-    //    }
-    //
-    //    public OptionalBoolean reduce(final int fromIndex, final int toIndex, final BooleanBinaryOperator accumulator) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return fromIndex == toIndex ? OptionalBoolean.empty() : OptionalBoolean.of(reduce(fromIndex, toIndex, false, accumulator));
-    //    }
-    //
-    //    public boolean reduce(final boolean identity, final BooleanBinaryOperator accumulator) {
-    //        return reduce(0, size(), identity, accumulator);
-    //    }
-    //
-    //    public boolean reduce(final int fromIndex, final int toIndex, final boolean identity, final BooleanBinaryOperator accumulator) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        boolean result = identity;
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            result = accumulator.applyAsBoolean(result, elementData[i]);
-    //        }
-    //
-    //        return result;
-    //    }
-
     @Override
     public BooleanList distinct(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
@@ -1027,13 +819,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     public BooleanList copy() {
         return new BooleanList(N.copyOfRange(elementData, 0, size));
     }
-
-    //    @Override
-    //    public BooleanList copy(final int fromIndex, final int toIndex) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
-    //    }
 
     @Override
     public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
@@ -1173,68 +958,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
         return multiset;
     }
-
-    //    public <K, U> Map<K, U> toMap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
-    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-    //
-    //        return toMap(keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, M extends Map<K, U>> M toMap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper,
-    //            final IntFunction<M> supplier) {
-    //        return toMap(0, size(), keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U> Map<K, U> toMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
-    //            final BooleanFunction<? extends U> valueMapper) {
-    //        final IntFunction<Map<K, U>> supplier = createMapSupplier();
-    //
-    //        return toMap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, M extends Map<K, U>> M toMap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
-    //            final BooleanFunction<? extends U> valueMapper, final IntFunction<M> supplier) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final Map<K, U> map = supplier.apply(N.min(16, toIndex - fromIndex));
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            map.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-    //        }
-    //
-    //        return (M) map;
-    //    }
-    //
-    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final BooleanFunction<? extends K> keyMapper, final BooleanFunction<? extends U> valueMapper) {
-    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-    //
-    //        return toMultimap(keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final BooleanFunction<? extends K> keyMapper,
-    //            final BooleanFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-    //        return toMultimap(0, size(), keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U> Multimap<K, U, List<U>> toMultimap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
-    //            final BooleanFunction<? extends U> valueMapper) {
-    //        final IntFunction<Multimap<K, U, List<U>>> supplier = createMultimapSupplier();
-    //
-    //        return toMultimap(fromIndex, toIndex, keyMapper, valueMapper, supplier);
-    //    }
-    //
-    //    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final int fromIndex, final int toIndex, final BooleanFunction<? extends K> keyMapper,
-    //            final BooleanFunction<? extends U> valueMapper, final IntFunction<Multimap<K, U, V>> supplier) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        final Multimap<K, U, V> multimap = supplier.apply(N.min(16, toIndex - fromIndex));
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            multimap.put(keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]));
-    //        }
-    //
-    //        return multimap;
-    //    }
 
     //    public BooleanListBuilder __() {
     //        return Builder.of(this);

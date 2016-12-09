@@ -74,15 +74,14 @@ final class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream filter(final LongPredicate predicate, final long max) {
+    public LongStream filter(final LongPredicate predicate) {
         return new IteratorLongStream(new ImmutableLongIterator() {
             private boolean hasNext = false;
             private long next = 0;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
+                if (hasNext == false) {
                     while (elements.hasNext()) {
                         next = elements.next();
 
@@ -102,7 +101,6 @@ final class IteratorLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -111,25 +109,21 @@ final class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream takeWhile(final LongPredicate predicate, final long max) {
+    public LongStream takeWhile(final LongPredicate predicate) {
         return new IteratorLongStream(new ImmutableLongIterator() {
+            private boolean hasMore = true;
             private boolean hasNext = false;
             private long next = 0;
-            private long cnt = 0;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
-                    while (elements.hasNext()) {
-                        next = elements.next();
+                if (hasNext == false && hasMore && elements.hasNext()) {
+                    next = elements.next();
 
-                        if (predicate.test(next)) {
-                            hasNext = true;
-                            break;
-                        } else {
-                            cnt = Long.MAX_VALUE; // no more loop.
-                            break;
-                        }
+                    if (predicate.test(next)) {
+                        hasNext = true;
+                    } else {
+                        hasMore = false;
                     }
                 }
 
@@ -142,7 +136,6 @@ final class IteratorLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -152,16 +145,15 @@ final class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream dropWhile(final LongPredicate predicate, final long max) {
+    public LongStream dropWhile(final LongPredicate predicate) {
         return new IteratorLongStream(new ImmutableLongIterator() {
             private boolean hasNext = false;
             private long next = 0;
-            private long cnt = 0;
             private boolean dropped = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cnt < max) {
+                if (hasNext == false) {
                     if (dropped == false) {
                         while (elements.hasNext()) {
                             next = elements.next();
@@ -190,7 +182,6 @@ final class IteratorLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 hasNext = false;
 
                 return next;
@@ -667,77 +658,6 @@ final class IteratorLongStream extends AbstractLongStream {
         }, closeHandlers, true);
     }
 
-    //    @Override
-    //    public LongStream parallelSorted() {
-    //        if (sorted) {
-    //            return this;
-    //        }
-    //
-    //        return new IteratorLongStream(new ImmutableLongIterator() {
-    //            long[] a = null;
-    //            int cursor = 0;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                return cursor < a.length;
-    //            }
-    //
-    //            @Override
-    //            public long next() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                if (cursor >= a.length) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                return a[cursor++];
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                return a.length - cursor;
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
-    //            }
-    //
-    //            @Override
-    //            public long[] toArray() {
-    //                if (a == null) {
-    //                    parallelSort();
-    //                }
-    //
-    //                if (cursor == 0) {
-    //                    return a;
-    //                } else {
-    //                    return N.copyOfRange(a, cursor, a.length);
-    //                }
-    //            }
-    //
-    //            private void parallelSort() {
-    //                a = elements.toArray();
-    //
-    //                N.parallelSort(a);
-    //            }
-    //        }, closeHandlers, true);
-    //    }
-
     @Override
     public LongStream peek(final LongConsumer action) {
         return new IteratorLongStream(new ImmutableLongIterator() {
@@ -749,31 +669,9 @@ final class IteratorLongStream extends AbstractLongStream {
             @Override
             public long next() {
                 final long next = elements.next();
-
-                //    try {
-                //        action.accept(next);
-                //    } catch (Throwable e) {
-                //        // ignore.
-                //    }
-
                 action.accept(next);
                 return next;
             }
-
-            //    @Override
-            //    public long count() {
-            //        return elements.count();
-            //    }
-            //
-            //    @Override
-            //    public void skip(long n) {
-            //        elements.skip(n);
-            //    }
-            //
-            //    @Override
-            //    public long[] toArray() {
-            //        return elements.toArray();
-            //    }
         }, closeHandlers, sorted);
     }
 
@@ -879,17 +777,6 @@ final class IteratorLongStream extends AbstractLongStream {
             action.accept(elements.next());
         }
     }
-
-    //    @Override
-    //    public boolean forEach2(LongFunction<Boolean> action) {
-    //        while (elements.hasNext()) {
-    //            if (action.apply(elements.next()).booleanValue() == false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
 
     @Override
     public long[] toArray() {
@@ -1220,11 +1107,6 @@ final class IteratorLongStream extends AbstractLongStream {
         return true;
     }
 
-    //    @Override
-    //    public OptionalLong findFirst() {
-    //        return elements.hasNext() ? OptionalLong.empty() : OptionalLong.of(elements.next());
-    //    }
-
     @Override
     public OptionalLong findFirst(LongPredicate predicate) {
         while (elements.hasNext()) {
@@ -1237,21 +1119,6 @@ final class IteratorLongStream extends AbstractLongStream {
 
         return OptionalLong.empty();
     }
-
-    //    @Override
-    //    public OptionalLong findLast() {
-    //        if (elements.hasNext() == false) {
-    //            return OptionalLong.empty();
-    //        }
-    //
-    //        long e = 0;
-    //
-    //        while (elements.hasNext()) {
-    //            e = elements.next();
-    //        }
-    //
-    //        return OptionalLong.of(e);
-    //    }
 
     @Override
     public OptionalLong findLast(LongPredicate predicate) {
@@ -1275,11 +1142,6 @@ final class IteratorLongStream extends AbstractLongStream {
         return hasResult ? OptionalLong.of(result) : OptionalLong.empty();
     }
 
-    //    @Override
-    //    public OptionalLong findAny() {
-    //        return count() == 0 ? OptionalLong.empty() : OptionalLong.of(elements.next());
-    //    }
-
     @Override
     public OptionalLong findAny(LongPredicate predicate) {
         while (elements.hasNext()) {
@@ -1292,18 +1154,6 @@ final class IteratorLongStream extends AbstractLongStream {
 
         return OptionalLong.empty();
     }
-
-    //    @Override
-    //    public LongStream exclude(Collection<?> c) {
-    //        final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
-    //
-    //        return filter(new LongPredicate() {
-    //            @Override
-    //            public boolean test(long value) {
-    //                return !set.contains(value);
-    //            }
-    //        });
-    //    }
 
     @Override
     public FloatStream asFloatStream() {

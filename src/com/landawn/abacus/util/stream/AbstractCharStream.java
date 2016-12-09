@@ -16,9 +16,11 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.CharIterator;
@@ -58,21 +60,6 @@ abstract class AbstractCharStream extends CharStream {
 
     AbstractCharStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
-    }
-
-    @Override
-    public CharStream filter(final CharPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public CharStream takeWhile(final CharPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public CharStream dropWhile(final CharPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -207,12 +194,14 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream distinct() {
-        return boxed().distinct().mapToChar(new ToCharFunction<Character>() {
+        return newStream(this.sequential().filter(new CharPredicate() {
+            private final Set<Object> set = new HashSet<>();
+
             @Override
-            public char applyAsChar(Character value) {
-                return value.charValue();
+            public boolean test(char value) {
+                return set.add(value);
             }
-        });
+        }).charIterator(), sorted);
     }
 
     @Override
@@ -239,40 +228,35 @@ abstract class AbstractCharStream extends CharStream {
         return OptionalChar.of(next);
     }
 
-    //    @Override
-    //    public OptionalChar any() {
-    //        return findAny(CharPredicate.ALWAYS_TRUE);
-    //    }
-
     @Override
-    public CharStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public CharStream except(final Collection<?> c) {
+        return newStream(this.sequential().filter(new CharPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new CharPredicate() {
             @Override
             public boolean test(char value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        });
+        }).charIterator(), sorted);
     }
 
     @Override
-    public CharStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public CharStream intersect(final Collection<?> c) {
+        return newStream(this.sequential().filter(new CharPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new CharPredicate() {
             @Override
             public boolean test(char value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        });
+        }).charIterator(), sorted);
     }
 
     @Override
-    public CharStream xor(Collection<Character> c) {
+    public CharStream xor(final Collection<Character> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new CharPredicate() {
+        return newStream(this.sequential().filter(new CharPredicate() {
             @Override
             public boolean test(char value) {
                 return multiset.getAndRemove(value) < 1;
@@ -282,12 +266,7 @@ abstract class AbstractCharStream extends CharStream {
             public boolean test(Character value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToChar(new ToCharFunction<Character>() {
-            @Override
-            public char applyAsChar(Character value) {
-                return value.charValue();
-            }
-        }));
+        }).mapToChar(ToCharFunction.UNBOX)).charIterator(), false);
     }
 
     @Override
@@ -370,10 +349,6 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public CharStream reverse() {
         final char[] a = toArray();
-
-        //        N.reverse(a);
-        //
-        //        return newStream(a, false);
 
         return newStream(new ImmutableCharIterator() {
             private int cursor = a.length;
@@ -484,14 +459,14 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Stream<IndexedChar> indexed() {
-        final MutableLong idx = new MutableLong();
+        return newStream(this.sequential().mapToObj(new CharFunction<IndexedChar>() {
+            final MutableLong idx = new MutableLong();
 
-        return mapToObj(new CharFunction<IndexedChar>() {
             @Override
             public IndexedChar apply(char t) {
                 return IndexedChar.of(idx.getAndIncrement(), t);
             }
-        });
+        }).iterator(), false, null);
     }
 
     @Override

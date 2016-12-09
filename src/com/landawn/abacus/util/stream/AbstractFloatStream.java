@@ -16,9 +16,11 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.FloatIterator;
@@ -59,21 +61,6 @@ abstract class AbstractFloatStream extends FloatStream {
 
     AbstractFloatStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
-    }
-
-    @Override
-    public FloatStream filter(final FloatPredicate predicate) {
-        return filter(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public FloatStream takeWhile(final FloatPredicate predicate) {
-        return takeWhile(predicate, Long.MAX_VALUE);
-    }
-
-    @Override
-    public FloatStream dropWhile(final FloatPredicate predicate) {
-        return dropWhile(predicate, Long.MAX_VALUE);
     }
 
     @Override
@@ -208,18 +195,18 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream distinct() {
-        return boxed().distinct().mapToFloat(new ToFloatFunction<Float>() {
+        return newStream(this.sequential().filter(new FloatPredicate() {
+            private final Set<Object> set = new HashSet<>();
+
             @Override
-            public float applyAsFloat(Float value) {
-                return value.floatValue();
+            public boolean test(float value) {
+                return set.add(value);
             }
-        });
+        }).floatIterator(), sorted);
     }
 
     @Override
     public Double sum() {
-        // return N.sum(elements, fromIndex, toIndex);
-
         final Supplier<double[]> supplier = new Supplier<double[]>() {
             @Override
             public double[] get() {
@@ -251,12 +238,6 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public OptionalDouble average() {
-        //        if (count() == 0) {
-        //            return OptionalDouble.empty();
-        //        }
-        //
-        //        return OptionalDouble.of(N.average(elements, fromIndex, toIndex));
-
         final Supplier<double[]> supplier = new Supplier<double[]>() {
             @Override
             public double[] get() {
@@ -312,40 +293,35 @@ abstract class AbstractFloatStream extends FloatStream {
         return OptionalFloat.of(next);
     }
 
-    //    @Override
-    //    public OptionalFloat any() {
-    //        return findAny(FloatPredicate.ALWAYS_TRUE);
-    //    }
-
     @Override
-    public FloatStream except(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public FloatStream except(final Collection<?> c) {
+        return newStream(this.sequential().filter(new FloatPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new FloatPredicate() {
             @Override
             public boolean test(float value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        });
+        }).floatIterator(), sorted);
     }
 
     @Override
-    public FloatStream intersect(Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+    public FloatStream intersect(final Collection<?> c) {
+        return newStream(this.sequential().filter(new FloatPredicate() {
+            final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new FloatPredicate() {
             @Override
             public boolean test(float value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        });
+        }).floatIterator(), sorted);
     }
 
     @Override
-    public FloatStream xor(Collection<Float> c) {
+    public FloatStream xor(final Collection<Float> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
-        return filter(new FloatPredicate() {
+        return newStream(this.sequential().filter(new FloatPredicate() {
             @Override
             public boolean test(float value) {
                 return multiset.getAndRemove(value) < 1;
@@ -355,12 +331,7 @@ abstract class AbstractFloatStream extends FloatStream {
             public boolean test(Float value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToFloat(new ToFloatFunction<Float>() {
-            @Override
-            public float applyAsFloat(Float value) {
-                return value.floatValue();
-            }
-        }));
+        }).mapToFloat(ToFloatFunction.UNBOX)).floatIterator(), false);
     }
 
     @Override
@@ -443,11 +414,6 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public FloatStream reverse() {
         final float[] a = toArray();
-
-        //        N.reverse(a);
-        //
-        //        return newStream(a, false);
-
         return newStream(new ImmutableFloatIterator() {
             private int cursor = a.length;
 
@@ -556,14 +522,14 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Stream<IndexedFloat> indexed() {
-        final MutableLong idx = new MutableLong();
+        return newStream(this.sequential().mapToObj(new FloatFunction<IndexedFloat>() {
+            final MutableLong idx = new MutableLong();
 
-        return mapToObj(new FloatFunction<IndexedFloat>() {
             @Override
             public IndexedFloat apply(float t) {
                 return IndexedFloat.of(idx.getAndIncrement(), t);
             }
-        });
+        }).iterator(), false, null);
     }
 
     @Override

@@ -2241,7 +2241,7 @@ public final class JdbcUtil {
 
             rowParser.accept(null);
         } else {
-            try (final Stream<Object[]> stream = Stream.parallelConcat(N.asList(iter), 1, queueSize)) {
+            try (final Stream<Object[]> stream = Stream.parallelConcat2(N.asList(iter), 1, queueSize)) {
                 final Iterator<Object[]> iteratorII = stream.limit(count).iterator();
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
                 final AtomicInteger activeThreadNum = new AtomicInteger();
