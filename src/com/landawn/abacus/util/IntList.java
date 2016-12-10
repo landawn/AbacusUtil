@@ -684,13 +684,6 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         return N.occurrencesOf(elementData, objectToFind);
     }
 
-    @Override
-    public IntList subList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new IntList(N.copyOfRange(elementData, fromIndex, toIndex));
-    }
-
     /**
      * Returns a new list with all the elements in <code>b</code> removed by occurrences.
      * 
@@ -1146,16 +1139,16 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
     }
 
     @Override
+    public IntList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new IntList(N.copyOfRange(elementData, fromIndex, toIndex));
+    }
+
+    @Override
     public IntList copy() {
         return new IntList(N.copyOfRange(elementData, 0, size));
     }
-
-    //    @Override
-    //    public IntList copy(final int fromIndex, final int toIndex) {
-    //        checkIndex(fromIndex, toIndex);
-    //
-    //        return new IntList(N.copyOfRange(elementData, fromIndex, toIndex));
-    //    }
 
     @Override
     public List<IntList> split(final int fromIndex, final int toIndex, final int size) {

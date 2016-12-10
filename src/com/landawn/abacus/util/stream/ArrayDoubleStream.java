@@ -126,16 +126,17 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream takeWhile(final DoublePredicate predicate) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex) {
+                if (hasNext == false && hasMore && cursor < toIndex) {
                     if (predicate.test(elements[cursor])) {
                         hasNext = true;
                     } else {
-                        cursor = Integer.MAX_VALUE;
+                        hasMore = false;
                     }
                 }
 
@@ -614,6 +615,23 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
         a[1] = middleIndex == toIndex ? DoubleStream.empty() : new ArrayDoubleStream(elements, middleIndex, toIndex, null, sorted);
 
         return new ArrayStream<>(a, closeHandlers);
+    }
+
+    @Override
+    public Stream<DoubleStream> splitBy(DoublePredicate where) {
+        N.requireNonNull(where);
+
+        int n = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (where.test(elements[i])) {
+                n++;
+            } else {
+                break;
+            }
+        }
+
+        return splitAt(n);
     }
 
     @Override

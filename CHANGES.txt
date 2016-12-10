@@ -1,3 +1,12 @@
+========Changes in 0.9.38=========================================================================
+
+1, Remove subList(from, to) from ObjectList/IntList/...
+
+2, Add copy(from, to) to ObjectList/IntList/...
+
+
+6, Improvements and bug fix.
+
 
 ========Changes in 0.9.37=========================================================================
 

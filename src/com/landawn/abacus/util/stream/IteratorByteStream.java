@@ -449,7 +449,7 @@ final class IteratorByteStream extends AbstractByteStream {
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
                     final byte[] dest = new byte[windowSize];
-                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
                     result = ByteList.of(dest, cnt);
                 } else {
                     result = new ByteList(windowSize);

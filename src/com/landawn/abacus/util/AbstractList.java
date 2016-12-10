@@ -85,14 +85,6 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
     public abstract boolean disjoint(A a);
 
     /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     */
-    public abstract L subList(final int fromIndex, final int toIndex);
-
-    /**
      * Performs the given action for each element of the Iterable until all elements have been processed or the action throws an exception.
      * 
      * @param action
@@ -263,21 +255,13 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
 
     public abstract void swap(int i, int j);
 
-    //    /**
-    //     *
-    //     * @return a copy of this List
-    //     */
-    //    public L copy() {
-    //        return copy(0, size());
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param fromIndex
-    //     * @param toIndex
-    //     * @return
-    //     */
-    //    public abstract L copy(final int fromIndex, final int toIndex);
+    /**
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public abstract L copy(final int fromIndex, final int toIndex);
 
     /**
      * 

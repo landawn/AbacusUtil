@@ -529,13 +529,6 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         return N.occurrencesOf(elementData, objectToFind);
     }
 
-    @Override
-    public ShortList subList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new ShortList(N.copyOfRange(elementData, fromIndex, toIndex));
-    }
-
     /**
      * 
      * @param b
@@ -939,6 +932,13 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         rangeCheck(j);
 
         set(i, set(j, elementData[i]));
+    }
+
+    @Override
+    public ShortList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new ShortList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override

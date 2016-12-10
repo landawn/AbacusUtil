@@ -26,6 +26,7 @@ import java.util.concurrent.Callable;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
@@ -476,6 +477,49 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
     }
 
     @Override
+    public Stream<IntStream> splitBy(final IntPredicate where) {
+        N.requireNonNull(where);
+
+        final List<IndexedInt> testedElements = new ArrayList<>();
+
+        final OptionalNullable<IndexedInt> first = indexed().findFirst(new Predicate<IndexedInt>() {
+            @Override
+            public boolean test(IndexedInt indexed) {
+                synchronized (testedElements) {
+                    testedElements.add(indexed);
+                }
+
+                return !where.test(indexed.value());
+            }
+        });
+
+        N.sort(testedElements, INDEXED_INT_COMPARATOR);
+
+        int n = first.isPresent() ? (int) first.get().index() : 0;
+
+        final IntList list1 = new IntList(n);
+        final IntList list2 = new IntList(testedElements.size() - n);
+
+        for (int i = 0; i < n; i++) {
+            list1.add(testedElements.get(i).value());
+        }
+
+        for (int i = n, size = testedElements.size(); i < size; i++) {
+            list2.add(testedElements.get(i).value());
+        }
+
+        final IntStream[] a = new IntStream[2];
+        a[0] = new ArrayIntStream(list1.array(), null, sorted);
+        a[1] = new IteratorIntStream(elements, null, sorted);
+
+        if (N.notNullOrEmpty(list2)) {
+            a[1] = a[1].prepend(IntStream.of(list2.array()));
+        }
+
+        return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public Stream<IntList> sliding(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
@@ -511,7 +555,7 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
                     final int[] dest = new int[windowSize];
-                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
                     result = IntList.of(dest, cnt);
                 } else {
                     result = new IntList(windowSize);
@@ -1380,15 +1424,15 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
             return sequential().findFirst(predicate);
         }
 
-        final List<CompletableFuture<Pair<Long, Integer>>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Long, Integer>> resultHolder = new Holder<>();
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Callable<Pair<Long, Integer>>() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
-                public Pair<Long, Integer> call() {
+                public void run() {
                     final Pair<Long, Integer> pair = new Pair<>();
 
                     try {
@@ -1415,8 +1459,6 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
                     } catch (Throwable e) {
                         setError(eHolder, e);
                     }
-
-                    return pair;
                 }
             }));
         }
@@ -1426,12 +1468,8 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
         }
 
         try {
-            for (CompletableFuture<Pair<Long, Integer>> future : futureList) {
-                final Pair<Long, Integer> pair = future.get();
-
-                if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                    resultHolder.setValue(pair);
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
@@ -1446,15 +1484,15 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
             return sequential().findLast(predicate);
         }
 
-        final List<CompletableFuture<Pair<Long, Integer>>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Long, Integer>> resultHolder = new Holder<>();
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Callable<Pair<Long, Integer>>() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
-                public Pair<Long, Integer> call() {
+                public void run() {
                     final Pair<Long, Integer> pair = new Pair<>();
 
                     try {
@@ -1481,8 +1519,6 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
                     } catch (Throwable e) {
                         setError(eHolder, e);
                     }
-
-                    return pair;
                 }
             }));
         }
@@ -1492,12 +1528,8 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
         }
 
         try {
-            for (CompletableFuture<Pair<Long, Integer>> future : futureList) {
-                final Pair<Long, Integer> pair = future.get();
-
-                if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                    resultHolder.setValue(pair);
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
@@ -1512,14 +1544,14 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
             return sequential().findAny(predicate);
         }
 
-        final List<CompletableFuture<Object>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Object> resultHolder = Holder.of(NONE);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            futureList.add(asyncExecutor.execute(new Callable<Object>() {
+            futureList.add(asyncExecutor.execute(new Runnable() {
                 @Override
-                public Object call() {
+                public void run() {
                     int next = 0;
 
                     try {
@@ -1545,8 +1577,6 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
                     } catch (Throwable e) {
                         setError(eHolder, e);
                     }
-
-                    return next;
                 }
             }));
         }
@@ -1556,12 +1586,8 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
         }
 
         try {
-            for (CompletableFuture<Object> future : futureList) {
-                if (resultHolder.value() == NONE) {
-                    future.get();
-                } else {
-                    break;
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);

@@ -746,6 +746,8 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     static final Comparator OBJECT_COMPARATOR = NULL_MIN_COMPARATOR;
+    @SuppressWarnings("rawtypes")
+    static final Comparator REVERSED_COMPARATOR = Collections.reverseOrder(OBJECT_COMPARATOR);
 
     // ...
     static final Map<Class<?>, Object> CLASS_EMPTY_ARRAY = new ConcurrentHashMap<>();
@@ -32700,7 +32702,7 @@ public final class N {
     }
 
     public static <T> Comparator<T> reverseOrder() {
-        return Collections.reverseOrder(N.OBJECT_COMPARATOR);
+        return REVERSED_COMPARATOR;
     }
 
     public static <T> Comparator<T> reverseOrder(Comparator<T> cmp) {

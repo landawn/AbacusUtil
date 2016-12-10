@@ -552,7 +552,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
                     final float[] dest = new float[windowSize];
-                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
                     result = FloatList.of(dest, cnt);
                 } else {
                     result = new FloatList(windowSize);

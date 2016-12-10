@@ -553,13 +553,6 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         return N.occurrencesOf(elementData, objectToFind);
     }
 
-    @Override
-    public FloatList subList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new FloatList(N.copyOfRange(elementData, fromIndex, toIndex));
-    }
-
     /**
      * 
      * @param b
@@ -963,6 +956,13 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         rangeCheck(j);
 
         set(i, set(j, elementData[i]));
+    }
+
+    @Override
+    public FloatList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new FloatList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override

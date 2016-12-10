@@ -573,13 +573,6 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         return N.occurrencesOf(elementData, objectToFind);
     }
 
-    @Override
-    public LongList subList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new LongList(N.copyOfRange(elementData, fromIndex, toIndex));
-    }
-
     /**
      * 
      * @param b
@@ -989,6 +982,13 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         rangeCheck(j);
 
         set(i, set(j, elementData[i]));
+    }
+
+    @Override
+    public LongList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new LongList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override

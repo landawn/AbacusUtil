@@ -794,19 +794,16 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final ObjectList<T> result = new ObjectList<>(windowSize);
+                ObjectList<T> result = null;
                 int cnt = 0;
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
-
-                    if (cnt <= 3) {
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
-                    } else {
-                        result.addAll(prev.subList(windowSize - cnt, windowSize));
-                    }
+                    final Object[] dest = new Object[windowSize];
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                    result = ObjectList.of((T[]) dest, cnt);
+                } else {
+                    result = new ObjectList<T>(windowSize);
                 }
 
                 while (cnt++ < windowSize && elements.hasNext()) {

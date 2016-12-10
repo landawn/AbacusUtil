@@ -1534,6 +1534,39 @@ public abstract class Stream<T>
         }).tried();
     }
 
+    public static Stream<Boolean> from(final boolean... a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return from(a, 0, a.length);
+    }
+
+    public static Stream<Boolean> from(final boolean[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return of(new ImmutableIterator<Boolean>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Boolean next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+                return a[cursor++];
+            }
+        });
+    }
+
     public static Stream<Character> from(char... a) {
         return CharStream.of(a).boxed();
     }

@@ -552,7 +552,7 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
                     final double[] dest = new double[windowSize];
-                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
                     result = DoubleList.of(dest, cnt);
                 } else {
                     result = new DoubleList(windowSize);

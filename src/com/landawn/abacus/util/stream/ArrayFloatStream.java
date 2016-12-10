@@ -126,16 +126,17 @@ final class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream takeWhile(final FloatPredicate predicate) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
+            private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex) {
+                if (hasNext == false && hasMore && cursor < toIndex) {
                     if (predicate.test(elements[cursor])) {
                         hasNext = true;
                     } else {
-                        cursor = Integer.MAX_VALUE;
+                        hasMore = false;
                     }
                 }
 
@@ -614,6 +615,23 @@ final class ArrayFloatStream extends AbstractFloatStream {
         a[1] = middleIndex == toIndex ? FloatStream.empty() : new ArrayFloatStream(elements, middleIndex, toIndex, null, sorted);
 
         return new ArrayStream<>(a, closeHandlers);
+    }
+
+    @Override
+    public Stream<FloatStream> splitBy(FloatPredicate where) {
+        N.requireNonNull(where);
+
+        int n = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (where.test(elements[i])) {
+                n++;
+            } else {
+                break;
+            }
+        }
+
+        return splitAt(n);
     }
 
     @Override

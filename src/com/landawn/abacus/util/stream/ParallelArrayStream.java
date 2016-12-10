@@ -34,6 +34,7 @@ import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
@@ -1662,6 +1663,20 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> splitBy(final Predicate<? super T> where) {
+        N.requireNonNull(where);
+
+        final OptionalNullable<Indexed<T>> first = indexed().findFirst(new Predicate<Indexed<T>>() {
+            @Override
+            public boolean test(Indexed<T> indexed) {
+                return !where.test(indexed.value());
+            }
+        });
+
+        return splitAt(first.isPresent() ? (int) first.get().index() : 0);
+    }
+
+    @Override
     public Stream<ObjectList<T>> sliding(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
@@ -2893,7 +2908,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             return sequential().findFirst(predicate);
         }
 
-        final List<CompletableFuture<Pair<Integer, T>>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Integer, T>> resultHolder = new Holder<>();
 
@@ -2903,9 +2918,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Pair<Integer, T> call() {
+                    public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                         final Pair<Integer, T> pair = new Pair<>();
@@ -2928,8 +2943,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return pair;
                     }
                 }));
             }
@@ -2937,9 +2950,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Pair<Integer, T> call() {
+                    public void run() {
                         final Pair<Integer, T> pair = new Pair<>();
 
                         try {
@@ -2966,8 +2979,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return pair;
                     }
                 }));
             }
@@ -2978,12 +2989,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         try {
-            for (CompletableFuture<Pair<Integer, T>> future : futureList) {
-                final Pair<Integer, T> pair = future.get();
-
-                if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                    resultHolder.setValue(pair);
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
@@ -2998,7 +3005,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             return sequential().findLast(predicate);
         }
 
-        final List<CompletableFuture<Pair<Integer, T>>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Integer, T>> resultHolder = new Holder<>();
 
@@ -3008,9 +3015,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Pair<Integer, T> call() {
+                    public void run() {
                         final int from = fromIndex + sliceIndex * sliceSize;
                         int cursor = toIndex - from > sliceSize ? from + sliceSize : toIndex;
                         final Pair<Integer, T> pair = new Pair<>();
@@ -3033,8 +3040,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return pair;
                     }
                 }));
             }
@@ -3042,9 +3047,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(toIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, T>>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Pair<Integer, T> call() {
+                    public void run() {
                         final Pair<Integer, T> pair = new Pair<>();
 
                         try {
@@ -3071,8 +3076,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return pair;
                     }
                 }));
             }
@@ -3083,12 +3086,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         try {
-            for (CompletableFuture<Pair<Integer, T>> future : futureList) {
-                final Pair<Integer, T> pair = future.get();
-
-                if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                    resultHolder.setValue(pair);
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
@@ -3103,7 +3102,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             return sequential().findAny(predicate);
         }
 
-        final List<CompletableFuture<T>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<T> resultHolder = Holder.of((T) NONE);
 
@@ -3113,15 +3112,15 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Callable<T>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public T call() {
+                    public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                         T next = null;
 
                         try {
-                            while (cursor < to && resultHolder.value() == null && eHolder.value() == null) {
+                            while (cursor < to && resultHolder.value() == NONE && eHolder.value() == null) {
                                 next = elements[cursor++];
 
                                 if (predicate.test(next)) {
@@ -3137,8 +3136,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return next;
                     }
                 }));
             }
@@ -3146,9 +3143,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Callable<T>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public T call() {
+                    public void run() {
                         T next = null;
 
                         try {
@@ -3174,8 +3171,6 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return next;
                     }
                 }));
             }
@@ -3186,12 +3181,8 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         try {
-            for (CompletableFuture<T> future : futureList) {
-                if (resultHolder.value() == NONE) {
-                    future.get();
-                } else {
-                    break;
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);

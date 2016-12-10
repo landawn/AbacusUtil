@@ -561,13 +561,6 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return N.occurrencesOf(elementData, objectToFind);
     }
 
-    @Override
-    public CharList subList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new CharList(N.copyOfRange(elementData, fromIndex, toIndex));
-    }
-
     public int indexOf(char e) {
         return indexOf(0, e);
     }
@@ -954,6 +947,13 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         rangeCheck(j);
 
         set(i, set(j, elementData[i]));
+    }
+
+    @Override
+    public CharList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new CharList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override

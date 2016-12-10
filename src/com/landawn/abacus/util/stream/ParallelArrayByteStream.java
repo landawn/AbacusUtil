@@ -27,6 +27,7 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -36,6 +37,7 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -301,6 +303,20 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         a[1] = middleIndex == toIndex ? ByteStream.empty() : new ArrayByteStream(elements, middleIndex, toIndex, null, sorted);
 
         return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
+    public Stream<ByteStream> splitBy(final BytePredicate where) {
+        N.requireNonNull(where);
+
+        final OptionalNullable<IndexedByte> first = indexed().findFirst(new Predicate<IndexedByte>() {
+            @Override
+            public boolean test(IndexedByte indexed) {
+                return !where.test(indexed.value());
+            }
+        });
+
+        return splitAt(first.isPresent() ? (int) first.get().index() : 0);
     }
 
     @Override
@@ -1410,7 +1426,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             return sequential().findFirst(predicate);
         }
 
-        final List<CompletableFuture<Pair<Integer, Byte>>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Integer, Byte>> resultHolder = new Holder<>();
 
@@ -1420,9 +1436,9 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Byte>>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Pair<Integer, Byte> call() {
+                    public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                         final Pair<Integer, Byte> pair = new Pair<>();
@@ -1445,8 +1461,6 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return pair;
                     }
                 }));
             }
@@ -1454,9 +1468,9 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Byte>>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Pair<Integer, Byte> call() {
+                    public void run() {
                         final Pair<Integer, Byte> pair = new Pair<>();
 
                         try {
@@ -1483,8 +1497,6 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return pair;
                     }
                 }));
             }
@@ -1495,12 +1507,8 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         try {
-            for (CompletableFuture<Pair<Integer, Byte>> future : futureList) {
-                final Pair<Integer, Byte> pair = future.get();
-
-                if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                    resultHolder.setValue(pair);
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
@@ -1515,7 +1523,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             return sequential().findLast(predicate);
         }
 
-        final List<CompletableFuture<Pair<Integer, Byte>>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Integer, Byte>> resultHolder = new Holder<>();
 
@@ -1525,9 +1533,9 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Byte>>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Pair<Integer, Byte> call() {
+                    public void run() {
                         final int from = fromIndex + sliceIndex * sliceSize;
                         int cursor = toIndex - from > sliceSize ? from + sliceSize : toIndex;
                         final Pair<Integer, Byte> pair = new Pair<>();
@@ -1550,8 +1558,6 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return pair;
                     }
                 }));
             }
@@ -1559,9 +1565,9 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             final MutableInt cursor = MutableInt.of(toIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Callable<Pair<Integer, Byte>>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Pair<Integer, Byte> call() {
+                    public void run() {
                         final Pair<Integer, Byte> pair = new Pair<>();
 
                         try {
@@ -1588,8 +1594,6 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return pair;
                     }
                 }));
             }
@@ -1600,12 +1604,8 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         try {
-            for (CompletableFuture<Pair<Integer, Byte>> future : futureList) {
-                final Pair<Integer, Byte> pair = future.get();
-
-                if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                    resultHolder.setValue(pair);
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
@@ -1620,7 +1620,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             return sequential().findAny(predicate);
         }
 
-        final List<CompletableFuture<Object>> futureList = new ArrayList<>(maxThreadNum);
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Object> resultHolder = Holder.of(NONE);
 
@@ -1630,15 +1630,15 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
 
-                futureList.add(asyncExecutor.execute(new Callable<Object>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Object call() {
+                    public void run() {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                         byte next = 0;
 
                         try {
-                            while (cursor < to && resultHolder.value() == null && eHolder.value() == null) {
+                            while (cursor < to && resultHolder.value() == NONE && eHolder.value() == null) {
                                 next = elements[cursor++];
 
                                 if (predicate.test(next)) {
@@ -1654,8 +1654,6 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return next;
                     }
                 }));
             }
@@ -1663,9 +1661,9 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                futureList.add(asyncExecutor.execute(new Callable<Object>() {
+                futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
-                    public Object call() {
+                    public void run() {
                         byte next = 0;
 
                         try {
@@ -1691,8 +1689,6 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         } catch (Throwable e) {
                             setError(eHolder, e);
                         }
-
-                        return next;
                     }
                 }));
             }
@@ -1703,12 +1699,8 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         try {
-            for (CompletableFuture<Object> future : futureList) {
-                if (resultHolder.value() == NONE) {
-                    future.get();
-                } else {
-                    break;
-                }
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);

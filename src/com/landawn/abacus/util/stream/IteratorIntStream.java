@@ -706,7 +706,7 @@ final class IteratorIntStream extends AbstractIntStream {
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
                     final int[] dest = new int[windowSize];
-                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
                     result = IntList.of(dest, cnt);
                 } else {
                     result = new IntList(windowSize);

@@ -450,7 +450,7 @@ final class IteratorCharStream extends AbstractCharStream {
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
                     final char[] dest = new char[windowSize];
-                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
                     result = CharList.of(dest, cnt);
                 } else {
                     result = new CharList(windowSize);

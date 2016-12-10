@@ -124,16 +124,17 @@ final class ArrayByteStream extends AbstractByteStream {
     @Override
     public ByteStream takeWhile(final BytePredicate predicate) {
         return new IteratorByteStream(new ImmutableByteIterator() {
+            private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
             @Override
             public boolean hasNext() {
-                if (hasNext == false && cursor < toIndex) {
+                if (hasNext == false && hasMore && cursor < toIndex) {
                     if (predicate.test(elements[cursor])) {
                         hasNext = true;
                     } else {
-                        cursor = Integer.MAX_VALUE;
+                        hasMore = false;
                     }
                 }
 
@@ -476,6 +477,23 @@ final class ArrayByteStream extends AbstractByteStream {
         a[1] = middleIndex == toIndex ? ByteStream.empty() : new ArrayByteStream(elements, middleIndex, toIndex, null, sorted);
 
         return new ArrayStream<>(a, closeHandlers);
+    }
+
+    @Override
+    public Stream<ByteStream> splitBy(BytePredicate where) {
+        N.requireNonNull(where);
+
+        int n = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (where.test(elements[i])) {
+                n++;
+            } else {
+                break;
+            }
+        }
+
+        return splitAt(n);
     }
 
     @Override

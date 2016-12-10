@@ -26,6 +26,7 @@ import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.IndexedBooleanConsumer;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -477,13 +478,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return N.occurrencesOf(elementData, objectToFind);
     }
 
-    @Override
-    public BooleanList subList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
-    }
-
     /**
      * 
      * @param b
@@ -809,6 +803,13 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
+    public BooleanList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
+    }
+
+    @Override
     public BooleanList copy() {
         return new BooleanList(N.copyOfRange(elementData, 0, size));
     }
@@ -959,6 +960,16 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     //    public BooleanListBuilder __(Consumer<? super BooleanList> func) {
     //        return Builder.of(this).__(func);
     //    }
+
+    public Stream<Boolean> stream() {
+        return stream(0, size());
+    }
+
+    public Stream<Boolean> stream(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return Stream.from(elementData, fromIndex, toIndex);
+    }
 
     @Override
     public int hashCode() {

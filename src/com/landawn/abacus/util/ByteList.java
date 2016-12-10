@@ -531,13 +531,6 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         return N.occurrencesOf(elementData, objectToFind);
     }
 
-    @Override
-    public ByteList subList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
-    }
-
     /**
      * 
      * @param b
@@ -927,6 +920,13 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         rangeCheck(j);
 
         set(i, set(j, elementData[i]));
+    }
+
+    @Override
+    public ByteList copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override

@@ -44,6 +44,14 @@ import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.Indexed;
+import com.landawn.abacus.util.IndexedByte;
+import com.landawn.abacus.util.IndexedChar;
+import com.landawn.abacus.util.IndexedDouble;
+import com.landawn.abacus.util.IndexedFloat;
+import com.landawn.abacus.util.IndexedInt;
+import com.landawn.abacus.util.IndexedLong;
+import com.landawn.abacus.util.IndexedShort;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongIterator;
@@ -165,6 +173,62 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         @Override
         public int compare(final Comparable a, final Comparable b) {
             return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
+        }
+    };
+
+    static final Comparator<IndexedByte> INDEXED_BYTE_COMPARATOR = new Comparator<IndexedByte>() {
+        @Override
+        public int compare(IndexedByte a, IndexedByte b) {
+            return N.compare(a.index(), b.index());
+        }
+    };
+
+    static final Comparator<IndexedChar> INDEXED_CHAR_COMPARATOR = new Comparator<IndexedChar>() {
+        @Override
+        public int compare(IndexedChar a, IndexedChar b) {
+            return N.compare(a.index(), b.index());
+        }
+    };
+
+    static final Comparator<IndexedShort> INDEXED_SHORT_COMPARATOR = new Comparator<IndexedShort>() {
+        @Override
+        public int compare(IndexedShort a, IndexedShort b) {
+            return N.compare(a.index(), b.index());
+        }
+    };
+
+    static final Comparator<IndexedInt> INDEXED_INT_COMPARATOR = new Comparator<IndexedInt>() {
+        @Override
+        public int compare(IndexedInt a, IndexedInt b) {
+            return N.compare(a.index(), b.index());
+        }
+    };
+
+    static final Comparator<IndexedLong> INDEXED_LONG_COMPARATOR = new Comparator<IndexedLong>() {
+        @Override
+        public int compare(IndexedLong a, IndexedLong b) {
+            return N.compare(a.index(), b.index());
+        }
+    };
+
+    static final Comparator<IndexedFloat> INDEXED_FLOAT_COMPARATOR = new Comparator<IndexedFloat>() {
+        @Override
+        public int compare(IndexedFloat a, IndexedFloat b) {
+            return N.compare(a.index(), b.index());
+        }
+    };
+
+    static final Comparator<IndexedDouble> INDEXED_DOUBLE_COMPARATOR = new Comparator<IndexedDouble>() {
+        @Override
+        public int compare(IndexedDouble a, IndexedDouble b) {
+            return N.compare(a.index(), b.index());
+        }
+    };
+
+    static final Comparator<Indexed<?>> INDEXED_COMPARATOR = new Comparator<Indexed<?>>() {
+        @Override
+        public int compare(Indexed<?> a, Indexed<?> b) {
+            return N.compare(a.index(), b.index());
         }
     };
 

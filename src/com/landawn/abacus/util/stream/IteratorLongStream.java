@@ -553,7 +553,7 @@ final class IteratorLongStream extends AbstractLongStream {
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
                     final long[] dest = new long[windowSize];
-                    N.copy(prev.array(), windowSize - cnt, dest, 0, cnt);
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
                     result = LongList.of(dest, cnt);
                 } else {
                     result = new LongList(windowSize);

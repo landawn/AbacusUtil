@@ -581,13 +581,6 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return N.occurrencesOf(elementData, objectToFind);
     }
 
-    @Override
-    public ObjectList<T> subList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        return new ObjectList<T>(N.copyOfRange(elementData, fromIndex, toIndex));
-    }
-
     /**
      * 
      * @param b
@@ -1480,6 +1473,13 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         rangeCheck(j);
 
         set(i, set(j, elementData[i]));
+    }
+
+    @Override
+    public ObjectList<T> copy(final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex);
+
+        return new ObjectList<T>(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override
