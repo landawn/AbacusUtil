@@ -617,6 +617,62 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> split(final int size) {
+        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ObjectList<T> result = new ObjectList<>(size);
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    result.add(elements.next());
+                    cnt++;
+                }
+
+                return new ArrayStream<T>((T[]) result.array(), 0, result.size(), null, sorted, cmp);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ObjectList<T>> split0(final int size) {
+        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public ObjectList<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ObjectList<T> result = new ObjectList<>(size);
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    result.add(elements.next());
+                    cnt++;
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public Stream<List<T>> split2(final int size) {
         return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             @Override
@@ -630,15 +686,15 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> list = new ArrayList<>(size);
+                final List<T> result = new ArrayList<>(size);
                 int cnt = 0;
 
                 while (cnt < size && elements.hasNext()) {
-                    list.add(elements.next());
+                    result.add(elements.next());
                     cnt++;
                 }
 
-                return list;
+                return result;
             }
 
         }, closeHandlers);
@@ -658,15 +714,108 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final Set<T> set = new HashSet<>(N.initHashCapacity(size));
+                final Set<T> result = new HashSet<>(N.initHashCapacity(size));
                 int cnt = 0;
 
                 while (cnt < size && elements.hasNext()) {
-                    set.add(elements.next());
+                    result.add(elements.next());
                     cnt++;
                 }
 
-                return set;
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            private T next = (T) NONE;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return next != NONE || elements.hasNext();
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ObjectList<T> result = new ObjectList<>();
+
+                if (next == NONE) {
+                    next = elements.next();
+                }
+
+                while (next != NONE) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
+                        result.add(next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
+                        result.add(next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return new ArrayStream<T>((T[]) result.array(), 0, result.size(), null, sorted, cmp);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public <U> Stream<ObjectList<T>> split0(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+            private T next = (T) NONE;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return next != NONE || elements.hasNext();
+            }
+
+            @Override
+            public ObjectList<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ObjectList<T> result = new ObjectList<>();
+
+                if (next == NONE) {
+                    next = elements.next();
+                }
+
+                while (next != NONE) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
+                        result.add(next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
+                        result.add(next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return result;
             }
 
         }, closeHandlers);
@@ -765,7 +914,60 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<ObjectList<T>> sliding(final int windowSize, final int increment) {
+    public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            private ObjectList<T> prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                ObjectList<T> result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final Object[] dest = new Object[windowSize];
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                    result = ObjectList.of((T[]) dest, cnt);
+                } else {
+                    result = new ObjectList<T>(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                prev = result;
+
+                return new ArrayStream<T>((T[]) result.array(), 0, result.size(), null, sorted, cmp);
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ObjectList<T>> sliding0(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
@@ -1592,11 +1794,6 @@ final class IteratorStream<T> extends AbstractStream<T> {
         }
 
         return (OptionalNullable<T>) OptionalNullable.empty();
-    }
-
-    @Override
-    public Stream<T> queued() {
-        return queued(DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**

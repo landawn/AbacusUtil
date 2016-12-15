@@ -299,78 +299,26 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<DoubleStream> split(final int size) {
-        return new ParallelIteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
+        return new ParallelIteratorStream<DoubleStream>(sequential().split(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    }
 
-            @Override
-            public DoubleStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final double[] a = new double[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayDoubleStream(a, 0, cnt, null, sorted);
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public Stream<DoubleList> split0(final int size) {
+        return new ParallelIteratorStream<DoubleList>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
     public <U> Stream<DoubleStream> split(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
-            private double next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
+        return new ParallelIteratorStream<DoubleStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+                maxThreadNum, splitor);
+    }
 
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public DoubleStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final DoubleList result = DoubleList.of(N.EMPTY_DOUBLE_ARRAY);
-
-                if (hasNext == false) {
-                    next = elements.next();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
-                        }
-
-                        break;
-                    }
-                }
-
-                return DoubleStream.of(result.array(), 0, result.size());
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public <U> Stream<DoubleList> split0(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new ParallelIteratorStream<DoubleList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+                maxThreadNum, splitor);
     }
 
     @Override
@@ -417,54 +365,15 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public Stream<DoubleList> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
+    public Stream<DoubleStream> sliding(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<DoubleStream>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
+    }
 
-        return new ParallelIteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
-            private DoubleList prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public DoubleList next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                DoubleList result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-                    final double[] dest = new double[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = DoubleList.of(dest, cnt);
-                } else {
-                    result = new DoubleList(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                return prev = result;
-            }
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public Stream<DoubleList> sliding0(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<DoubleList>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
@@ -1054,12 +963,10 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
         try {
             for (CompletableFuture<R> future : futureList) {
-                final R tmp = future.get();
-
                 if (container == NONE) {
-                    container = tmp;
+                    container = future.get();
                 } else {
-                    combiner.accept(container, tmp);
+                    combiner.accept(container, future.get());
                 }
             }
         } catch (Exception e) {
@@ -1490,8 +1397,13 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream append(final DoubleStream stream) {
+    public DoubleStream append(DoubleStream stream) {
         return new ParallelIteratorDoubleStream(DoubleStream.concat(this, stream), closeHandlers, false, maxThreadNum, splitor);
+    }
+
+    @Override
+    public DoubleStream prepend(DoubleStream stream) {
+        return new ParallelIteratorDoubleStream(DoubleStream.concat(stream, this), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override

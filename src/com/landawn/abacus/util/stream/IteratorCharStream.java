@@ -340,7 +340,6 @@ final class IteratorCharStream extends AbstractCharStream {
     @Override
     public Stream<CharStream> split(final int size) {
         return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
-
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -360,6 +359,33 @@ final class IteratorCharStream extends AbstractCharStream {
                 }
 
                 return new ArrayCharStream(a, 0, cnt, null, sorted);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<CharList> split0(final int size) {
+        return new IteratorStream<CharList>(new ImmutableIterator<CharList>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public CharList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final char[] a = new char[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return CharList.of(a, cnt);
             }
 
         }, closeHandlers);
@@ -415,7 +441,110 @@ final class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public Stream<CharList> sliding(final int windowSize, final int increment) {
+    public <U> Stream<CharList> split0(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<CharList>(new ImmutableIterator<CharList>() {
+            private char next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public CharList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<CharStream> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
+            private CharList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public CharStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                CharList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final char[] dest = new char[windowSize];
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                    result = CharList.of(dest, cnt);
+                } else {
+                    result = new CharList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                prev = result;
+
+                return new ArrayCharStream(result.array(), 0, result.size(), null, sorted);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<CharList> sliding0(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

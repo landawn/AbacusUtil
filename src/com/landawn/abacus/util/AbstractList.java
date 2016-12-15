@@ -288,34 +288,34 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      */
     public abstract List<L> split(final int fromIndex, final int toIndex, int size);
 
-    public List<L> split(P predicate) {
-        return split(0, size(), predicate);
-    }
-
-    /**
-     * Split the List by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * final MutableInt border = MutableInt.of(5);
-     * IntList.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
-     *     if (e <= border.intValue()) {
-     *         return true;
-     *     } else {
-     *         border.addAndGet(5);
-     *         return false;
-     *     }
-     * }).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param predicate
-     * @return
-     */
-    public abstract List<L> split(final int fromIndex, final int toIndex, P predicate);
+    //    public List<L> split(P predicate) {
+    //        return split(0, size(), predicate);
+    //    }
+    //
+    //    /**
+    //     * Split the List by the specified predicate.
+    //     * 
+    //     * <pre>
+    //     * <code>
+    //     * // split the number sequence by window 5.
+    //     * final MutableInt border = MutableInt.of(5);
+    //     * IntList.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split(e -> {
+    //     *     if (e <= border.intValue()) {
+    //     *         return true;
+    //     *     } else {
+    //     *         border.addAndGet(5);
+    //     *         return false;
+    //     *     }
+    //     * }).forEach(N::println);
+    //     * </code>
+    //     * </pre>
+    //     * 
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param predicate
+    //     * @return
+    //     */
+    //    public abstract List<L> split(final int fromIndex, final int toIndex, P predicate);
 
     public String join() {
         return join(N.ELEMENT_SEPARATOR);

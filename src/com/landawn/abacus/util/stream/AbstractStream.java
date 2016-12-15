@@ -841,39 +841,20 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> split(final int size) {
-        return split2(size).map(new Function<List<T>, Stream<T>>() {
-            @Override
-            public Stream<T> apply(List<T> t) {
-                return Stream.of(t);
-            }
-        });
-    }
-
-    @Override
-    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
-        return split2(boundary, predicate, boundaryUpdate).map(new Function<List<T>, Stream<T>>() {
-            @Override
-            public Stream<T> apply(List<T> t) {
-                return Stream.of(t);
-            }
-        });
-    }
-
-    @Override
     public Stream<Stream<T>> splitAt(final int n) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be negative");
         }
 
         final Iterator<T> iter = this.iterator();
-        final List<T> list = new ArrayList<>();
+        final ObjectList<T> list = new ObjectList<>();
 
         while (list.size() < n && iter.hasNext()) {
             list.add(iter.next());
         }
 
-        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
+        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.array(), 0, list.size(), null, sorted, cmp),
+                new IteratorStream<T>(iter, null, sorted, cmp) };
 
         return newStream(a, false, null);
     }
@@ -902,15 +883,14 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
 
         if (p != null) {
-            a[1] = a[1].prepend(p);
+            if (sorted) {
+                new IteratorStream<T>(a[1].prepend(p).iterator(), null, sorted, cmp);
+            } else {
+                a[1] = a[1].prepend(p);
+            }
         }
 
         return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<ObjectList<T>> sliding(int windowSize) {
-        return sliding(windowSize, 1);
     }
 
     @Override
@@ -1254,8 +1234,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> append(final Stream<T> stream) {
+    public Stream<T> queued() {
+        return queued(DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    }
+
+    @Override
+    public Stream<T> append(Stream<T> stream) {
         return Stream.concat(this, stream);
+    }
+
+    @Override
+    public Stream<T> prepend(Stream<T> stream) {
+        return Stream.concat(stream, this);
     }
 
     @Override

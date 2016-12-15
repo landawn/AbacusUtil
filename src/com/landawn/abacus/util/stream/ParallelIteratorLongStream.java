@@ -300,78 +300,26 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongStream> split(final int size) {
-        return new ParallelIteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
+        return new ParallelIteratorStream<LongStream>(sequential().split(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    }
 
-            @Override
-            public LongStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final long[] a = new long[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayLongStream(a, 0, cnt, null, sorted);
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public Stream<LongList> split0(final int size) {
+        return new ParallelIteratorStream<LongList>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
     public <U> Stream<LongStream> split(final U boundary, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
-            private long next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
+        return new ParallelIteratorStream<LongStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+                maxThreadNum, splitor);
+    }
 
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public LongStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
-
-                if (hasNext == false) {
-                    next = elements.next();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
-                        }
-
-                        break;
-                    }
-                }
-
-                return LongStream.of(result.array(), 0, result.size());
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public <U> Stream<LongList> split0(final U boundary, final BiFunction<? super Long, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new ParallelIteratorStream<LongList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+                maxThreadNum, splitor);
     }
 
     @Override
@@ -418,54 +366,14 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public Stream<LongList> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
+    public Stream<LongStream> sliding(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<LongStream>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
+    }
 
-        return new ParallelIteratorStream<LongList>(new ImmutableIterator<LongList>() {
-            private LongList prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public LongList next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                LongList result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-                    final long[] dest = new long[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = LongList.of(dest, cnt);
-                } else {
-                    result = new LongList(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                return prev = result;
-            }
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public Stream<LongList> sliding0(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<LongList>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -1055,12 +963,10 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
 
         try {
             for (CompletableFuture<R> future : futureList) {
-                final R tmp = future.get();
-
                 if (container == NONE) {
-                    container = tmp;
+                    container = future.get();
                 } else {
-                    combiner.accept(container, tmp);
+                    combiner.accept(container, future.get());
                 }
             }
         } catch (Exception e) {
@@ -1557,8 +1463,13 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream append(final LongStream stream) {
+    public LongStream append(LongStream stream) {
         return new ParallelIteratorLongStream(LongStream.concat(this, stream), closeHandlers, false, maxThreadNum, splitor);
+    }
+
+    @Override
+    public LongStream prepend(LongStream stream) {
+        return new ParallelIteratorLongStream(LongStream.concat(stream, this), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override

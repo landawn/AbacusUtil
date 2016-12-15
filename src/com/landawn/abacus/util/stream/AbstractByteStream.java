@@ -163,22 +163,12 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public <K> Multimap<K, Byte, List<Byte>> toMultimap(ByteFunction<? extends K> keyMapper) {
-        return toMultimap(keyMapper, new ByteFunction<Byte>() {
-            @Override
-            public Byte apply(byte value) {
-                return value;
-            }
-        });
+        return toMultimap(keyMapper, ByteFunction.BOX);
     }
 
     @Override
     public <K, V extends Collection<Byte>> Multimap<K, Byte, V> toMultimap(ByteFunction<? extends K> keyMapper, Supplier<Multimap<K, Byte, V>> mapSupplier) {
-        return toMultimap(keyMapper, new ByteFunction<Byte>() {
-            @Override
-            public Byte apply(byte value) {
-                return value;
-            }
-        }, mapSupplier);
+        return toMultimap(keyMapper, ByteFunction.BOX, mapSupplier);
     }
 
     @Override
@@ -334,15 +324,14 @@ abstract class AbstractByteStream extends ByteStream {
                 }, null, sorted) };
 
         if (p != null) {
-            a[1] = a[1].prepend(p);
+            if (sorted) {
+                new IteratorByteStream(a[1].prepend(p).byteIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(p);
+            }
         }
 
         return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<ByteList> sliding(int windowSize) {
-        return sliding(windowSize, 1);
     }
 
     @Override
@@ -470,6 +459,11 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public ByteStream append(ByteStream stream) {
         return ByteStream.concat(this, stream);
+    }
+
+    @Override
+    public ByteStream prepend(ByteStream stream) {
+        return ByteStream.concat(stream, this);
     }
 
     @Override

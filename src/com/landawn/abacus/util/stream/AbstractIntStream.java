@@ -163,23 +163,13 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public <K> Multimap<K, Integer, List<Integer>> toMultimap(IntFunction<? extends K> keyMapper) {
-        return toMultimap(keyMapper, new IntFunction<Integer>() {
-            @Override
-            public Integer apply(int value) {
-                return value;
-            }
-        });
+        return toMultimap(keyMapper, IntFunction.BOX);
     }
 
     @Override
     public <K, V extends Collection<Integer>> Multimap<K, Integer, V> toMultimap(IntFunction<? extends K> keyMapper,
             Supplier<Multimap<K, Integer, V>> mapSupplier) {
-        return toMultimap(keyMapper, new IntFunction<Integer>() {
-            @Override
-            public Integer apply(int value) {
-                return value;
-            }
-        }, mapSupplier);
+        return toMultimap(keyMapper, IntFunction.BOX, mapSupplier);
     }
 
     @Override
@@ -335,15 +325,14 @@ abstract class AbstractIntStream extends IntStream {
                 }, null, sorted) };
 
         if (p != null) {
-            a[1] = a[1].prepend(p);
+            if (sorted) {
+                new IteratorIntStream(a[1].prepend(p).intIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(p);
+            }
         }
 
         return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<IntList> sliding(int windowSize) {
-        return sliding(windowSize, 1);
     }
 
     @Override
@@ -471,6 +460,11 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public IntStream append(IntStream stream) {
         return IntStream.concat(this, stream);
+    }
+
+    @Override
+    public IntStream prepend(IntStream stream) {
+        return IntStream.concat(stream, this);
     }
 
     @Override

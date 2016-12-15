@@ -34,6 +34,12 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface IntFunction<R> extends java.util.function.IntFunction<R> {
+    public static final IntFunction<Integer> BOX = new IntFunction<Integer>() {
+        @Override
+        public Integer apply(int value) {
+            return value;
+        }
+    };
 
     public static final IntFunction<boolean[]> BOOLEAN_ARRAY_FACTORY = new IntFunction<boolean[]>() {
         @Override

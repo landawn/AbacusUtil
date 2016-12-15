@@ -25,6 +25,12 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface ByteFunction<R> {
+    public static final ByteFunction<Byte> BOX = new ByteFunction<Byte>() {
+        @Override
+        public Byte apply(byte value) {
+            return value;
+        }
+    };
 
     R apply(byte value);
 

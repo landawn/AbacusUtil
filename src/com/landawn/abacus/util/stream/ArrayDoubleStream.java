@@ -556,7 +556,27 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
                 return new ArrayDoubleStream(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted);
             }
+        }, closeHandlers);
+    }
 
+    @Override
+    public Stream<DoubleList> split0(final int size) {
+        return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return new DoubleList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+            }
         }, closeHandlers);
     }
 
@@ -599,7 +619,48 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
                 return DoubleStream.of(result.array(), 0, result.size());
             }
+        }, closeHandlers);
+    }
 
+    @Override
+    public <U> Stream<DoubleList> split0(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final DoubleList result = DoubleList.of(N.EMPTY_DOUBLE_ARRAY);
+
+                while (cursor < toIndex) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(elements[cursor], boundary);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return result;
+            }
         }, closeHandlers);
     }
 
@@ -635,7 +696,38 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public Stream<DoubleList> sliding(final int windowSize, final int increment) {
+    public Stream<DoubleStream> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ArrayDoubleStream result = new ArrayDoubleStream(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex, null,
+                        sorted);
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<DoubleList> sliding0(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

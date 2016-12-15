@@ -442,7 +442,6 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public Stream<DoubleStream> split(final int size) {
         return new IteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
-
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -462,6 +461,33 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
                 }
 
                 return new ArrayDoubleStream(a, 0, cnt, null, sorted);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<DoubleList> split0(final int size) {
+        return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public DoubleList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final double[] a = new double[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return DoubleList.of(a, cnt);
             }
 
         }, closeHandlers);
@@ -517,7 +543,110 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public Stream<DoubleList> sliding(final int windowSize, final int increment) {
+    public <U> Stream<DoubleList> split0(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+            private double next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public DoubleList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final DoubleList result = DoubleList.of(N.EMPTY_DOUBLE_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<DoubleStream> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
+            private DoubleList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public DoubleStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                DoubleList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final double[] dest = new double[windowSize];
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                    result = DoubleList.of(dest, cnt);
+                } else {
+                    result = new DoubleList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                prev = result;
+
+                return new ArrayDoubleStream(result.array(), 0, result.size(), null, sorted);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<DoubleList> sliding0(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

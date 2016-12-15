@@ -163,23 +163,13 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public <K> Multimap<K, Double, List<Double>> toMultimap(DoubleFunction<? extends K> keyMapper) {
-        return toMultimap(keyMapper, new DoubleFunction<Double>() {
-            @Override
-            public Double apply(double value) {
-                return value;
-            }
-        });
+        return toMultimap(keyMapper, DoubleFunction.BOX);
     }
 
     @Override
     public <K, V extends Collection<Double>> Multimap<K, Double, V> toMultimap(DoubleFunction<? extends K> keyMapper,
             Supplier<Multimap<K, Double, V>> mapSupplier) {
-        return toMultimap(keyMapper, new DoubleFunction<Double>() {
-            @Override
-            public Double apply(double value) {
-                return value;
-            }
-        }, mapSupplier);
+        return toMultimap(keyMapper, DoubleFunction.BOX, mapSupplier);
     }
 
     @Override
@@ -399,15 +389,14 @@ abstract class AbstractDoubleStream extends DoubleStream {
                 }, null, sorted) };
 
         if (p != null) {
-            a[1] = a[1].prepend(p);
+            if (sorted) {
+                new IteratorDoubleStream(a[1].prepend(p).doubleIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(p);
+            }
         }
 
         return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<DoubleList> sliding(int windowSize) {
-        return sliding(windowSize, 1);
     }
 
     @Override
@@ -534,6 +523,11 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public DoubleStream append(DoubleStream stream) {
         return DoubleStream.concat(this, stream);
+    }
+
+    @Override
+    public DoubleStream prepend(DoubleStream stream) {
+        return DoubleStream.concat(stream, this);
     }
 
     @Override

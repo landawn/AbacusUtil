@@ -163,23 +163,13 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public <K> Multimap<K, Short, List<Short>> toMultimap(ShortFunction<? extends K> keyMapper) {
-        return toMultimap(keyMapper, new ShortFunction<Short>() {
-            @Override
-            public Short apply(short value) {
-                return value;
-            }
-        });
+        return toMultimap(keyMapper, ShortFunction.BOX);
     }
 
     @Override
     public <K, V extends Collection<Short>> Multimap<K, Short, V> toMultimap(ShortFunction<? extends K> keyMapper,
             Supplier<Multimap<K, Short, V>> mapSupplier) {
-        return toMultimap(keyMapper, new ShortFunction<Short>() {
-            @Override
-            public Short apply(short value) {
-                return value;
-            }
-        }, mapSupplier);
+        return toMultimap(keyMapper, ShortFunction.BOX, mapSupplier);
     }
 
     @Override
@@ -335,15 +325,14 @@ abstract class AbstractShortStream extends ShortStream {
                 }, null, sorted) };
 
         if (p != null) {
-            a[1] = a[1].prepend(p);
+            if (sorted) {
+                new IteratorShortStream(a[1].prepend(p).shortIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(p);
+            }
         }
 
         return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<ShortList> sliding(int windowSize) {
-        return sliding(windowSize, 1);
     }
 
     @Override
@@ -470,6 +459,11 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public ShortStream append(ShortStream stream) {
         return ShortStream.concat(this, stream);
+    }
+
+    @Override
+    public ShortStream prepend(ShortStream stream) {
+        return ShortStream.concat(stream, this);
     }
 
     @Override

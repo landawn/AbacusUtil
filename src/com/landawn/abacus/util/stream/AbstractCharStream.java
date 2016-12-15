@@ -163,23 +163,13 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public <K> Multimap<K, Character, List<Character>> toMultimap(CharFunction<? extends K> keyMapper) {
-        return toMultimap(keyMapper, new CharFunction<Character>() {
-            @Override
-            public Character apply(char value) {
-                return value;
-            }
-        });
+        return toMultimap(keyMapper, CharFunction.BOX);
     }
 
     @Override
     public <K, V extends Collection<Character>> Multimap<K, Character, V> toMultimap(CharFunction<? extends K> keyMapper,
             Supplier<Multimap<K, Character, V>> mapSupplier) {
-        return toMultimap(keyMapper, new CharFunction<Character>() {
-            @Override
-            public Character apply(char value) {
-                return value;
-            }
-        }, mapSupplier);
+        return toMultimap(keyMapper, CharFunction.BOX, mapSupplier);
     }
 
     @Override
@@ -335,15 +325,14 @@ abstract class AbstractCharStream extends CharStream {
                 }, null, sorted) };
 
         if (p != null) {
-            a[1] = a[1].prepend(p);
+            if (sorted) {
+                new IteratorCharStream(a[1].prepend(p).charIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(p);
+            }
         }
 
         return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<CharList> sliding(int windowSize) {
-        return sliding(windowSize, 1);
     }
 
     @Override
@@ -472,6 +461,11 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public CharStream append(CharStream stream) {
         return CharStream.concat(this, stream);
+    }
+
+    @Override
+    public CharStream prepend(CharStream stream) {
+        return CharStream.concat(stream, this);
     }
 
     @Override

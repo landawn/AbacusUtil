@@ -228,67 +228,26 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharStream> split(final int size) {
-        return new ParallelIteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
-            private int cursor = fromIndex;
+        return new ParallelIteratorStream<CharStream>(sequential().split(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    }
 
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public CharStream next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return new ArrayCharStream(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted);
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public Stream<CharList> split0(final int size) {
+        return new ParallelIteratorStream<CharList>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
     public <U> Stream<CharStream> split(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
+        return new ParallelIteratorStream<CharStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+                maxThreadNum, splitor);
+    }
 
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public CharStream next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
-
-                while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
-                        result.add(elements[cursor]);
-                        cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
-                        result.add(elements[cursor]);
-                        cursor++;
-                    } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
-                        }
-
-                        break;
-                    }
-                }
-
-                return CharStream.of(result.array(), 0, result.size());
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public <U> Stream<CharList> split0(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new ParallelIteratorStream<CharList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+                maxThreadNum, splitor);
     }
 
     @Override
@@ -320,33 +279,14 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public Stream<CharList> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
+    public Stream<CharStream> sliding(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<CharStream>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
+    }
 
-        return new ParallelIteratorStream<CharList>(new ImmutableIterator<CharList>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public CharList next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final CharList result = CharList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
-
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
-
-                return result;
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public Stream<CharList> sliding0(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<CharList>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -917,12 +857,10 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
         try {
             for (CompletableFuture<R> future : futureList) {
-                final R tmp = future.get();
-
                 if (container == NONE) {
-                    container = tmp;
+                    container = future.get();
                 } else {
-                    combiner.accept(container, tmp);
+                    combiner.accept(container, future.get());
                 }
             }
         } catch (Exception e) {
@@ -1769,8 +1707,13 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream append(final CharStream stream) {
+    public CharStream append(CharStream stream) {
         return new ParallelIteratorCharStream(CharStream.concat(this, stream), closeHandlers, false, maxThreadNum, splitor);
+    }
+
+    @Override
+    public CharStream prepend(CharStream stream) {
+        return new ParallelIteratorCharStream(CharStream.concat(stream, this), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override

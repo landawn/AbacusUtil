@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -775,6 +774,28 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<ObjectList<T>> split0(final int size) {
+        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ObjectList<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return ObjectList.of(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public Stream<List<T>> split2(final int size) {
         return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             private int cursor = fromIndex;
@@ -790,7 +811,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                return Arrays.asList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+                return N.asList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
             }
 
         }, closeHandlers);
@@ -812,13 +833,98 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final Set<T> set = new HashSet<>(toIndex - cursor > size ? size : toIndex - cursor);
+                final Set<T> result = new HashSet<>(toIndex - cursor > size ? size : toIndex - cursor);
 
                 for (int i = cursor, to = (cursor = toIndex - cursor > size ? cursor + size : toIndex); i < to; i++) {
-                    set.add(elements[i]);
+                    result.add(elements[i]);
                 }
 
-                return set;
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ObjectList<T> result = new ObjectList<>();
+
+                while (cursor < toIndex) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(elements[cursor], boundary);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return new ArrayStream<T>((T[]) result.array(), 0, result.size(), null, sorted, cmp);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public <U> Stream<ObjectList<T>> split0(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ObjectList<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final ObjectList<T> result = new ObjectList<>();
+
+                while (cursor < toIndex) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(elements[cursor], boundary);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return result;
             }
 
         }, closeHandlers);
@@ -940,7 +1046,37 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<ObjectList<T>> sliding(final int windowSize, final int increment) {
+    public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final Stream<T> result = new ArrayStream<T>(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex, null, sorted, cmp);
+
+                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ObjectList<T>> sliding0(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
@@ -1505,11 +1641,6 @@ final class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> cached() {
         return this;
-    }
-
-    @Override
-    public Stream<T> queued() {
-        return queued(DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**

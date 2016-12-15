@@ -1085,6 +1085,22 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return result;
     }
 
+    public OptionalNullable<T> first() {
+        if (size() == 0) {
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.of(elementData[0]);
+    }
+
+    public OptionalNullable<T> last() {
+        if (size() == 0) {
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.of(elementData[size() - 1]);
+    }
+
     public OptionalNullable<T> findFirst(Predicate<? super T> predicate) {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
@@ -1186,16 +1202,14 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return of(N.filter(elementData, fromIndex, toIndex, check, predicate));
     }
 
-    // TODO 1, replace with Stream mapToXXX(...) APIs.
-
-    public <R> ObjectList<R> mapTo(final Class<R> targetClass, final Function<? super T, ? extends R> func) {
-        return mapTo(targetClass, 0, size(), func);
+    public <R> ObjectList<R> map(final Function<? super T, ? extends R> func) {
+        return map(0, size(), func);
     }
 
-    public <R> ObjectList<R> mapTo(final Class<R> targetClass, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+    public <R> ObjectList<R> map(final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
         checkIndex(fromIndex, toIndex);
 
-        final R[] res = N.newArray(targetClass, size());
+        final R[] res = (R[]) new Object[size()];
 
         for (int i = fromIndex; i < toIndex; i++) {
             res[i - fromIndex] = func.apply(elementData[i]);
@@ -1501,33 +1515,33 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return result;
     }
 
-    @Override
-    public List<ObjectList<T>> split(int fromIndex, int toIndex, Predicate<? super T> predicate) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<ObjectList<T>> result = new ArrayList<>();
-        ObjectList<T> piece = null;
-
-        for (int i = fromIndex; i < toIndex;) {
-            if (piece == null) {
-                piece = ObjectList.of((T[]) N.newArray(getComponentType(), 0));
-            }
-
-            if (predicate.test(elementData[i])) {
-                piece.add(elementData[i]);
-                i++;
-            } else {
-                result.add(piece);
-                piece = null;
-            }
-        }
-
-        if (piece != null) {
-            result.add(piece);
-        }
-
-        return result;
-    }
+    //    @Override
+    //    public List<ObjectList<T>> split(int fromIndex, int toIndex, Predicate<? super T> predicate) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final List<ObjectList<T>> result = new ArrayList<>();
+    //        ObjectList<T> piece = null;
+    //
+    //        for (int i = fromIndex; i < toIndex;) {
+    //            if (piece == null) {
+    //                piece = ObjectList.of((T[]) N.newArray(getComponentType(), 0));
+    //            }
+    //
+    //            if (predicate.test(elementData[i])) {
+    //                piece.add(elementData[i]);
+    //                i++;
+    //            } else {
+    //                result.add(piece);
+    //                piece = null;
+    //            }
+    //        }
+    //
+    //        if (piece != null) {
+    //            result.add(piece);
+    //        }
+    //
+    //        return result;
+    //    }
 
     @Override
     public String join(int fromIndex, int toIndex, char delimiter) {
@@ -1571,37 +1585,37 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return size;
     }
 
-    @SuppressWarnings("rawtypes")
-    public <R extends com.landawn.abacus.util.AbstractList> R unboxed() {
-        return unboxed(0, size);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <R extends com.landawn.abacus.util.AbstractList> R unboxed(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
-
-        final Class<?> componentType = getComponentType();
-
-        if (componentType.equals(Integer.class)) {
-            return (R) IntList.of(Array.unbox((Integer[]) elementData, fromIndex, toIndex, 0));
-        } else if (componentType.equals(Long.class)) {
-            return (R) LongList.of(Array.unbox((Long[]) elementData, fromIndex, toIndex, 0));
-        } else if (componentType.equals(Float.class)) {
-            return (R) FloatList.of(Array.unbox((Float[]) elementData, fromIndex, toIndex, 0));
-        } else if (componentType.equals(Double.class)) {
-            return (R) DoubleList.of(Array.unbox((Double[]) elementData, fromIndex, toIndex, 0));
-        } else if (componentType.equals(Boolean.class)) {
-            return (R) BooleanList.of(Array.unbox((Boolean[]) elementData, fromIndex, toIndex, false));
-        } else if (componentType.equals(Character.class)) {
-            return (R) CharList.of(Array.unbox((Character[]) elementData, fromIndex, toIndex, (char) 0));
-        } else if (componentType.equals(Byte.class)) {
-            return (R) ByteList.of(Array.unbox((Byte[]) elementData, fromIndex, toIndex, (byte) 0));
-        } else if (componentType.equals(Short.class)) {
-            return (R) ShortList.of(Array.unbox((Short[]) elementData, fromIndex, toIndex, (short) 0));
-        } else {
-            throw new IllegalArgumentException(N.getClassName(componentType) + " is not a wrapper of primitive type");
-        }
-    }
+    //    @SuppressWarnings("rawtypes")
+    //    public <R extends com.landawn.abacus.util.AbstractList> R unboxed() {
+    //        return unboxed(0, size);
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    public <R extends com.landawn.abacus.util.AbstractList> R unboxed(int fromIndex, int toIndex) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final Class<?> componentType = getComponentType();
+    //
+    //        if (componentType.equals(Integer.class)) {
+    //            return (R) IntList.of(Array.unbox((Integer[]) elementData, fromIndex, toIndex, 0));
+    //        } else if (componentType.equals(Long.class)) {
+    //            return (R) LongList.of(Array.unbox((Long[]) elementData, fromIndex, toIndex, 0));
+    //        } else if (componentType.equals(Float.class)) {
+    //            return (R) FloatList.of(Array.unbox((Float[]) elementData, fromIndex, toIndex, 0));
+    //        } else if (componentType.equals(Double.class)) {
+    //            return (R) DoubleList.of(Array.unbox((Double[]) elementData, fromIndex, toIndex, 0));
+    //        } else if (componentType.equals(Boolean.class)) {
+    //            return (R) BooleanList.of(Array.unbox((Boolean[]) elementData, fromIndex, toIndex, false));
+    //        } else if (componentType.equals(Character.class)) {
+    //            return (R) CharList.of(Array.unbox((Character[]) elementData, fromIndex, toIndex, (char) 0));
+    //        } else if (componentType.equals(Byte.class)) {
+    //            return (R) ByteList.of(Array.unbox((Byte[]) elementData, fromIndex, toIndex, (byte) 0));
+    //        } else if (componentType.equals(Short.class)) {
+    //            return (R) ShortList.of(Array.unbox((Short[]) elementData, fromIndex, toIndex, (short) 0));
+    //        } else {
+    //            throw new IllegalArgumentException(N.getClassName(componentType) + " is not a wrapper of primitive type");
+    //        }
+    //    }
 
     @Override
     public List<T> toList(final int fromIndex, final int toIndex, final IntFunction<List<T>> supplier) {

@@ -25,6 +25,12 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface LongFunction<R> extends java.util.function.LongFunction<R> {
+    public static final LongFunction<Long> BOX = new LongFunction<Long>() {
+        @Override
+        public Long apply(long value) {
+            return value;
+        }
+    };
 
     @Override
     R apply(long value);

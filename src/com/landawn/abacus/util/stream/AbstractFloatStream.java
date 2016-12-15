@@ -164,23 +164,13 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public <K> Multimap<K, Float, List<Float>> toMultimap(FloatFunction<? extends K> keyMapper) {
-        return toMultimap(keyMapper, new FloatFunction<Float>() {
-            @Override
-            public Float apply(float value) {
-                return value;
-            }
-        });
+        return toMultimap(keyMapper, FloatFunction.BOX);
     }
 
     @Override
     public <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyMapper,
             Supplier<Multimap<K, Float, V>> mapSupplier) {
-        return toMultimap(keyMapper, new FloatFunction<Float>() {
-            @Override
-            public Float apply(float value) {
-                return value;
-            }
-        }, mapSupplier);
+        return toMultimap(keyMapper, FloatFunction.BOX, mapSupplier);
     }
 
     @Override
@@ -400,15 +390,14 @@ abstract class AbstractFloatStream extends FloatStream {
                 }, null, sorted) };
 
         if (p != null) {
-            a[1] = a[1].prepend(p);
+            if (sorted) {
+                new IteratorFloatStream(a[1].prepend(p).floatIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(p);
+            }
         }
 
         return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<FloatList> sliding(int windowSize) {
-        return sliding(windowSize, 1);
     }
 
     @Override
@@ -535,6 +524,11 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public FloatStream append(FloatStream stream) {
         return FloatStream.concat(this, stream);
+    }
+
+    @Override
+    public FloatStream prepend(FloatStream stream) {
+        return FloatStream.concat(stream, this);
     }
 
     @Override

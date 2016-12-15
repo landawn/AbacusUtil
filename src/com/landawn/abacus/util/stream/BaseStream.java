@@ -66,8 +66,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @param <A> the type of array
  * @param <P> the type of predicate
  * @param <C> the type of consumer
- * @param <M> the type for map
- * @param <FM> the type for flatMap
  * @param <PL> the type of PrimitiveList/ObjectList
  * @param <OT> the type of Optional
  * @param <IT> the type of Indexed
@@ -148,6 +146,17 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     Stream<S> split(int size);
 
     /**
+     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param size
+     * @return
+     */
+    public abstract Stream<PL> split0(int size);
+
+    /**
      * Split the stream by the specified predicate.
      * 
      * <pre>
@@ -167,6 +176,25 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     <U> Stream<S> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate);
 
     /**
+     * Split the stream by the specified predicate.
+     * 
+     * <pre>
+     * <code>
+     * // split the number sequence by window 5.
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * </code>
+     * </pre>
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param identifier
+     * @param predicate
+     * @return
+     */
+    <U> Stream<PL> split0(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate);
+
+    /**
      * Split the stream into two pieces at <code>where</code>
      * 
      * @param where
@@ -182,9 +210,13 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      */
     Stream<S> splitBy(P where);
 
-    Stream<PL> sliding(int windowSize);
+    Stream<S> sliding(int windowSize);
 
-    Stream<PL> sliding(int windowSize, int increment);
+    Stream<PL> sliding0(int windowSize);
+
+    Stream<S> sliding(int windowSize, int increment);
+
+    Stream<PL> sliding0(int windowSize, int increment);
 
     /**
      * @param c
@@ -254,8 +286,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * Returns a stream consisting of the elements of this stream in sorted
      * order.
      *
-     * <p>This is a <a href="package-summary.html#StreamOps">stateful
-     * intermediate operation</a>.
+     * <br />
+     * All elements will be loaded to memory.
      *
      * @return the new stream
      */
@@ -265,6 +297,12 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
 
     S prepend(S stream);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream and all elements will be loaded to memory.
+     * 
+     * @return
+     */
     S cached();
 
     /**

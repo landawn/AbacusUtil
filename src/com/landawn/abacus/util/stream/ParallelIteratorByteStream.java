@@ -231,78 +231,26 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
     @Override
     public Stream<ByteStream> split(final int size) {
-        return new ParallelIteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
+        return new ParallelIteratorStream<ByteStream>(sequential().split(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    }
 
-            @Override
-            public ByteStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final byte[] a = new byte[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayByteStream(a, 0, cnt, null, sorted);
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public Stream<ByteList> split0(final int size) {
+        return new ParallelIteratorStream<ByteList>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
     public <U> Stream<ByteStream> split(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
-            private byte next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
+        return new ParallelIteratorStream<ByteStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+                maxThreadNum, splitor);
+    }
 
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public ByteStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
-
-                if (hasNext == false) {
-                    next = elements.next();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
-                        }
-
-                        break;
-                    }
-                }
-
-                return ByteStream.of(result.array(), 0, result.size());
-            }
-
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public <U> Stream<ByteList> split0(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new ParallelIteratorStream<ByteList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+                maxThreadNum, splitor);
     }
 
     @Override
@@ -349,54 +297,14 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteList> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
+    public Stream<ByteStream> sliding(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<ByteStream>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
+    }
 
-        return new ParallelIteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
-            private ByteList prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public ByteList next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                ByteList result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-                    final byte[] dest = new byte[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = ByteList.of(dest, cnt);
-                } else {
-                    result = new ByteList(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                return prev = result;
-            }
-        }, closeHandlers, false, null, maxThreadNum, splitor);
+    @Override
+    public Stream<ByteList> sliding0(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<ByteList>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -967,12 +875,10 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
         try {
             for (CompletableFuture<R> future : futureList) {
-                final R tmp = future.get();
-
                 if (container == NONE) {
-                    container = tmp;
+                    container = future.get();
                 } else {
-                    combiner.accept(container, tmp);
+                    combiner.accept(container, future.get());
                 }
             }
         } catch (Exception e) {
@@ -1444,8 +1350,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream append(final ByteStream stream) {
+    public ByteStream append(ByteStream stream) {
         return new ParallelIteratorByteStream(ByteStream.concat(this, stream), closeHandlers, false, maxThreadNum, splitor);
+    }
+
+    @Override
+    public ByteStream prepend(ByteStream stream) {
+        return new ParallelIteratorByteStream(ByteStream.concat(stream, this), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override

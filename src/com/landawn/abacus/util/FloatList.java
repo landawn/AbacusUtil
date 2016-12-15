@@ -763,6 +763,14 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         }
     }
 
+    public OptionalFloat first() {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[0]);
+    }
+
+    public OptionalFloat last() {
+        return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[size() - 1]);
+    }
+
     public OptionalFloat findFirst(FloatPredicate predicate) {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
@@ -984,33 +992,33 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         return result;
     }
 
-    @Override
-    public List<FloatList> split(int fromIndex, int toIndex, FloatPredicate predicate) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<FloatList> result = new ArrayList<>();
-        FloatList piece = null;
-
-        for (int i = fromIndex; i < toIndex;) {
-            if (piece == null) {
-                piece = FloatList.of(N.EMPTY_FLOAT_ARRAY);
-            }
-
-            if (predicate.test(elementData[i])) {
-                piece.add(elementData[i]);
-                i++;
-            } else {
-                result.add(piece);
-                piece = null;
-            }
-        }
-
-        if (piece != null) {
-            result.add(piece);
-        }
-
-        return result;
-    }
+    //    @Override
+    //    public List<FloatList> split(int fromIndex, int toIndex, FloatPredicate predicate) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final List<FloatList> result = new ArrayList<>();
+    //        FloatList piece = null;
+    //
+    //        for (int i = fromIndex; i < toIndex;) {
+    //            if (piece == null) {
+    //                piece = FloatList.of(N.EMPTY_FLOAT_ARRAY);
+    //            }
+    //
+    //            if (predicate.test(elementData[i])) {
+    //                piece.add(elementData[i]);
+    //                i++;
+    //            } else {
+    //                result.add(piece);
+    //                piece = null;
+    //            }
+    //        }
+    //
+    //        if (piece != null) {
+    //            result.add(piece);
+    //        }
+    //
+    //        return result;
+    //    }
 
     @Override
     public String join(int fromIndex, int toIndex, char delimiter) {

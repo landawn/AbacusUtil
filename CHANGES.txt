@@ -4,8 +4,15 @@
 
 2, Add copy(from, to) to ObjectList/IntList/...
 
+3, Add stream(...) to BooleanList.
 
-6, Improvements and bug fix.
+4, Add from(boolean[]) to Stream.
+
+5, Refactoring ObjectList
+
+6, Refactoring Stream.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.37=========================================================================

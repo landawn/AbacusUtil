@@ -365,6 +365,33 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
+    public Stream<ByteList> split0(final int size) {
+        return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public ByteList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final byte[] a = new byte[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return ByteList.of(a, cnt);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<ByteStream> split(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> boundaryUpdate) {
         return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
@@ -414,7 +441,110 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteList> sliding(final int windowSize, final int increment) {
+    public <U> Stream<ByteList> split0(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
+            private byte next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public ByteList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ByteStream> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
+            private ByteList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public ByteStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                ByteList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final byte[] dest = new byte[windowSize];
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                    result = ByteList.of(dest, cnt);
+                } else {
+                    result = new ByteList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                prev = result;
+
+                return new ArrayByteStream(result.array(), 0, result.size(), null, sorted);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ByteList> sliding0(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

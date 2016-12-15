@@ -342,7 +342,6 @@ final class IteratorShortStream extends AbstractShortStream {
     @Override
     public Stream<ShortStream> split(final int size) {
         return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
-
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -362,6 +361,33 @@ final class IteratorShortStream extends AbstractShortStream {
                 }
 
                 return new ArrayShortStream(a, 0, cnt, null, sorted);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ShortList> split0(final int size) {
+        return new IteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public ShortList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final short[] a = new short[size];
+                int cnt = 0;
+
+                while (cnt < size && elements.hasNext()) {
+                    a[cnt++] = elements.next();
+                }
+
+                return ShortList.of(a, cnt);
             }
 
         }, closeHandlers);
@@ -417,7 +443,110 @@ final class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public Stream<ShortList> sliding(final int windowSize, final int increment) {
+    public <U> Stream<ShortList> split0(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> boundaryUpdate) {
+        return new IteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
+            private short next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public ShortList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ShortList result = ShortList.of(N.EMPTY_SHORT_ARRAY);
+
+                if (hasNext == false) {
+                    next = elements.next();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.apply(next, boundary);
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else if (predicate.apply(next, boundary) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                    } else {
+                        if (boundaryUpdate != null) {
+                            boundaryUpdate.accept(boundary);
+                        }
+
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ShortStream> sliding(final int windowSize, final int increment) {
+        if (windowSize < 1 || increment < 1) {
+            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
+        }
+
+        return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
+            private ShortList prev = null;
+
+            @Override
+            public boolean hasNext() {
+                if (prev != null && increment > windowSize) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = null;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public ShortStream next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                ShortList result = null;
+                int cnt = 0;
+
+                if (prev != null && increment < windowSize) {
+                    cnt = windowSize - increment;
+                    final short[] dest = new short[windowSize];
+                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                    result = ShortList.of(dest, cnt);
+                } else {
+                    result = new ShortList(windowSize);
+                }
+
+                while (cnt++ < windowSize && elements.hasNext()) {
+                    result.add(elements.next());
+                }
+
+                prev = result;
+
+                return new ArrayShortStream(result.array(), 0, result.size(), null, sorted);
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ShortList> sliding0(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

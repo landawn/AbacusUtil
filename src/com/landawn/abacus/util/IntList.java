@@ -925,6 +925,14 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         }
     }
 
+    public OptionalInt first() {
+        return size() == 0 ? OptionalInt.empty() : OptionalInt.of(elementData[0]);
+    }
+
+    public OptionalInt last() {
+        return size() == 0 ? OptionalInt.empty() : OptionalInt.of(elementData[size() - 1]);
+    }
+
     //    /**
     //     * Return the first element of the array list.
     //     * @return
@@ -1164,33 +1172,33 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         return result;
     }
 
-    @Override
-    public List<IntList> split(int fromIndex, int toIndex, IntPredicate predicate) {
-        checkIndex(fromIndex, toIndex);
-
-        final List<IntList> result = new ArrayList<>();
-        IntList piece = null;
-
-        for (int i = fromIndex; i < toIndex;) {
-            if (piece == null) {
-                piece = IntList.of(N.EMPTY_INT_ARRAY);
-            }
-
-            if (predicate.test(elementData[i])) {
-                piece.add(elementData[i]);
-                i++;
-            } else {
-                result.add(piece);
-                piece = null;
-            }
-        }
-
-        if (piece != null) {
-            result.add(piece);
-        }
-
-        return result;
-    }
+    //    @Override
+    //    public List<IntList> split(int fromIndex, int toIndex, IntPredicate predicate) {
+    //        checkIndex(fromIndex, toIndex);
+    //
+    //        final List<IntList> result = new ArrayList<>();
+    //        IntList piece = null;
+    //
+    //        for (int i = fromIndex; i < toIndex;) {
+    //            if (piece == null) {
+    //                piece = IntList.of(N.EMPTY_INT_ARRAY);
+    //            }
+    //
+    //            if (predicate.test(elementData[i])) {
+    //                piece.add(elementData[i]);
+    //                i++;
+    //            } else {
+    //                result.add(piece);
+    //                piece = null;
+    //            }
+    //        }
+    //
+    //        if (piece != null) {
+    //            result.add(piece);
+    //        }
+    //
+    //        return result;
+    //    }
 
     @Override
     public String join(int fromIndex, int toIndex, char delimiter) {

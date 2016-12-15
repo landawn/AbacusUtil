@@ -163,22 +163,12 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public <K> Multimap<K, Long, List<Long>> toMultimap(LongFunction<? extends K> keyMapper) {
-        return toMultimap(keyMapper, new LongFunction<Long>() {
-            @Override
-            public Long apply(long value) {
-                return value;
-            }
-        });
+        return toMultimap(keyMapper, LongFunction.BOX);
     }
 
     @Override
     public <K, V extends Collection<Long>> Multimap<K, Long, V> toMultimap(LongFunction<? extends K> keyMapper, Supplier<Multimap<K, Long, V>> mapSupplier) {
-        return toMultimap(keyMapper, new LongFunction<Long>() {
-            @Override
-            public Long apply(long value) {
-                return value;
-            }
-        }, mapSupplier);
+        return toMultimap(keyMapper, LongFunction.BOX, mapSupplier);
     }
 
     @Override
@@ -334,15 +324,14 @@ abstract class AbstractLongStream extends LongStream {
                 }, null, sorted) };
 
         if (p != null) {
-            a[1] = a[1].prepend(p);
+            if (sorted) {
+                new IteratorLongStream(a[1].prepend(p).longIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(p);
+            }
         }
 
         return this.newStream(a, false, null);
-    }
-
-    @Override
-    public Stream<LongList> sliding(int windowSize) {
-        return sliding(windowSize, 1);
     }
 
     @Override
@@ -469,6 +458,11 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public LongStream append(LongStream stream) {
         return LongStream.concat(this, stream);
+    }
+
+    @Override
+    public LongStream prepend(LongStream stream) {
+        return LongStream.concat(stream, this);
     }
 
     @Override

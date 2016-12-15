@@ -464,8 +464,13 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     @Override
-    public S prepend(S s) {
-        return s.append((S) this);
+    public Stream<S> sliding(int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    @Override
+    public Stream<PL> sliding0(int windowSize) {
+        return sliding0(windowSize, 1);
     }
 
     @Override
@@ -1111,19 +1116,27 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return doubleIter;
     }
 
-    static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?, ?, ?, ?, ?, ?, ?> stream, Set<Runnable> closeHandlers) {
-        if (N.isNullOrEmpty(closeHandlers) && N.isNullOrEmpty(stream.closeHandlers)) {
+    static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?, ?, ?, ?, ?, ?, ?> stream, final Set<Runnable> closeHandlers) {
+        return mergeCloseHandlers(stream.closeHandlers, closeHandlers);
+    }
+
+    static Set<Runnable> mergeCloseHandlers(final Set<Runnable> closeHandlersA, final Set<Runnable> closeHandlersB) {
+        if (N.isNullOrEmpty(closeHandlersA) && closeHandlersB instanceof LocalLinkedHashSet) {
+            return closeHandlersB;
+        } else if (closeHandlersA instanceof LocalLinkedHashSet && N.isNullOrEmpty(closeHandlersB)) {
+            return closeHandlersA;
+        } else if (N.isNullOrEmpty(closeHandlersA) && N.isNullOrEmpty(closeHandlersB)) {
             return null;
         }
 
         final Set<Runnable> newCloseHandlers = new LocalLinkedHashSet<>();
 
-        if (N.notNullOrEmpty(closeHandlers)) {
-            newCloseHandlers.addAll(closeHandlers);
+        if (N.notNullOrEmpty(closeHandlersA)) {
+            newCloseHandlers.addAll(closeHandlersA);
         }
 
-        if (N.notNullOrEmpty(stream.closeHandlers)) {
-            newCloseHandlers.addAll(stream.closeHandlers);
+        if (N.notNullOrEmpty(closeHandlersB)) {
+            newCloseHandlers.addAll(closeHandlersB);
         }
 
         return newCloseHandlers;

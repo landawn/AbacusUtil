@@ -28421,8 +28421,8 @@ public final class N {
                 set.add(a[i]);
             }
 
-            if (set.size() == a.length) {
-                return a.clone();
+            if (set.size() == to - from) {
+                return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
             } else {
                 final char[] result = new char[set.size()];
                 int i = 0;
@@ -28481,8 +28481,8 @@ public final class N {
                 set.add(a[i]);
             }
 
-            if (set.size() == a.length) {
-                return a.clone();
+            if (set.size() == to - from) {
+                return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
             } else {
                 final byte[] result = new byte[set.size()];
                 int i = 0;
@@ -28541,8 +28541,8 @@ public final class N {
                 set.add(a[i]);
             }
 
-            if (set.size() == a.length) {
-                return a.clone();
+            if (set.size() == to - from) {
+                return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
             } else {
                 final short[] result = new short[set.size()];
                 int i = 0;
@@ -28602,8 +28602,8 @@ public final class N {
                 set.add(a[i]);
             }
 
-            if (set.size() == a.length) {
-                return a.clone();
+            if (set.size() == to - from) {
+                return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
             } else {
                 final int[] result = new int[set.size()];
                 int i = 0;
@@ -28662,8 +28662,8 @@ public final class N {
                 set.add(a[i]);
             }
 
-            if (set.size() == a.length) {
-                return a.clone();
+            if (set.size() == to - from) {
+                return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
             } else {
                 final long[] result = new long[set.size()];
                 int i = 0;
@@ -28723,8 +28723,8 @@ public final class N {
                 set.add(a[i]);
             }
 
-            if (set.size() == a.length) {
-                return a.clone();
+            if (set.size() == to - from) {
+                return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
             } else {
                 final float[] result = new float[set.size()];
                 int i = 0;
@@ -28783,8 +28783,8 @@ public final class N {
                 set.add(a[i]);
             }
 
-            if (set.size() == a.length) {
-                return a.clone();
+            if (set.size() == to - from) {
+                return (from == 0 && to == a.length) ? a.clone() : N.copyOfRange(a, from, to);
             } else {
                 final double[] result = new double[set.size()];
                 int i = 0;

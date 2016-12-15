@@ -116,7 +116,6 @@ import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongNFunction;
 import com.landawn.abacus.util.function.LongTriFunction;
-import com.landawn.abacus.util.function.NFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortNFunction;
@@ -1224,6 +1223,9 @@ public abstract class Stream<T>
 
     /**
      * Returns a reusable stream which can be repeatedly used.
+     * 
+     * <br />
+     * All elements will be loaded to memory.
      * 
      * @param generator
      * @return
@@ -2787,7 +2789,8 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx++] = valuesForNone[idx];
+                        args[idx] = valuesForNone[idx];
+                        idx++;
                     }
                 }
 
@@ -3246,7 +3249,8 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx++] = valuesForNone[idx];
+                        args[idx] = valuesForNone[idx];
+                        idx++;
                     }
                 }
 
@@ -3706,7 +3710,8 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx++] = valuesForNone[idx];
+                        args[idx] = valuesForNone[idx];
+                        idx++;
                     }
                 }
 
@@ -4165,7 +4170,8 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx++] = valuesForNone[idx];
+                        args[idx] = valuesForNone[idx];
+                        idx++;
                     }
                 }
 
@@ -4624,7 +4630,8 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx++] = valuesForNone[idx];
+                        args[idx] = valuesForNone[idx];
+                        idx++;
                     }
                 }
 
@@ -5084,7 +5091,8 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx++] = valuesForNone[idx];
+                        args[idx] = valuesForNone[idx];
+                        idx++;
                     }
                 }
 
@@ -5545,7 +5553,8 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx++] = valuesForNone[idx];
+                        args[idx] = valuesForNone[idx];
+                        idx++;
                     }
                 }
 
@@ -5749,7 +5758,7 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final NFunction<? super T, R> zipFunction) {
+    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Function<? super ObjectList<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5785,7 +5794,7 @@ public abstract class Stream<T>
         });
     }
 
-    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
+    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super ObjectList<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5813,7 +5822,7 @@ public abstract class Stream<T>
                     args[idx++] = e.next();
                 }
 
-                return zipFunction.apply((T[]) args);
+                return zipFunction.apply(ObjectList.of((T[]) args));
             }
         });
     }
@@ -6035,7 +6044,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            final NFunction<? super T, R> zipFunction) {
+            Function<? super ObjectList<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6084,7 +6093,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            final NFunction<? super T, R> zipFunction) {
+            final Function<? super ObjectList<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6118,7 +6127,8 @@ public abstract class Stream<T>
                         hasNext = true;
                         args[idx++] = e.next();
                     } else {
-                        args[idx++] = valuesForNone[idx];
+                        args[idx] = valuesForNone[idx];
+                        idx++;
                     }
                 }
 
@@ -6126,137 +6136,138 @@ public abstract class Stream<T>
                     throw new NoSuchElementException();
                 }
 
-                return zipFunction.apply((T[]) args);
+                return zipFunction.apply(ObjectList.of((T[]) args));
             }
         });
     }
 
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param zipFunction
-     * @return
-     */
-    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
-     * @return
-     */
-    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), zipFunction, queueSize);
-    }
-
-    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
-     * @return
-     */
-    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
-            final int queueSize) {
-        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), zipFunction, queueSize);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param zipFunction
-     * @return
-     */
-    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b,
-            final BiFunction<? super A, ? super B, R> zipFunction) {
-        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
-     * @return
-     */
-    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b,
-            final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), zipFunction, queueSize);
-    }
-
-    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
-            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
-     * @return
-     */
-    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
-            final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize);
-    }
+    // NO NEED.
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param zipFunction
+    //     * @return
+    //     */
+    //    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
+    //        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param zipFunction
+    //     * @param queueSize for each iterator. Default value is 8
+    //     * @return
+    //     */
+    //    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
+    //        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), zipFunction, queueSize);
+    //    }
+    //
+    //    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+    //        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param c
+    //     * @param zipFunction
+    //     * @param queueSize for each iterator. Default value is 8
+    //     * @return
+    //     */
+    //    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
+    //            final int queueSize) {
+    //        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), zipFunction, queueSize);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param zipFunction
+    //     * @return
+    //     */
+    //    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b,
+    //            final BiFunction<? super A, ? super B, R> zipFunction) {
+    //        return parallelZip(a, b, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param zipFunction
+    //     * @param queueSize for each iterator. Default value is 8
+    //     * @return
+    //     */
+    //    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b,
+    //            final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
+    //        return parallelZip(a.iterator(), b.iterator(), zipFunction, queueSize);
+    //    }
+    //
+    //    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
+    //            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+    //        return parallelZip(a, b, c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param c
+    //     * @param zipFunction
+    //     * @param queueSize for each iterator. Default value is 8
+    //     * @return
+    //     */
+    //    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
+    //            final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
+    //        return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize);
+    //    }
 
     /**
      * Put the stream in try-catch to stop the back-end reading thread if error happens
@@ -6602,7 +6613,8 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final NFunction<? super T, R> zipFunction) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c,
+            final Function<? super ObjectList<? extends T>, R> zipFunction) {
         return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6622,8 +6634,8 @@ public abstract class Stream<T>
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final NFunction<? super T, R> zipFunction,
-            final int queueSize) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c,
+            final Function<? super ObjectList<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6672,7 +6684,8 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction) {
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c,
+            final Function<? super ObjectList<? extends T>, R> zipFunction) {
         return parallelZip2(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6692,8 +6705,8 @@ public abstract class Stream<T>
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final NFunction<? super T, R> zipFunction,
-            final int queueSize) {
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c,
+            final Function<? super ObjectList<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6766,7 +6779,7 @@ public abstract class Stream<T>
                 boolean isOK = false;
 
                 try {
-                    R result = zipFunction.apply((T[]) next);
+                    R result = zipFunction.apply(ObjectList.of((T[]) next));
                     next = null;
                     isOK = true;
                     return result;
@@ -6785,186 +6798,187 @@ public abstract class Stream<T>
         });
     }
 
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param valueForNoneA
-     * @param valueForNoneB
-     * @param zipFunction
-     * @return
-     */
-    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
-            final BiFunction<? super A, ? super B, R> zipFunction) {
-        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param valueForNoneA
-     * @param valueForNoneB
-     * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
-     * @return
-     */
-    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
-            final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param valueForNoneA
-     * @param valueForNoneB
-     * @param valueForNoneC
-     * @param zipFunction
-     * @return
-     */
-    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
-            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param valueForNoneA
-     * @param valueForNoneB
-     * @param valueForNoneC
-     * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
-     * @return
-     */
-    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
-            final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param valueForNoneA
-     * @param valueForNoneB
-     * @param zipFunction
-     * @return
-     */
-    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA,
-            final B valueForNoneB, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param valueForNoneA
-     * @param valueForNoneB
-     * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
-     * @return
-     */
-    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA,
-            final B valueForNoneB, final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param valueForNoneA
-     * @param valueForNoneB
-     * @param valueForNoneC
-     * @param zipFunction
-     * @return
-     */
-    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
-            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
-    }
-
-    /**
-     * Put the stream in try-catch to stop the back-end reading thread if error happens
-     * <br />
-     * <code>
-     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
-     *            stream.forEach(N::println);
-     *        }
-     * </code>
-     * 
-     * @param a
-     * @param b
-     * @param c
-     * @param valueForNoneA
-     * @param valueForNoneB
-     * @param valueForNoneC
-     * @param zipFunction
-     * @param queueSize for each iterator. Default value is 8
-     * @return
-     */
-    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
-            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
-            final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
-    }
+    // NO NEED.
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param valueForNoneA
+    //     * @param valueForNoneB
+    //     * @param zipFunction
+    //     * @return
+    //     */
+    //    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+    //            final BiFunction<? super A, ? super B, R> zipFunction) {
+    //        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param valueForNoneA
+    //     * @param valueForNoneB
+    //     * @param zipFunction
+    //     * @param queueSize for each iterator. Default value is 8
+    //     * @return
+    //     */
+    //    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+    //            final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
+    //        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param c
+    //     * @param valueForNoneA
+    //     * @param valueForNoneB
+    //     * @param valueForNoneC
+    //     * @param zipFunction
+    //     * @return
+    //     */
+    //    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    //            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+    //        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param c
+    //     * @param valueForNoneA
+    //     * @param valueForNoneB
+    //     * @param valueForNoneC
+    //     * @param zipFunction
+    //     * @param queueSize for each iterator. Default value is 8
+    //     * @return
+    //     */
+    //    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    //            final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
+    //        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param valueForNoneA
+    //     * @param valueForNoneB
+    //     * @param zipFunction
+    //     * @return
+    //     */
+    //    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA,
+    //            final B valueForNoneB, final BiFunction<? super A, ? super B, R> zipFunction) {
+    //        return parallelZip(a, b, valueForNoneA, valueForNoneB, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param valueForNoneA
+    //     * @param valueForNoneB
+    //     * @param zipFunction
+    //     * @param queueSize for each iterator. Default value is 8
+    //     * @return
+    //     */
+    //    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA,
+    //            final B valueForNoneB, final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
+    //        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param c
+    //     * @param valueForNoneA
+    //     * @param valueForNoneB
+    //     * @param valueForNoneC
+    //     * @param zipFunction
+    //     * @return
+    //     */
+    //    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
+    //            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+    //        return parallelZip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    //    }
+    //
+    //    /**
+    //     * Put the stream in try-catch to stop the back-end reading thread if error happens
+    //     * <br />
+    //     * <code>
+    //     * try (Stream<Integer> stream = Stream.parallelZip(a, b, zipFunction)) {
+    //     *            stream.forEach(N::println);
+    //     *        }
+    //     * </code>
+    //     * 
+    //     * @param a
+    //     * @param b
+    //     * @param c
+    //     * @param valueForNoneA
+    //     * @param valueForNoneB
+    //     * @param valueForNoneC
+    //     * @param zipFunction
+    //     * @param queueSize for each iterator. Default value is 8
+    //     * @return
+    //     */
+    //    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
+    //            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
+    //            final int queueSize) {
+    //        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    //    }
 
     /**
      * Put the stream in try-catch to stop the back-end reading thread if error happens
@@ -7350,7 +7364,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            final NFunction<? super T, R> zipFunction) {
+            Function<? super ObjectList<? extends T>, R> zipFunction) {
         return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -7370,7 +7384,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            final NFunction<? super T, R> zipFunction, final int queueSize) {
+            Function<? super ObjectList<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -7426,7 +7440,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            final NFunction<? super T, R> zipFunction) {
+            Function<? super ObjectList<? extends T>, R> zipFunction) {
         return parallelZip2(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -7446,7 +7460,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            final NFunction<? super T, R> zipFunction, final int queueSize) {
+            final Function<? super ObjectList<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -7521,7 +7535,7 @@ public abstract class Stream<T>
 
                 boolean isOK = false;
                 try {
-                    R result = zipFunction.apply((T[]) next);
+                    R result = zipFunction.apply(ObjectList.of((T[]) next));
                     next = null;
                     isOK = true;
                     return result;
