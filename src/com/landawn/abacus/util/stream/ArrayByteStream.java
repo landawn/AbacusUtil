@@ -901,6 +901,24 @@ final class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
+    public byte head() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[fromIndex];
+    }
+
+    @Override
+    public ByteStream tail() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return new ArrayByteStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
+    }
+
+    @Override
     public OptionalByte min() {
         if (count() == 0) {
             return OptionalByte.empty();

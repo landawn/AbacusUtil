@@ -77,6 +77,9 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
     private volatile IteratorFloatStream sequential;
     private volatile Stream<Float> boxed;
 
+    private float head;
+    private FloatStream tail;
+
     ParallelIteratorFloatStream(ImmutableFloatIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
@@ -975,6 +978,34 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
         }
 
         return container == NONE ? supplier.get() : container;
+    }
+
+    @Override
+    public float head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorFloatStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return head;
+    }
+
+    @Override
+    public FloatStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorFloatStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return tail;
     }
 
     @Override

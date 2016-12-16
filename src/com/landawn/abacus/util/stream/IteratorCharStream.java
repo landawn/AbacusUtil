@@ -56,6 +56,9 @@ import com.landawn.abacus.util.function.Supplier;
 final class IteratorCharStream extends AbstractCharStream {
     private final ImmutableCharIterator elements;
 
+    private char head;
+    private CharStream tail;
+
     IteratorCharStream(ImmutableCharIterator values) {
         this(values, null);
     }
@@ -985,6 +988,34 @@ final class IteratorCharStream extends AbstractCharStream {
         }
 
         return result;
+    }
+
+    @Override
+    public char head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorCharStream(elements, closeHandlers, sorted);
+        }
+
+        return head;
+    }
+
+    @Override
+    public CharStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorCharStream(elements, closeHandlers, sorted);
+        }
+
+        return tail;
     }
 
     @Override

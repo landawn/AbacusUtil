@@ -901,6 +901,24 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
+    public char head() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[fromIndex];
+    }
+
+    @Override
+    public CharStream tail() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return new ArrayCharStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
+    }
+
+    @Override
     public OptionalChar min() {
         if (count() == 0) {
             return OptionalChar.empty();

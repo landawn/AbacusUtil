@@ -69,6 +69,9 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
 final class IteratorStream<T> extends AbstractStream<T> {
     private final ImmutableIterator<T> elements;
 
+    private T head;
+    private Stream<T> tail;
+
     IteratorStream(final Iterator<? extends T> iterator) {
         this(iterator, null);
     }
@@ -1642,6 +1645,34 @@ final class IteratorStream<T> extends AbstractStream<T> {
         }
 
         return collector.finisher().apply(container);
+    }
+
+    @Override
+    public T head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorStream<T>(elements, closeHandlers, sorted, cmp);
+        }
+
+        return head;
+    }
+
+    @Override
+    public Stream<T> tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorStream<T>(elements, closeHandlers, sorted, cmp);
+        }
+
+        return tail;
     }
 
     @Override

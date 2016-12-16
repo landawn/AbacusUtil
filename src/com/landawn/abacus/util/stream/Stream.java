@@ -1107,6 +1107,24 @@ public abstract class Stream<T>
     public abstract <R, A> R collect(Collector<? super T, A, R> collector);
 
     /**
+     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+     * Don't call any other methods with this stream after head() and tail() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract T head();
+
+    /**
+     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+     * Don't call any other methods with this stream after head() and tail() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract Stream<T> tail();
+
+    /**
      * Returns the minimum element of this stream according to the provided
      * {@code Comparator}.  This is a special case of a
      * <a href="package-summary.html#Reduction">reduction</a>.

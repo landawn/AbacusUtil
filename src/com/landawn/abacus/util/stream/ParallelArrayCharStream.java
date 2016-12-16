@@ -871,6 +871,24 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
+    public char head() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[fromIndex];
+    }
+
+    @Override
+    public CharStream tail() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return new ParallelArrayCharStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
+    }
+
+    @Override
     public OptionalChar min() {
         if (count() == 0) {
             return OptionalChar.empty();

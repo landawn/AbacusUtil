@@ -76,6 +76,9 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     private volatile IteratorDoubleStream sequential;
     private volatile Stream<Double> boxed;
 
+    private double head;
+    private DoubleStream tail;
+
     ParallelIteratorDoubleStream(ImmutableDoubleIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
@@ -974,6 +977,34 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
         }
 
         return container == NONE ? supplier.get() : container;
+    };
+
+    @Override
+    public double head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorDoubleStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return head;
+    }
+
+    @Override
+    public DoubleStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorDoubleStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return tail;
     }
 
     @Override

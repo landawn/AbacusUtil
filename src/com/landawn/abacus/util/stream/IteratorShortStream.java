@@ -58,6 +58,9 @@ import com.landawn.abacus.util.function.ToShortFunction;
 final class IteratorShortStream extends AbstractShortStream {
     private final ImmutableShortIterator elements;
 
+    private short head;
+    private ShortStream tail;
+
     IteratorShortStream(ImmutableShortIterator values) {
         this(values, null);
     }
@@ -1006,6 +1009,34 @@ final class IteratorShortStream extends AbstractShortStream {
         }
 
         return result;
+    }
+
+    @Override
+    public short head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorShortStream(elements, closeHandlers, sorted);
+        }
+
+        return head;
+    }
+
+    @Override
+    public ShortStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorShortStream(elements, closeHandlers, sorted);
+        }
+
+        return tail;
     }
 
     @Override

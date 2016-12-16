@@ -56,6 +56,9 @@ import com.landawn.abacus.util.function.Supplier;
 final class IteratorByteStream extends AbstractByteStream {
     private final ImmutableByteIterator elements;
 
+    private byte head;
+    private ByteStream tail;
+
     IteratorByteStream(ImmutableByteIterator values) {
         this(values, null);
     }
@@ -986,6 +989,34 @@ final class IteratorByteStream extends AbstractByteStream {
         }
 
         return result;
+    }
+
+    @Override
+    public byte head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorByteStream(elements, closeHandlers, sorted);
+        }
+
+        return head;
+    }
+
+    @Override
+    public ByteStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorByteStream(elements, closeHandlers, sorted);
+        }
+
+        return tail;
     }
 
     @Override

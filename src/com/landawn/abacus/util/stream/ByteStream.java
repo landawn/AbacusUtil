@@ -425,6 +425,24 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator);
 
     /**
+     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead. 
+     * Don't call any other methods with this stream after head() and tail() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract byte head();
+
+    /**
+     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+     * Don't call any other methods with this stream after head() and tail() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract ByteStream tail();
+
+    /**
      * Returns an {@code OptionalByte} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>

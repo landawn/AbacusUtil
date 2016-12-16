@@ -896,6 +896,24 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public short head() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[fromIndex];
+    }
+
+    @Override
+    public ShortStream tail() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return new ParallelArrayShortStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
+    }
+
+    @Override
     public OptionalShort min() {
         if (count() == 0) {
             return OptionalShort.empty();

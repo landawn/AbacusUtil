@@ -962,6 +962,24 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     }
 
     @Override
+    public long head() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[fromIndex];
+    }
+
+    @Override
+    public LongStream tail() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return new ParallelArrayLongStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
+    }
+
+    @Override
     public OptionalLong min() {
         if (count() == 0) {
             return OptionalLong.empty();

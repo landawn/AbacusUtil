@@ -73,6 +73,9 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     private volatile IteratorShortStream sequential;
     private volatile Stream<Short> boxed;
 
+    private short head;
+    private ShortStream tail;
+
     ParallelIteratorShortStream(ImmutableShortIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
@@ -907,6 +910,34 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         }
 
         return container == NONE ? supplier.get() : container;
+    }
+
+    @Override
+    public short head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return head;
+    }
+
+    @Override
+    public ShortStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return tail;
     }
 
     @Override

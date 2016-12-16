@@ -82,6 +82,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     private final Splitor splitor;
     private volatile IteratorStream<T> sequential;
 
+    private T head;
+    private Stream<T> tail;
+
     ParallelIteratorStream(final Iterator<? extends T> iterator, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator,
             int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted, comparator);
@@ -1919,6 +1922,34 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         return finisher.apply(container == NONE ? supplier.get() : container);
+    }
+
+    @Override
+    public T head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorStream<T>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        }
+
+        return head;
+    }
+
+    @Override
+    public Stream<T> tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorStream<T>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        }
+
+        return tail;
     }
 
     @Override

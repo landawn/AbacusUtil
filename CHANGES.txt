@@ -1,3 +1,10 @@
+========Changes in 0.9.39=========================================================================
+
+1, head()/tail() to Stream/IntStream/DoubleStream/...
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.38=========================================================================
 
 1, Remove subList(from, to) from ObjectList/IntList/...

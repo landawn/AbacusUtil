@@ -62,6 +62,9 @@ import com.landawn.abacus.util.function.ToIntFunction;
 final class IteratorIntStream extends AbstractIntStream {
     private final ImmutableIntIterator elements;
 
+    private int head;
+    private IntStream tail;
+
     IteratorIntStream(ImmutableIntIterator values) {
         this(values, null);
     }
@@ -1259,6 +1262,34 @@ final class IteratorIntStream extends AbstractIntStream {
         }
 
         return result;
+    }
+
+    @Override
+    public int head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorIntStream(elements, closeHandlers, sorted);
+        }
+
+        return head;
+    }
+
+    @Override
+    public IntStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorIntStream(elements, closeHandlers, sorted);
+        }
+
+        return tail;
     }
 
     @Override

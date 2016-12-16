@@ -962,6 +962,24 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public double head() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[fromIndex];
+    }
+
+    @Override
+    public DoubleStream tail() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return new ParallelArrayDoubleStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
+    }
+
+    @Override
     public OptionalDouble min() {
         if (count() == 0) {
             return OptionalDouble.empty();

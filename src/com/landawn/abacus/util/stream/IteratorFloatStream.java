@@ -58,6 +58,9 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 final class IteratorFloatStream extends AbstractFloatStream {
     private final ImmutableFloatIterator elements;
 
+    private float head;
+    private FloatStream tail;
+
     IteratorFloatStream(ImmutableFloatIterator values) {
         this(values, null);
     }
@@ -1105,6 +1108,34 @@ final class IteratorFloatStream extends AbstractFloatStream {
         }
 
         return result;
+    }
+
+    @Override
+    public float head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorFloatStream(elements, closeHandlers, sorted);
+        }
+
+        return head;
+    }
+
+    @Override
+    public FloatStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorFloatStream(elements, closeHandlers, sorted);
+        }
+
+        return tail;
     }
 
     @Override

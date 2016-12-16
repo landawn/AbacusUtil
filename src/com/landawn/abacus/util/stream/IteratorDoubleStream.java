@@ -58,6 +58,9 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
 final class IteratorDoubleStream extends AbstractDoubleStream {
     private final ImmutableDoubleIterator elements;
 
+    private double head;
+    private DoubleStream tail;
+
     IteratorDoubleStream(ImmutableDoubleIterator values) {
         this(values, null);
     }
@@ -1106,6 +1109,34 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
         }
 
         return result;
+    }
+
+    @Override
+    public double head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorDoubleStream(elements, closeHandlers, sorted);
+        }
+
+        return head;
+    }
+
+    @Override
+    public DoubleStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorDoubleStream(elements, closeHandlers, sorted);
+        }
+
+        return tail;
     }
 
     @Override

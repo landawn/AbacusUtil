@@ -77,6 +77,9 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
     private volatile IteratorLongStream sequential;
     private volatile Stream<Long> boxed;
 
+    private long head;
+    private LongStream tail;
+
     ParallelIteratorLongStream(ImmutableLongIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
@@ -974,6 +977,34 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
         }
 
         return container == NONE ? supplier.get() : container;
+    }
+
+    @Override
+    public long head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorLongStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return head;
+    }
+
+    @Override
+    public LongStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorLongStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return tail;
     }
 
     @Override

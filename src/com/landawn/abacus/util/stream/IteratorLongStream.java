@@ -59,6 +59,9 @@ import com.landawn.abacus.util.function.ToLongFunction;
 final class IteratorLongStream extends AbstractLongStream {
     private final ImmutableLongIterator elements;
 
+    private long head;
+    private LongStream tail;
+
     IteratorLongStream(ImmutableLongIterator values) {
         this(values, null);
     }
@@ -1106,6 +1109,34 @@ final class IteratorLongStream extends AbstractLongStream {
         }
 
         return result;
+    }
+
+    @Override
+    public long head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorLongStream(elements, closeHandlers, sorted);
+        }
+
+        return head;
+    }
+
+    @Override
+    public LongStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new IteratorLongStream(elements, closeHandlers, sorted);
+        }
+
+        return tail;
     }
 
     @Override

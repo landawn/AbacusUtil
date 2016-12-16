@@ -72,6 +72,9 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     private volatile IteratorByteStream sequential;
     private volatile Stream<Byte> boxed;
 
+    private byte head;
+    private ByteStream tail;
+
     ParallelIteratorByteStream(ImmutableByteIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
@@ -886,6 +889,34 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         return container == NONE ? supplier.get() : container;
+    }
+
+    @Override
+    public byte head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return head;
+    }
+
+    @Override
+    public ByteStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return tail;
     }
 
     @Override

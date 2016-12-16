@@ -72,6 +72,9 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     private volatile IteratorCharStream sequential;
     private volatile Stream<Character> boxed;
 
+    private char head;
+    private CharStream tail;
+
     ParallelIteratorCharStream(ImmutableCharIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
@@ -886,6 +889,34 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         }
 
         return container == NONE ? supplier.get() : container;
+    }
+
+    @Override
+    public char head() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorCharStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return head;
+    }
+
+    @Override
+    public CharStream tail() {
+        if (tail == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            head = elements.next();
+            tail = new ParallelIteratorCharStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        }
+
+        return tail;
     }
 
     @Override

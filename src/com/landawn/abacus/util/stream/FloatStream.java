@@ -467,6 +467,24 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     public abstract <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator);
 
     /**
+     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+     * Don't call any other methods with this stream after head() and tail() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract float head();
+
+    /**
+     * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
+     * Don't call any other methods with this stream after head() and tail() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract FloatStream tail();
+
+    /**
      * Returns an {@code OptionalFloat} describing the minimum element of this
      * stream, or an empty OptionalFloat if this stream is empty.  The minimum
      * element will be {@code Float.NaN} if any stream element was NaN. Unlike

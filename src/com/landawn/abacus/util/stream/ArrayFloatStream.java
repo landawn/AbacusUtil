@@ -1059,6 +1059,24 @@ final class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public float head() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[fromIndex];
+    }
+
+    @Override
+    public FloatStream tail() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return new ArrayFloatStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
+    }
+
+    @Override
     public OptionalFloat min() {
         if (count() == 0) {
             return OptionalFloat.empty();
