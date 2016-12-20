@@ -95,7 +95,7 @@ import com.landawn.abacus.util.function.ToByteFunction;
  */
 public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate, ByteConsumer, ByteList, OptionalByte, IndexedByte, ByteStream> {
 
-    private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY);
+    private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY, null, true);
 
     ByteStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
@@ -438,7 +438,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
+     * @throws IllegalStateException if this stream is empty.
      */
     public abstract ByteStream tail();
 

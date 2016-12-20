@@ -60,11 +60,11 @@ final class ArrayLongStream extends AbstractLongStream {
     private final int toIndex;
 
     ArrayLongStream(long[] values) {
-        this(values, null);
+        this(values, 0, values.length);
     }
 
     ArrayLongStream(long[] values, Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, 0, values.length, closeHandlers);
     }
 
     ArrayLongStream(long[] values, Collection<Runnable> closeHandlers, boolean sorted) {
@@ -102,10 +102,8 @@ final class ArrayLongStream extends AbstractLongStream {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
                             break;
-                        } else {
-                            cursor++;
                         }
-                    } while (cursor < toIndex);
+                    } while (++cursor < toIndex);
                 }
 
                 return hasNext;
@@ -172,10 +170,8 @@ final class ArrayLongStream extends AbstractLongStream {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
-                            } else {
-                                cursor++;
                             }
-                        } while (cursor < toIndex);
+                        } while (++cursor < toIndex);
 
                         dropped = true;
                     } else {
@@ -582,8 +578,8 @@ final class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <U> Stream<LongStream> split(final U boundary, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<LongStream> split(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -603,15 +599,15 @@ final class ArrayLongStream extends AbstractLongStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -624,8 +620,8 @@ final class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <U> Stream<LongList> split0(final U boundary, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<LongList> split0(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<LongList>(new ImmutableIterator<LongList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -645,15 +641,15 @@ final class ArrayLongStream extends AbstractLongStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -1035,7 +1031,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong reduce(LongBinaryOperator op) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalLong.empty();
         }
 
@@ -1071,7 +1067,7 @@ final class ArrayLongStream extends AbstractLongStream {
     @Override
     public LongStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ArrayLongStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -1079,7 +1075,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalLong.empty();
         } else if (sorted) {
             return OptionalLong.of(elements[fromIndex]);
@@ -1090,7 +1086,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalLong.empty();
         } else if (sorted) {
             return OptionalLong.of(elements[toIndex - 1]);
@@ -1101,7 +1097,9 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalLong.empty();
         } else if (sorted) {
             return OptionalLong.of(elements[toIndex - k]);
@@ -1117,7 +1115,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
 
@@ -1217,17 +1215,6 @@ final class ArrayLongStream extends AbstractLongStream {
     @Override
     public OptionalLong findLast(final LongPredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalLong.of(elements[i]);
-            }
-        }
-
-        return OptionalLong.empty();
-    }
-
-    @Override
-    public OptionalLong findAny(final LongPredicate predicate) {
-        for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalLong.of(elements[i]);
             }

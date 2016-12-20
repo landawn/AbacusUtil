@@ -442,6 +442,10 @@ public final class OptionalNullable<T> {
         }
     }
 
+    public Optional<T> __() {
+        return Optional.ofNullable(value);
+    }
+
     /**
      * Indicates whether some other object is "equal to" this Optional. The other object is considered equal if:
      * <ul>

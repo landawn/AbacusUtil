@@ -244,16 +244,16 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<ShortStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<ShortStream>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<ShortList> split0(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<ShortList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<ShortList> split0(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<ShortList>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -930,7 +930,7 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     public ShortStream tail() {
         if (tail == null) {
             if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
+                throw new IllegalStateException();
             }
 
             head = elements.next();
@@ -982,6 +982,8 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort kthLargest(int k) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
         if (elements.hasNext() == false) {
             return OptionalShort.empty();
         }

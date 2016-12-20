@@ -237,16 +237,16 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <U> Stream<CharStream> split(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<CharStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<CharStream> split(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<CharStream>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<CharList> split0(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<CharList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<CharList> split0(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<CharList>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -882,7 +882,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
     @Override
     public CharStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ParallelArrayCharStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
@@ -890,7 +890,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalChar.empty();
         } else if (sorted) {
             return OptionalChar.of(elements[fromIndex]);
@@ -936,7 +936,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalChar.empty();
         } else if (sorted) {
             return OptionalChar.of(elements[toIndex - 1]);
@@ -981,7 +981,9 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalChar.empty();
         } else if (sorted) {
             return OptionalChar.of(elements[toIndex - k]);
@@ -992,7 +994,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
     @Override
     public Long sum() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return 0L;
         } else if (maxThreadNum <= 1) {
             return N.sum(elements, fromIndex, toIndex);
@@ -1036,7 +1038,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
 
@@ -1081,7 +1083,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
 
     @Override
     public CharSummaryStatistics summarize() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return new CharSummaryStatistics();
         } else if (maxThreadNum <= 1) {
             return sequential().summarize();

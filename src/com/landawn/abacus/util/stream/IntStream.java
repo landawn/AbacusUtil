@@ -101,7 +101,7 @@ import com.landawn.abacus.util.function.ToIntFunction;
  */
 public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntStream> {
 
-    private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY);
+    private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY, null, true);
 
     IntStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
@@ -509,7 +509,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
+     * @throws IllegalStateException if this stream is empty.
      */
     public abstract IntStream tail();
 

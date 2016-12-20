@@ -59,11 +59,11 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     private final int toIndex;
 
     ArrayDoubleStream(double[] values) {
-        this(values, null);
+        this(values, 0, values.length);
     }
 
     ArrayDoubleStream(double[] values, Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, 0, values.length, closeHandlers);
     }
 
     ArrayDoubleStream(double[] values, Collection<Runnable> closeHandlers, boolean sorted) {
@@ -101,10 +101,8 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
                             break;
-                        } else {
-                            cursor++;
                         }
-                    } while (cursor < toIndex);
+                    } while (++cursor < toIndex);
                 }
 
                 return hasNext;
@@ -171,10 +169,8 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
-                            } else {
-                                cursor++;
                             }
-                        } while (cursor < toIndex);
+                        } while (++cursor < toIndex);
 
                         dropped = true;
                     } else {
@@ -581,8 +577,8 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleStream> split(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<DoubleStream> split(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<DoubleStream>(new ImmutableIterator<DoubleStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -602,15 +598,15 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -623,8 +619,8 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleList> split0(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<DoubleList> split0(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -644,15 +640,15 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -1034,7 +1030,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble reduce(DoubleBinaryOperator op) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
 
@@ -1070,7 +1066,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ArrayDoubleStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -1078,7 +1074,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         } else if (sorted) {
             return OptionalDouble.of(elements[fromIndex]);
@@ -1089,7 +1085,7 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         } else if (sorted) {
             return OptionalDouble.of(elements[toIndex - 1]);
@@ -1100,7 +1096,9 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalDouble.empty();
         } else if (sorted) {
             return OptionalDouble.of(elements[toIndex - k]);
@@ -1202,17 +1200,6 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public OptionalDouble findLast(final DoublePredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalDouble.of(elements[i]);
-            }
-        }
-
-        return OptionalDouble.empty();
-    }
-
-    @Override
-    public OptionalDouble findAny(final DoublePredicate predicate) {
-        for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalDouble.of(elements[i]);
             }

@@ -312,16 +312,16 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <U> Stream<FloatStream> split(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<FloatStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<FloatStream>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<FloatList> split0(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<FloatList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<FloatList> split0(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<FloatList>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -998,7 +998,7 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
     public FloatStream tail() {
         if (tail == null) {
             if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
+                throw new IllegalStateException();
             }
 
             head = elements.next();
@@ -1050,6 +1050,8 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat kthLargest(int k) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
         if (elements.hasNext() == false) {
             return OptionalFloat.empty();
         }

@@ -103,31 +103,31 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<T> filter(final U check, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> Stream<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return predicate.test(value, check);
+                return predicate.test(value, seed);
             }
         });
     }
 
     @Override
-    public <U> Stream<T> takeWhile(final U check, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> Stream<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return predicate.test(value, check);
+                return predicate.test(value, seed);
             }
         });
     }
 
     @Override
-    public <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return predicate.test(value, check);
+                return predicate.test(value, seed);
             }
         });
     }
@@ -180,14 +180,14 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
+    public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
         return dropWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return predicate.test(value, check);
+                return predicate.test(value, seed);
             }
         }, action);
     }
@@ -808,6 +808,56 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <U> OptionalNullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return findFirst(new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t, seed);
+            }
+        });
+    }
+
+    @Override
+    public <U> OptionalNullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return findLast(new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t, seed);
+            }
+        });
+    }
+
+    @Override
+    public <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return anyMatch(new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t, seed);
+            }
+        });
+    }
+
+    @Override
+    public <U> boolean allMatch(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return allMatch(new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t, seed);
+            }
+        });
+    }
+
+    @Override
+    public <U> boolean noneMatch(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return noneMatch(new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t, seed);
+            }
+        });
+    }
+
+    @Override
     public OptionalNullable<T> first() {
         final Iterator<T> iter = this.iterator();
 
@@ -900,9 +950,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> except(final Collection<?> c) {
-        return newStream(this.sequential().filter(new Predicate<T>() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(value) < 1;
@@ -912,9 +962,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> except(final Function<? super T, ?> mapper, final Collection<?> c) {
-        return newStream(this.sequential().filter(new Predicate<T>() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(mapper.apply(value)) < 1;
@@ -924,9 +974,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> intersect(final Collection<?> c) {
-        return newStream(this.sequential().filter(new Predicate<T>() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(value) > 0;
@@ -936,9 +986,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> intersect(final Function<? super T, ?> mapper, final Collection<?> c) {
-        return newStream(this.sequential().filter(new Predicate<T>() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return multiset.getAndRemove(mapper.apply(value)) > 0;
@@ -1174,9 +1224,10 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public String join(CharSequence delimiter) {
         final Function<T, String> mapper = new Function<T, String>() {
+            @SuppressWarnings("rawtypes")
             @Override
             public String apply(T t) {
-                return N.toString(t);
+                return t instanceof BaseStream ? ((BaseStream) t).join(", ", "[", "]") : N.toString(t);
             }
         };
 
@@ -1186,9 +1237,10 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public String join(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
         final Function<T, String> mapper = new Function<T, String>() {
+            @SuppressWarnings("rawtypes")
             @Override
             public String apply(T t) {
-                return N.toString(t);
+                return t instanceof BaseStream ? ((BaseStream) t).join(", ", "[", "]") : N.toString(t);
             }
         };
 

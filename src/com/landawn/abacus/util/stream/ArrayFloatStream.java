@@ -59,11 +59,11 @@ final class ArrayFloatStream extends AbstractFloatStream {
     private final int toIndex;
 
     ArrayFloatStream(float[] values) {
-        this(values, null);
+        this(values, 0, values.length);
     }
 
     ArrayFloatStream(float[] values, Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, 0, values.length, closeHandlers);
     }
 
     ArrayFloatStream(float[] values, Collection<Runnable> closeHandlers, boolean sorted) {
@@ -101,10 +101,8 @@ final class ArrayFloatStream extends AbstractFloatStream {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
                             break;
-                        } else {
-                            cursor++;
                         }
-                    } while (cursor < toIndex);
+                    } while (++cursor < toIndex);
                 }
 
                 return hasNext;
@@ -171,10 +169,8 @@ final class ArrayFloatStream extends AbstractFloatStream {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
-                            } else {
-                                cursor++;
                             }
-                        } while (cursor < toIndex);
+                        } while (++cursor < toIndex);
 
                         dropped = true;
                     } else {
@@ -581,8 +577,8 @@ final class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <U> Stream<FloatStream> split(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -602,15 +598,15 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -623,8 +619,8 @@ final class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <U> Stream<FloatList> split0(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<FloatList> split0(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<FloatList>(new ImmutableIterator<FloatList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -644,15 +640,15 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -1034,7 +1030,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat reduce(FloatBinaryOperator op) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalFloat.empty();
         }
 
@@ -1070,7 +1066,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ArrayFloatStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -1078,7 +1074,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalFloat.empty();
         } else if (sorted) {
             return OptionalFloat.of(elements[fromIndex]);
@@ -1089,7 +1085,7 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalFloat.empty();
         } else if (sorted) {
             return OptionalFloat.of(elements[toIndex - 1]);
@@ -1100,7 +1096,9 @@ final class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalFloat.empty();
         } else if (sorted) {
             return OptionalFloat.of(elements[toIndex - k]);
@@ -1202,17 +1200,6 @@ final class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public OptionalFloat findLast(final FloatPredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalFloat.of(elements[i]);
-            }
-        }
-
-        return OptionalFloat.empty();
-    }
-
-    @Override
-    public OptionalFloat findAny(final FloatPredicate predicate) {
-        for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalFloat.of(elements[i]);
             }

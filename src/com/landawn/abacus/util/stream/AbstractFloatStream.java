@@ -285,9 +285,9 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream except(final Collection<?> c) {
-        return newStream(this.sequential().filter(new FloatPredicate() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new FloatPredicate() {
             @Override
             public boolean test(float value) {
                 return multiset.getAndRemove(value) < 1;
@@ -297,9 +297,9 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream intersect(final Collection<?> c) {
-        return newStream(this.sequential().filter(new FloatPredicate() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new FloatPredicate() {
             @Override
             public boolean test(float value) {
                 return multiset.getAndRemove(value) > 0;

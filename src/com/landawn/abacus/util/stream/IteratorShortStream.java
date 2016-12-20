@@ -167,11 +167,9 @@ final class IteratorShortStream extends AbstractShortStream {
                         }
 
                         dropped = true;
-                    } else {
-                        if (elements.hasNext()) {
-                            next = elements.next();
-                            hasNext = true;
-                        }
+                    } else if (elements.hasNext()) {
+                        next = elements.next();
+                        hasNext = true;
                     }
                 }
 
@@ -397,8 +395,8 @@ final class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
             private short next;
             private boolean hasNext = false;
@@ -424,15 +422,15 @@ final class IteratorShortStream extends AbstractShortStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
+                        preCondition = predicate.apply(next, identity);
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
+                    } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -446,8 +444,8 @@ final class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortList> split0(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ShortList> split0(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
             private short next;
             private boolean hasNext = false;
@@ -473,15 +471,15 @@ final class IteratorShortStream extends AbstractShortStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
+                        preCondition = predicate.apply(next, identity);
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
+                    } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -529,9 +527,18 @@ final class IteratorShortStream extends AbstractShortStream {
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
-                    final short[] dest = new short[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = ShortList.of(dest, cnt);
+
+                    if (cnt <= 8) {
+                        result = new ShortList(windowSize);
+
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        final short[] dest = new short[windowSize];
+                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                        result = ShortList.of(dest, cnt);
+                    }
                 } else {
                     result = new ShortList(windowSize);
                 }
@@ -583,9 +590,18 @@ final class IteratorShortStream extends AbstractShortStream {
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
-                    final short[] dest = new short[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = ShortList.of(dest, cnt);
+
+                    if (cnt <= 8) {
+                        result = new ShortList(windowSize);
+
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        final short[] dest = new short[windowSize];
+                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                        result = ShortList.of(dest, cnt);
+                    }
                 } else {
                     result = new ShortList(windowSize);
                 }
@@ -1029,7 +1045,7 @@ final class IteratorShortStream extends AbstractShortStream {
     public ShortStream tail() {
         if (tail == null) {
             if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
+                throw new IllegalStateException();
             }
 
             head = elements.next();
@@ -1081,6 +1097,8 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort kthLargest(int k) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
         if (elements.hasNext() == false) {
             return OptionalShort.empty();
         }
@@ -1200,19 +1218,6 @@ final class IteratorShortStream extends AbstractShortStream {
         }
 
         return hasResult ? OptionalShort.of(result) : OptionalShort.empty();
-    }
-
-    @Override
-    public OptionalShort findAny(ShortPredicate predicate) {
-        while (elements.hasNext()) {
-            short e = elements.next();
-
-            if (predicate.test(e)) {
-                return OptionalShort.of(e);
-            }
-        }
-
-        return OptionalShort.empty();
     }
 
     @Override

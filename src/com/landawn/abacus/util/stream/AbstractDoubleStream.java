@@ -284,9 +284,9 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream except(final Collection<?> c) {
-        return newStream(this.sequential().filter(new DoublePredicate() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new DoublePredicate() {
             @Override
             public boolean test(double value) {
                 return multiset.getAndRemove(value) < 1;
@@ -296,9 +296,9 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream intersect(final Collection<?> c) {
-        return newStream(this.sequential().filter(new DoublePredicate() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new DoublePredicate() {
             @Override
             public boolean test(double value) {
                 return multiset.getAndRemove(value) > 0;

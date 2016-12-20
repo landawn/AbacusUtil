@@ -99,7 +99,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
  */
 public abstract class LongStream extends StreamBase<Long, long[], LongPredicate, LongConsumer, LongList, OptionalLong, IndexedLong, LongStream> {
 
-    private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY);
+    private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY, null, true);
 
     LongStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
@@ -480,7 +480,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
+     * @throws IllegalStateException if this stream is empty.
      */
     public abstract LongStream tail();
 

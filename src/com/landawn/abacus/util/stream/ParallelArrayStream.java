@@ -49,6 +49,7 @@ import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -1512,27 +1513,27 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<Stream<T>>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<Stream<T>>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<ObjectList<T>> split0(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<ObjectList<T>>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<ObjectList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<ObjectList<T>>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<List<T>> split2(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<List<T>>(sequential().split2(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<List<T>>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<Set<T>> split3(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<Set<T>>(sequential().split3(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+    public <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<Set<T>>(sequential().split3(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 
@@ -1806,12 +1807,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> predicate) {
+    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
         if (logger.isWarnEnabled()) {
             logger.warn("'forEach' is sequentially executed in parallel stream");
         }
 
-        return sequential().forEach(identity, accumulator, predicate);
+        return sequential().forEach(seed, accumulator, predicate);
     }
 
     @Override
@@ -2439,7 +2440,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ParallelArrayStream<T>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
@@ -2447,7 +2448,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> min(Comparator<? super T> comparator) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalNullable.empty();
         }
 
@@ -2458,7 +2459,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> max(Comparator<? super T> comparator) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalNullable.empty();
         }
 
@@ -2469,7 +2470,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalNullable.empty();
         }
 
@@ -3055,9 +3056,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             return new ParallelIteratorStream<>(sequential().intersect(mapper, c).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
         }
 
-        return filter(new Predicate<T>() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 final Object key = mapper.apply(value);
@@ -3075,9 +3076,9 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             return new ParallelIteratorStream<>(sequential().intersect(mapper, c).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
         }
 
-        return filter(new Predicate<T>() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 final Object key = mapper.apply(value);

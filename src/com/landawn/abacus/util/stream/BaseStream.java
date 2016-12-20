@@ -169,11 +169,12 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * This stream should be sorted by value which is used to verify the border.
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param identifier
+     * @param identity
      * @param predicate
+     * @param identityUpdate
      * @return
      */
-    <U> Stream<S> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate);
+    <U> Stream<S> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate);
 
     /**
      * Split the stream by the specified predicate.
@@ -188,11 +189,12 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * This stream should be sorted by value which is used to verify the border.
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param identifier
+     * @param identity
      * @param predicate
+     * @param identityUpdate
      * @return
      */
-    <U> Stream<PL> split0(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate);
+    <U> Stream<PL> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate);
 
     /**
      * Split the stream into two pieces at <code>where</code>
@@ -210,12 +212,61 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      */
     Stream<S> splitBy(P where);
 
+    /**
+     * 
+     * @param windowSize
+     * @return
+     * @see #sliding(int, int)
+     */
     Stream<S> sliding(int windowSize);
 
+    /**
+     * 
+     * @param windowSize
+     * @return
+     * @see #sliding(int, int)
+     */
     Stream<PL> sliding0(int windowSize);
 
+    /**
+     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 1).forEach(Stream::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [2, 3, 4] <br />
+     * [3, 4, 5] <br />
+     * [4, 5, 6] <br />
+     * [5, 6, 7] <br />
+     * [6, 7, 8] <br />
+     * 
+     * <br>============================================================================</br>
+     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 3).forEach(Stream::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [4, 5, 6] <br />
+     * [7, 8] <br />
+     * 
+     * <br>============================================================================</br>
+     * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 5).sliding(3, 5).forEach(Stream::println)</code>
+     * <br /> output: <br />
+     * [1, 2, 3] <br />
+     * [6, 7, 8] <br />
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param windowSize
+     * @param increment
+     * @return
+     */
     Stream<S> sliding(int windowSize, int increment);
 
+    /**
+     * 
+     * @param windowSize
+     * @param increment
+     * @return
+     * @see #sliding(int, int)
+     */
     Stream<PL> sliding0(int windowSize, int increment);
 
     /**
@@ -576,6 +627,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return the element iterator for this stream
      */
     Iterator<T> iterator();
+
+    void println();
 
     /**
      * Returns whether this stream, if a terminal operation were to be executed,

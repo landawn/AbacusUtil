@@ -63,11 +63,11 @@ final class ArrayIntStream extends AbstractIntStream {
     private final int toIndex;
 
     ArrayIntStream(int[] values) {
-        this(values, null);
+        this(values, 0, values.length);
     }
 
     ArrayIntStream(int[] values, Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, 0, values.length, closeHandlers);
     }
 
     ArrayIntStream(int[] values, Collection<Runnable> closeHandlers, boolean sorted) {
@@ -105,10 +105,8 @@ final class ArrayIntStream extends AbstractIntStream {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
                             break;
-                        } else {
-                            cursor++;
                         }
-                    } while (cursor < toIndex);
+                    } while (++cursor < toIndex);
                 }
 
                 return hasNext;
@@ -175,10 +173,8 @@ final class ArrayIntStream extends AbstractIntStream {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
-                            } else {
-                                cursor++;
                             }
-                        } while (cursor < toIndex);
+                        } while (++cursor < toIndex);
 
                         dropped = true;
                     } else {
@@ -789,8 +785,8 @@ final class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntStream> split(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<IntStream> split(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<IntStream>(new ImmutableIterator<IntStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -810,15 +806,15 @@ final class ArrayIntStream extends AbstractIntStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -831,8 +827,8 @@ final class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntList> split0(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<IntList> split0(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<IntList>(new ImmutableIterator<IntList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -852,15 +848,15 @@ final class ArrayIntStream extends AbstractIntStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -1241,7 +1237,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt reduce(IntBinaryOperator op) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalInt.empty();
         }
 
@@ -1277,7 +1273,7 @@ final class ArrayIntStream extends AbstractIntStream {
     @Override
     public IntStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ArrayIntStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -1285,7 +1281,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalInt.empty();
         } else if (sorted) {
             return OptionalInt.of(elements[fromIndex]);
@@ -1296,7 +1292,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalInt.empty();
         } else if (sorted) {
             return OptionalInt.of(elements[toIndex - 1]);
@@ -1307,7 +1303,9 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalInt.empty();
         } else if (sorted) {
             return OptionalInt.of(elements[toIndex - k]);
@@ -1323,7 +1321,7 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
 
@@ -1423,17 +1421,6 @@ final class ArrayIntStream extends AbstractIntStream {
     @Override
     public OptionalInt findLast(final IntPredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalInt.of(elements[i]);
-            }
-        }
-
-        return OptionalInt.empty();
-    }
-
-    @Override
-    public OptionalInt findAny(final IntPredicate predicate) {
-        for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalInt.of(elements[i]);
             }

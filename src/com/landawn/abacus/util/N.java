@@ -20985,12 +20985,13 @@ public final class N {
         }
     }
 
-    public static <T, R> R forEach(final T[] a, final R identity, final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> predicate) {
+    public static <T, R> R forEach(final T[] a, final R seed, final BiFunction<R, ? super T, R> accumulator,
+            final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(a)) {
-            return identity;
+            return seed;
         }
 
-        return ObjectList.of(a).forEach(identity, accumulator, predicate);
+        return ObjectList.of(a).forEach(seed, accumulator, predicate);
     }
 
     /**
@@ -20998,27 +20999,27 @@ public final class N {
      * 
      * @param fromIndex
      * @param toIndex
-     * @param identity
+     * @param seed
      * @param accumulator
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity, final BiFunction<R, ? super T, R> accumulator,
-            final Predicate<? super R> predicate) {
+    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
+            final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return identity;
+            return seed;
         }
 
-        return ObjectList.of(a).forEach(identity, accumulator, predicate);
+        return ObjectList.of(a).forEach(seed, accumulator, predicate);
     }
 
-    public static <T, R> R forEach(final T[] a, final R identity, final IndexedBiFunction<? super T, T[], R, R> accumulator,
-            final Predicate<? super R> predicate) {
+    public static <T, R> R forEach(final T[] a, final R seed, final IndexedBiFunction<? super T, T[], R, R> accumulator,
+            final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(a)) {
-            return identity;
+            return seed;
         }
 
-        return forEach(a, 0, a.length, identity, accumulator, predicate);
+        return forEach(a, 0, a.length, seed, accumulator, predicate);
     }
 
     /**
@@ -21026,26 +21027,26 @@ public final class N {
      * 
      * @param fromIndex
      * @param toIndex
-     * @param identity
+     * @param seed
      * @param accumulator
      * @param predicate break if the <code>till</code> returns false.
      * @return
      */
-    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R identity,
-            final IndexedBiFunction<? super T, T[], R, R> accumulator, final Predicate<? super R> predicate) {
+    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<? super T, T[], R, R> accumulator,
+            final BiPredicate<? super T, ? super R> predicate) {
         N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return identity;
+            return seed;
         }
 
-        R result = identity;
+        R result = seed;
 
         if (fromIndex <= toIndex) {
             for (int i = fromIndex; i < toIndex; i++) {
                 result = accumulator.apply(i, a[i], a, result);
 
-                if (predicate.test(result) == false) {
+                if (predicate.test(a[i], result) == false) {
                     break;
                 }
             }
@@ -21053,7 +21054,7 @@ public final class N {
             for (int i = fromIndex - 1; i >= toIndex; i--) {
                 result = accumulator.apply(i, a[i], a, result);
 
-                if (predicate.test(result) == false) {
+                if (predicate.test(a[i], result) == false) {
                     break;
                 }
             }
@@ -21062,7 +21063,7 @@ public final class N {
         return result;
     }
 
-    public static <T, A extends Collection<? extends T>> void forEach(final A c, final Consumer<? super T> action) {
+    public static <T, C extends Collection<? extends T>> void forEach(final C c, final Consumer<? super T> action) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -21084,7 +21085,7 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T, A extends Collection<? extends T>> void forEach(final A c, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
+    public static <T, C extends Collection<? extends T>> void forEach(final C c, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
         if (fromIndex <= toIndex) {
             N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         } else {
@@ -21147,7 +21148,7 @@ public final class N {
         }
     }
 
-    public static <T, A extends Collection<? extends T>> void forEach(final A c, final IndexedConsumer<? super T, A> action) {
+    public static <T, C extends Collection<? extends T>> void forEach(final C c, final IndexedConsumer<? super T, C> action) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -21170,8 +21171,8 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T, A extends Collection<? extends T>> void forEach(final A c, final int fromIndex, final int toIndex,
-            final IndexedConsumer<? super T, A> action) {
+    public static <T, C extends Collection<? extends T>> void forEach(final C c, final int fromIndex, final int toIndex,
+            final IndexedConsumer<? super T, C> action) {
         if (fromIndex <= toIndex) {
             N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         } else {
@@ -21234,13 +21235,13 @@ public final class N {
         }
     }
 
-    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final R identity, BiFunction<R, ? super T, R> accumulator,
-            final Predicate<? super R> predicate) {
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, BiFunction<R, ? super T, R> accumulator,
+            final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(c)) {
-            return identity;
+            return seed;
         }
 
-        return forEach(c, 0, c.size(), identity, accumulator, predicate);
+        return forEach(c, 0, c.size(), seed, accumulator, predicate);
     }
 
     /**
@@ -21248,13 +21249,13 @@ public final class N {
      * 
      * @param fromIndex
      * @param toIndex
-     * @param identity
+     * @param seed
      * @param accumulator
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
-            final BiFunction<R, ? super T, R> accumulator, final Predicate<? super R> predicate) {
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final int fromIndex, final int toIndex, final R seed,
+            final BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
         if (fromIndex <= toIndex) {
             N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         } else {
@@ -21262,10 +21263,10 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return identity;
+            return seed;
         }
 
-        R result = identity;
+        R result = seed;
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -21274,7 +21275,7 @@ public final class N {
                 for (int i = fromIndex; i < toIndex; i++) {
                     result = accumulator.apply(result, list.get(i));
 
-                    if (predicate.test(result) == false) {
+                    if (predicate.test(list.get(i), result) == false) {
                         break;
                     }
                 }
@@ -21282,7 +21283,7 @@ public final class N {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
                     result = accumulator.apply(result, list.get(i));
 
-                    if (predicate.test(result) == false) {
+                    if (predicate.test(list.get(i), result) == false) {
                         break;
                     }
                 }
@@ -21297,10 +21298,13 @@ public final class N {
                     idx++;
                 }
 
+                T next = null;
                 while (iter.hasNext()) {
-                    result = accumulator.apply(result, iter.next());
+                    next = iter.next();
 
-                    if (predicate.test(result) == false) {
+                    result = accumulator.apply(result, next);
+
+                    if (predicate.test(next, result) == false) {
                         break;
                     }
 
@@ -21327,7 +21331,7 @@ public final class N {
                 for (int i = a.length - 1; i >= 0; i--) {
                     result = accumulator.apply(result, a[i]);
 
-                    if (predicate.test(result) == false) {
+                    if (predicate.test(a[i], result) == false) {
                         break;
                     }
                 }
@@ -21337,13 +21341,13 @@ public final class N {
         return result;
     }
 
-    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final R identity, final IndexedBiFunction<? super T, A, R, R> accumulator,
-            final Predicate<? super R> predicate) {
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, final IndexedBiFunction<? super T, C, R, R> accumulator,
+            final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(c)) {
-            return identity;
+            return seed;
         }
 
-        return forEach(c, 0, c.size(), identity, accumulator, predicate);
+        return forEach(c, 0, c.size(), seed, accumulator, predicate);
     }
 
     /**
@@ -21351,13 +21355,13 @@ public final class N {
      * 
      * @param fromIndex
      * @param toIndex
-     * @param identity
+     * @param seed
      * @param accumulator
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public static <T, A extends Collection<? extends T>, R> R forEach(final A c, final int fromIndex, final int toIndex, final R identity,
-            final IndexedBiFunction<? super T, A, R, R> accumulator, final Predicate<? super R> predicate) {
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final int fromIndex, final int toIndex, final R seed,
+            final IndexedBiFunction<? super T, C, R, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
         if (fromIndex <= toIndex) {
             N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         } else {
@@ -21365,10 +21369,10 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return identity;
+            return seed;
         }
 
-        R result = identity;
+        R result = seed;
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -21377,7 +21381,7 @@ public final class N {
                 for (int i = fromIndex; i < toIndex; i++) {
                     result = accumulator.apply(i, list.get(i), c, result);
 
-                    if (predicate.test(result) == false) {
+                    if (predicate.test(list.get(i), result) == false) {
                         break;
                     }
                 }
@@ -21385,7 +21389,7 @@ public final class N {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
                     result = accumulator.apply(i, list.get(i), c, result);
 
-                    if (predicate.test(result) == false) {
+                    if (predicate.test(list.get(i), result) == false) {
                         break;
                     }
                 }
@@ -21400,10 +21404,13 @@ public final class N {
                     idx++;
                 }
 
+                T next = null;
+
                 while (iter.hasNext()) {
+                    next = iter.next();
                     result = accumulator.apply(idx, iter.next(), c, result);
 
-                    if (predicate.test(result) == false) {
+                    if (predicate.test(next, result) == false) {
                         break;
                     }
 
@@ -21430,7 +21437,7 @@ public final class N {
                 for (int i = a.length - 1; i >= 0; i--) {
                     result = accumulator.apply(i + toIndex, a[i], c, result);
 
-                    if (predicate.test(result) == false) {
+                    if (predicate.test(a[i], result) == false) {
                         break;
                     }
                 }
@@ -21955,7 +21962,7 @@ public final class N {
         return outputResult;
     }
 
-    public static <T> List<T> filter(final Collection<T> c, final Predicate<? super T> filter) {
+    public static <T> List<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -21963,7 +21970,7 @@ public final class N {
         return filter(c, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> List<T> filter(final Collection<T> c, final Predicate<? super T> filter, final int max) {
+    public static <T> List<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -21971,11 +21978,12 @@ public final class N {
         return filter(c, 0, c.size(), filter, max);
     }
 
-    public static <T> List<T> filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> List<T> filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
+    public static <T> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+            final int max) {
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
         }
@@ -21988,7 +21996,7 @@ public final class N {
         });
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -21996,7 +22004,7 @@ public final class N {
         return filter(c, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<T> c, final Predicate<? super T> filter, final int max,
+    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max,
             final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -22005,13 +22013,13 @@ public final class N {
         return filter(c, 0, c.size(), filter, max, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
-            final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Predicate<? super T> filter, final IntFunction<R> supplier) {
         return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
-            final int max, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -22098,7 +22106,7 @@ public final class N {
         }, supplier);
     }
 
-    public static <T, U> List<T> filter(final Collection<T> c, final U check, final BiPredicate<? super T, ? super U> filter) {
+    public static <T, U> List<T> filter(final Collection<? extends T> c, final U check, final BiPredicate<? super T, ? super U> filter) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -22111,7 +22119,7 @@ public final class N {
         });
     }
 
-    public static <T, U> List<T> filter(final Collection<T> c, final int fromIndex, final int toIndex, final U check,
+    public static <T, U> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U check,
             final BiPredicate<? super T, ? super U> filter) {
         return filter(c, fromIndex, toIndex, new Predicate<T>() {
             @Override
@@ -22121,7 +22129,7 @@ public final class N {
         });
     }
 
-    public static <T, U, R extends Collection<T>> R filter(final Collection<T> c, final U check, final BiPredicate<? super T, ? super U> filter,
+    public static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final U check, final BiPredicate<? super T, ? super U> filter,
             final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -22135,7 +22143,7 @@ public final class N {
         }, supplier);
     }
 
-    public static <T, U, R extends Collection<T>> R filter(final Collection<T> c, final int fromIndex, final int toIndex, final U check,
+    public static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U check,
             final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
         return filter(c, fromIndex, toIndex, new Predicate<T>() {
             @Override
@@ -22568,7 +22576,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <T> int count(final Collection<T> c, final Predicate<? super T> filter) {
+    public static <T> int count(final Collection<? extends T> c, final Predicate<? super T> filter) {
         if (N.isNullOrEmpty(c)) {
             return 0;
         }
@@ -22587,7 +22595,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <T> int count(final Collection<T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T> int count(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -23028,27 +23036,27 @@ public final class N {
         return res;
     }
 
-    public static <T extends Comparable<T>> List<T> top(final Collection<T> c, final int n) {
+    public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int n) {
         return top(c, n, null);
     }
 
-    public static <T> List<T> top(final Collection<T> c, final int n, final Comparator<? super T> cmp) {
+    public static <T> List<T> top(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
         return top(c, 0, c.size(), n, cmp);
     }
 
-    public static <T extends Comparable<T>> List<T> top(final Collection<T> c, final int fromIndex, final int toIndex, final int n) {
+    public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
         return top(c, fromIndex, toIndex, n, null);
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> List<T> top(final Collection<T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
+    public static <T> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
         if (n < 1) {
             throw new IllegalArgumentException("'n' can not be less than 1");
         }
 
         if (n >= toIndex - fromIndex) {
             final List<T> res = new ArrayList<T>(toIndex - fromIndex);
-            final Iterator<T> iter = c.iterator();
+            final Iterator<? extends T> iter = c.iterator();
             T e = null;
 
             for (int i = 0; i < toIndex && iter.hasNext(); i++) {
@@ -23098,7 +23106,7 @@ public final class N {
                 }
             }
         } else {
-            final Iterator<T> iter = c.iterator();
+            final Iterator<? extends T> iter = c.iterator();
             Pair0<T, Integer> pair = null;
             T e = null;
 
@@ -29670,7 +29678,7 @@ public final class N {
     //        });
     //    }
     //
-    //    public static <T> Double sum(final Collection<T> c, final ToDoubleFunction<? super T> mapper) {
+    //    public static <T> Double sum(final Collection<? extends T> c, final ToDoubleFunction<? super T> mapper) {
     //        if (N.isNullOrEmpty(c)) {
     //            return 0d;
     //        }
@@ -29687,7 +29695,7 @@ public final class N {
     //     * @return a double number. <code>0d</code> is returned if list is empty or
     //     *         null.
     //     */
-    //    public static <T> Double sum(final Collection<T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+    //    public static <T> Double sum(final Collection<? extends T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
     //        checkIndex(from, to, c == null ? 0 : c.size());
     //
     //        if (N.isNullOrEmpty(c)) {
@@ -30024,7 +30032,7 @@ public final class N {
     //        });
     //    }
     //
-    //    public static <T> Double average(final Collection<T> c, final ToDoubleFunction<? super T> mapper) {
+    //    public static <T> Double average(final Collection<? extends T> c, final ToDoubleFunction<? super T> mapper) {
     //        if (N.isNullOrEmpty(c)) {
     //            return 0d;
     //        }
@@ -30041,7 +30049,7 @@ public final class N {
     //     * @return a double number. <code>0d</code> is returned if list is empty or
     //     *         null.
     //     */
-    //    public static <T> Double average(final Collection<T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
+    //    public static <T> Double average(final Collection<? extends T> c, final int from, final int to, final ToDoubleFunction<? super T> mapper) {
     //        checkIndex(from, to, c == null ? 0 : c.size());
     //
     //        if (N.isNullOrEmpty(c)) {
@@ -30634,7 +30642,7 @@ public final class N {
         return (T) min(c, from, to, OBJECT_COMPARATOR);
     }
 
-    public static <T> T min(final Collection<T> c, Comparator<? super T> cmp) {
+    public static <T> T min(final Collection<? extends T> c, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
@@ -30651,7 +30659,7 @@ public final class N {
      * @param cmp
      * @return the minimum value in the Collection
      */
-    public static <T> T min(final Collection<T> c, final int from, final int to, Comparator<? super T> cmp) {
+    public static <T> T min(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
         checkIndex(from, to, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
@@ -31291,7 +31299,7 @@ public final class N {
         return (T) max(c, from, to, OBJECT_COMPARATOR);
     }
 
-    public static <T> T max(final Collection<T> c, Comparator<? super T> cmp) {
+    public static <T> T max(final Collection<? extends T> c, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
@@ -31308,7 +31316,7 @@ public final class N {
      * @param cmp
      * @return the maximum value in the Collection
      */
-    public static <T> T max(final Collection<T> c, final int from, final int to, Comparator<? super T> cmp) {
+    public static <T> T max(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
         checkIndex(from, to, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) || to - from < 1 || from >= c.size()) {
@@ -31838,7 +31846,7 @@ public final class N {
         return (T) median(c, from, to, OBJECT_COMPARATOR);
     }
 
-    public static <T> T median(final Collection<T> c, Comparator<? super T> cmp) {
+    public static <T> T median(final Collection<? extends T> c, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
@@ -31853,7 +31861,7 @@ public final class N {
      * @param cmp
      * @return the median value in the Collection
      */
-    public static <T> T median(final Collection<T> c, final int from, final int to, Comparator<? super T> cmp) {
+    public static <T> T median(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
@@ -32121,7 +32129,7 @@ public final class N {
      * @param k
      * @return the kth largest element.
      */
-    public static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int k) {
+    public static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int k) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of collection can't be null or empty");
         }
@@ -32137,7 +32145,7 @@ public final class N {
      * @param k
      * @return the kth largest element.
      */
-    public static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int from, final int to, final int k) {
+    public static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
             throw new IllegalArgumentException("The length of collection can't be null or empty");
         }
@@ -32152,7 +32160,7 @@ public final class N {
      * @param cmp
      * @return the kth largest element.
      */
-    public static <T> T kthLargest(final Collection<T> c, final int k, final Comparator<? super T> cmp) {
+    public static <T> T kthLargest(final Collection<? extends T> c, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c)) {
             throw new IllegalArgumentException("The length of collection can't be null or empty");
         }
@@ -32169,7 +32177,7 @@ public final class N {
      * @param cmp
      * @return the kth largest element.
      */
-    public static <T> T kthLargest(final Collection<T> c, final int from, final int to, final int k, final Comparator<? super T> cmp) {
+    public static <T> T kthLargest(final Collection<? extends T> c, final int from, final int to, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
             throw new IllegalArgumentException("The length of collection can't be null or empty");
         }

@@ -220,9 +220,9 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream except(final Collection<?> c) {
-        return newStream(this.sequential().filter(new IntPredicate() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new IntPredicate() {
             @Override
             public boolean test(int value) {
                 return multiset.getAndRemove(value) < 1;
@@ -232,9 +232,9 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream intersect(final Collection<?> c) {
-        return newStream(this.sequential().filter(new IntPredicate() {
-            final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.of(c);
 
+        return newStream(this.sequential().filter(new IntPredicate() {
             @Override
             public boolean test(int value) {
                 return multiset.getAndRemove(value) > 0;

@@ -58,11 +58,11 @@ final class ArrayShortStream extends AbstractShortStream {
     private final int toIndex;
 
     ArrayShortStream(short[] values) {
-        this(values, null);
+        this(values, 0, values.length);
     }
 
     ArrayShortStream(short[] values, Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, 0, values.length, closeHandlers);
     }
 
     ArrayShortStream(short[] values, Collection<Runnable> closeHandlers, boolean sorted) {
@@ -100,10 +100,8 @@ final class ArrayShortStream extends AbstractShortStream {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
                             break;
-                        } else {
-                            cursor++;
                         }
-                    } while (cursor < toIndex);
+                    } while (++cursor < toIndex);
                 }
 
                 return hasNext;
@@ -170,10 +168,8 @@ final class ArrayShortStream extends AbstractShortStream {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
-                            } else {
-                                cursor++;
                             }
-                        } while (cursor < toIndex);
+                        } while (++cursor < toIndex);
 
                         dropped = true;
                     } else {
@@ -444,8 +440,8 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -465,15 +461,15 @@ final class ArrayShortStream extends AbstractShortStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -486,8 +482,8 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortList> split0(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ShortList> split0(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -507,15 +503,15 @@ final class ArrayShortStream extends AbstractShortStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -897,7 +893,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort reduce(ShortBinaryOperator op) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalShort.empty();
         }
 
@@ -933,7 +929,7 @@ final class ArrayShortStream extends AbstractShortStream {
     @Override
     public ShortStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ArrayShortStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -941,7 +937,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[fromIndex]);
@@ -952,7 +948,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[toIndex - 1]);
@@ -963,7 +959,9 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[toIndex - k]);
@@ -979,7 +977,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
 
@@ -1079,17 +1077,6 @@ final class ArrayShortStream extends AbstractShortStream {
     @Override
     public OptionalShort findLast(final ShortPredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalShort.of(elements[i]);
-            }
-        }
-
-        return OptionalShort.empty();
-    }
-
-    @Override
-    public OptionalShort findAny(final ShortPredicate predicate) {
-        for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalShort.of(elements[i]);
             }

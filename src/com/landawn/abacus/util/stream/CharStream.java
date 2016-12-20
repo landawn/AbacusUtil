@@ -95,7 +95,7 @@ import com.landawn.abacus.util.function.ToCharFunction;
  */
 public abstract class CharStream extends StreamBase<Character, char[], CharPredicate, CharConsumer, CharList, OptionalChar, IndexedChar, CharStream> {
 
-    private static final CharStream EMPTY = new ArrayCharStream(N.EMPTY_CHAR_ARRAY);
+    private static final CharStream EMPTY = new ArrayCharStream(N.EMPTY_CHAR_ARRAY, null, true);
 
     CharStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
@@ -438,7 +438,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
+     * @throws IllegalStateException if this stream is empty.
      */
     public abstract CharStream tail();
 

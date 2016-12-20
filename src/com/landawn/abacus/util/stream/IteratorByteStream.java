@@ -165,11 +165,9 @@ final class IteratorByteStream extends AbstractByteStream {
                         }
 
                         dropped = true;
-                    } else {
-                        if (elements.hasNext()) {
-                            next = elements.next();
-                            hasNext = true;
-                        }
+                    } else if (elements.hasNext()) {
+                        next = elements.next();
+                        hasNext = true;
                     }
                 }
 
@@ -395,8 +393,8 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <U> Stream<ByteStream> split(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
             private byte next;
             private boolean hasNext = false;
@@ -422,15 +420,15 @@ final class IteratorByteStream extends AbstractByteStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
+                        preCondition = predicate.apply(next, identity);
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
+                    } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -444,8 +442,8 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <U> Stream<ByteList> split0(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ByteList> split0(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
             private byte next;
             private boolean hasNext = false;
@@ -471,15 +469,15 @@ final class IteratorByteStream extends AbstractByteStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
+                        preCondition = predicate.apply(next, identity);
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
+                    } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -527,9 +525,18 @@ final class IteratorByteStream extends AbstractByteStream {
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
-                    final byte[] dest = new byte[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = ByteList.of(dest, cnt);
+
+                    if (cnt <= 8) {
+                        result = new ByteList(windowSize);
+
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        final byte[] dest = new byte[windowSize];
+                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                        result = ByteList.of(dest, cnt);
+                    }
                 } else {
                     result = new ByteList(windowSize);
                 }
@@ -581,9 +588,18 @@ final class IteratorByteStream extends AbstractByteStream {
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
-                    final byte[] dest = new byte[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = ByteList.of(dest, cnt);
+
+                    if (cnt <= 8) {
+                        result = new ByteList(windowSize);
+
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        final byte[] dest = new byte[windowSize];
+                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                        result = ByteList.of(dest, cnt);
+                    }
                 } else {
                     result = new ByteList(windowSize);
                 }
@@ -1009,7 +1025,7 @@ final class IteratorByteStream extends AbstractByteStream {
     public ByteStream tail() {
         if (tail == null) {
             if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
+                throw new IllegalStateException();
             }
 
             head = elements.next();
@@ -1061,6 +1077,8 @@ final class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte kthLargest(int k) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
         }
@@ -1180,19 +1198,6 @@ final class IteratorByteStream extends AbstractByteStream {
         }
 
         return hasResult ? OptionalByte.of(result) : OptionalByte.empty();
-    }
-
-    @Override
-    public OptionalByte findAny(BytePredicate predicate) {
-        while (elements.hasNext()) {
-            byte e = elements.next();
-
-            if (predicate.test(e)) {
-                return OptionalByte.of(e);
-            }
-        }
-
-        return OptionalByte.empty();
     }
 
     @Override

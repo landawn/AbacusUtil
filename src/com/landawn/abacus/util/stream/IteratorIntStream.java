@@ -171,11 +171,9 @@ final class IteratorIntStream extends AbstractIntStream {
                         }
 
                         dropped = true;
-                    } else {
-                        if (elements.hasNext()) {
-                            next = elements.next();
-                            hasNext = true;
-                        }
+                    } else if (elements.hasNext()) {
+                        next = elements.next();
+                        hasNext = true;
                     }
                 }
 
@@ -651,8 +649,8 @@ final class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntStream> split(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<IntStream> split(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<IntStream>(new ImmutableIterator<IntStream>() {
             private int next;
             private boolean hasNext = false;
@@ -678,15 +676,15 @@ final class IteratorIntStream extends AbstractIntStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
+                        preCondition = predicate.apply(next, identity);
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
+                    } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -700,8 +698,8 @@ final class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntList> split0(final U boundary, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<IntList> split0(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<IntList>(new ImmutableIterator<IntList>() {
             private int next;
             private boolean hasNext = false;
@@ -727,15 +725,15 @@ final class IteratorIntStream extends AbstractIntStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, boundary);
+                        preCondition = predicate.apply(next, identity);
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, boundary) == preCondition) {
+                    } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -783,9 +781,18 @@ final class IteratorIntStream extends AbstractIntStream {
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
-                    final int[] dest = new int[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = IntList.of(dest, cnt);
+
+                    if (cnt <= 8) {
+                        result = new IntList(windowSize);
+
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        final int[] dest = new int[windowSize];
+                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                        result = IntList.of(dest, cnt);
+                    }
                 } else {
                     result = new IntList(windowSize);
                 }
@@ -837,9 +844,18 @@ final class IteratorIntStream extends AbstractIntStream {
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
-                    final int[] dest = new int[windowSize];
-                    N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                    result = IntList.of(dest, cnt);
+
+                    if (cnt <= 8) {
+                        result = new IntList(windowSize);
+
+                        for (int i = windowSize - cnt; i < windowSize; i++) {
+                            result.add(prev.get(i));
+                        }
+                    } else {
+                        final int[] dest = new int[windowSize];
+                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
+                        result = IntList.of(dest, cnt);
+                    }
                 } else {
                     result = new IntList(windowSize);
                 }
@@ -1282,7 +1298,7 @@ final class IteratorIntStream extends AbstractIntStream {
     public IntStream tail() {
         if (tail == null) {
             if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
+                throw new IllegalStateException();
             }
 
             head = elements.next();
@@ -1334,6 +1350,8 @@ final class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public OptionalInt kthLargest(int k) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
         if (elements.hasNext() == false) {
             return OptionalInt.empty();
         }
@@ -1453,19 +1471,6 @@ final class IteratorIntStream extends AbstractIntStream {
         }
 
         return hasResult ? OptionalInt.of(result) : OptionalInt.empty();
-    }
-
-    @Override
-    public OptionalInt findAny(IntPredicate predicate) {
-        while (elements.hasNext()) {
-            int e = elements.next();
-
-            if (predicate.test(e)) {
-                return OptionalInt.of(e);
-            }
-        }
-
-        return OptionalInt.empty();
     }
 
     @Override

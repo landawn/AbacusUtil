@@ -307,16 +307,16 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <U> Stream<FloatStream> split(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<FloatStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<FloatStream>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<FloatList> split0(final U boundary, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<FloatList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<FloatList> split0(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<FloatList>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -974,7 +974,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ParallelArrayFloatStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
@@ -982,7 +982,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalFloat.empty();
         } else if (sorted) {
             return OptionalFloat.of(elements[fromIndex]);
@@ -1028,7 +1028,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalFloat.empty();
         } else if (sorted) {
             return OptionalFloat.of(elements[toIndex - 1]);
@@ -1073,7 +1073,9 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalFloat.empty();
         } else if (sorted) {
             return OptionalFloat.of(elements[toIndex - k]);
@@ -1084,7 +1086,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Double sum() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return 0d;
         } else if (maxThreadNum <= 1) {
             return sequential().sum();
@@ -1158,7 +1160,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         } else if (maxThreadNum <= 1) {
             return sequential().average();
@@ -1270,7 +1272,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatSummaryStatistics summarize() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return new FloatSummaryStatistics();
         } else if (maxThreadNum <= 1) {
             return sequential().summarize();

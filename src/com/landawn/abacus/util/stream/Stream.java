@@ -239,8 +239,9 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  */
 public abstract class Stream<T>
         extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, ObjectList<T>, OptionalNullable<T>, Indexed<T>, Stream<T>> {
+
     @SuppressWarnings("rawtypes")
-    private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY);
+    private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, null, true, OBJECT_COMPARATOR);
 
     Stream(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
         super(closeHandlers, sorted, cmp);
@@ -248,37 +249,37 @@ public abstract class Stream<T>
 
     /**
      * 
-     * @param check initial value to check if the value match the condition.
+     * @param seed initial value to check if the value match the condition.
      * @param predicate
      * @return
      */
-    public abstract <U> Stream<T> filter(final U check, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> Stream<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * 
-     * @param check initial value to check if the value match the condition.
+     * @param seed initial value to check if the value match the condition.
      * @param predicate
      * @return
      */
-    public abstract <U> Stream<T> takeWhile(final U check, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> Stream<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * 
-     * @param check initial value to check if the value match the condition.
+     * @param seed initial value to check if the value match the condition.
      * @param predicate
      * @return
      */
-    public abstract <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * Take away and consume elements while <code>predicate</code> returns true.
      * 
-     * @param check
+     * @param seed
      * @param predicate
      * @param action
      * @return {@link #dropWhile(Object, BiPredicate)}
      */
-    public abstract <U> Stream<T> dropWhile(final U check, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action);
+    public abstract <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action);
 
     /**
      * Returns a stream consisting of the results of applying the given
@@ -575,12 +576,13 @@ public abstract class Stream<T>
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param boundary
+     * @param identity
      * @param predicate
+     * @param identityUpdate
      * @return
      */
-    public abstract <U> Stream<List<T>> split2(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate);
+    public abstract <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate);
 
     /**
      * Split the stream by the specified predicate.
@@ -597,12 +599,13 @@ public abstract class Stream<T>
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param identifier
+     * @param identity
      * @param predicate
+     * @param identityUpdate
      * @return
      */
-    public abstract <U> Stream<Set<T>> split3(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate);
+    public abstract <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate);
 
     public abstract Stream<List<T>> sliding2(int windowSize);
 
@@ -661,12 +664,22 @@ public abstract class Stream<T>
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param identity
+     * @param seed
      * @param accumulator
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public abstract <U> U forEach(final U identity, BiFunction<U, ? super T, U> accumulator, final Predicate<? super U> predicate);
+    public abstract <U> U forEach(final U seed, BiFunction<U, ? super T, U> accumulator, final BiPredicate<? super T, ? super U> predicate);
+
+    public abstract <U> OptionalNullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
+    public abstract <U> OptionalNullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
+    public abstract <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
+    public abstract <U> boolean allMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
+    public abstract <U> boolean noneMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * Returns an array containing the elements of this stream, using the
@@ -1120,7 +1133,7 @@ public abstract class Stream<T>
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
+     * @throws IllegalStateException if this stream is empty.
      */
     public abstract Stream<T> tail();
 

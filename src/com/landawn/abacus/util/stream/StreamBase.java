@@ -239,6 +239,27 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     static volatile boolean isListElementDataFieldSettable = true;
     static final Map<Class<?>, Integer> clsNum = new BiMap<>();
 
+    static {
+        int idx = 0;
+        clsNum.put(boolean[].class, idx++); // 0
+        clsNum.put(char[].class, idx++);
+        clsNum.put(byte[].class, idx++);
+        clsNum.put(short[].class, idx++);
+        clsNum.put(int[].class, idx++);
+        clsNum.put(long[].class, idx++);
+        clsNum.put(float[].class, idx++);
+        clsNum.put(double[].class, idx++); // 7
+        clsNum.put(BooleanList.class, idx++); // 8
+        clsNum.put(CharList.class, idx++);
+        clsNum.put(ByteList.class, idx++);
+        clsNum.put(ShortList.class, idx++);
+        clsNum.put(IntList.class, idx++);
+        clsNum.put(LongList.class, idx++);
+        clsNum.put(FloatList.class, idx++);
+        clsNum.put(DoubleList.class, idx++);
+        clsNum.put(ObjectList.class, idx++); // 16
+    }
+
     @SuppressWarnings("rawtypes")
     static final BinaryOperator reducingCombiner = new BinaryOperator() {
         @Override
@@ -335,8 +356,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                 ((LongMultiset) t).addAll((LongMultiset) u);
             } else if (t instanceof Multimap) {
                 ((Multimap) t).putAll((Multimap) u);
-            } else if (t instanceof Map) {
-                ((Map) t).putAll((Map) u);
             } else if (t instanceof Collection) {
                 ((Collection) t).addAll((Collection) u);
             } else if (t instanceof Map) {
@@ -430,27 +449,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static {
-        int idx = 0;
-        clsNum.put(boolean[].class, idx++); // 0
-        clsNum.put(char[].class, idx++);
-        clsNum.put(byte[].class, idx++);
-        clsNum.put(short[].class, idx++);
-        clsNum.put(int[].class, idx++);
-        clsNum.put(long[].class, idx++);
-        clsNum.put(float[].class, idx++);
-        clsNum.put(double[].class, idx++); // 7
-        clsNum.put(BooleanList.class, idx++); // 8
-        clsNum.put(CharList.class, idx++);
-        clsNum.put(ByteList.class, idx++);
-        clsNum.put(ShortList.class, idx++);
-        clsNum.put(IntList.class, idx++);
-        clsNum.put(LongList.class, idx++);
-        clsNum.put(FloatList.class, idx++);
-        clsNum.put(DoubleList.class, idx++);
-        clsNum.put(ObjectList.class, idx++); // 16
-    }
-
     final Set<Runnable> closeHandlers;
     final boolean sorted;
     final Comparator<? super T> cmp;
@@ -464,6 +462,11 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     @Override
+    public OT findAny(P predicate) {
+        return findFirst(predicate);
+    }
+
+    @Override
     public Stream<S> sliding(int windowSize) {
         return sliding(windowSize, 1);
     }
@@ -474,6 +477,11 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     @Override
+    public void println() {
+        N.println(this.sequential().join(", ", "[", "]"));
+    }
+
+    @Override
     public boolean isParallel() {
         return false;
     }
@@ -481,11 +489,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     @Override
     public S sequential() {
         return (S) this;
-    }
-
-    @Override
-    public Try<S> tried() {
-        return Try.of((S) this);
     }
 
     @Override
@@ -533,6 +536,11 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
         // ignore, do nothing if it's sequential stream.
         return (S) this;
+    }
+
+    @Override
+    public Try<S> tried() {
+        return Try.of((S) this);
     }
 
     @Override

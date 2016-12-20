@@ -57,11 +57,11 @@ final class ArrayByteStream extends AbstractByteStream {
     private final int toIndex;
 
     ArrayByteStream(byte[] values) {
-        this(values, null);
+        this(values, 0, values.length);
     }
 
     ArrayByteStream(byte[] values, Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, 0, values.length, closeHandlers);
     }
 
     ArrayByteStream(byte[] values, Collection<Runnable> closeHandlers, boolean sorted) {
@@ -99,10 +99,8 @@ final class ArrayByteStream extends AbstractByteStream {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
                             break;
-                        } else {
-                            cursor++;
                         }
-                    } while (cursor < toIndex);
+                    } while (++cursor < toIndex);
                 }
 
                 return hasNext;
@@ -169,10 +167,8 @@ final class ArrayByteStream extends AbstractByteStream {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
-                            } else {
-                                cursor++;
                             }
-                        } while (cursor < toIndex);
+                        } while (++cursor < toIndex);
 
                         dropped = true;
                     } else {
@@ -443,8 +439,8 @@ final class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <U> Stream<ByteStream> split(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -464,15 +460,15 @@ final class ArrayByteStream extends AbstractByteStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -485,8 +481,8 @@ final class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <U> Stream<ByteList> split0(final U boundary, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ByteList> split0(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -506,15 +502,15 @@ final class ArrayByteStream extends AbstractByteStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -876,7 +872,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte reduce(ByteBinaryOperator op) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalByte.empty();
         }
 
@@ -912,7 +908,7 @@ final class ArrayByteStream extends AbstractByteStream {
     @Override
     public ByteStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ArrayByteStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -920,7 +916,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalByte.empty();
         } else if (sorted) {
             return OptionalByte.of(elements[fromIndex]);
@@ -931,7 +927,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalByte.empty();
         } else if (sorted) {
             return OptionalByte.of(elements[toIndex - 1]);
@@ -942,7 +938,9 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalByte.empty();
         } else if (sorted) {
             return OptionalByte.of(elements[toIndex - k]);
@@ -958,7 +956,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
 
@@ -1058,17 +1056,6 @@ final class ArrayByteStream extends AbstractByteStream {
     @Override
     public OptionalByte findLast(final BytePredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalByte.of(elements[i]);
-            }
-        }
-
-        return OptionalByte.empty();
-    }
-
-    @Override
-    public OptionalByte findAny(final BytePredicate predicate) {
-        for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalByte.of(elements[i]);
             }

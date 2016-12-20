@@ -32,7 +32,8 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.TriFunction;
+import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -647,18 +648,18 @@ public final class Multimap<K, E, V extends Collection<E>> {
     /**
      * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
      * 
-     * @param identity
+     * @param seed
      * @param accumulator
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public <R> R forEach(final R identity, BiFunction<R, ? super Map.Entry<K, V>, R> accumulator, final Predicate<? super R> predicate) {
-        R result = identity;
+    public <R> R forEach(final R seed, TriFunction<R, ? super K, ? super V, R> accumulator, final TriPredicate<? super K, ? super V, ? super R> predicate) {
+        R result = seed;
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
-            result = accumulator.apply(result, entry);
+            result = accumulator.apply(result, entry.getKey(), entry.getValue());
 
-            if (predicate.test(result) == false) {
+            if (predicate.test(entry.getKey(), entry.getValue(), result) == false) {
                 break;
             }
         }

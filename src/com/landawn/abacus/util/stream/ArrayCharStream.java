@@ -57,11 +57,11 @@ final class ArrayCharStream extends AbstractCharStream {
     private final int toIndex;
 
     ArrayCharStream(char[] values) {
-        this(values, null);
+        this(values, 0, values.length);
     }
 
     ArrayCharStream(char[] values, Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, 0, values.length, closeHandlers);
     }
 
     ArrayCharStream(char[] values, Collection<Runnable> closeHandlers, boolean sorted) {
@@ -99,10 +99,8 @@ final class ArrayCharStream extends AbstractCharStream {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
                             break;
-                        } else {
-                            cursor++;
                         }
-                    } while (cursor < toIndex);
+                    } while (++cursor < toIndex);
                 }
 
                 return hasNext;
@@ -169,10 +167,8 @@ final class ArrayCharStream extends AbstractCharStream {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
-                            } else {
-                                cursor++;
                             }
-                        } while (cursor < toIndex);
+                        } while (++cursor < toIndex);
 
                         dropped = true;
                     } else {
@@ -443,8 +439,8 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <U> Stream<CharStream> split(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<CharStream> split(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -464,15 +460,15 @@ final class ArrayCharStream extends AbstractCharStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -485,8 +481,8 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <U> Stream<CharList> split0(final U boundary, final BiFunction<? super Character, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<CharList> split0(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<CharList>(new ImmutableIterator<CharList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -506,15 +502,15 @@ final class ArrayCharStream extends AbstractCharStream {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -876,7 +872,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar reduce(CharBinaryOperator op) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalChar.empty();
         }
 
@@ -912,7 +908,7 @@ final class ArrayCharStream extends AbstractCharStream {
     @Override
     public CharStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ArrayCharStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -920,7 +916,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalChar.empty();
         } else if (sorted) {
             return OptionalChar.of(elements[fromIndex]);
@@ -931,7 +927,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalChar.empty();
         } else if (sorted) {
             return OptionalChar.of(elements[toIndex - 1]);
@@ -942,7 +938,9 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalChar.empty();
         } else if (sorted) {
             return OptionalChar.of(elements[toIndex - k]);
@@ -958,7 +956,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
 
@@ -1059,17 +1057,6 @@ final class ArrayCharStream extends AbstractCharStream {
     public OptionalChar findLast(final CharPredicate predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
-                return OptionalChar.of(elements[i]);
-            }
-        }
-
-        return OptionalChar.empty();
-    }
-
-    @Override
-    public OptionalChar findAny(CharPredicate filter) {
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (filter.test(elements[i])) {
                 return OptionalChar.of(elements[i]);
             }
         }

@@ -39,6 +39,7 @@ import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -67,7 +68,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     private final int toIndex;
 
     ArrayStream(T[] values) {
-        this(values, null);
+        this(values, 0, values.length);
     }
 
     ArrayStream(T[] values, Collection<Runnable> closeHandlers) {
@@ -109,10 +110,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
                         if (predicate.test(elements[cursor])) {
                             hasNext = true;
                             break;
-                        } else {
-                            cursor++;
                         }
-                    } while (cursor < toIndex);
+                    } while (++cursor < toIndex);
                 }
 
                 return hasNext;
@@ -166,7 +165,6 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
-
         return new IteratorStream<T>(new ImmutableIterator<T>() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -180,10 +178,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
                             if (predicate.test(elements[cursor]) == false) {
                                 hasNext = true;
                                 break;
-                            } else {
-                                cursor++;
                             }
-                        } while (cursor < toIndex);
+                        } while (++cursor < toIndex);
 
                         dropped = true;
                     } else {
@@ -833,7 +829,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final Set<T> result = new HashSet<>(toIndex - cursor > size ? size : toIndex - cursor);
+                final Set<T> result = new HashSet<>(N.min(9, toIndex - cursor > size ? size : toIndex - cursor));
 
                 for (int i = cursor, to = (cursor = toIndex - cursor > size ? cursor + size : toIndex); i < to; i++) {
                     result.add(elements[i]);
@@ -846,7 +842,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Stream<T>> split(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -866,15 +862,15 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -888,8 +884,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<ObjectList<T>> split0(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<ObjectList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -909,15 +905,15 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -931,7 +927,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> split2(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -951,15 +947,15 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -973,7 +969,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Set<T>> split3(final U boundary, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> boundaryUpdate) {
+    public <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -993,15 +989,15 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], boundary);
+                        preCondition = predicate.apply(elements[cursor], identity);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], boundary) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (boundaryUpdate != null) {
-                            boundaryUpdate.accept(boundary);
+                        if (identityUpdate != null) {
+                            identityUpdate.accept(identity);
                         }
 
                         break;
@@ -1241,13 +1237,13 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> predicate) {
-        U result = identity;
+    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
+        U result = seed;
 
         for (int i = fromIndex; i < toIndex; i++) {
             result = accumulator.apply(result, elements[i]);
 
-            if (predicate.test(result) == false) {
+            if (predicate.test(elements[i], result) == false) {
                 break;
             }
         }
@@ -1282,6 +1278,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public List<T> toList() {
+        // return N.asList(N.copyOfRange(elements, fromIndex, toIndex));
+
         final List<T> result = new ArrayList<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -1380,6 +1378,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
         for (int i = fromIndex; i < toIndex; i++) {
             key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -1456,7 +1455,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> reduce(BinaryOperator<T> accumulator) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             OptionalNullable.empty();
         }
 
@@ -1515,7 +1514,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ArrayStream<T>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp);
@@ -1523,7 +1522,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> min(Comparator<? super T> comparator) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalNullable.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
             return OptionalNullable.of(elements[fromIndex]);
@@ -1534,7 +1533,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> max(Comparator<? super T> comparator) {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalNullable.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
             return OptionalNullable.of(elements[toIndex - 1]);
@@ -1545,7 +1544,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalNullable.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
             return OptionalNullable.of(elements[toIndex - k]);
@@ -1637,17 +1636,6 @@ final class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public OptionalNullable<T> findLast(final Predicate<? super T> predicate) {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
-            if (predicate.test(elements[i])) {
-                return OptionalNullable.of(elements[i]);
-            }
-        }
-
-        return (OptionalNullable<T>) OptionalNullable.empty();
-    }
-
-    @Override
-    public OptionalNullable<T> findAny(final Predicate<? super T> predicate) {
-        for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalNullable.of(elements[i]);
             }

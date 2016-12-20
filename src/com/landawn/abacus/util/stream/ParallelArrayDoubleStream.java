@@ -306,16 +306,16 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleStream> split(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<DoubleStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<DoubleStream> split(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<DoubleStream>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<DoubleList> split0(final U boundary, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<DoubleList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<DoubleList> split0(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<DoubleList>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -973,7 +973,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ParallelArrayDoubleStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
@@ -981,7 +981,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         } else if (sorted) {
             return OptionalDouble.of(elements[fromIndex]);
@@ -1027,7 +1027,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         } else if (sorted) {
             return OptionalDouble.of(elements[toIndex - 1]);
@@ -1072,7 +1072,9 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalDouble.empty();
         } else if (sorted) {
             return OptionalDouble.of(elements[toIndex - k]);
@@ -1083,7 +1085,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Double sum() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return 0d;
         } else if (maxThreadNum <= 1) {
             return sequential().sum();
@@ -1157,7 +1159,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         } else if (maxThreadNum <= 1) {
             return sequential().average();
@@ -1269,7 +1271,7 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleSummaryStatistics summarize() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return new DoubleSummaryStatistics();
         } else if (maxThreadNum <= 1) {
             return sequential().summarize();

@@ -96,7 +96,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  */
 public abstract class ShortStream extends StreamBase<Short, short[], ShortPredicate, ShortConsumer, ShortList, OptionalShort, IndexedShort, ShortStream> {
 
-    private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY);
+    private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY, null, true);
 
     ShortStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
@@ -443,7 +443,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
+     * @throws IllegalStateException if this stream is empty.
      */
     public abstract ShortStream tail();
 

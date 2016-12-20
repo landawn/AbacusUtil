@@ -4712,19 +4712,19 @@ public final class Array {
         return queue.peek();
     }
 
-    static <T extends Comparable<T>> T kthLargest(final Collection<T> c, int k) {
+    static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, int k) {
         return kthLargest(c, 0, c.size(), k);
     }
 
-    static <T extends Comparable<T>> T kthLargest(final Collection<T> c, final int fromIndex, final int toIndex, int k) {
+    static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int fromIndex, final int toIndex, int k) {
         return (T) kthLargest(c, fromIndex, toIndex, k, N.OBJECT_COMPARATOR);
     }
 
-    static <T> T kthLargest(final Collection<T> c, int k, final Comparator<? super T> cmp) {
+    static <T> T kthLargest(final Collection<? extends T> c, int k, final Comparator<? super T> cmp) {
         return kthLargest(c, 0, c.size(), k, cmp);
     }
 
-    static <T> T kthLargest(final Collection<T> c, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
+    static <T> T kthLargest(final Collection<? extends T> c, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
         N.checkIndex(fromIndex, toIndex, c.size());
 
         if (N.isNullOrEmpty(c) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
@@ -4740,7 +4740,7 @@ public final class Array {
             return N.min(c, fromIndex, toIndex, comparator);
         }
 
-        final Iterator<T> iter = c.iterator();
+        final Iterator<? extends T> iter = c.iterator();
         Queue<T> queue = null;
 
         if (k <= len / 2) {

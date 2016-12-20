@@ -98,7 +98,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  */
 public abstract class FloatStream extends StreamBase<Float, float[], FloatPredicate, FloatConsumer, FloatList, OptionalFloat, IndexedFloat, FloatStream> {
 
-    private static final FloatStream EMPTY = new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY);
+    private static final FloatStream EMPTY = new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY, null, true);
 
     FloatStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted, null);
@@ -480,7 +480,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
+     * @throws IllegalStateException if this stream is empty.
      */
     public abstract FloatStream tail();
 

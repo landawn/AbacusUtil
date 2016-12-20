@@ -239,16 +239,16 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<ShortStream>(sequential().split(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<ShortStream>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
     @Override
-    public <U> Stream<ShortList> split0(final U boundary, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> boundaryUpdate) {
-        return new ParallelIteratorStream<ShortList>(sequential().split0(boundary, predicate, boundaryUpdate).iterator(), closeHandlers, false, null,
+    public <U> Stream<ShortList> split0(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<ShortList>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -907,7 +907,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     @Override
     public ShortStream tail() {
         if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException();
         }
 
         return new ParallelArrayShortStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
@@ -915,7 +915,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort min() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[fromIndex]);
@@ -961,7 +961,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort max() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[toIndex - 1]);
@@ -1006,7 +1006,9 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort kthLargest(int k) {
-        if (count() == 0 || k > toIndex - fromIndex) {
+        N.checkArgument(k < 1, "'k' must not be less than 1");
+
+        if (fromIndex == toIndex || k > toIndex - fromIndex) {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[toIndex - k]);
@@ -1017,7 +1019,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public Long sum() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return 0L;
         } else if (maxThreadNum <= 1) {
             return N.sum(elements, fromIndex, toIndex);
@@ -1061,7 +1063,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalDouble average() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
 
@@ -1106,7 +1108,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortSummaryStatistics summarize() {
-        if (count() == 0) {
+        if (fromIndex == toIndex) {
             return new ShortSummaryStatistics();
         } else if (maxThreadNum <= 1) {
             return sequential().summarize();
