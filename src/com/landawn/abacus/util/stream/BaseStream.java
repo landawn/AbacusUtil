@@ -569,6 +569,12 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      */
     OT findFirst(P predicate);
 
+    /**
+     * Sometimes, <code>stream.reverse().findFirst(predicate)</code> has better performance than <code>stream.findLast(predicate)</code>.
+     * 
+     * @param predicate
+     * @return
+     */
     OT findLast(P predicate);
 
     /**

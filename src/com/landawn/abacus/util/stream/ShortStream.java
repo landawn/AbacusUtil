@@ -209,7 +209,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    public abstract <K, D, A, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory);
 
     /**
@@ -554,18 +554,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     }
 
     public static ShortStream of(final ShortIterator iterator) {
-        return iterator == null ? empty()
-                : new IteratorShortStream(iterator instanceof ImmutableShortIterator ? (ImmutableShortIterator) iterator : new ImmutableShortIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iterator.hasNext();
-                    }
-
-                    @Override
-                    public short next() {
-                        return iterator.next();
-                    }
-                });
+        return iterator == null ? empty() : new IteratorShortStream(iterator);
     }
 
     public static ShortStream from(final int... a) {
@@ -809,12 +798,12 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             private short t = 0;
             private short cur = 0;
             private boolean isFirst = true;
-            private boolean noMoreVal = false;
+            private boolean hasMore = true;
             private boolean hasNextVal = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNextVal == false && noMoreVal == false) {
+                if (hasNextVal == false && hasMore) {
                     if (isFirst) {
                         isFirst = false;
                         hasNextVal = hasNext.test(cur = seed);
@@ -823,7 +812,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                     }
 
                     if (hasNextVal == false) {
-                        noMoreVal = true;
+                        hasMore = false;
                     }
                 }
 
@@ -888,30 +877,14 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     public static ShortStream concat(final short[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ImmutableShortIterator() {
             private final Iterator<short[]> iter = N.asList(a).iterator();
-            private ImmutableShortIterator cur;
+            private ShortIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = new ImmutableShortIterator() {
-                        private final short[] cur = iter.next();
-                        private int cursor = 0;
-
-                        @Override
-                        public boolean hasNext() {
-                            return cursor < cur.length;
-                        }
-
-                        @Override
-                        public short next() {
-                            if (cursor >= cur.length) {
-                                throw new NoSuchElementException();
-                            }
-
-                            return cur[cursor++];
-                        }
-                    };
+                    cur = ImmutableShortIterator.of(iter.next());
                 }
+
                 return cur != null && cur.hasNext();
             }
 
@@ -958,7 +931,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     public static ShortStream concat(final Collection<? extends ShortStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorShortStream(new ImmutableShortIterator() {
             private final Iterator<? extends ShortStream> iter = c.iterator();
-            private ImmutableShortIterator cur;
+            private ShortIterator cur;
 
             @Override
             public boolean hasNext() {
@@ -977,28 +950,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
                 return cur.next();
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -1352,28 +1304,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @return
      */
     public static ShortStream merge(final ShortStream a, final ShortStream b, final ShortBiFunction<Nth> nextSelector) {
-        return merge(a.shortIterator(), b.shortIterator(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(a.shortIterator(), b.shortIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1411,28 +1342,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             result = merge(result.shortIterator(), iter.next().shortIterator(), nextSelector);
         }
 
-        return result.onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return result.onClose(newCloseHandler(c));
     }
 
     /**
@@ -1512,44 +1422,13 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         // Should never happen.
         if (queue.size() != 2) {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
 }

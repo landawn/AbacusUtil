@@ -75,8 +75,8 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     private volatile ArrayShortStream sequential;
     private volatile Stream<Short> boxed;
 
-    ParallelArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum,
-            Splitor splitor) {
+    ParallelArrayShortStream(short[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted,
+            int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
@@ -259,7 +259,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
         }
 
         final ShortStream[] a = new ShortStream[2];
-        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? ShortStream.empty() : new ArrayShortStream(elements, fromIndex, middleIndex, null, sorted);
         a[1] = middleIndex == toIndex ? ShortStream.empty() : new ArrayShortStream(elements, middleIndex, toIndex, null, sorted);
 
@@ -277,7 +277,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }
         });
 
-        return splitAt(first.isPresent() ? (int) first.get().index() : 0);
+        return splitAt(first.isPresent() ? (int) first.get().index() : toIndex - fromIndex);
     }
 
     @Override
@@ -299,9 +299,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream top(int n, Comparator<? super Short> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
@@ -428,17 +426,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
     }
 
     @Override
@@ -453,7 +441,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public List<Short> toList() {
-        final List<Short> result = new ArrayList<>();
+        final List<Short> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -475,7 +463,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public Set<Short> toSet() {
-        final Set<Short> result = new HashSet<>();
+        final Set<Short> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -497,7 +485,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public Multiset<Short> toMultiset() {
-        final Multiset<Short> result = new Multiset<>();
+        final Multiset<Short> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -519,7 +507,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public LongMultiset<Short> toLongMultiset() {
-        final LongMultiset<Short> result = new LongMultiset<>();
+        final LongMultiset<Short> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -540,7 +528,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
             return sequential().toMap(classifier, downstream, mapFactory);
@@ -828,7 +816,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                        R container = supplier.get();
+                        final R container = supplier.get();
 
                         try {
                             while (cursor < to && eHolder.value() == null) {
@@ -849,7 +837,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
                 futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
-                        R container = supplier.get();
+                        final R container = supplier.get();
                         short next = 0;
 
                         try {
@@ -940,7 +928,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }));
         }
 
-        Short min = null;
+        Short candidate = null;
 
         try {
             for (CompletableFuture<Short> future : futureList) {
@@ -948,15 +936,15 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
                 if (tmp == null) {
                     continue;
-                } else if (min == null || tmp.shortValue() < min.shortValue()) {
-                    min = tmp;
+                } else if (candidate == null || tmp.shortValue() < candidate.shortValue()) {
+                    candidate = tmp;
                 }
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
 
-        return min == null ? OptionalShort.empty() : OptionalShort.of(min);
+        return candidate == null ? OptionalShort.empty() : OptionalShort.of(candidate);
     }
 
     @Override
@@ -985,7 +973,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }));
         }
 
-        Short min = null;
+        Short candidate = null;
 
         try {
             for (CompletableFuture<Short> future : futureList) {
@@ -993,22 +981,22 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
                 if (tmp == null) {
                     continue;
-                } else if (min == null || tmp.shortValue() > min.shortValue()) {
-                    min = tmp;
+                } else if (candidate == null || tmp.shortValue() > candidate.shortValue()) {
+                    candidate = tmp;
                 }
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
 
-        return min == null ? OptionalShort.empty() : OptionalShort.of(min);
+        return candidate == null ? OptionalShort.empty() : OptionalShort.of(candidate);
     }
 
     @Override
     public OptionalShort kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
-        if (fromIndex == toIndex || k > toIndex - fromIndex) {
+        if (k > toIndex - fromIndex) {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[toIndex - k]);
@@ -1067,7 +1055,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(sum() / count());
+        return OptionalDouble.of(sum() / toIndex - fromIndex);
     }
 
     @Override
@@ -1077,33 +1065,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream reverse() {
-        return new ParallelIteratorShortStream(new ImmutableShortIterator() {
-            private int cursor = toIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor > fromIndex;
-            }
-
-            @Override
-            public short next() {
-                if (cursor <= fromIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return elements[--cursor];
-            }
-
-            @Override
-            public long count() {
-                return cursor - fromIndex;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
-            }
-        }, closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorShortStream(sequential().reverse().shortIterator(), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
@@ -1224,17 +1186,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1306,17 +1258,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1388,17 +1330,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1427,14 +1359,14 @@ final class ParallelArrayShortStream extends AbstractShortStream {
                         final Pair<Integer, Short> pair = new Pair<>();
 
                         try {
-                            while (cursor < to && resultHolder.value() == null && eHolder.value() == null) {
+                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value.left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[cursor++];
 
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1470,7 +1402,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1485,17 +1417,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalShort.empty() : OptionalShort.of(resultHolder.value().right);
     }
@@ -1524,14 +1446,14 @@ final class ParallelArrayShortStream extends AbstractShortStream {
                         final Pair<Integer, Short> pair = new Pair<>();
 
                         try {
-                            while (cursor > from && resultHolder.value() == null && eHolder.value() == null) {
+                            while (cursor > from && (resultHolder.value() == null || cursor > resultHolder.value().left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[--cursor];
 
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1567,7 +1489,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1582,17 +1504,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalShort.empty() : OptionalShort.of(resultHolder.value().right);
     }
@@ -1677,17 +1589,7 @@ final class ParallelArrayShortStream extends AbstractShortStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == NONE ? OptionalShort.empty() : OptionalShort.of((Short) resultHolder.value());
     }
@@ -1718,15 +1620,15 @@ final class ParallelArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public int[] toArray() {
                 final int[] a = new int[toIndex - cursor];
 
-                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
-                    a[j] = elements[i];
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = elements[cursor++];
                 }
 
                 return a;

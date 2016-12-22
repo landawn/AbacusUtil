@@ -38,7 +38,10 @@ import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -76,7 +79,7 @@ abstract class AbstractLongStream extends LongStream {
             return dropWhile(new LongPredicate() {
                 @Override
                 public boolean test(long value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         } else {
@@ -85,7 +88,7 @@ abstract class AbstractLongStream extends LongStream {
             return dropWhile(new LongPredicate() {
                 @Override
                 public boolean test(long value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         }
@@ -110,6 +113,37 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public Stream<LongStream> split(final int size) {
+        return split0(size).map(new Function<LongList, LongStream>() {
+            @Override
+            public LongStream apply(LongList t) {
+                return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<LongStream> split(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return split0(identity, predicate, identityUpdate).map(new Function<LongList, LongStream>() {
+            @Override
+            public LongStream apply(LongList t) {
+                return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<LongStream> sliding(final int windowSize, final int increment) {
+        return sliding0(windowSize, increment).map(new Function<LongList, LongStream>() {
+            @Override
+            public LongStream apply(LongList t) {
+                return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
     public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
         return toMap(classifier, new Supplier<Map<K, List<Long>>>() {
             @Override
@@ -122,6 +156,7 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public <K, M extends Map<K, List<Long>>> M toMap(LongFunction<? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<Long, ?, List<Long>> downstream = Collectors.toList();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -148,6 +183,7 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
@@ -183,9 +219,9 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream distinct() {
-        return newStream(this.sequential().filter(new LongPredicate() {
-            private final Set<Object> set = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
+        return newStream(this.sequential().filter(new LongPredicate() {
             @Override
             public boolean test(long value) {
                 return set.add(value);
@@ -208,7 +244,7 @@ abstract class AbstractLongStream extends LongStream {
             return OptionalLong.empty();
         }
 
-        long next = 0;
+        long next = iter.next();
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -271,19 +307,7 @@ abstract class AbstractLongStream extends LongStream {
             list.add(iter.next());
         }
 
-        final LongStream[] a = new LongStream[] { new ArrayLongStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorLongStream(iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public long next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
+        final LongStream[] a = { new ArrayLongStream(list.array(), 0, list.size(), null, sorted), new IteratorLongStream(iter, null, sorted) };
 
         return this.newStream(a, false, null);
     }
@@ -295,7 +319,7 @@ abstract class AbstractLongStream extends LongStream {
         final LongIterator iter = this.longIterator();
         final LongList list = new LongList();
         long next = 0;
-        LongStream p = null;
+        LongStream s = null;
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -303,31 +327,19 @@ abstract class AbstractLongStream extends LongStream {
             if (where.test(next)) {
                 list.add(next);
             } else {
-                p = LongStream.of(next);
+                s = LongStream.of(next);
 
                 break;
             }
         }
 
-        final LongStream[] a = new LongStream[] { new ArrayLongStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorLongStream(iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
+        final LongStream[] a = { new ArrayLongStream(list.array(), 0, list.size(), null, sorted), new IteratorLongStream(iter, null, sorted) };
 
-                    @Override
-                    public long next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
-
-        if (p != null) {
+        if (s != null) {
             if (sorted) {
-                new IteratorLongStream(a[1].prepend(p).longIterator(), null, sorted);
+                a[1] = new IteratorLongStream(a[1].prepend(s).longIterator(), null, sorted);
             } else {
-                a[1] = a[1].prepend(p);
+                a[1] = a[1].prepend(s);
             }
         }
 
@@ -336,9 +348,10 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream reverse() {
-        final long[] a = toArray();
+        final long[] tmp = toArray();
+
         return newStream(new ImmutableLongIterator() {
-            private int cursor = a.length;
+            private int cursor = tmp.length;
 
             @Override
             public boolean hasNext() {
@@ -351,17 +364,28 @@ abstract class AbstractLongStream extends LongStream {
                     throw new NoSuchElementException();
                 }
 
-                return a[--cursor];
+                return tmp[--cursor];
             }
 
             @Override
             public long count() {
-                return cursor - 0;
+                return cursor;
             }
 
             @Override
             public void skip(long n) {
-                cursor = cursor > n ? cursor - (int) n : 0;
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public long[] toArray() {
+                final long[] a = new long[cursor];
+
+                for (int i = 0, len = tmp.length; i < len; i++) {
+                    a[i] = tmp[cursor - i - 1];
+                }
+
+                return a;
             }
         }, false);
     }
@@ -399,10 +423,11 @@ abstract class AbstractLongStream extends LongStream {
     public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarize2() {
         final long[] a = sorted().toArray();
 
-        final LongSummaryStatistics summaryStatistics = new LongSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Long>> distribution = a.length == 0 ? Optional.<Map<Percentage, Long>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new LongSummaryStatistics(), Optional.<Map<Percentage, Long>> empty());
+        } else {
+            return Pair.of(new LongSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
     }
 
     @Override
@@ -434,25 +459,27 @@ abstract class AbstractLongStream extends LongStream {
         };
 
         final Joiner joiner = collect(supplier, accumulator, combiner);
+
         return joiner.toString();
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjLongConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
+
         return collect(supplier, accumulator, combiner);
     }
 
     @Override
     public Stream<IndexedLong> indexed() {
-        return newStream(this.sequential().mapToObj(new LongFunction<IndexedLong>() {
-            final MutableLong idx = new MutableLong();
+        final MutableLong idx = new MutableLong();
 
+        return newStream(this.sequential().mapToObj(new LongFunction<IndexedLong>() {
             @Override
             public IndexedLong apply(long t) {
                 return IndexedLong.of(idx.getAndIncrement(), t);
             }
-        }).iterator(), false, null);
+        }).iterator(), true, INDEXED_LONG_COMPARATOR);
     }
 
     @Override

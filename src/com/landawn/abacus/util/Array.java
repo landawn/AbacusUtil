@@ -2207,7 +2207,7 @@ public final class Array {
 
             try {
                 array = (T[]) N.listElementDataField.get(c);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore;
                 N.isListElementDataFieldGettable = false;
             }
@@ -3426,7 +3426,7 @@ public final class Array {
 
             try {
                 array = (T[]) N.listElementDataField.get(c);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore;
                 N.isListElementDataFieldGettable = false;
             }
@@ -4145,7 +4145,7 @@ public final class Array {
 
             try {
                 array = (T[]) N.listElementDataField.get(list);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore;
                 N.isListElementDataFieldGettable = false;
             }

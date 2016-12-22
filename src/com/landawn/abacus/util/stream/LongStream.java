@@ -246,7 +246,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    public abstract <K, D, A, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory);
 
     /**
@@ -628,18 +628,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream of(final LongIterator iterator) {
-        return iterator == null ? empty()
-                : new IteratorLongStream(iterator instanceof ImmutableLongIterator ? (ImmutableLongIterator) iterator : new ImmutableLongIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iterator.hasNext();
-                    }
-
-                    @Override
-                    public long next() {
-                        return iterator.next();
-                    }
-                });
+        return iterator == null ? empty() : new IteratorLongStream(iterator);
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {
@@ -907,12 +896,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             private long t = 0;
             private long cur = 0;
             private boolean isFirst = true;
-            private boolean noMoreVal = false;
+            private boolean hasMore = true;
             private boolean hasNextVal = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNextVal == false && noMoreVal == false) {
+                if (hasNextVal == false && hasMore) {
                     if (isFirst) {
                         isFirst = false;
                         hasNextVal = hasNext.test(cur = seed);
@@ -921,7 +910,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                     }
 
                     if (hasNextVal == false) {
-                        noMoreVal = true;
+                        hasMore = false;
                     }
                 }
 
@@ -1020,30 +1009,14 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public static LongStream concat(final long[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
             private final Iterator<long[]> iter = N.asList(a).iterator();
-            private ImmutableLongIterator cur;
+            private LongIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = new ImmutableLongIterator() {
-                        private final long[] cur = iter.next();
-                        private int cursor = 0;
-
-                        @Override
-                        public boolean hasNext() {
-                            return cursor < cur.length;
-                        }
-
-                        @Override
-                        public long next() {
-                            if (cursor >= cur.length) {
-                                throw new NoSuchElementException();
-                            }
-
-                            return cur[cursor++];
-                        }
-                    };
+                    cur = ImmutableLongIterator.of(iter.next());
                 }
+
                 return cur != null && cur.hasNext();
             }
 
@@ -1090,7 +1063,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public static LongStream concat(final Collection<? extends LongStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
             private final Iterator<? extends LongStream> iter = c.iterator();
-            private ImmutableLongIterator cur;
+            private LongIterator cur;
 
             @Override
             public boolean hasNext() {
@@ -1109,28 +1082,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
                 return cur.next();
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -1483,28 +1435,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream merge(final LongStream a, final LongStream b, final LongBiFunction<Nth> nextSelector) {
-        return merge(a.longIterator(), b.longIterator(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(a.longIterator(), b.longIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1542,28 +1473,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             result = merge(result.longIterator(), iter.next().longIterator(), nextSelector);
         }
 
-        return result.onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return result.onClose(newCloseHandler(c));
     }
 
     /**
@@ -1643,44 +1553,13 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         // Should never happen.
         if (queue.size() != 2) {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
 }

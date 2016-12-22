@@ -38,7 +38,10 @@ import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBiFunction;
@@ -76,7 +79,7 @@ abstract class AbstractShortStream extends ShortStream {
             return dropWhile(new ShortPredicate() {
                 @Override
                 public boolean test(short value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         } else {
@@ -85,7 +88,7 @@ abstract class AbstractShortStream extends ShortStream {
             return dropWhile(new ShortPredicate() {
                 @Override
                 public boolean test(short value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         }
@@ -110,6 +113,37 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public Stream<ShortStream> split(final int size) {
+        return split0(size).map(new Function<ShortList, ShortStream>() {
+            @Override
+            public ShortStream apply(ShortList t) {
+                return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return split0(identity, predicate, identityUpdate).map(new Function<ShortList, ShortStream>() {
+            @Override
+            public ShortStream apply(ShortList t) {
+                return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<ShortStream> sliding(final int windowSize, final int increment) {
+        return sliding0(windowSize, increment).map(new Function<ShortList, ShortStream>() {
+            @Override
+            public ShortStream apply(ShortList t) {
+                return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
     public <K> Map<K, List<Short>> toMap(ShortFunction<? extends K> classifier) {
         return toMap(classifier, new Supplier<Map<K, List<Short>>>() {
             @Override
@@ -122,6 +156,7 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public <K, M extends Map<K, List<Short>>> M toMap(ShortFunction<? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<Short, ?, List<Short>> downstream = Collectors.toList();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -148,6 +183,7 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
@@ -184,9 +220,9 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream distinct() {
-        return newStream(this.sequential().filter(new ShortPredicate() {
-            private final Set<Object> set = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
+        return newStream(this.sequential().filter(new ShortPredicate() {
             @Override
             public boolean test(short value) {
                 return set.add(value);
@@ -209,7 +245,7 @@ abstract class AbstractShortStream extends ShortStream {
             return OptionalShort.empty();
         }
 
-        short next = 0;
+        short next = iter.next();
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -272,19 +308,7 @@ abstract class AbstractShortStream extends ShortStream {
             list.add(iter.next());
         }
 
-        final ShortStream[] a = new ShortStream[] { new ArrayShortStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorShortStream(iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public short next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
+        final ShortStream[] a = { new ArrayShortStream(list.array(), 0, list.size(), null, sorted), new IteratorShortStream(iter, null, sorted) };
 
         return this.newStream(a, false, null);
     }
@@ -296,7 +320,7 @@ abstract class AbstractShortStream extends ShortStream {
         final ShortIterator iter = this.shortIterator();
         final ShortList list = new ShortList();
         short next = 0;
-        ShortStream p = null;
+        ShortStream s = null;
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -304,31 +328,19 @@ abstract class AbstractShortStream extends ShortStream {
             if (where.test(next)) {
                 list.add(next);
             } else {
-                p = ShortStream.of(next);
+                s = ShortStream.of(next);
 
                 break;
             }
         }
 
-        final ShortStream[] a = new ShortStream[] { new ArrayShortStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorShortStream(iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
+        final ShortStream[] a = { new ArrayShortStream(list.array(), 0, list.size(), null, sorted), new IteratorShortStream(iter, null, sorted) };
 
-                    @Override
-                    public short next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
-
-        if (p != null) {
+        if (s != null) {
             if (sorted) {
-                new IteratorShortStream(a[1].prepend(p).shortIterator(), null, sorted);
+                a[1] = new IteratorShortStream(a[1].prepend(s).shortIterator(), null, sorted);
             } else {
-                a[1] = a[1].prepend(p);
+                a[1] = a[1].prepend(s);
             }
         }
 
@@ -337,9 +349,10 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream reverse() {
-        final short[] a = toArray();
+        final short[] tmp = toArray();
+
         return newStream(new ImmutableShortIterator() {
-            private int cursor = a.length;
+            private int cursor = tmp.length;
 
             @Override
             public boolean hasNext() {
@@ -352,17 +365,28 @@ abstract class AbstractShortStream extends ShortStream {
                     throw new NoSuchElementException();
                 }
 
-                return a[--cursor];
+                return tmp[--cursor];
             }
 
             @Override
             public long count() {
-                return cursor - 0;
+                return cursor;
             }
 
             @Override
             public void skip(long n) {
-                cursor = cursor > n ? cursor - (int) n : 0;
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public short[] toArray() {
+                final short[] a = new short[cursor];
+
+                for (int i = 0, len = tmp.length; i < len; i++) {
+                    a[i] = tmp[cursor - i - 1];
+                }
+
+                return a;
             }
         }, false);
     }
@@ -400,10 +424,11 @@ abstract class AbstractShortStream extends ShortStream {
     public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarize2() {
         final short[] a = sorted().toArray();
 
-        final ShortSummaryStatistics summaryStatistics = new ShortSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Short>> distribution = a.length == 0 ? Optional.<Map<Percentage, Short>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new ShortSummaryStatistics(), Optional.<Map<Percentage, Short>> empty());
+        } else {
+            return Pair.of(new ShortSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
     }
 
     @Override
@@ -435,12 +460,14 @@ abstract class AbstractShortStream extends ShortStream {
         };
 
         final Joiner joiner = collect(supplier, accumulator, combiner);
+
         return joiner.toString();
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
+
         return collect(supplier, accumulator, combiner);
     }
 
@@ -453,7 +480,7 @@ abstract class AbstractShortStream extends ShortStream {
             public IndexedShort apply(short t) {
                 return IndexedShort.of(idx.getAndIncrement(), t);
             }
-        }).iterator(), false, null);
+        }).iterator(), true, INDEXED_SHORT_COMPARATOR);
     }
 
     @Override

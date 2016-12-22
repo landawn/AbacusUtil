@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -73,33 +74,33 @@ final class IteratorStream<T> extends AbstractStream<T> {
     private T head;
     private Stream<T> tail;
 
-    IteratorStream(final Iterator<? extends T> iterator) {
-        this(iterator, null);
+    IteratorStream(final Iterator<? extends T> values) {
+        this(values, null);
     }
 
-    IteratorStream(final Iterator<? extends T> iterator, Collection<Runnable> closeHandlers) {
-        this(iterator, closeHandlers, false, null);
+    IteratorStream(final Iterator<? extends T> values, final Collection<Runnable> closeHandlers) {
+        this(values, closeHandlers, false, null);
     }
 
-    IteratorStream(final Iterator<? extends T> iterator, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator) {
+    IteratorStream(final Iterator<? extends T> values, final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> comparator) {
         super(closeHandlers, sorted, comparator);
 
-        N.requireNonNull(iterator);
+        N.requireNonNull(values);
 
-        this.elements = iterator instanceof ImmutableIterator ? (ImmutableIterator<T>) iterator : new ImmutableIterator<T>() {
+        this.elements = values instanceof ImmutableIterator ? (ImmutableIterator<T>) values : new ImmutableIterator<T>() {
             @Override
             public boolean hasNext() {
-                return iterator.hasNext();
+                return values.hasNext();
             }
 
             @Override
             public T next() {
-                return iterator.next();
+                return values.next();
             }
         };
     }
 
-    IteratorStream(Stream<T> stream, Set<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator) {
+    IteratorStream(final Stream<T> stream, final Set<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> comparator) {
         this(stream.iterator(), mergeCloseHandlers(stream, closeHandlers), sorted, comparator);
     }
 
@@ -619,35 +620,9 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> split(final int size) {
-        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final ObjectList<T> result = new ObjectList<>(size);
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    result.add(elements.next());
-                    cnt++;
-                }
-
-                return new ArrayStream<T>((T[]) result.array(), 0, result.size(), null, sorted, cmp);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<ObjectList<T>> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
             @Override
             public boolean hasNext() {
@@ -660,12 +635,10 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final ObjectList<T> result = new ObjectList<>(size);
-                int cnt = 0;
+                final ObjectList<T> result = new ObjectList<>(N.min(9, size));
 
-                while (cnt < size && elements.hasNext()) {
+                while (result.size() < size && elements.hasNext()) {
                     result.add(elements.next());
-                    cnt++;
                 }
 
                 return result;
@@ -731,52 +704,6 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-            private T next = (T) NONE;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return next != NONE || elements.hasNext();
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final ObjectList<T> result = new ObjectList<>();
-
-                if (next == NONE) {
-                    next = elements.next();
-                }
-
-                while (next != NONE) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
-                        result.add(next);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else if (predicate.apply(next, identity) == preCondition) {
-                        result.add(next);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
-                        }
-
-                        break;
-                    }
-                }
-
-                return new ArrayStream<T>((T[]) result.array(), 0, result.size(), null, sorted, cmp);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public <U> Stream<ObjectList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
@@ -802,8 +729,8 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
                 while (next != NONE) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
                         result.add(next);
+                        preCondition = predicate.apply(next, identity);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
@@ -848,8 +775,8 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
                 while (next != NONE) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
                         result.add(next);
+                        preCondition = predicate.apply(next, identity);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
@@ -894,8 +821,8 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
                 while (next != NONE) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
                         result.add(next);
+                        preCondition = predicate.apply(next, identity);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
@@ -912,68 +839,6 @@ final class IteratorStream<T> extends AbstractStream<T> {
                 return result;
             }
 
-        }, closeHandlers);
-    }
-
-    @Override
-    public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
-
-        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
-            private ObjectList<T> prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public Stream<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                ObjectList<T> result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-
-                    if (cnt <= 8) {
-                        result = new ObjectList<T>(windowSize);
-
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
-                    } else {
-                        final Object[] dest = new Object[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                        result = ObjectList.of((T[]) dest, cnt);
-                    }
-                } else {
-                    result = new ObjectList<T>(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                prev = result;
-
-                return new ArrayStream<T>((T[]) result.array(), 0, result.size(), null, sorted, cmp);
-            }
         }, closeHandlers);
     }
 
@@ -1098,9 +963,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> top(final int n, final Comparator<? super T> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         return new IteratorStream<T>(new ImmutableIterator<T>() {
             T[] a = null;
@@ -1110,7 +973,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public boolean hasNext() {
                 if (a == null) {
-                    getResult();
+                    top();
                 }
 
                 return cursor < toIndex;
@@ -1119,7 +982,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public T next() {
                 if (a == null) {
-                    getResult();
+                    top();
                 }
 
                 if (cursor >= toIndex) {
@@ -1132,7 +995,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public long count() {
                 if (a == null) {
-                    getResult();
+                    top();
                 }
 
                 return toIndex - cursor;
@@ -1141,16 +1004,16 @@ final class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public void skip(long n) {
                 if (a == null) {
-                    getResult();
+                    top();
                 }
 
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public <A> A[] toArray(A[] b) {
                 if (a == null) {
-                    getResult();
+                    top();
                 }
 
                 b = b.length >= toIndex - cursor ? b : (A[]) N.newArray(b.getClass().getComponentType(), toIndex - cursor);
@@ -1160,48 +1023,61 @@ final class IteratorStream<T> extends AbstractStream<T> {
                 return b;
             }
 
-            private void getResult() {
-                final Comparator<Pair<T, Long>> pairCmp = new Comparator<Pair<T, Long>>() {
-                    @Override
-                    public int compare(final Pair<T, Long> o1, final Pair<T, Long> o2) {
-                        return N.compare(o1.left, o2.left, comparator);
-                    }
-                };
+            private void top() {
+                if (sorted && isSameComparator(comparator, cmp)) {
+                    final LinkedList<T> queue = new LinkedList<>();
 
-                final Queue<Pair<T, Long>> heap = new PriorityQueue<Pair<T, Long>>(n, pairCmp);
-
-                Pair<T, Long> pair = null;
-                for (long i = 0; elements.hasNext(); i++) {
-                    pair = Pair.of(elements.next(), i);
-
-                    if (heap.size() >= n) {
-                        if (pairCmp.compare(heap.peek(), pair) < 0) {
-                            heap.poll();
-                            heap.add(pair);
+                    while (elements.hasNext()) {
+                        if (queue.size() >= n) {
+                            queue.poll();
                         }
-                    } else {
-                        heap.offer(pair);
+
+                        queue.offer(elements.next());
                     }
-                }
 
-                final Pair<T, Long>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+                    a = (T[]) queue.toArray();
+                } else {
+                    final Comparator<Pair<T, Long>> pairCmp = new Comparator<Pair<T, Long>>() {
+                        @Override
+                        public int compare(final Pair<T, Long> o1, final Pair<T, Long> o2) {
+                            return N.compare(o1.left, o2.left, comparator);
+                        }
+                    };
 
-                N.sort(arrayOfPair, new Comparator<Pair<T, Long>>() {
-                    @Override
-                    public int compare(final Pair<T, Long> o1, final Pair<T, Long> o2) {
-                        return N.compare(o1.right.longValue(), o2.right.longValue());
+                    final Queue<Pair<T, Long>> heap = new PriorityQueue<Pair<T, Long>>(n, pairCmp);
+
+                    Pair<T, Long> pair = null;
+                    for (long i = 0; elements.hasNext(); i++) {
+                        pair = Pair.of(elements.next(), i);
+
+                        if (heap.size() >= n) {
+                            if (pairCmp.compare(pair, heap.peek()) > 0) {
+                                heap.poll();
+                                heap.offer(pair);
+                            }
+                        } else {
+                            heap.offer(pair);
+                        }
                     }
-                });
 
-                a = (T[]) new Object[arrayOfPair.length];
+                    final Pair<T, Long>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-                for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-                    a[i] = arrayOfPair[i].left;
+                    N.sort(arrayOfPair, new Comparator<Pair<T, Long>>() {
+                        @Override
+                        public int compare(final Pair<T, Long> o1, final Pair<T, Long> o2) {
+                            return N.compare(o1.right.longValue(), o2.right.longValue());
+                        }
+                    });
+
+                    a = (T[]) new Object[arrayOfPair.length];
+
+                    for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+                        a[i] = arrayOfPair[i].left;
+                    }
                 }
 
                 toIndex = a.length;
             }
-
         }, closeHandlers, sorted, cmp);
     }
 
@@ -1218,6 +1094,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
         return new IteratorStream<T>(new ImmutableIterator<T>() {
             T[] a = null;
+            int toIndex = 0;
             int cursor = 0;
 
             @Override
@@ -1226,7 +1103,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     sort();
                 }
 
-                return cursor < a.length;
+                return cursor < toIndex;
             }
 
             @Override
@@ -1235,7 +1112,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     sort();
                 }
 
-                if (cursor >= a.length) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -1248,7 +1125,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     sort();
                 }
 
-                return a.length - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -1257,7 +1134,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     sort();
                 }
 
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -1266,18 +1143,18 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     sort();
                 }
 
-                if (b.getClass().equals(a.getClass()) && b.length < a.length - cursor) {
+                if (b.getClass().equals(a.getClass()) && b.length < toIndex - cursor) {
                     if (cursor == 0) {
                         return (A[]) a;
                     } else {
-                        return (A[]) N.copyOfRange(a, cursor, a.length);
+                        return (A[]) N.copyOfRange(a, cursor, toIndex);
                     }
                 } else {
-                    if (b.length < a.length - cursor) {
-                        b = N.newArray(b.getClass().getComponentType(), a.length - cursor);
+                    if (b.length < toIndex - cursor) {
+                        b = N.newArray(b.getClass().getComponentType(), toIndex - cursor);
                     }
 
-                    N.copy(a, cursor, b, 0, a.length - cursor);
+                    N.copy(a, cursor, b, 0, toIndex - cursor);
 
                     return b;
                 }
@@ -1285,6 +1162,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
             private void sort() {
                 a = (T[]) elements.toArray(N.EMPTY_OBJECT_ARRAY);
+                toIndex = a.length;
 
                 if (comparator == null) {
                     N.sort(a);
@@ -1316,8 +1194,6 @@ final class IteratorStream<T> extends AbstractStream<T> {
     public Stream<T> limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize == Long.MAX_VALUE) {
-            return this;
         }
 
         return new IteratorStream<T>(new ImmutableIterator<T>() {
@@ -1540,7 +1416,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1579,7 +1455,6 @@ final class IteratorStream<T> extends AbstractStream<T> {
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
-
         T element = null;
 
         while (elements.hasNext()) {
@@ -1594,7 +1469,6 @@ final class IteratorStream<T> extends AbstractStream<T> {
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier) {
         final Multimap<K, U, V> result = mapSupplier.get();
-
         T element = null;
 
         while (elements.hasNext()) {
@@ -1697,6 +1571,8 @@ final class IteratorStream<T> extends AbstractStream<T> {
     public OptionalNullable<T> min(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
             return OptionalNullable.empty();
+        } else if (sorted && isSameComparator(comparator, cmp)) {
+            return OptionalNullable.of(elements.next());
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -1705,7 +1581,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
         while (elements.hasNext()) {
             next = elements.next();
-            if (comparator.compare(candidate, next) > 0) {
+            if (comparator.compare(next, candidate) < 0) {
                 candidate = next;
             }
         }
@@ -1717,6 +1593,14 @@ final class IteratorStream<T> extends AbstractStream<T> {
     public OptionalNullable<T> max(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
             return OptionalNullable.empty();
+        } else if (sorted && isSameComparator(comparator, cmp)) {
+            T next = null;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return OptionalNullable.of(next);
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -1725,7 +1609,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
         while (elements.hasNext()) {
             next = elements.next();
-            if (comparator.compare(candidate, next) < 0) {
+            if (comparator.compare(next, candidate) > 0) {
                 candidate = next;
             }
         }
@@ -1735,8 +1619,22 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
+
         if (elements.hasNext() == false) {
             return OptionalNullable.empty();
+        } else if (sorted && isSameComparator(comparator, cmp)) {
+            final LinkedList<T> queue = new LinkedList<>();
+
+            while (elements.hasNext()) {
+                if (queue.size() >= k) {
+                    queue.poll();
+                }
+
+                queue.offer(elements.next());
+            }
+
+            return queue.size() < k ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(queue.peek());
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -1747,11 +1645,11 @@ final class IteratorStream<T> extends AbstractStream<T> {
             e = elements.next();
 
             if (queue.size() < k) {
-                queue.add(e);
+                queue.offer(e);
             } else {
                 if (N.compare(e, queue.peek(), comparator) > 0) {
-                    queue.remove();
-                    queue.add(e);
+                    queue.poll();
+                    queue.offer(e);
                 }
             }
         }

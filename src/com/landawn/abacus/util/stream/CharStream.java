@@ -204,7 +204,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    public abstract <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory);
 
     /**
@@ -549,18 +549,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     }
 
     public static CharStream of(final CharIterator iterator) {
-        return iterator == null ? empty()
-                : new IteratorCharStream(iterator instanceof ImmutableCharIterator ? (ImmutableCharIterator) iterator : new ImmutableCharIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iterator.hasNext();
-                    }
-
-                    @Override
-                    public char next() {
-                        return iterator.next();
-                    }
-                });
+        return iterator == null ? empty() : new IteratorCharStream(iterator);
     }
 
     public static CharStream from(final int... a) {
@@ -598,7 +587,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         }
 
         if (str instanceof String) {
-            of(N.getCharsForReadOnly((String) str), startIndex, endIndex);
+            return of(N.getCharsForReadOnly((String) str), startIndex, endIndex);
         }
 
         final ImmutableCharIterator iter = new ImmutableCharIterator() {
@@ -772,7 +761,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         return iterate(new CharSupplier() {
             @Override
             public char getAsChar() {
-                return (char) Math.abs(RAND.nextInt() % mod);
+                return (char) RAND.nextInt(mod);
             }
         });
     }
@@ -795,7 +784,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             return iterate(new CharSupplier() {
                 @Override
                 public char getAsChar() {
-                    return (char) (Math.abs(RAND.nextInt() % mod) + startInclusive);
+                    return (char) (RAND.nextInt(mod) + startInclusive);
                 }
             });
         }
@@ -899,12 +888,12 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             private char t = 0;
             private char cur = 0;
             private boolean isFirst = true;
-            private boolean noMoreVal = false;
+            private boolean hasMore = true;
             private boolean hasNextVal = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNextVal == false && noMoreVal == false) {
+                if (hasNextVal == false && hasMore) {
                     if (isFirst) {
                         isFirst = false;
                         hasNextVal = hasNext.test(cur = seed);
@@ -913,7 +902,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
                     }
 
                     if (hasNextVal == false) {
-                        noMoreVal = true;
+                        hasMore = false;
                     }
                 }
 
@@ -978,30 +967,14 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     public static CharStream concat(final char[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new ImmutableCharIterator() {
             private final Iterator<char[]> iter = N.asList(a).iterator();
-            private ImmutableCharIterator cur;
+            private CharIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = new ImmutableCharIterator() {
-                        private final char[] cur = iter.next();
-                        private int cursor = 0;
-
-                        @Override
-                        public boolean hasNext() {
-                            return cursor < cur.length;
-                        }
-
-                        @Override
-                        public char next() {
-                            if (cursor >= cur.length) {
-                                throw new NoSuchElementException();
-                            }
-
-                            return cur[cursor++];
-                        }
-                    };
+                    cur = ImmutableCharIterator.of(iter.next());
                 }
+
                 return cur != null && cur.hasNext();
             }
 
@@ -1048,7 +1021,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     public static CharStream concat(final Collection<? extends CharStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorCharStream(new ImmutableCharIterator() {
             private final Iterator<? extends CharStream> iter = c.iterator();
-            private ImmutableCharIterator cur;
+            private CharIterator cur;
 
             @Override
             public boolean hasNext() {
@@ -1067,28 +1040,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
                 return cur.next();
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -1442,28 +1394,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * @return
      */
     public static CharStream merge(final CharStream a, final CharStream b, final CharBiFunction<Nth> nextSelector) {
-        return merge(a.charIterator(), b.charIterator(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(a.charIterator(), b.charIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1501,28 +1432,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             result = merge(result.charIterator(), iter.next().charIterator(), nextSelector);
         }
 
-        return result.onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return result.onClose(newCloseHandler(c));
     }
 
     /**
@@ -1602,44 +1512,13 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         // Should never happen.
         if (queue.size() != 2) {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
 }

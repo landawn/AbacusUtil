@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,8 +23,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -59,18 +60,28 @@ final class IteratorCharStream extends AbstractCharStream {
     private char head;
     private CharStream tail;
 
-    IteratorCharStream(ImmutableCharIterator values) {
+    IteratorCharStream(final CharIterator values) {
         this(values, null);
     }
 
-    IteratorCharStream(ImmutableCharIterator values, Collection<Runnable> closeHandlers) {
+    IteratorCharStream(final CharIterator values, final Collection<Runnable> closeHandlers) {
         this(values, closeHandlers, false);
     }
 
-    IteratorCharStream(ImmutableCharIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
+    IteratorCharStream(final CharIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values;
+        this.elements = values instanceof ImmutableCharIterator ? (ImmutableCharIterator) values : new ImmutableCharIterator() {
+            @Override
+            public boolean hasNext() {
+                return values.hasNext();
+            }
+
+            @Override
+            public char next() {
+                return values.next();
+            }
+        };
     }
 
     @Override
@@ -266,7 +277,7 @@ final class IteratorCharStream extends AbstractCharStream {
     @Override
     public CharStream flatMap(final CharFunction<? extends CharStream> mapper) {
         return new IteratorCharStream(new ImmutableCharIterator() {
-            private ImmutableCharIterator cur = null;
+            private CharIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -291,7 +302,7 @@ final class IteratorCharStream extends AbstractCharStream {
     @Override
     public IntStream flatMapToInt(final CharFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -339,34 +350,9 @@ final class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public Stream<CharStream> split(final int size) {
-        return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public CharStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final char[] a = new char[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayCharStream(a, 0, cnt, null, sorted);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<CharList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<CharList>(new ImmutableIterator<CharList>() {
             @Override
             public boolean hasNext() {
@@ -379,63 +365,13 @@ final class IteratorCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                final char[] a = new char[size];
-                int cnt = 0;
+                final CharList result = new CharList(size);
 
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
+                while (result.size() < size && elements.hasNext()) {
+                    result.add(elements.next());
                 }
 
-                return CharList.of(a, cnt);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<CharStream> split(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
-            private char next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public CharStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
-
-                if (hasNext == false) {
-                    next = elements.next();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, identity) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
-                        }
-
-                        break;
-                    }
-                }
-
-                return CharStream.of(result.array(), 0, result.size());
+                return result;
             }
 
         }, closeHandlers);
@@ -460,7 +396,7 @@ final class IteratorCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
+                final CharList result = new CharList();
 
                 if (hasNext == false) {
                     next = elements.next();
@@ -469,8 +405,8 @@ final class IteratorCharStream extends AbstractCharStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
                         result.add(next);
+                        preCondition = predicate.apply(next, identity);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
@@ -485,69 +421,6 @@ final class IteratorCharStream extends AbstractCharStream {
                 }
 
                 return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public Stream<CharStream> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
-
-        return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
-            private CharList prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public CharStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                CharList result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-
-                    if (cnt <= 8) {
-                        result = new CharList(windowSize);
-
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
-                    } else {
-                        final char[] dest = new char[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                        result = CharList.of(dest, cnt);
-                    }
-                } else {
-                    result = new CharList(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                prev = result;
-
-                return new ArrayCharStream(result.array(), 0, result.size(), null, sorted);
             }
 
         }, closeHandlers);
@@ -622,6 +495,7 @@ final class IteratorCharStream extends AbstractCharStream {
 
         return new IteratorCharStream(new ImmutableCharIterator() {
             char[] a = null;
+            int toIndex = 0;
             int cursor = 0;
 
             @Override
@@ -630,7 +504,7 @@ final class IteratorCharStream extends AbstractCharStream {
                     sort();
                 }
 
-                return cursor < a.length;
+                return cursor < toIndex;
             }
 
             @Override
@@ -639,7 +513,7 @@ final class IteratorCharStream extends AbstractCharStream {
                     sort();
                 }
 
-                if (cursor >= a.length) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -652,7 +526,7 @@ final class IteratorCharStream extends AbstractCharStream {
                     sort();
                 }
 
-                return a.length - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -661,7 +535,7 @@ final class IteratorCharStream extends AbstractCharStream {
                     sort();
                 }
 
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -673,14 +547,15 @@ final class IteratorCharStream extends AbstractCharStream {
                 if (cursor == 0) {
                     return a;
                 } else {
-                    return N.copyOfRange(a, cursor, a.length);
+                    return N.copyOfRange(a, cursor, toIndex);
                 }
             }
 
             private void sort() {
                 a = elements.toArray();
+                toIndex = a.length;
 
-                Arrays.sort(a);
+                N.sort(a);
             }
         }, closeHandlers, true);
     }
@@ -706,8 +581,6 @@ final class IteratorCharStream extends AbstractCharStream {
     public CharStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize == Long.MAX_VALUE) {
-            return this;
         }
 
         return new IteratorCharStream(new ImmutableCharIterator() {
@@ -904,7 +777,7 @@ final class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -916,8 +789,8 @@ final class IteratorCharStream extends AbstractCharStream {
 
         while (elements.hasNext()) {
             element = elements.next();
-
             key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -943,7 +816,6 @@ final class IteratorCharStream extends AbstractCharStream {
     public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
-
         char element = 0;
 
         while (elements.hasNext()) {
@@ -958,7 +830,6 @@ final class IteratorCharStream extends AbstractCharStream {
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier) {
         final Multimap<K, U, V> result = mapSupplier.get();
-
         char element = 0;
 
         while (elements.hasNext()) {
@@ -1038,6 +909,8 @@ final class IteratorCharStream extends AbstractCharStream {
     public OptionalChar min() {
         if (elements.hasNext() == false) {
             return OptionalChar.empty();
+        } else if (sorted) {
+            return OptionalChar.of(elements.next());
         }
 
         char candidate = elements.next();
@@ -1046,7 +919,7 @@ final class IteratorCharStream extends AbstractCharStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) > 0) {
+            if (N.compare(next, candidate) < 0) {
                 candidate = next;
             }
         }
@@ -1058,6 +931,14 @@ final class IteratorCharStream extends AbstractCharStream {
     public OptionalChar max() {
         if (elements.hasNext() == false) {
             return OptionalChar.empty();
+        } else if (sorted) {
+            char next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return OptionalChar.of(next);
         }
 
         char candidate = elements.next();
@@ -1066,7 +947,7 @@ final class IteratorCharStream extends AbstractCharStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) < 0) {
+            if (N.compare(next, candidate) > 0) {
                 candidate = next;
             }
         }
@@ -1076,7 +957,7 @@ final class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
         if (elements.hasNext() == false) {
             return OptionalChar.empty();

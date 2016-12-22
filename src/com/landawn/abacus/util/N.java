@@ -1074,7 +1074,7 @@ public final class N {
     static final Field listElementDataField;
     static final Field listSizeField;
     static volatile boolean isListElementDataFieldGettable = true;
-    static volatile boolean isListElementDataFieldSettable = true;
+    // static volatile boolean isListElementDataFieldSettable = true;
 
     static {
         Field tmp = null;
@@ -3944,19 +3944,19 @@ public final class N {
             return new ArrayList<T>();
         }
 
-        if (isListElementDataFieldSettable && listElementDataField != null && listSizeField != null) {
-            final List<T> list = new ArrayList<T>();
-
-            try {
-                listElementDataField.set(list, a);
-                listSizeField.set(list, a.length);
-
-                return list;
-            } catch (Exception e) {
-                // ignore;
-                isListElementDataFieldSettable = false;
-            }
-        }
+        //        if (isListElementDataFieldSettable && listElementDataField != null && listSizeField != null) {
+        //            final List<T> list = new ArrayList<T>();
+        //
+        //            try {
+        //                listElementDataField.set(list, a);
+        //                listSizeField.set(list, a.length);
+        //
+        //                return list;
+        //            } catch (Throwable e) {
+        //                // ignore;
+        //                isListElementDataFieldSettable = false;
+        //            }
+        //        }
 
         final List<T> list = new ArrayList<T>(a.length);
 
@@ -32859,7 +32859,7 @@ public final class N {
     @Internal
     @Deprecated
     public static char[] getCharsForReadOnly(final String str) {
-        if (isStringCharsGettable && strValueField != null) {
+        if (isStringCharsGettable && strValueField != null && str.length() > 3) {
             try {
                 final char[] chars = (char[]) strValueField.get(str);
 

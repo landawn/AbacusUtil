@@ -39,12 +39,15 @@ import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatTriFunction;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -77,7 +80,7 @@ abstract class AbstractFloatStream extends FloatStream {
             return dropWhile(new FloatPredicate() {
                 @Override
                 public boolean test(float value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         } else {
@@ -86,7 +89,7 @@ abstract class AbstractFloatStream extends FloatStream {
             return dropWhile(new FloatPredicate() {
                 @Override
                 public boolean test(float value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         }
@@ -111,6 +114,27 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public Stream<FloatStream> split(final int size) {
+        return split0(size).map(new Function<FloatList, FloatStream>() {
+            @Override
+            public FloatStream apply(FloatList t) {
+                return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return split0(identity, predicate, identityUpdate).map(new Function<FloatList, FloatStream>() {
+            @Override
+            public FloatStream apply(FloatList t) {
+                return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
     public <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier) {
         return toMap(classifier, new Supplier<Map<K, List<Float>>>() {
             @Override
@@ -121,8 +145,19 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public Stream<FloatStream> sliding(final int windowSize, final int increment) {
+        return sliding0(windowSize, increment).map(new Function<FloatList, FloatStream>() {
+            @Override
+            public FloatStream apply(FloatList t) {
+                return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
     public <K, M extends Map<K, List<Float>>> M toMap(FloatFunction<? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<Float, ?, List<Float>> downstream = Collectors.toList();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -149,6 +184,7 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
@@ -185,9 +221,9 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream distinct() {
-        return newStream(this.sequential().filter(new FloatPredicate() {
-            private final Set<Object> set = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
+        return newStream(this.sequential().filter(new FloatPredicate() {
             @Override
             public boolean test(float value) {
                 return set.add(value);
@@ -274,7 +310,7 @@ abstract class AbstractFloatStream extends FloatStream {
             return OptionalFloat.empty();
         }
 
-        float next = 0;
+        float next = iter.next();
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -337,19 +373,7 @@ abstract class AbstractFloatStream extends FloatStream {
             list.add(iter.next());
         }
 
-        final FloatStream[] a = new FloatStream[] { new ArrayFloatStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorFloatStream(iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public float next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
+        final FloatStream[] a = { new ArrayFloatStream(list.array(), 0, list.size(), null, sorted), new IteratorFloatStream(iter, null, sorted) };
 
         return this.newStream(a, false, null);
     }
@@ -361,7 +385,7 @@ abstract class AbstractFloatStream extends FloatStream {
         final FloatIterator iter = this.floatIterator();
         final FloatList list = new FloatList();
         float next = 0;
-        FloatStream p = null;
+        FloatStream s = null;
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -369,31 +393,19 @@ abstract class AbstractFloatStream extends FloatStream {
             if (where.test(next)) {
                 list.add(next);
             } else {
-                p = FloatStream.of(next);
+                s = FloatStream.of(next);
 
                 break;
             }
         }
 
-        final FloatStream[] a = new FloatStream[] { new ArrayFloatStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorFloatStream(iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
+        final FloatStream[] a = { new ArrayFloatStream(list.array(), 0, list.size(), null, sorted), new IteratorFloatStream(iter, null, sorted) };
 
-                    @Override
-                    public float next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
-
-        if (p != null) {
+        if (s != null) {
             if (sorted) {
-                new IteratorFloatStream(a[1].prepend(p).floatIterator(), null, sorted);
+                a[1] = new IteratorFloatStream(a[1].prepend(s).floatIterator(), null, sorted);
             } else {
-                a[1] = a[1].prepend(p);
+                a[1] = a[1].prepend(s);
             }
         }
 
@@ -402,9 +414,10 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream reverse() {
-        final float[] a = toArray();
+        final float[] tmp = toArray();
+
         return newStream(new ImmutableFloatIterator() {
-            private int cursor = a.length;
+            private int cursor = tmp.length;
 
             @Override
             public boolean hasNext() {
@@ -417,17 +430,28 @@ abstract class AbstractFloatStream extends FloatStream {
                     throw new NoSuchElementException();
                 }
 
-                return a[--cursor];
+                return tmp[--cursor];
             }
 
             @Override
             public long count() {
-                return cursor - 0;
+                return cursor;
             }
 
             @Override
             public void skip(long n) {
-                cursor = cursor > n ? cursor - (int) n : 0;
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public float[] toArray() {
+                final float[] a = new float[cursor];
+
+                for (int i = 0, len = tmp.length; i < len; i++) {
+                    a[i] = tmp[cursor - i - 1];
+                }
+
+                return a;
             }
         }, false);
     }
@@ -465,10 +489,11 @@ abstract class AbstractFloatStream extends FloatStream {
     public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarize2() {
         final float[] a = sorted().toArray();
 
-        final FloatSummaryStatistics summaryStatistics = new FloatSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Float>> distribution = a.length == 0 ? Optional.<Map<Percentage, Float>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new FloatSummaryStatistics(), Optional.<Map<Percentage, Float>> empty());
+        } else {
+            return Pair.of(new FloatSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
     }
 
     @Override
@@ -500,25 +525,27 @@ abstract class AbstractFloatStream extends FloatStream {
         };
 
         final Joiner joiner = collect(supplier, accumulator, combiner);
+
         return joiner.toString();
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjFloatConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
+
         return collect(supplier, accumulator, combiner);
     }
 
     @Override
     public Stream<IndexedFloat> indexed() {
-        return newStream(this.sequential().mapToObj(new FloatFunction<IndexedFloat>() {
-            final MutableLong idx = new MutableLong();
+        final MutableLong idx = new MutableLong();
 
+        return newStream(this.sequential().mapToObj(new FloatFunction<IndexedFloat>() {
             @Override
             public IndexedFloat apply(float t) {
                 return IndexedFloat.of(idx.getAndIncrement(), t);
             }
-        }).iterator(), false, null);
+        }).iterator(), true, INDEXED_FLOAT_COMPARATOR);
     }
 
     @Override

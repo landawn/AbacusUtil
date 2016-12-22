@@ -61,7 +61,7 @@ public abstract class ImmutableFloatIterator implements FloatIterator {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override

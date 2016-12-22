@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -83,7 +84,8 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     static final Object NONE = new Object();
 
-    static final int CORE_THREAD_POOL_SIZE = 16;
+    static final int CORE_THREAD_POOL_SIZE = 64;
+
     static final AsyncExecutor asyncExecutor;
 
     static {
@@ -94,7 +96,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
             @Override
             public CompletableFuture<Void> execute(final Runnable command) {
                 //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
-                //        throw new RejectedExecutionException("Task is rejected due to execeeded max thread pool size: " + MAX_THREAD_POOL_SIZE);
+                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
                 //    }
 
                 return super.execute(command);
@@ -103,7 +105,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
             @Override
             public <T> CompletableFuture<T> execute(final Callable<T> command) {
                 //    if (threadPoolExecutor.getActiveCount() >= MAX_THREAD_POOL_SIZE) {
-                //        throw new RejectedExecutionException("Task is rejected due to execeeded max thread pool size: " + MAX_THREAD_POOL_SIZE);
+                //        throw new RejectedExecutionException("Task is rejected due to exceed max thread pool size: " + MAX_THREAD_POOL_SIZE);
                 //    }
 
                 return super.execute(command);
@@ -115,7 +117,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     static final int DEFAULT_READING_THREAD_NUM = 8;
 
     static final int MAX_QUEUE_SIZE = 8192;
-    static final int DEFAULT_QUEUE_SIZE_PER_ITERATOR = 16;
+    static final int DEFAULT_QUEUE_SIZE_PER_ITERATOR = 32;
     static final Splitor DEFAULT_SPLITOR = Splitor.ITERATOR;
     static final Random RAND = new SecureRandom();
 
@@ -233,10 +235,18 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     };
 
     static final BiMap<Class<?>, Comparator<?>> defaultComparator = new BiMap<>();
-    static final Field listElementDataField;
-    static final Field listSizeField;
-    static volatile boolean isListElementDataFieldGettable = true;
-    static volatile boolean isListElementDataFieldSettable = true;
+
+    static {
+        defaultComparator.put(char.class, CHAR_COMPARATOR);
+        defaultComparator.put(byte.class, BYTE_COMPARATOR);
+        defaultComparator.put(short.class, SHORT_COMPARATOR);
+        defaultComparator.put(int.class, INT_COMPARATOR);
+        defaultComparator.put(long.class, LONG_COMPARATOR);
+        defaultComparator.put(float.class, FLOAT_COMPARATOR);
+        defaultComparator.put(double.class, DOUBLE_COMPARATOR);
+        defaultComparator.put(Object.class, OBJECT_COMPARATOR);
+    }
+
     static final Map<Class<?>, Integer> clsNum = new BiMap<>();
 
     static {
@@ -281,6 +291,10 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                 return t;
             } else if (t instanceof Object[]) {
                 return N.concat((Object[]) t, (Object[]) u);
+            } else if (t instanceof StringBuilder) {
+                return ((StringBuilder) t).append((StringBuilder) u);
+            } else if (t instanceof String) {
+                return (String) t + (String) u;
             } else if (t instanceof Sheet) {
                 ((Sheet) t).putAll((Sheet) u);
                 return t;
@@ -290,7 +304,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
                 if (num == null) {
                     throw new RuntimeException(cls.getCanonicalName()
-                            + " can't be combined by default. Only Map/Collection/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList/boolean[] ... Object[] are supported");
+                            + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList/boolean[] ... Object[] are supported");
                 }
 
                 switch (num.intValue()) {
@@ -340,7 +354,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
                     default:
                         throw new RuntimeException(cls.getCanonicalName()
-                                + " can't be combined by default. Only Map/Collection/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList/boolean[] ... Object[] are supported");
+                                + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList/boolean[] ... Object[] are supported");
                 }
             }
         }
@@ -360,6 +374,8 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                 ((Collection) t).addAll((Collection) u);
             } else if (t instanceof Map) {
                 ((Map) t).putAll((Map) u);
+            } else if (t instanceof StringBuilder) {
+                ((StringBuilder) t).append((StringBuilder) u);
             } else if (t instanceof Sheet) {
                 ((Sheet) t).putAll((Sheet) u);
             } else {
@@ -368,7 +384,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
                 if (num == null) {
                     throw new RuntimeException(cls.getCanonicalName()
-                            + " can't be combined by default. Only Map/Collection/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList are supported");
+                            + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList are supported");
                 }
 
                 switch (num.intValue()) {
@@ -402,22 +418,14 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
                     default:
                         throw new RuntimeException(cls.getCanonicalName()
-                                + " can't be combined by default. Only Map/Collection/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList are supported");
+                                + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList are supported");
                 }
             }
         }
     };
 
-    static {
-        defaultComparator.put(char.class, CHAR_COMPARATOR);
-        defaultComparator.put(byte.class, BYTE_COMPARATOR);
-        defaultComparator.put(short.class, SHORT_COMPARATOR);
-        defaultComparator.put(int.class, INT_COMPARATOR);
-        defaultComparator.put(long.class, LONG_COMPARATOR);
-        defaultComparator.put(float.class, FLOAT_COMPARATOR);
-        defaultComparator.put(double.class, DOUBLE_COMPARATOR);
-        defaultComparator.put(Object.class, OBJECT_COMPARATOR);
-    }
+    static final Field listElementDataField;
+    static final Field listSizeField;
 
     static {
         Field tmp = null;
@@ -449,9 +457,12 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
+    static volatile boolean isListElementDataFieldGettable = true;
+
     final Set<Runnable> closeHandlers;
     final boolean sorted;
     final Comparator<? super T> cmp;
+
     private boolean isClosed = false;
 
     StreamBase(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
@@ -478,7 +489,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     @Override
     public void println() {
-        N.println(this.sequential().join(", ", "[", "]"));
+        N.println(sequential().join(", ", "[", "]"));
     }
 
     @Override
@@ -493,7 +504,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     @Override
     public S parallel() {
-        return parallel(DEFAULT_SPLITOR);
+        return parallel(DEFAULT_MAX_THREAD_NUM, DEFAULT_SPLITOR);
     }
 
     @Override
@@ -545,30 +556,27 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     @Override
     public synchronized void close() {
-        if (isClosed) {
+        if (isClosed || N.isNullOrEmpty(closeHandlers)) {
             return;
         }
 
         isClosed = true;
+        Throwable ex = null;
 
-        if (N.notNullOrEmpty(closeHandlers)) {
-            Throwable ex = null;
-
-            for (Runnable closeHandler : closeHandlers) {
-                try {
-                    closeHandler.run();
-                } catch (Throwable e) {
-                    if (ex == null) {
-                        ex = e;
-                    } else {
-                        ex.addSuppressed(e);
-                    }
+        for (Runnable closeHandler : closeHandlers) {
+            try {
+                closeHandler.run();
+            } catch (Throwable e) {
+                if (ex == null) {
+                    ex = e;
+                } else {
+                    ex.addSuppressed(e);
                 }
             }
+        }
 
-            if (ex != null) {
-                throw N.toRuntimeException(ex);
-            }
+        if (ex != null) {
+            throw N.toRuntimeException(ex);
         }
     }
 
@@ -582,35 +590,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected CharStream newStream(final CharIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public char next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorCharStream(charIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorCharStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
-            final ImmutableCharIterator charIter = iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public char next() {
-                    return iter.next();
-                }
-
-            };
-
-            return new IteratorCharStream(charIter, closeHandlers, sorted);
+            return new IteratorCharStream(iter, closeHandlers, sorted);
         }
     }
 
@@ -624,35 +606,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected ByteStream newStream(final ByteIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            final ImmutableByteIterator byteIter = iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public byte next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorByteStream(byteIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorByteStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
-            final ImmutableByteIterator byteIter = iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public byte next() {
-                    return iter.next();
-                }
-
-            };
-
-            return new IteratorByteStream(byteIter, closeHandlers, sorted);
+            return new IteratorByteStream(iter, closeHandlers, sorted);
         }
     }
 
@@ -666,35 +622,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected ShortStream newStream(final ShortIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            final ImmutableShortIterator shortIter = iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public short next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorShortStream(shortIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorShortStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
-            final ImmutableShortIterator shortIter = iter instanceof ImmutableShortIterator ? (ImmutableShortIterator) iter : new ImmutableShortIterator() {
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public short next() {
-                    return iter.next();
-                }
-
-            };
-
-            return new IteratorShortStream(shortIter, closeHandlers, sorted);
+            return new IteratorShortStream(iter, closeHandlers, sorted);
         }
     }
 
@@ -708,35 +638,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected IntStream newStream(final IntIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            final ImmutableIntIterator intIter = iter instanceof ImmutableIntIterator ? (ImmutableIntIterator) iter : new ImmutableIntIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public int next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorIntStream(intIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorIntStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
-            final ImmutableIntIterator intIter = iter instanceof ImmutableIntIterator ? (ImmutableIntIterator) iter : new ImmutableIntIterator() {
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public int next() {
-                    return iter.next();
-                }
-
-            };
-
-            return new IteratorIntStream(intIter, closeHandlers, sorted);
+            return new IteratorIntStream(iter, closeHandlers, sorted);
         }
     }
 
@@ -750,35 +654,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected LongStream newStream(final LongIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            final ImmutableLongIterator longIter = iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public long next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorLongStream(longIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorLongStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
-            final ImmutableLongIterator longIter = iter instanceof ImmutableLongIterator ? (ImmutableLongIterator) iter : new ImmutableLongIterator() {
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public long next() {
-                    return iter.next();
-                }
-
-            };
-
-            return new IteratorLongStream(longIter, closeHandlers, sorted);
+            return new IteratorLongStream(iter, closeHandlers, sorted);
         }
     }
 
@@ -792,35 +670,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected FloatStream newStream(final FloatIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            final ImmutableFloatIterator floatIter = iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public float next() {
-                    return iter.next();
-                }
-            };
-
-            return new ParallelIteratorFloatStream(floatIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorFloatStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
-            final ImmutableFloatIterator floatIter = iter instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) iter : new ImmutableFloatIterator() {
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public float next() {
-                    return iter.next();
-                }
-
-            };
-
-            return new IteratorFloatStream(floatIter, closeHandlers, sorted);
+            return new IteratorFloatStream(iter, closeHandlers, sorted);
         }
     }
 
@@ -834,37 +686,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected DoubleStream newStream(final DoubleIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            final ImmutableDoubleIterator doubleIter = iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter
-                    : new ImmutableDoubleIterator() {
-                        @Override
-                        public boolean hasNext() {
-                            return iter.hasNext();
-                        }
-
-                        @Override
-                        public double next() {
-                            return iter.next();
-                        }
-                    };
-
-            return new ParallelIteratorDoubleStream(doubleIter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorDoubleStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
         } else {
-            final ImmutableDoubleIterator doubleIter = iter instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iter
-                    : new ImmutableDoubleIterator() {
-
-                        @Override
-                        public boolean hasNext() {
-                            return iter.hasNext();
-                        }
-
-                        @Override
-                        public double next() {
-                            return iter.next();
-                        }
-
-                    };
-
-            return new IteratorDoubleStream(doubleIter, closeHandlers, sorted);
+            return new IteratorDoubleStream(iter, closeHandlers, sorted);
         }
     }
 
@@ -916,6 +740,20 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         throw N.toRuntimeException(errorHolder.value());
     }
 
+    static void complete(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder) {
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        try {
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
+            }
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
     static int calculateQueueSize(int len) {
         return N.min(MAX_QUEUE_SIZE, len * DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
@@ -932,7 +770,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return false;
     }
 
-    static void checkIndex(int fromIndex, int toIndex, int length) {
+    static void checkIndex(int fromIndex, final int toIndex, int length) {
         if (fromIndex < 0 || toIndex < fromIndex || toIndex > length) {
             throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
         }
@@ -1122,6 +960,31 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         };
 
         return doubleIter;
+    }
+
+    static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?>> c) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                RuntimeException runtimeException = null;
+
+                for (StreamBase<?, ?, ?, ?, ?, ?, ?, ?> s : c) {
+                    try {
+                        s.close();
+                    } catch (Throwable throwable) {
+                        if (runtimeException == null) {
+                            runtimeException = N.toRuntimeException(throwable);
+                        } else {
+                            runtimeException.addSuppressed(throwable);
+                        }
+                    }
+                }
+
+                if (runtimeException != null) {
+                    throw runtimeException;
+                }
+            }
+        };
     }
 
     static Set<Runnable> mergeCloseHandlers(final StreamBase<?, ?, ?, ?, ?, ?, ?, ?> stream, final Set<Runnable> closeHandlers) {

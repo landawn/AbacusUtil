@@ -2631,7 +2631,7 @@ public final class Collectors {
      * @see #groupingBy(Function)
      * @see #groupingByConcurrent(Function, Collector, Supplier)
      */
-    public static <T, K, D, A, M extends Map<K, D>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
+    public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
 
         //        Supplier<A> downstreamSupplier = downstream.supplier();

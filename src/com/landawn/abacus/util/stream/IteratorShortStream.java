@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -32,6 +32,7 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.OptionalShort;
+import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -61,18 +62,28 @@ final class IteratorShortStream extends AbstractShortStream {
     private short head;
     private ShortStream tail;
 
-    IteratorShortStream(ImmutableShortIterator values) {
+    IteratorShortStream(final ShortIterator values) {
         this(values, null);
     }
 
-    IteratorShortStream(ImmutableShortIterator values, Collection<Runnable> closeHandlers) {
+    IteratorShortStream(final ShortIterator values, final Collection<Runnable> closeHandlers) {
         this(values, closeHandlers, false);
     }
 
-    IteratorShortStream(ImmutableShortIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
+    IteratorShortStream(final ShortIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values;
+        this.elements = values instanceof ImmutableShortIterator ? (ImmutableShortIterator) values : new ImmutableShortIterator() {
+            @Override
+            public boolean hasNext() {
+                return values.hasNext();
+            }
+
+            @Override
+            public short next() {
+                return values.next();
+            }
+        };
     }
 
     @Override
@@ -268,7 +279,7 @@ final class IteratorShortStream extends AbstractShortStream {
     @Override
     public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
         return new IteratorShortStream(new ImmutableShortIterator() {
-            private ImmutableShortIterator cur = null;
+            private ShortIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -293,7 +304,7 @@ final class IteratorShortStream extends AbstractShortStream {
     @Override
     public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -341,34 +352,9 @@ final class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public Stream<ShortStream> split(final int size) {
-        return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public ShortStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final short[] a = new short[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayShortStream(a, 0, cnt, null, sorted);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<ShortList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
             @Override
             public boolean hasNext() {
@@ -381,63 +367,13 @@ final class IteratorShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                final short[] a = new short[size];
-                int cnt = 0;
+                final ShortList result = new ShortList(size);
 
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
+                while (result.size() < size && elements.hasNext()) {
+                    result.add(elements.next());
                 }
 
-                return ShortList.of(a, cnt);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
-            private short next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public ShortStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final ShortList result = ShortList.of(N.EMPTY_SHORT_ARRAY);
-
-                if (hasNext == false) {
-                    next = elements.next();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, identity) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
-                        }
-
-                        break;
-                    }
-                }
-
-                return ShortStream.of(result.array(), 0, result.size());
+                return result;
             }
 
         }, closeHandlers);
@@ -462,7 +398,7 @@ final class IteratorShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                final ShortList result = ShortList.of(N.EMPTY_SHORT_ARRAY);
+                final ShortList result = new ShortList();
 
                 if (hasNext == false) {
                     next = elements.next();
@@ -471,8 +407,8 @@ final class IteratorShortStream extends AbstractShortStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
                         result.add(next);
+                        preCondition = predicate.apply(next, identity);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
@@ -487,69 +423,6 @@ final class IteratorShortStream extends AbstractShortStream {
                 }
 
                 return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public Stream<ShortStream> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
-
-        return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
-            private ShortList prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public ShortStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                ShortList result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-
-                    if (cnt <= 8) {
-                        result = new ShortList(windowSize);
-
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
-                    } else {
-                        final short[] dest = new short[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                        result = ShortList.of(dest, cnt);
-                    }
-                } else {
-                    result = new ShortList(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                prev = result;
-
-                return new ArrayShortStream(result.array(), 0, result.size(), null, sorted);
             }
 
         }, closeHandlers);
@@ -623,16 +496,7 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream top(int n, Comparator<? super Short> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
-
-        return boxed().top(n, comparator).mapToShort(new ToShortFunction<Short>() {
-            @Override
-            public short applyAsShort(Short value) {
-                return value.shortValue();
-            }
-        });
+        return boxed().top(n, comparator).mapToShort(ToShortFunction.UNBOX);
     }
 
     @Override
@@ -643,6 +507,7 @@ final class IteratorShortStream extends AbstractShortStream {
 
         return new IteratorShortStream(new ImmutableShortIterator() {
             short[] a = null;
+            int toIndex = 0;
             int cursor = 0;
 
             @Override
@@ -651,7 +516,7 @@ final class IteratorShortStream extends AbstractShortStream {
                     sort();
                 }
 
-                return cursor < a.length;
+                return cursor < toIndex;
             }
 
             @Override
@@ -660,7 +525,7 @@ final class IteratorShortStream extends AbstractShortStream {
                     sort();
                 }
 
-                if (cursor >= a.length) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -673,7 +538,7 @@ final class IteratorShortStream extends AbstractShortStream {
                     sort();
                 }
 
-                return a.length - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -682,7 +547,7 @@ final class IteratorShortStream extends AbstractShortStream {
                     sort();
                 }
 
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -694,14 +559,15 @@ final class IteratorShortStream extends AbstractShortStream {
                 if (cursor == 0) {
                     return a;
                 } else {
-                    return N.copyOfRange(a, cursor, a.length);
+                    return N.copyOfRange(a, cursor, toIndex);
                 }
             }
 
             private void sort() {
                 a = elements.toArray();
+                toIndex = a.length;
 
-                Arrays.sort(a);
+                N.sort(a);
             }
         }, closeHandlers, true);
     }
@@ -727,8 +593,6 @@ final class IteratorShortStream extends AbstractShortStream {
     public ShortStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize == Long.MAX_VALUE) {
-            return this;
         }
 
         return new IteratorShortStream(new ImmutableShortIterator() {
@@ -925,7 +789,7 @@ final class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -937,8 +801,8 @@ final class IteratorShortStream extends AbstractShortStream {
 
         while (elements.hasNext()) {
             element = elements.next();
-
             key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -964,7 +828,6 @@ final class IteratorShortStream extends AbstractShortStream {
     public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
-
         short element = 0;
 
         while (elements.hasNext()) {
@@ -979,7 +842,6 @@ final class IteratorShortStream extends AbstractShortStream {
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier) {
         final Multimap<K, U, V> result = mapSupplier.get();
-
         short element = 0;
 
         while (elements.hasNext()) {
@@ -1059,6 +921,8 @@ final class IteratorShortStream extends AbstractShortStream {
     public OptionalShort min() {
         if (elements.hasNext() == false) {
             return OptionalShort.empty();
+        } else if (sorted) {
+            return OptionalShort.of(elements.next());
         }
 
         short candidate = elements.next();
@@ -1067,7 +931,7 @@ final class IteratorShortStream extends AbstractShortStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) > 0) {
+            if (N.compare(next, candidate) < 0) {
                 candidate = next;
             }
         }
@@ -1079,6 +943,14 @@ final class IteratorShortStream extends AbstractShortStream {
     public OptionalShort max() {
         if (elements.hasNext() == false) {
             return OptionalShort.empty();
+        } else if (sorted) {
+            short next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return OptionalShort.of(next);
         }
 
         short candidate = elements.next();
@@ -1087,7 +959,7 @@ final class IteratorShortStream extends AbstractShortStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) < 0) {
+            if (N.compare(next, candidate) > 0) {
                 candidate = next;
             }
         }
@@ -1097,7 +969,7 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
         if (elements.hasNext() == false) {
             return OptionalShort.empty();

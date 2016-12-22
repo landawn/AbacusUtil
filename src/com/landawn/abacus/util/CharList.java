@@ -177,7 +177,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         final int mod = Character.MAX_VALUE + 1;
 
         for (int i = 0; i < len; i++) {
-            a[i] = (char) Math.abs(RAND.nextInt() % mod);
+            a[i] = (char) RAND.nextInt(mod);
         }
 
         return of(a);
@@ -196,7 +196,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         final int mod = endInclusive - startInclusive + 1;
 
         for (int i = 0; i < len; i++) {
-            a[i] = (char) (Math.abs(RAND.nextInt() % mod) + startInclusive);
+            a[i] = (char) (RAND.nextInt(mod) + startInclusive);
         }
 
         return of(a);

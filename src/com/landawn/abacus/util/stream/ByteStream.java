@@ -204,7 +204,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    public abstract <K, D, A, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory);
 
     /**
@@ -549,18 +549,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     }
 
     public static ByteStream of(final ByteIterator iterator) {
-        return iterator == null ? empty()
-                : new IteratorByteStream(iterator instanceof ImmutableByteIterator ? (ImmutableByteIterator) iterator : new ImmutableByteIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iterator.hasNext();
-                    }
-
-                    @Override
-                    public byte next() {
-                        return iterator.next();
-                    }
-                });
+        return iterator == null ? empty() : new IteratorByteStream(iterator);
     }
 
     public static ByteStream of(final byte[] a, final int startIndex, final int endIndex) {
@@ -808,12 +797,12 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             private byte t = 0;
             private byte cur = 0;
             private boolean isFirst = true;
-            private boolean noMoreVal = false;
+            private boolean hasMore = true;
             private boolean hasNextVal = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNextVal == false && noMoreVal == false) {
+                if (hasNextVal == false && hasMore) {
                     if (isFirst) {
                         isFirst = false;
                         hasNextVal = hasNext.test(cur = seed);
@@ -822,7 +811,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                     }
 
                     if (hasNextVal == false) {
-                        noMoreVal = true;
+                        hasMore = false;
                     }
                 }
 
@@ -887,30 +876,14 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public static ByteStream concat(final byte[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
             private final Iterator<byte[]> iter = N.asList(a).iterator();
-            private ImmutableByteIterator cur;
+            private ByteIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = new ImmutableByteIterator() {
-                        private final byte[] cur = iter.next();
-                        private int cursor = 0;
-
-                        @Override
-                        public boolean hasNext() {
-                            return cursor < cur.length;
-                        }
-
-                        @Override
-                        public byte next() {
-                            if (cursor >= cur.length) {
-                                throw new NoSuchElementException();
-                            }
-
-                            return cur[cursor++];
-                        }
-                    };
+                    cur = ImmutableByteIterator.of(iter.next());
                 }
+
                 return cur != null && cur.hasNext();
             }
 
@@ -957,7 +930,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public static ByteStream concat(final Collection<? extends ByteStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
             private final Iterator<? extends ByteStream> iter = c.iterator();
-            private ImmutableByteIterator cur;
+            private ByteIterator cur;
 
             @Override
             public boolean hasNext() {
@@ -976,28 +949,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
                 return cur.next();
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -1350,28 +1302,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final ByteStream a, final ByteStream b, final ByteBiFunction<Nth> nextSelector) {
-        return merge(a.byteIterator(), b.byteIterator(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(a.byteIterator(), b.byteIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1409,28 +1340,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             result = merge(result.byteIterator(), iter.next().byteIterator(), nextSelector);
         }
 
-        return result.onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return result.onClose(newCloseHandler(c));
     }
 
     /**
@@ -1510,44 +1420,13 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         // Should never happen.
         if (queue.size() != 2) {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
 }

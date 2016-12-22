@@ -24,12 +24,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
+import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -61,23 +63,23 @@ final class ArrayShortStream extends AbstractShortStream {
         this(values, 0, values.length);
     }
 
-    ArrayShortStream(short[] values, Collection<Runnable> closeHandlers) {
+    ArrayShortStream(short[] values, final Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayShortStream(short[] values, Collection<Runnable> closeHandlers, boolean sorted) {
+    ArrayShortStream(short[] values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         this(values, 0, values.length, closeHandlers, sorted);
     }
 
-    ArrayShortStream(short[] values, int fromIndex, int toIndex) {
+    ArrayShortStream(short[] values, final int fromIndex, final int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    ArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+    ArrayShortStream(short[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, closeHandlers, false);
     }
 
-    ArrayShortStream(short[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+    ArrayShortStream(short[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
@@ -219,7 +221,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -261,7 +263,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -303,7 +305,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -323,7 +325,7 @@ final class ArrayShortStream extends AbstractShortStream {
     public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
         return new IteratorShortStream(new ImmutableShortIterator() {
             private int cursor = fromIndex;
-            private ImmutableShortIterator cur = null;
+            private ShortIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -349,7 +351,7 @@ final class ArrayShortStream extends AbstractShortStream {
     public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int cursor = fromIndex;
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -399,6 +401,8 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Stream<ShortStream> split(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<ShortStream>(new ImmutableIterator<ShortStream>() {
             private int cursor = fromIndex;
 
@@ -413,13 +417,15 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayShortStream(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted);
+                return new ArrayShortStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted);
             }
         }, closeHandlers);
     }
 
     @Override
     public Stream<ShortList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<ShortList>(new ImmutableIterator<ShortList>() {
             private int cursor = fromIndex;
 
@@ -434,7 +440,7 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ShortList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+                return new ShortList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
             }
         }, closeHandlers);
     }
@@ -457,15 +463,13 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                final ShortList result = ShortList.of(N.EMPTY_SHORT_ARRAY);
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -476,7 +480,7 @@ final class ArrayShortStream extends AbstractShortStream {
                     }
                 }
 
-                return ShortStream.of(result.array(), 0, result.size());
+                return new ArrayShortStream(elements, from, cursor, null, sorted);
             }
         }, closeHandlers);
     }
@@ -499,15 +503,13 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                final ShortList result = ShortList.of(N.EMPTY_SHORT_ARRAY);
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -518,7 +520,7 @@ final class ArrayShortStream extends AbstractShortStream {
                     }
                 }
 
-                return result;
+                return new ShortList(N.copyOfRange(elements, from, cursor));
             }
         }, closeHandlers);
     }
@@ -530,7 +532,7 @@ final class ArrayShortStream extends AbstractShortStream {
         }
 
         final ShortStream[] a = new ShortStream[2];
-        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? ShortStream.empty() : new ArrayShortStream(elements, fromIndex, middleIndex, null, sorted);
         a[1] = middleIndex == toIndex ? ShortStream.empty() : new ArrayShortStream(elements, middleIndex, toIndex, null, sorted);
 
@@ -574,10 +576,10 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                final ArrayShortStream result = new ArrayShortStream(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex, null,
+                final ArrayShortStream result = new ArrayShortStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null,
                         sorted);
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -605,9 +607,9 @@ final class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                final ShortList result = ShortList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+                final ShortList result = ShortList.of(N.copyOfRange(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex));
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -622,9 +624,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream top(int n, Comparator<? super Short> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
@@ -727,7 +727,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public List<Short> toList() {
-        final List<Short> result = new ArrayList<>();
+        final List<Short> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -749,7 +749,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Set<Short> toSet() {
-        final Set<Short> result = new HashSet<>();
+        final Set<Short> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -771,7 +771,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Multiset<Short> toMultiset() {
-        final Multiset<Short> result = new Multiset<>();
+        final Multiset<Short> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -793,7 +793,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public LongMultiset<Short> toLongMultiset() {
-        final LongMultiset<Short> result = new LongMultiset<>();
+        final LongMultiset<Short> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -814,7 +814,7 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -825,6 +825,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
         for (int i = fromIndex; i < toIndex; i++) {
             key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -959,9 +960,9 @@ final class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public OptionalShort kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
-        if (fromIndex == toIndex || k > toIndex - fromIndex) {
+        if (k > toIndex - fromIndex) {
             return OptionalShort.empty();
         } else if (sorted) {
             return OptionalShort.of(elements[toIndex - k]);
@@ -1014,7 +1015,18 @@ final class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
+                cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
+            }
+
+            @Override
+            public short[] toArray() {
+                final short[] a = new short[cursor - fromIndex];
+
+                for (int i = 0, len = a.length; i < len; i++) {
+                    a[i] = elements[cursor - i - 1];
+                }
+
+                return a;
             }
         }, closeHandlers);
     }
@@ -1111,15 +1123,15 @@ final class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public int[] toArray() {
                 final int[] a = new int[toIndex - cursor];
 
-                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
-                    a[j] = elements[i];
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = elements[cursor++];
                 }
 
                 return a;
@@ -1163,7 +1175,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -1205,7 +1217,7 @@ final class ArrayShortStream extends AbstractShortStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override

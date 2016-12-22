@@ -67,27 +67,28 @@ final class ArrayStream<T> extends AbstractStream<T> {
     private final int fromIndex;
     private final int toIndex;
 
-    ArrayStream(T[] values) {
+    ArrayStream(final T[] values) {
         this(values, 0, values.length);
     }
 
-    ArrayStream(T[] values, Collection<Runnable> closeHandlers) {
+    ArrayStream(final T[] values, final Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayStream(T[] values, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator) {
+    ArrayStream(final T[] values, final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> comparator) {
         this(values, 0, values.length, closeHandlers, sorted, comparator);
     }
 
-    ArrayStream(T[] values, int fromIndex, int toIndex) {
+    ArrayStream(final T[] values, final int fromIndex, final int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    ArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+    ArrayStream(final T[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, closeHandlers, false, null);
     }
 
-    ArrayStream(T[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> comparator) {
+    ArrayStream(final T[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted,
+            Comparator<? super T> comparator) {
         super(closeHandlers, sorted, comparator);
 
         checkIndex(fromIndex, toIndex, values.length);
@@ -229,7 +230,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -271,7 +272,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -313,7 +314,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -355,7 +356,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -397,7 +398,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -439,7 +440,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -481,7 +482,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -523,7 +524,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -749,6 +750,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> split(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
             private int cursor = fromIndex;
 
@@ -763,7 +766,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayStream<T>(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted, cmp);
+                return new ArrayStream<T>(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted, cmp);
             }
 
         }, closeHandlers);
@@ -771,6 +774,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<ObjectList<T>> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
             private int cursor = fromIndex;
 
@@ -785,7 +790,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                return ObjectList.of(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+                return ObjectList.of(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
             }
 
         }, closeHandlers);
@@ -807,7 +812,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                return N.asList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+                return N.asList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
             }
 
         }, closeHandlers);
@@ -831,7 +836,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
                 final Set<T> result = new HashSet<>(N.min(9, toIndex - cursor > size ? size : toIndex - cursor));
 
-                for (int i = cursor, to = (cursor = toIndex - cursor > size ? cursor + size : toIndex); i < to; i++) {
+                for (int i = cursor, to = (cursor = size < toIndex - cursor ? cursor + size : toIndex); i < to; i++) {
                     result.add(elements[i]);
                 }
 
@@ -858,15 +863,13 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final ObjectList<T> result = new ObjectList<>();
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -877,9 +880,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     }
                 }
 
-                return new ArrayStream<T>((T[]) result.array(), 0, result.size(), null, sorted, cmp);
+                return new ArrayStream<T>(elements, from, cursor, null, sorted, cmp);
             }
-
         }, closeHandlers);
     }
 
@@ -901,15 +903,13 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final ObjectList<T> result = new ObjectList<>();
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -920,9 +920,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     }
                 }
 
-                return result;
+                return new ObjectList<T>(N.copyOfRange(elements, from, cursor));
             }
-
         }, closeHandlers);
     }
 
@@ -1017,7 +1016,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
         }
 
         final Stream<T>[] a = new Stream[2];
-        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? (Stream<T>) Stream.empty() : new ArrayStream<T>(elements, fromIndex, middleIndex, null, sorted, cmp);
         a[1] = middleIndex == toIndex ? (Stream<T>) Stream.empty() : new ArrayStream<T>(elements, middleIndex, toIndex, null, sorted, cmp);
 
@@ -1061,9 +1060,9 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final Stream<T> result = new ArrayStream<T>(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex, null, sorted, cmp);
+                final Stream<T> result = new ArrayStream<T>(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null, sorted, cmp);
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -1091,9 +1090,9 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final ObjectList<T> result = ObjectList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+                final ObjectList<T> result = ObjectList.of(N.copyOfRange(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex));
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -1121,9 +1120,9 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> result = N.asList(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+                final List<T> result = N.asList(N.copyOfRange(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex));
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -1138,9 +1137,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> top(int n, Comparator<? super T> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
@@ -1280,7 +1277,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     public List<T> toList() {
         // return N.asList(N.copyOfRange(elements, fromIndex, toIndex));
 
-        final List<T> result = new ArrayList<>();
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1302,7 +1299,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Set<T> toSet() {
-        final Set<T> result = new HashSet<>();
+        final Set<T> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1324,7 +1321,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Multiset<T> toMultiset() {
-        final Multiset<T> result = new Multiset<>();
+        final Multiset<T> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1346,7 +1343,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public LongMultiset<T> toLongMultiset() {
-        final LongMultiset<T> result = new LongMultiset<>();
+        final LongMultiset<T> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -1367,7 +1364,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1544,7 +1541,9 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
-        if (fromIndex == toIndex || k > toIndex - fromIndex) {
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
+
+        if (k > toIndex - fromIndex) {
             return OptionalNullable.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
             return OptionalNullable.of(elements[toIndex - k]);
@@ -1584,7 +1583,18 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
             @Override
             public void skip(long n) {
-                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
+                cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= cursor - fromIndex ? a : (A[]) N.newArray(a.getClass().getComponentType(), cursor - fromIndex);
+
+                for (int i = 0, len = cursor - fromIndex; i < len; i++) {
+                    a[i] = (A) elements[cursor - i - 1];
+                }
+
+                return a;
             }
         }, closeHandlers);
     }

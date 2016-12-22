@@ -38,12 +38,15 @@ import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharTriFunction;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -76,7 +79,7 @@ abstract class AbstractCharStream extends CharStream {
             return dropWhile(new CharPredicate() {
                 @Override
                 public boolean test(char value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         } else {
@@ -85,7 +88,7 @@ abstract class AbstractCharStream extends CharStream {
             return dropWhile(new CharPredicate() {
                 @Override
                 public boolean test(char value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         }
@@ -110,6 +113,37 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public Stream<CharStream> split(final int size) {
+        return split0(size).map(new Function<CharList, CharStream>() {
+            @Override
+            public CharStream apply(CharList t) {
+                return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<CharStream> split(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return split0(identity, predicate, identityUpdate).map(new Function<CharList, CharStream>() {
+            @Override
+            public CharStream apply(CharList t) {
+                return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<CharStream> sliding(final int windowSize, final int increment) {
+        return sliding0(windowSize, increment).map(new Function<CharList, CharStream>() {
+            @Override
+            public CharStream apply(CharList t) {
+                return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
     public <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier) {
         return toMap(classifier, new Supplier<Map<K, List<Character>>>() {
             @Override
@@ -122,6 +156,7 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public <K, M extends Map<K, List<Character>>> M toMap(CharFunction<? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<Character, ?, List<Character>> downstream = Collectors.toList();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -148,6 +183,7 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
@@ -184,9 +220,9 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream distinct() {
-        return newStream(this.sequential().filter(new CharPredicate() {
-            private final Set<Object> set = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
+        return newStream(this.sequential().filter(new CharPredicate() {
             @Override
             public boolean test(char value) {
                 return set.add(value);
@@ -209,7 +245,7 @@ abstract class AbstractCharStream extends CharStream {
             return OptionalChar.empty();
         }
 
-        char next = 0;
+        char next = iter.next();
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -272,19 +308,7 @@ abstract class AbstractCharStream extends CharStream {
             list.add(iter.next());
         }
 
-        final CharStream[] a = new CharStream[] { new ArrayCharStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorCharStream(iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public char next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
+        final CharStream[] a = { new ArrayCharStream(list.array(), 0, list.size(), null, sorted), new IteratorCharStream(iter, null, sorted) };
 
         return this.newStream(a, false, null);
     }
@@ -296,7 +320,7 @@ abstract class AbstractCharStream extends CharStream {
         final CharIterator iter = this.charIterator();
         final CharList list = new CharList();
         char next = 0;
-        CharStream p = null;
+        CharStream s = null;
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -304,31 +328,19 @@ abstract class AbstractCharStream extends CharStream {
             if (where.test(next)) {
                 list.add(next);
             } else {
-                p = CharStream.of(next);
+                s = CharStream.of(next);
 
                 break;
             }
         }
 
-        final CharStream[] a = new CharStream[] { new ArrayCharStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorCharStream(iter instanceof ImmutableCharIterator ? (ImmutableCharIterator) iter : new ImmutableCharIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
+        final CharStream[] a = { new ArrayCharStream(list.array(), 0, list.size(), null, sorted), new IteratorCharStream(iter, null, sorted) };
 
-                    @Override
-                    public char next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
-
-        if (p != null) {
+        if (s != null) {
             if (sorted) {
-                new IteratorCharStream(a[1].prepend(p).charIterator(), null, sorted);
+                a[1] = new IteratorCharStream(a[1].prepend(s).charIterator(), null, sorted);
             } else {
-                a[1] = a[1].prepend(p);
+                a[1] = a[1].prepend(s);
             }
         }
 
@@ -337,10 +349,10 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream reverse() {
-        final char[] a = toArray();
+        final char[] tmp = toArray();
 
         return newStream(new ImmutableCharIterator() {
-            private int cursor = a.length;
+            private int cursor = tmp.length;
 
             @Override
             public boolean hasNext() {
@@ -353,17 +365,28 @@ abstract class AbstractCharStream extends CharStream {
                     throw new NoSuchElementException();
                 }
 
-                return a[--cursor];
+                return tmp[--cursor];
             }
 
             @Override
             public long count() {
-                return cursor - 0;
+                return cursor;
             }
 
             @Override
             public void skip(long n) {
-                cursor = cursor > n ? cursor - (int) n : 0;
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public char[] toArray() {
+                final char[] a = new char[cursor];
+
+                for (int i = 0, len = tmp.length; i < len; i++) {
+                    a[i] = tmp[cursor - i - 1];
+                }
+
+                return a;
             }
         }, false);
     }
@@ -401,11 +424,11 @@ abstract class AbstractCharStream extends CharStream {
     public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarize2() {
         final char[] a = sorted().toArray();
 
-        final CharSummaryStatistics summaryStatistics = new CharSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Character>> distribution = a.length == 0 ? Optional.<Map<Percentage, Character>> empty()
-                : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new CharSummaryStatistics(), Optional.<Map<Percentage, Character>> empty());
+        } else {
+            return Pair.of(new CharSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
     }
 
     @Override
@@ -437,25 +460,27 @@ abstract class AbstractCharStream extends CharStream {
         };
 
         final Joiner joiner = collect(supplier, accumulator, combiner);
+
         return joiner.toString();
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjCharConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
+
         return collect(supplier, accumulator, combiner);
     }
 
     @Override
     public Stream<IndexedChar> indexed() {
-        return newStream(this.sequential().mapToObj(new CharFunction<IndexedChar>() {
-            final MutableLong idx = new MutableLong();
+        final MutableLong idx = new MutableLong();
 
+        return newStream(this.sequential().mapToObj(new CharFunction<IndexedChar>() {
             @Override
             public IndexedChar apply(char t) {
                 return IndexedChar.of(idx.getAndIncrement(), t);
             }
-        }).iterator(), false, null);
+        }).iterator(), true, INDEXED_CHAR_COMPARATOR);
     }
 
     @Override
@@ -484,11 +509,6 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream cached() {
-        return this.newStream(toArray(), sorted);
-    }
-
-    @Override
     public CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBiFunction<Character> zipFunction) {
         return CharStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
@@ -496,5 +516,10 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTriFunction<Character> zipFunction) {
         return CharStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
+    @Override
+    public CharStream cached() {
+        return this.newStream(toArray(), sorted);
     }
 }

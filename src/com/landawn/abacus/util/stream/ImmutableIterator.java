@@ -92,7 +92,7 @@ public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override

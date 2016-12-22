@@ -38,12 +38,15 @@ import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteTriFunction;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -76,7 +79,7 @@ abstract class AbstractByteStream extends ByteStream {
             return dropWhile(new BytePredicate() {
                 @Override
                 public boolean test(byte value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         } else {
@@ -85,7 +88,7 @@ abstract class AbstractByteStream extends ByteStream {
             return dropWhile(new BytePredicate() {
                 @Override
                 public boolean test(byte value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         }
@@ -110,6 +113,37 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public Stream<ByteStream> split(final int size) {
+        return split0(size).map(new Function<ByteList, ByteStream>() {
+            @Override
+            public ByteStream apply(ByteList t) {
+                return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return split0(identity, predicate, identityUpdate).map(new Function<ByteList, ByteStream>() {
+            @Override
+            public ByteStream apply(ByteList t) {
+                return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<ByteStream> sliding(final int windowSize, final int increment) {
+        return sliding0(windowSize, increment).map(new Function<ByteList, ByteStream>() {
+            @Override
+            public ByteStream apply(ByteList t) {
+                return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
     public <K> Map<K, List<Byte>> toMap(ByteFunction<? extends K> classifier) {
         return toMap(classifier, new Supplier<Map<K, List<Byte>>>() {
             @Override
@@ -122,6 +156,7 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public <K, M extends Map<K, List<Byte>>> M toMap(ByteFunction<? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<Byte, ?, List<Byte>> downstream = Collectors.toList();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -148,6 +183,7 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
@@ -183,9 +219,9 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream distinct() {
-        return newStream(this.sequential().filter(new BytePredicate() {
-            private final Set<Object> set = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
+        return newStream(this.sequential().filter(new BytePredicate() {
             @Override
             public boolean test(byte value) {
                 return set.add(value);
@@ -208,7 +244,7 @@ abstract class AbstractByteStream extends ByteStream {
             return OptionalByte.empty();
         }
 
-        byte next = 0;
+        byte next = iter.next();
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -271,19 +307,7 @@ abstract class AbstractByteStream extends ByteStream {
             list.add(iter.next());
         }
 
-        final ByteStream[] a = new ByteStream[] { new ArrayByteStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorByteStream(iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public byte next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
+        final ByteStream[] a = { new ArrayByteStream(list.array(), 0, list.size(), null, sorted), new IteratorByteStream(iter, null, sorted) };
 
         return this.newStream(a, false, null);
     }
@@ -295,7 +319,7 @@ abstract class AbstractByteStream extends ByteStream {
         final ByteIterator iter = this.byteIterator();
         final ByteList list = new ByteList();
         byte next = 0;
-        ByteStream p = null;
+        ByteStream s = null;
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -303,31 +327,19 @@ abstract class AbstractByteStream extends ByteStream {
             if (where.test(next)) {
                 list.add(next);
             } else {
-                p = ByteStream.of(next);
+                s = ByteStream.of(next);
 
                 break;
             }
         }
 
-        final ByteStream[] a = new ByteStream[] { new ArrayByteStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorByteStream(iter instanceof ImmutableByteIterator ? (ImmutableByteIterator) iter : new ImmutableByteIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
+        final ByteStream[] a = { new ArrayByteStream(list.array(), 0, list.size(), null, sorted), new IteratorByteStream(iter, null, sorted) };
 
-                    @Override
-                    public byte next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
-
-        if (p != null) {
+        if (s != null) {
             if (sorted) {
-                new IteratorByteStream(a[1].prepend(p).byteIterator(), null, sorted);
+                a[1] = new IteratorByteStream(a[1].prepend(s).byteIterator(), null, sorted);
             } else {
-                a[1] = a[1].prepend(p);
+                a[1] = a[1].prepend(s);
             }
         }
 
@@ -336,10 +348,10 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream reverse() {
-        final byte[] a = toArray();
+        final byte[] tmp = toArray();
 
         return newStream(new ImmutableByteIterator() {
-            private int cursor = a.length;
+            private int cursor = tmp.length;
 
             @Override
             public boolean hasNext() {
@@ -352,17 +364,28 @@ abstract class AbstractByteStream extends ByteStream {
                     throw new NoSuchElementException();
                 }
 
-                return a[--cursor];
+                return tmp[--cursor];
             }
 
             @Override
             public long count() {
-                return cursor - 0;
+                return cursor;
             }
 
             @Override
             public void skip(long n) {
-                cursor = cursor > n ? cursor - (int) n : 0;
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final byte[] a = new byte[cursor];
+
+                for (int i = 0, len = tmp.length; i < len; i++) {
+                    a[i] = tmp[cursor - i - 1];
+                }
+
+                return a;
             }
         }, false);
     }
@@ -400,10 +423,11 @@ abstract class AbstractByteStream extends ByteStream {
     public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarize2() {
         final byte[] a = sorted().toArray();
 
-        final ByteSummaryStatistics summaryStatistics = new ByteSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Byte>> distribution = a.length == 0 ? Optional.<Map<Percentage, Byte>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new ByteSummaryStatistics(), Optional.<Map<Percentage, Byte>> empty());
+        } else {
+            return Pair.of(new ByteSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
     }
 
     @Override
@@ -435,25 +459,27 @@ abstract class AbstractByteStream extends ByteStream {
         };
 
         final Joiner joiner = collect(supplier, accumulator, combiner);
+
         return joiner.toString();
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
+
         return collect(supplier, accumulator, combiner);
     }
 
     @Override
     public Stream<IndexedByte> indexed() {
-        return newStream(this.sequential().mapToObj(new ByteFunction<IndexedByte>() {
-            final MutableLong idx = new MutableLong();
+        final MutableLong idx = new MutableLong();
 
+        return newStream(this.sequential().mapToObj(new ByteFunction<IndexedByte>() {
             @Override
             public IndexedByte apply(byte t) {
                 return IndexedByte.of(idx.getAndIncrement(), t);
             }
-        }).iterator(), false, null);
+        }).iterator(), true, INDEXED_BYTE_COMPARATOR);
     }
 
     @Override

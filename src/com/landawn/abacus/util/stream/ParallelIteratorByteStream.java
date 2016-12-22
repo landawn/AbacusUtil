@@ -23,6 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
@@ -75,20 +76,33 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     private byte head;
     private ByteStream tail;
 
-    ParallelIteratorByteStream(ImmutableByteIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+    ParallelIteratorByteStream(final ByteIterator values, final Collection<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
+            final Splitor splitor) {
         super(closeHandlers, sorted);
 
-        this.elements = values;
+        this.elements = values instanceof ImmutableByteIterator ? (ImmutableByteIterator) values : new ImmutableByteIterator() {
+            @Override
+            public boolean hasNext() {
+                return values.hasNext();
+            }
+
+            @Override
+            public byte next() {
+                return values.next();
+            }
+        };
+
         this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
-        this.sequential = new IteratorByteStream(this.elements, this.closeHandlers, this.sorted);
     }
 
-    ParallelIteratorByteStream(ByteStream stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+    ParallelIteratorByteStream(final ByteStream stream, final Set<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
+            final Splitor splitor) {
         this(stream.byteIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
-    ParallelIteratorByteStream(Stream<Byte> stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+    ParallelIteratorByteStream(final Stream<Byte> stream, final Set<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
+            final Splitor splitor) {
         this(byteIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
@@ -275,7 +289,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
         N.sort(testedElements, INDEXED_BYTE_COMPARATOR);
 
-        int n = first.isPresent() ? (int) first.get().index() : 0;
+        final int n = first.isPresent() ? (int) first.get().index() : testedElements.size();
 
         final ByteList list1 = new ByteList(n);
         final ByteList list2 = new ByteList(testedElements.size() - n);
@@ -293,7 +307,11 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         a[1] = new IteratorByteStream(elements, null, sorted);
 
         if (N.notNullOrEmpty(list2)) {
-            a[1] = a[1].prepend(ByteStream.of(list2.array()));
+            if (sorted) {
+                a[1] = new IteratorByteStream(a[1].prepend(list2.stream()).byteIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(list2.stream());
+            }
         }
 
         return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, false, null, maxThreadNum, splitor);
@@ -318,6 +336,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
         return new ParallelIteratorByteStream(new ImmutableByteIterator() {
             byte[] a = null;
+            int toIndex = 0;
             int cursor = 0;
 
             @Override
@@ -326,7 +345,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                     sort();
                 }
 
-                return cursor < a.length;
+                return cursor < toIndex;
             }
 
             @Override
@@ -335,7 +354,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                     sort();
                 }
 
-                if (cursor >= a.length) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -348,7 +367,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                     sort();
                 }
 
-                return a.length - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -357,7 +376,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                     sort();
                 }
 
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -369,12 +388,13 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                 if (cursor == 0) {
                     return a;
                 } else {
-                    return N.copyOfRange(a, cursor, a.length);
+                    return N.copyOfRange(a, cursor, toIndex);
                 }
             }
 
             private void sort() {
                 a = elements.toArray();
+                toIndex = a.length;
 
                 N.parallelSort(a);
             }
@@ -401,8 +421,6 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     public ByteStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize == Long.MAX_VALUE) {
-            return this;
         }
 
         return new ParallelIteratorByteStream(new ImmutableByteIterator() {
@@ -528,17 +546,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
     }
 
     @Override
@@ -640,7 +648,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
             return sequential().toMap(classifier, downstream, mapFactory);
@@ -846,7 +854,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             futureList.add(asyncExecutor.execute(new Callable<R>() {
                 @Override
                 public R call() {
-                    R container = supplier.get();
+                    final R container = supplier.get();
                     byte next = 0;
 
                     try {
@@ -923,6 +931,8 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     public OptionalByte min() {
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
+        } else if (sorted) {
+            return OptionalByte.of(elements.next());
         }
 
         byte candidate = elements.next();
@@ -931,7 +941,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) > 0) {
+            if (N.compare(next, candidate) < 0) {
                 candidate = next;
             }
         }
@@ -943,6 +953,14 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     public OptionalByte max() {
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
+        } else if (sorted) {
+            byte next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return OptionalByte.of(next);
         }
 
         byte candidate = elements.next();
@@ -951,7 +969,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) < 0) {
+            if (N.compare(next, candidate) > 0) {
                 candidate = next;
             }
         }
@@ -961,7 +979,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
@@ -1046,17 +1064,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1099,17 +1107,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1152,17 +1150,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1198,7 +1186,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                             if (predicate.test(pair.right)) {
                                 synchronized (resultHolder) {
                                     if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                                        resultHolder.setValue(pair);
+                                        resultHolder.setValue(pair.copy());
                                     }
                                 }
 
@@ -1212,17 +1200,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalByte.empty() : OptionalByte.of(resultHolder.value().right);
     }
@@ -1245,7 +1223,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                     final Pair<Long, Byte> pair = new Pair<>();
 
                     try {
-                        while (resultHolder.value() == null && eHolder.value() == null) {
+                        while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
                                     pair.left = index.getAndIncrement();
@@ -1258,11 +1236,9 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
                             if (predicate.test(pair.right)) {
                                 synchronized (resultHolder) {
                                     if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                                        resultHolder.setValue(pair);
+                                        resultHolder.setValue(pair.copy());
                                     }
                                 }
-
-                                break;
                             }
                         }
                     } catch (Throwable e) {
@@ -1272,17 +1248,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalByte.empty() : OptionalByte.of(resultHolder.value().right);
     }
@@ -1330,17 +1296,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == NONE ? OptionalByte.empty() : OptionalByte.of((Byte) resultHolder.value());
     }

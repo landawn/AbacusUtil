@@ -504,7 +504,7 @@ public abstract class Stream<T>
 
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
 
-    public abstract <K, D, A> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> keyMapper,
@@ -675,6 +675,8 @@ public abstract class Stream<T>
 
     public abstract <U> OptionalNullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
+    public abstract <U> OptionalNullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
     public abstract <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     public abstract <U> boolean allMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
@@ -746,7 +748,7 @@ public abstract class Stream<T>
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    public abstract <K, D, A, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory);
 
     /**
@@ -1373,7 +1375,7 @@ public abstract class Stream<T>
 
             try {
                 array = (T[]) listElementDataField.get(c);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // ignore;
                 isListElementDataFieldGettable = false;
             }
@@ -1455,12 +1457,20 @@ public abstract class Stream<T>
      * @return
      */
     public static Stream<Object[]> of(final ResultSet resultSet) {
-        N.requireNonNull(resultSet);
-
-        return of(new RowIterator(resultSet));
+        return of(resultSet, 0, Long.MAX_VALUE);
     }
 
     public static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet) {
+        return of(targetClass, resultSet, 0, Long.MAX_VALUE);
+    }
+
+    public static Stream<Object[]> of(final ResultSet resultSet, long startIndex, long endIndex) {
+        N.requireNonNull(resultSet);
+
+        return of(new RowIterator(resultSet, startIndex, endIndex));
+    }
+
+    public static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet, long startIndex, long endIndex) {
         N.requireNonNull(targetClass);
         N.requireNonNull(resultSet);
 
@@ -1480,7 +1490,7 @@ public abstract class Stream<T>
             final boolean isMap = type.isMap();
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
 
-            return Stream.of(resultSet).map(new Function<Object[], T>() {
+            return Stream.of(resultSet, startIndex, endIndex).map(new Function<Object[], T>() {
                 @Override
                 public T apply(Object[] a) {
                     if (isMap) {
@@ -1515,12 +1525,6 @@ public abstract class Stream<T>
         } catch (SQLException e) {
             throw N.toRuntimeException(e);
         }
-    }
-
-    static Stream<Object[]> of(final ResultSet resultSet, int startIndex, int endIndex) {
-        N.requireNonNull(resultSet);
-
-        return of(new RowIterator(resultSet), startIndex, endIndex);
     }
 
     public static Try<Stream<String>> of(final File file) {
@@ -1597,6 +1601,27 @@ public abstract class Stream<T>
                 }
                 return a[cursor++];
             }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a2) {
+                a2 = a2.length >= toIndex - cursor ? a2 : (A[]) N.newArray(a2.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a2[i] = (A) Boolean.valueOf(a[cursor++]);
+                }
+
+                return a2;
+            }
         });
     }
 
@@ -1604,7 +1629,7 @@ public abstract class Stream<T>
         return CharStream.of(a).boxed();
     }
 
-    public static Stream<Character> from(char[] a, int fromIndex, int toIndex) {
+    public static Stream<Character> from(char[] a, final int fromIndex, final int toIndex) {
         return CharStream.of(a, fromIndex, toIndex).boxed();
     }
 
@@ -1612,7 +1637,7 @@ public abstract class Stream<T>
         return ByteStream.of(a).boxed();
     }
 
-    public static Stream<Byte> from(byte[] a, int fromIndex, int toIndex) {
+    public static Stream<Byte> from(byte[] a, final int fromIndex, final int toIndex) {
         return ByteStream.of(a, fromIndex, toIndex).boxed();
     }
 
@@ -1620,7 +1645,7 @@ public abstract class Stream<T>
         return ShortStream.of(a).boxed();
     }
 
-    public static Stream<Short> from(short[] a, int fromIndex, int toIndex) {
+    public static Stream<Short> from(short[] a, final int fromIndex, final int toIndex) {
         return ShortStream.of(a, fromIndex, toIndex).boxed();
     }
 
@@ -1628,7 +1653,7 @@ public abstract class Stream<T>
         return IntStream.of(a).boxed();
     }
 
-    public static Stream<Integer> from(int[] a, int fromIndex, int toIndex) {
+    public static Stream<Integer> from(int[] a, final int fromIndex, final int toIndex) {
         return IntStream.of(a, fromIndex, toIndex).boxed();
     }
 
@@ -1636,7 +1661,7 @@ public abstract class Stream<T>
         return LongStream.of(a).boxed();
     }
 
-    public static Stream<Long> from(long[] a, int fromIndex, int toIndex) {
+    public static Stream<Long> from(long[] a, final int fromIndex, final int toIndex) {
         return LongStream.of(a, fromIndex, toIndex).boxed();
     }
 
@@ -1644,7 +1669,7 @@ public abstract class Stream<T>
         return FloatStream.of(a).boxed();
     }
 
-    public static Stream<Float> from(float[] a, int fromIndex, int toIndex) {
+    public static Stream<Float> from(float[] a, final int fromIndex, final int toIndex) {
         return FloatStream.of(a, fromIndex, toIndex).boxed();
     }
 
@@ -1652,7 +1677,7 @@ public abstract class Stream<T>
         return DoubleStream.of(a).boxed();
     }
 
-    public static Stream<Double> from(double[] a, int fromIndex, int toIndex) {
+    public static Stream<Double> from(double[] a, final int fromIndex, final int toIndex) {
         return DoubleStream.of(a, fromIndex, toIndex).boxed();
     }
 
@@ -1770,12 +1795,17 @@ public abstract class Stream<T>
         return of(new ImmutableIterator<T>() {
             private T t = (T) NONE;
             private T cur = (T) NONE;
+            private boolean hasMore = true;
             private boolean hasNextVal = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNextVal == false && cur == NONE) {
+                if (hasNextVal == false && hasMore) {
                     hasNextVal = hasNext.test((cur = (t == NONE ? seed : f.apply(t))));
+
+                    if (hasNextVal == false) {
+                        hasMore = false;
+                    }
                 }
 
                 return hasNextVal;
@@ -1883,31 +1913,53 @@ public abstract class Stream<T>
     }
 
     public static <T> Stream<T> concat(final T[]... a) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        }
+        return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new ImmutableIterator<T>() {
+            private final Iterator<T[]> iter = N.asList(a).iterator();
+            private Iterator<T> cur;
 
-        final Iterator<? extends T>[] iters = new Iterator[a.length];
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = ImmutableIterator.of(iter.next());
+                }
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = ImmutableIterator.of(a[i]);
-        }
+                return cur != null && cur.hasNext();
+            }
 
-        return concat(iters);
+            @Override
+            public T next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
     }
 
     public static <T> Stream<T> concat(final Collection<? extends T>... a) {
-        if (N.isNullOrEmpty(a)) {
-            return empty();
-        }
+        return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new ImmutableIterator<T>() {
+            private final Iterator<Collection<? extends T>> iter = N.asList(a).iterator();
+            private Iterator<? extends T> cur;
 
-        final Iterator<? extends T>[] iters = new Iterator[a.length];
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next().iterator();
+                }
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            iters[i] = a[i].iterator();
-        }
+                return cur != null && cur.hasNext();
+            }
 
-        return concat(iters);
+            @Override
+            public T next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        });
     }
 
     public static <T> Stream<T> concat(final Iterator<? extends T>... a) {
@@ -1937,28 +1989,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return concat2(iterList).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<? extends T> e : c) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return concat2(iterList).onClose(newCloseHandler(c));
     }
 
     public static <T> Stream<T> concat2(final Collection<? extends Iterator<? extends T>> c) {
@@ -2223,28 +2254,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return parallelConcat2(iterList, readThreadNum, queueSize).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<? extends T> e : c) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelConcat2(iterList, readThreadNum, queueSize).onClose(newCloseHandler(c));
     }
 
     /**
@@ -2317,7 +2327,7 @@ public abstract class Stream<T>
 
         final AtomicInteger threadCounter = new AtomicInteger(c.size());
         final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<T>(queueSize);
-        final Holder<Throwable> errorHolder = new Holder<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         for (Iterator<? extends T> e : c) {
@@ -2345,7 +2355,7 @@ public abstract class Stream<T>
                             }
                         }
                     } catch (Throwable e) {
-                        setError(errorHolder, e, onGoing);
+                        setError(eHolder, e, onGoing);
                     } finally {
                         threadCounter.decrementAndGet();
                     }
@@ -2367,11 +2377,11 @@ public abstract class Stream<T>
                         }
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 }
 
-                if (errorHolder.value() != null) {
-                    throwError(errorHolder, onGoing);
+                if (eHolder.value() != null) {
+                    throwError(eHolder, onGoing);
                 }
 
                 return next != null;
@@ -2472,28 +2482,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharBiFunction<R> zipFunction) {
-        return zip(a.charIterator(), b.charIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.charIterator(), b.charIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -2505,28 +2494,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharStream c, final CharTriFunction<R> zipFunction) {
-        return zip(a.charIterator(), b.charIterator(), c.charIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.charIterator(), b.charIterator(), c.charIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -2573,28 +2541,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -2707,28 +2654,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final CharStream a, final CharStream b, final char valueForNoneA, final char valueForNoneB,
             final CharBiFunction<R> zipFunction) {
-        return zip(a.charIterator(), b.charIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.charIterator(), b.charIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -2746,28 +2672,8 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharStream c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final CharTriFunction<R> zipFunction) {
-        return zip(a.charIterator(), b.charIterator(), c.charIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.charIterator(), b.charIterator(), c.charIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -2831,28 +2737,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (CharStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -2932,28 +2817,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteBiFunction<R> zipFunction) {
-        return zip(a.byteIterator(), b.byteIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.byteIterator(), b.byteIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -2965,28 +2829,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTriFunction<R> zipFunction) {
-        return zip(a.byteIterator(), b.byteIterator(), c.byteIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.byteIterator(), b.byteIterator(), c.byteIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -3033,28 +2876,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -3167,28 +2989,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final byte valueForNoneA, final byte valueForNoneB,
             final ByteBiFunction<R> zipFunction) {
-        return zip(a.byteIterator(), b.byteIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.byteIterator(), b.byteIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -3206,28 +3007,8 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteStream c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final ByteTriFunction<R> zipFunction) {
-        return zip(a.byteIterator(), b.byteIterator(), c.byteIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.byteIterator(), b.byteIterator(), c.byteIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -3291,28 +3072,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ByteStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -3392,28 +3152,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortBiFunction<R> zipFunction) {
-        return zip(a.shortIterator(), b.shortIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.shortIterator(), b.shortIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -3425,28 +3164,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortStream c, final ShortTriFunction<R> zipFunction) {
-        return zip(a.shortIterator(), b.shortIterator(), c.shortIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.shortIterator(), b.shortIterator(), c.shortIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -3493,28 +3211,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -3628,28 +3325,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final short valueForNoneA, final short valueForNoneB,
             final ShortBiFunction<R> zipFunction) {
-        return zip(a.shortIterator(), b.shortIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.shortIterator(), b.shortIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -3667,28 +3343,8 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortStream c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final ShortTriFunction<R> zipFunction) {
-        return zip(a.shortIterator(), b.shortIterator(), c.shortIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.shortIterator(), b.shortIterator(), c.shortIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -3752,28 +3408,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (ShortStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -3853,28 +3488,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntBiFunction<R> zipFunction) {
-        return zip(a.intIterator(), b.intIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (IntStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.intIterator(), b.intIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -3886,28 +3500,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<R> zipFunction) {
-        return zip(a.intIterator(), b.intIterator(), c.intIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (IntStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.intIterator(), b.intIterator(), c.intIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -3954,28 +3547,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (IntStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -4088,28 +3660,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB,
             final IntBiFunction<R> zipFunction) {
-        return zip(a.intIterator(), b.intIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (IntStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.intIterator(), b.intIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4127,28 +3678,8 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final IntTriFunction<R> zipFunction) {
-        return zip(a.intIterator(), b.intIterator(), c.intIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (IntStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.intIterator(), b.intIterator(), c.intIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -4212,28 +3743,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (IntStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -4313,28 +3823,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongBiFunction<R> zipFunction) {
-        return zip(a.longIterator(), b.longIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.longIterator(), b.longIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4346,28 +3835,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<R> zipFunction) {
-        return zip(a.longIterator(), b.longIterator(), c.longIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.longIterator(), b.longIterator(), c.longIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -4414,28 +3882,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -4548,28 +3995,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final LongStream a, final LongStream b, final long valueForNoneA, final long valueForNoneB,
             final LongBiFunction<R> zipFunction) {
-        return zip(a.longIterator(), b.longIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.longIterator(), b.longIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4587,28 +4013,8 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongStream c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final LongTriFunction<R> zipFunction) {
-        return zip(a.longIterator(), b.longIterator(), c.longIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.longIterator(), b.longIterator(), c.longIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -4672,28 +4078,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (LongStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -4773,28 +4158,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatBiFunction<R> zipFunction) {
-        return zip(a.floatIterator(), b.floatIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (FloatStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.floatIterator(), b.floatIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4806,28 +4170,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatStream c, final FloatTriFunction<R> zipFunction) {
-        return zip(a.floatIterator(), b.floatIterator(), c.floatIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (FloatStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.floatIterator(), b.floatIterator(), c.floatIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -4874,28 +4217,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (FloatStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -5009,28 +4331,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final float valueForNoneA, final float valueForNoneB,
             final FloatBiFunction<R> zipFunction) {
-        return zip(a.floatIterator(), b.floatIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (FloatStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.floatIterator(), b.floatIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5048,28 +4349,8 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatStream c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final FloatTriFunction<R> zipFunction) {
-        return zip(a.floatIterator(), b.floatIterator(), c.floatIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (FloatStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.floatIterator(), b.floatIterator(), c.floatIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -5133,28 +4414,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (FloatStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -5234,28 +4494,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<R> zipFunction) {
-        return zip(a.doubleIterator(), b.doubleIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.doubleIterator(), b.doubleIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5267,28 +4506,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<R> zipFunction) {
-        return zip(a.doubleIterator(), b.doubleIterator(), c.doubleIterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : N.asList(a, b, c)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.doubleIterator(), b.doubleIterator(), c.doubleIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -5335,28 +4553,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -5470,28 +4667,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final double valueForNoneA, final double valueForNoneB,
             final DoubleBiFunction<R> zipFunction) {
-        return zip(a.doubleIterator(), b.doubleIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.doubleIterator(), b.doubleIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5510,28 +4686,7 @@ public abstract class Stream<T>
     public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC, final DoubleTriFunction<R> zipFunction) {
         return zip(a.doubleIterator(), b.doubleIterator(), c.doubleIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
-                .onClose(new Runnable() {
-                    @Override
-                    public void run() {
-                        RuntimeException runtimeException = null;
-
-                        for (DoubleStream stream : N.asList(a, b, c)) {
-                            try {
-                                stream.close();
-                            } catch (Throwable throwable) {
-                                if (runtimeException == null) {
-                                    runtimeException = N.toRuntimeException(throwable);
-                                } else {
-                                    runtimeException.addSuppressed(throwable);
-                                }
-                            }
-                        }
-
-                        if (runtimeException != null) {
-                            throw runtimeException;
-                        }
-                    }
-                });
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -5595,28 +4750,7 @@ public abstract class Stream<T>
 
                 return zipFunction.apply(args);
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -5723,28 +4857,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : N.asList(a, b)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.iterator(), b.iterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5757,28 +4870,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), c.iterator(), zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : N.asList(a, b, c)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.iterator(), b.iterator(), c.iterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -5801,28 +4893,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return zip2(iterList, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : c) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip2(iterList, zipFunction).onClose(newCloseHandler(c));
     }
 
     public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super ObjectList<? extends T>, R> zipFunction) {
@@ -6002,28 +5073,7 @@ public abstract class Stream<T>
      */
     public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : N.asList(a, b)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -6041,28 +5091,8 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : N.asList(a, b, c)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -6092,28 +5122,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return zip2(iterList, valuesForNone, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : c) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return zip2(iterList, valuesForNone, zipFunction).onClose(newCloseHandler(c));
     }
 
     /**
@@ -6341,10 +5350,10 @@ public abstract class Stream<T>
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> errorHolder = new Holder<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, errorHolder, onGoing);
+        readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
@@ -6354,7 +5363,7 @@ public abstract class Stream<T>
             public boolean hasNext() {
                 try {
                     while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
-                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                        nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
                     }
 
                     if (nextA == null) {
@@ -6364,7 +5373,7 @@ public abstract class Stream<T>
                     }
 
                     while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
-                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                        nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
                     }
 
                     if (nextB == null) {
@@ -6373,11 +5382,11 @@ public abstract class Stream<T>
                         return false;
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 }
 
-                if (errorHolder.value() != null) {
-                    throwError(errorHolder, onGoing);
+                if (eHolder.value() != null) {
+                    throwError(eHolder, onGoing);
                 }
 
                 return true;
@@ -6442,10 +5451,10 @@ public abstract class Stream<T>
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> errorHolder = new Holder<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, errorHolder, onGoing);
+        readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
@@ -6456,7 +5465,7 @@ public abstract class Stream<T>
             public boolean hasNext() {
                 try {
                     while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
-                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                        nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
                     }
 
                     if (nextA == null) {
@@ -6466,7 +5475,7 @@ public abstract class Stream<T>
                     }
 
                     while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
-                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                        nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
                     }
 
                     if (nextB == null) {
@@ -6476,7 +5485,7 @@ public abstract class Stream<T>
                     }
 
                     while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
-                        nextC = queueC.poll(100, TimeUnit.MILLISECONDS);
+                        nextC = queueC.poll(1, TimeUnit.MILLISECONDS);
                     }
 
                     if (nextC == null) {
@@ -6485,11 +5494,11 @@ public abstract class Stream<T>
                         return false;
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 }
 
-                if (errorHolder.value() != null) {
-                    throwError(errorHolder, onGoing);
+                if (eHolder.value() != null) {
+                    throwError(eHolder, onGoing);
                 }
 
                 return true;
@@ -6560,28 +5569,7 @@ public abstract class Stream<T>
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction,
             final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), zipFunction, queueSize).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : N.asList(a, b)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelZip(a.iterator(), b.iterator(), zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
@@ -6607,28 +5595,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : N.asList(a, b, c)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -6678,28 +5645,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return parallelZip2(iterList, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : c) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelZip2(iterList, zipFunction).onClose(newCloseHandler(c));
     }
 
     /**
@@ -6746,10 +5692,10 @@ public abstract class Stream<T>
         final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
         final AtomicInteger[] counters = new AtomicInteger[len];
         final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
-        final Holder<Throwable> errorHolder = new Holder<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(c, queueSize, asyncExecutor, counters, queues, errorHolder, onGoing);
+        readToQueue(c, queueSize, asyncExecutor, counters, queues, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             Object[] next = null;
@@ -6763,7 +5709,7 @@ public abstract class Stream<T>
                 for (int i = 0; i < len; i++) {
                     try {
                         while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
-                            next[i] = queues[i].poll(100, TimeUnit.MILLISECONDS);
+                            next[i] = queues[i].poll(1, TimeUnit.MILLISECONDS);
                         }
 
                         if (next[i] == null) {
@@ -6772,11 +5718,11 @@ public abstract class Stream<T>
                             return false;
                         }
                     } catch (Throwable e) {
-                        setError(errorHolder, e, onGoing);
+                        setError(eHolder, e, onGoing);
                     }
 
-                    if (errorHolder.value() != null) {
-                        throwError(errorHolder, onGoing);
+                    if (eHolder.value() != null) {
+                        throwError(eHolder, onGoing);
                     }
                 }
 
@@ -7056,10 +6002,10 @@ public abstract class Stream<T>
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> errorHolder = new Holder<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, errorHolder, onGoing);
+        readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
@@ -7069,18 +6015,18 @@ public abstract class Stream<T>
             public boolean hasNext() {
                 try {
                     while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
-                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                        nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
                     }
 
                     while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
-                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                        nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 }
 
-                if (errorHolder.value() != null) {
-                    throwError(errorHolder, onGoing);
+                if (eHolder.value() != null) {
+                    throwError(eHolder, onGoing);
                 }
 
                 if (nextA != null || nextB != null) {
@@ -7174,10 +6120,10 @@ public abstract class Stream<T>
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> errorHolder = new Holder<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, errorHolder, onGoing);
+        readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             A nextA = null;
@@ -7188,22 +6134,22 @@ public abstract class Stream<T>
             public boolean hasNext() {
                 try {
                     while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
-                        nextA = queueA.poll(100, TimeUnit.MILLISECONDS);
+                        nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
                     }
 
                     while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
-                        nextB = queueB.poll(100, TimeUnit.MILLISECONDS);
+                        nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
                     }
 
                     while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
-                        nextC = queueC.poll(100, TimeUnit.MILLISECONDS);
+                        nextC = queueC.poll(1, TimeUnit.MILLISECONDS);
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 }
 
-                if (errorHolder.value() != null) {
-                    throwError(errorHolder, onGoing);
+                if (eHolder.value() != null) {
+                    throwError(eHolder, onGoing);
                 }
 
                 if (nextA != null || nextB != null || nextC != null) {
@@ -7288,28 +6234,7 @@ public abstract class Stream<T>
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : N.asList(a, b)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -7356,28 +6281,8 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : N.asList(a, b, c)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -7432,28 +6337,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return parallelZip2(iterList, valuesForNone, zipFunction).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<?> e : c) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelZip2(iterList, valuesForNone, zipFunction).onClose(newCloseHandler(c));
     }
 
     /**
@@ -7502,12 +6386,12 @@ public abstract class Stream<T>
 
         final int len = c.size();
         final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
-        final Holder<Throwable> errorHolder = new Holder<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
         final AtomicInteger[] counters = new AtomicInteger[len];
         final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
 
-        readToQueue(c, queueSize, asyncExecutor, counters, queues, errorHolder, onGoing);
+        readToQueue(c, queueSize, asyncExecutor, counters, queues, eHolder, onGoing);
 
         return of(new QueuedIterator<R>(queueSize) {
             Object[] next = null;
@@ -7521,14 +6405,14 @@ public abstract class Stream<T>
                 for (int i = 0; i < len; i++) {
                     try {
                         while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
-                            next[i] = queues[i].poll(100, TimeUnit.MILLISECONDS);
+                            next[i] = queues[i].poll(1, TimeUnit.MILLISECONDS);
                         }
                     } catch (Throwable e) {
-                        setError(errorHolder, e, onGoing);
+                        setError(eHolder, e, onGoing);
                     }
 
-                    if (errorHolder.value() != null) {
-                        throwError(errorHolder, onGoing);
+                    if (eHolder.value() != null) {
+                        throwError(eHolder, onGoing);
                     }
                 }
 
@@ -7763,55 +6647,13 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return merge(a.iterator(), b.iterator(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<? extends T> e : N.asList(a, b)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(a.iterator(), b.iterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final Stream<? extends T> c,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
 
-        return merge(a.iterator(), b.iterator(), c.iterator(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<? extends T> e : N.asList(a, b, c)) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(a.iterator(), b.iterator(), c.iterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -7838,28 +6680,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return merge2(iterList, nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<? extends T> e : c) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge2(iterList, nextSelector).onClose(newCloseHandler(c));
     }
 
     /**
@@ -7927,28 +6748,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return parallelMerge2(iterList, nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (Stream<? extends T> e : c) {
-                    try {
-                        e.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return parallelMerge2(iterList, nextSelector).onClose(newCloseHandler(c));
     }
 
     /**
@@ -8026,17 +6826,7 @@ public abstract class Stream<T>
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         // Should never happen.
         if (queue.size() != 2) {
@@ -8052,7 +6842,7 @@ public abstract class Stream<T>
 
     private static <B, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final AsyncExecutor asyncExecutor,
             final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final BlockingQueue<A> queueA, final BlockingQueue<B> queueB,
-            final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
+            final Holder<Throwable> eHolder, final MutableBoolean onGoing) {
         asyncExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -8071,7 +6861,7 @@ public abstract class Stream<T>
                         }
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterA.decrementAndGet();
                 }
@@ -8096,7 +6886,7 @@ public abstract class Stream<T>
                         }
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterB.decrementAndGet();
                 }
@@ -8106,7 +6896,7 @@ public abstract class Stream<T>
 
     private static <B, C, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final AsyncExecutor asyncExecutor, final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final AtomicInteger threadCounterC,
-            final BlockingQueue<A> queueA, final BlockingQueue<B> queueB, final BlockingQueue<C> queueC, final Holder<Throwable> errorHolder,
+            final BlockingQueue<A> queueA, final BlockingQueue<B> queueB, final BlockingQueue<C> queueC, final Holder<Throwable> eHolder,
             final MutableBoolean onGoing) {
         asyncExecutor.execute(new Runnable() {
             @Override
@@ -8126,7 +6916,7 @@ public abstract class Stream<T>
                         }
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterA.decrementAndGet();
                 }
@@ -8151,7 +6941,7 @@ public abstract class Stream<T>
                         }
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterB.decrementAndGet();
                 }
@@ -8176,7 +6966,7 @@ public abstract class Stream<T>
                         }
                     }
                 } catch (Throwable e) {
-                    setError(errorHolder, e, onGoing);
+                    setError(eHolder, e, onGoing);
                 } finally {
                     threadCounterC.decrementAndGet();
                 }
@@ -8185,7 +6975,7 @@ public abstract class Stream<T>
     }
 
     private static void readToQueue(final Collection<? extends Iterator<?>> c, final int queueSize, final AsyncExecutor asyncExecutor,
-            final AtomicInteger[] counters, final BlockingQueue<Object>[] queues, final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
+            final AtomicInteger[] counters, final BlockingQueue<Object>[] queues, final Holder<Throwable> eHolder, final MutableBoolean onGoing) {
         int idx = 0;
 
         for (Iterator<?> e : c) {
@@ -8214,7 +7004,7 @@ public abstract class Stream<T>
                             }
                         }
                     } catch (Throwable e) {
-                        setError(errorHolder, e, onGoing);
+                        setError(eHolder, e, onGoing);
                     } finally {
                         count.decrementAndGet();
                     }

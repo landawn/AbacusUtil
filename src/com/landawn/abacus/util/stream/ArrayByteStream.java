@@ -23,8 +23,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -56,27 +58,27 @@ final class ArrayByteStream extends AbstractByteStream {
     private final int fromIndex;
     private final int toIndex;
 
-    ArrayByteStream(byte[] values) {
+    ArrayByteStream(final byte[] values) {
         this(values, 0, values.length);
     }
 
-    ArrayByteStream(byte[] values, Collection<Runnable> closeHandlers) {
+    ArrayByteStream(final byte[] values, final Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayByteStream(byte[] values, Collection<Runnable> closeHandlers, boolean sorted) {
+    ArrayByteStream(final byte[] values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         this(values, 0, values.length, closeHandlers, sorted);
     }
 
-    ArrayByteStream(byte[] values, int fromIndex, int toIndex) {
+    ArrayByteStream(final byte[] values, final int fromIndex, final int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    ArrayByteStream(byte[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+    ArrayByteStream(final byte[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, closeHandlers, false);
     }
 
-    ArrayByteStream(byte[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+    ArrayByteStream(final byte[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
@@ -218,7 +220,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -260,7 +262,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -302,7 +304,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -322,7 +324,7 @@ final class ArrayByteStream extends AbstractByteStream {
     public ByteStream flatMap(final ByteFunction<? extends ByteStream> mapper) {
         return new IteratorByteStream(new ImmutableByteIterator() {
             private int cursor = fromIndex;
-            private ImmutableByteIterator cur = null;
+            private ByteIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -348,7 +350,7 @@ final class ArrayByteStream extends AbstractByteStream {
     public IntStream flatMapToInt(final ByteFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int cursor = fromIndex;
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -398,6 +400,8 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Stream<ByteStream> split(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
             private int cursor = fromIndex;
 
@@ -412,13 +416,15 @@ final class ArrayByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayByteStream(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted);
+                return new ArrayByteStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted);
             }
         }, closeHandlers);
     }
 
     @Override
     public Stream<ByteList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
             private int cursor = fromIndex;
 
@@ -433,7 +439,7 @@ final class ArrayByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ByteList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+                return new ByteList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
             }
         }, closeHandlers);
     }
@@ -456,15 +462,13 @@ final class ArrayByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -475,7 +479,7 @@ final class ArrayByteStream extends AbstractByteStream {
                     }
                 }
 
-                return ByteStream.of(result.array(), 0, result.size());
+                return new ArrayByteStream(elements, from, cursor, null, sorted);
             }
         }, closeHandlers);
     }
@@ -498,15 +502,13 @@ final class ArrayByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -517,7 +519,7 @@ final class ArrayByteStream extends AbstractByteStream {
                     }
                 }
 
-                return result;
+                return new ByteList(N.copyOfRange(elements, from, cursor));
             }
         }, closeHandlers);
     }
@@ -529,7 +531,7 @@ final class ArrayByteStream extends AbstractByteStream {
         }
 
         final ByteStream[] a = new ByteStream[2];
-        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? ByteStream.empty() : new ArrayByteStream(elements, fromIndex, middleIndex, null, sorted);
         a[1] = middleIndex == toIndex ? ByteStream.empty() : new ArrayByteStream(elements, middleIndex, toIndex, null, sorted);
 
@@ -573,10 +575,10 @@ final class ArrayByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                final ArrayByteStream result = new ArrayByteStream(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex, null,
+                final ArrayByteStream result = new ArrayByteStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null,
                         sorted);
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -604,9 +606,9 @@ final class ArrayByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                final ByteList result = ByteList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+                final ByteList result = ByteList.of(N.copyOfRange(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex));
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -706,7 +708,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public List<Byte> toList() {
-        final List<Byte> result = new ArrayList<>();
+        final List<Byte> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -728,7 +730,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Set<Byte> toSet() {
-        final Set<Byte> result = new HashSet<>();
+        final Set<Byte> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -750,7 +752,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset() {
-        final Multiset<Byte> result = new Multiset<>();
+        final Multiset<Byte> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -772,7 +774,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset() {
-        final LongMultiset<Byte> result = new LongMultiset<>();
+        final LongMultiset<Byte> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -793,7 +795,7 @@ final class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -804,6 +806,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
         for (int i = fromIndex; i < toIndex; i++) {
             key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -938,9 +941,9 @@ final class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
-        if (fromIndex == toIndex || k > toIndex - fromIndex) {
+        if (k > toIndex - fromIndex) {
             return OptionalByte.empty();
         } else if (sorted) {
             return OptionalByte.of(elements[toIndex - k]);
@@ -993,7 +996,18 @@ final class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
+                cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final byte[] a = new byte[cursor - fromIndex];
+
+                for (int i = 0, len = a.length; i < len; i++) {
+                    a[i] = elements[cursor - i - 1];
+                }
+
+                return a;
             }
         }, closeHandlers);
     }
@@ -1090,15 +1104,15 @@ final class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public int[] toArray() {
                 final int[] a = new int[toIndex - cursor];
 
-                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
-                    a[j] = elements[i];
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = elements[cursor++];
                 }
 
                 return a;
@@ -1142,7 +1156,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -1184,7 +1198,7 @@ final class ArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override

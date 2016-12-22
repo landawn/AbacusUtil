@@ -24,8 +24,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.IntIterator;
+import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -61,18 +65,28 @@ final class IteratorFloatStream extends AbstractFloatStream {
     private float head;
     private FloatStream tail;
 
-    IteratorFloatStream(ImmutableFloatIterator values) {
+    IteratorFloatStream(final FloatIterator values) {
         this(values, null);
     }
 
-    IteratorFloatStream(ImmutableFloatIterator values, Collection<Runnable> closeHandlers) {
+    IteratorFloatStream(final FloatIterator values, final Collection<Runnable> closeHandlers) {
         this(values, closeHandlers, false);
     }
 
-    IteratorFloatStream(ImmutableFloatIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
+    IteratorFloatStream(final FloatIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values;
+        this.elements = values instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) values : new ImmutableFloatIterator() {
+            @Override
+            public boolean hasNext() {
+                return values.hasNext();
+            }
+
+            @Override
+            public float next() {
+                return values.next();
+            }
+        };
     }
 
     @Override
@@ -318,7 +332,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream flatMap(final FloatFunction<? extends FloatStream> mapper) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
-            private ImmutableFloatIterator cur = null;
+            private FloatIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -343,7 +357,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public IntStream flatMapToInt(final FloatFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -368,7 +382,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public LongStream flatMapToLong(final FloatFunction<? extends LongStream> mapper) {
         return new IteratorLongStream(new ImmutableLongIterator() {
-            private ImmutableLongIterator cur = null;
+            private LongIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -393,7 +407,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public DoubleStream flatMapToDouble(final FloatFunction<? extends DoubleStream> mapper) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
-            private ImmutableDoubleIterator cur = null;
+            private DoubleIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -441,34 +455,9 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public Stream<FloatStream> split(final int size) {
-        return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public FloatStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final float[] a = new float[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayFloatStream(a, 0, cnt, null, sorted);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<FloatList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<FloatList>(new ImmutableIterator<FloatList>() {
             @Override
             public boolean hasNext() {
@@ -481,63 +470,13 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     throw new NoSuchElementException();
                 }
 
-                final float[] a = new float[size];
-                int cnt = 0;
+                final FloatList result = new FloatList(size);
 
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
+                while (result.size() < size && elements.hasNext()) {
+                    result.add(elements.next());
                 }
 
-                return FloatList.of(a, cnt);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
-            private float next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public FloatStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final FloatList result = FloatList.of(N.EMPTY_FLOAT_ARRAY);
-
-                if (hasNext == false) {
-                    next = elements.next();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, identity) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
-                        }
-
-                        break;
-                    }
-                }
-
-                return FloatStream.of(result.array(), 0, result.size());
+                return result;
             }
 
         }, closeHandlers);
@@ -562,7 +501,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     throw new NoSuchElementException();
                 }
 
-                final FloatList result = FloatList.of(N.EMPTY_FLOAT_ARRAY);
+                final FloatList result = new FloatList();
 
                 if (hasNext == false) {
                     next = elements.next();
@@ -571,8 +510,8 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
                         result.add(next);
+                        preCondition = predicate.apply(next, identity);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
@@ -587,69 +526,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
                 }
 
                 return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public Stream<FloatStream> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
-
-        return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
-            private FloatList prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public FloatStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                FloatList result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-
-                    if (cnt <= 8) {
-                        result = new FloatList(windowSize);
-
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
-                    } else {
-                        final float[] dest = new float[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                        result = FloatList.of(dest, cnt);
-                    }
-                } else {
-                    result = new FloatList(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                prev = result;
-
-                return new ArrayFloatStream(result.array(), 0, result.size(), null, sorted);
             }
 
         }, closeHandlers);
@@ -722,16 +598,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream top(int n, Comparator<? super Float> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
-
-        return boxed().top(n, comparator).mapToFloat(new ToFloatFunction<Float>() {
-            @Override
-            public float applyAsFloat(Float value) {
-                return value.floatValue();
-            }
-        });
+        return boxed().top(n, comparator).mapToFloat(ToFloatFunction.UNBOX);
     }
 
     @Override
@@ -742,6 +609,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             float[] a = null;
+            int toIndex = 0;
             int cursor = 0;
 
             @Override
@@ -750,7 +618,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     sort();
                 }
 
-                return cursor < a.length;
+                return cursor < toIndex;
             }
 
             @Override
@@ -759,7 +627,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     sort();
                 }
 
-                if (cursor >= a.length) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -772,7 +640,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     sort();
                 }
 
-                return a.length - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -781,7 +649,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
                     sort();
                 }
 
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -793,12 +661,13 @@ final class IteratorFloatStream extends AbstractFloatStream {
                 if (cursor == 0) {
                     return a;
                 } else {
-                    return N.copyOfRange(a, cursor, a.length);
+                    return N.copyOfRange(a, cursor, toIndex);
                 }
             }
 
             private void sort() {
                 a = elements.toArray();
+                toIndex = a.length;
 
                 N.sort(a);
             }
@@ -826,8 +695,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
     public FloatStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize == Long.MAX_VALUE) {
-            return this;
         }
 
         return new IteratorFloatStream(new ImmutableFloatIterator() {
@@ -1024,7 +891,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1036,8 +903,8 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
         while (elements.hasNext()) {
             element = elements.next();
-
             key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -1063,7 +930,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
     public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
-
         float element = 0;
 
         while (elements.hasNext()) {
@@ -1078,7 +944,6 @@ final class IteratorFloatStream extends AbstractFloatStream {
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier) {
         final Multimap<K, U, V> result = mapSupplier.get();
-
         float element = 0;
 
         while (elements.hasNext()) {
@@ -1158,6 +1023,8 @@ final class IteratorFloatStream extends AbstractFloatStream {
     public OptionalFloat min() {
         if (elements.hasNext() == false) {
             return OptionalFloat.empty();
+        } else if (sorted) {
+            return OptionalFloat.of(elements.next());
         }
 
         float candidate = elements.next();
@@ -1166,7 +1033,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) > 0) {
+            if (N.compare(next, candidate) < 0) {
                 candidate = next;
             }
         }
@@ -1178,6 +1045,14 @@ final class IteratorFloatStream extends AbstractFloatStream {
     public OptionalFloat max() {
         if (elements.hasNext() == false) {
             return OptionalFloat.empty();
+        } else if (sorted) {
+            float next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return OptionalFloat.of(next);
         }
 
         float candidate = elements.next();
@@ -1186,7 +1061,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) < 0) {
+            if (N.compare(next, candidate) > 0) {
                 candidate = next;
             }
         }
@@ -1196,7 +1071,7 @@ final class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public OptionalFloat kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
         if (elements.hasNext() == false) {
             return OptionalFloat.empty();

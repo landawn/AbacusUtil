@@ -30,9 +30,9 @@ import java.util.Iterator;
  * @param <R>
  */
 public final class Triple<L, M, R> {
-    public L left;
-    public M middle;
-    public R right;
+    public volatile L left;
+    public volatile M middle;
+    public volatile R right;
 
     public Triple() {
     }
@@ -131,6 +131,10 @@ public final class Triple<L, M, R> {
     //        this.left = (L) right;
     //        this.right = (R) tmp;
     //    }
+
+    public Triple<L, M, R> copy() {
+        return new Triple<>(this.left, this.middle, this.right);
+    }
 
     @Override
     public int hashCode() {

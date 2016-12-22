@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
@@ -79,20 +80,33 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     private double head;
     private DoubleStream tail;
 
-    ParallelIteratorDoubleStream(ImmutableDoubleIterator values, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+    ParallelIteratorDoubleStream(final DoubleIterator values, final Collection<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
+            final Splitor splitor) {
         super(closeHandlers, sorted);
 
-        this.elements = values;
+        this.elements = values instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) values : new ImmutableDoubleIterator() {
+            @Override
+            public boolean hasNext() {
+                return values.hasNext();
+            }
+
+            @Override
+            public double next() {
+                return values.next();
+            }
+        };
+
         this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
-        this.sequential = new IteratorDoubleStream(this.elements, this.closeHandlers, this.sorted);
     }
 
-    ParallelIteratorDoubleStream(DoubleStream stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+    ParallelIteratorDoubleStream(final DoubleStream stream, final Set<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
+            final Splitor splitor) {
         this(stream.doubleIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
-    ParallelIteratorDoubleStream(Stream<Double> stream, Set<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+    ParallelIteratorDoubleStream(final Stream<Double> stream, final Set<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
+            final Splitor splitor) {
         this(doubleIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
@@ -343,7 +357,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
         N.sort(testedElements, INDEXED_DOUBLE_COMPARATOR);
 
-        int n = first.isPresent() ? (int) first.get().index() : 0;
+        final int n = first.isPresent() ? (int) first.get().index() : testedElements.size();
 
         final DoubleList list1 = new DoubleList(n);
         final DoubleList list2 = new DoubleList(testedElements.size() - n);
@@ -361,7 +375,11 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
         a[1] = new IteratorDoubleStream(elements, null, sorted);
 
         if (N.notNullOrEmpty(list2)) {
-            a[1] = a[1].prepend(DoubleStream.of(list2.array()));
+            if (sorted) {
+                a[1] = new IteratorDoubleStream(a[1].prepend(list2.stream()).doubleIterator(), null, sorted);
+            } else {
+                a[1] = a[1].prepend(list2.stream());
+            }
         }
 
         return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, false, null, maxThreadNum, splitor);
@@ -386,16 +404,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream top(int n, Comparator<? super Double> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
-
-        return boxed().top(n, comparator).mapToDouble(new ToDoubleFunction<Double>() {
-            @Override
-            public double applyAsDouble(Double value) {
-                return value;
-            }
-        });
+        return new ParallelIteratorDoubleStream(this.sequential().top(n, comparator).doubleIterator(), closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
@@ -406,6 +415,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
         return new ParallelIteratorDoubleStream(new ImmutableDoubleIterator() {
             double[] a = null;
+            int toIndex = 0;
             int cursor = 0;
 
             @Override
@@ -414,7 +424,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
                     sort();
                 }
 
-                return cursor < a.length;
+                return cursor < toIndex;
             }
 
             @Override
@@ -423,7 +433,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
                     sort();
                 }
 
-                if (cursor >= a.length) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -436,7 +446,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
                     sort();
                 }
 
-                return a.length - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -445,7 +455,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
                     sort();
                 }
 
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -457,12 +467,13 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
                 if (cursor == 0) {
                     return a;
                 } else {
-                    return N.copyOfRange(a, cursor, a.length);
+                    return N.copyOfRange(a, cursor, toIndex);
                 }
             }
 
             private void sort() {
                 a = elements.toArray();
+                toIndex = a.length;
 
                 N.parallelSort(a);
             }
@@ -489,8 +500,6 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     public DoubleStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize == Long.MAX_VALUE) {
-            return this;
         }
 
         return new ParallelIteratorDoubleStream(new ImmutableDoubleIterator() {
@@ -616,17 +625,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
     }
 
     @Override
@@ -728,7 +727,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
             return sequential().toMap(classifier, downstream, mapFactory);
@@ -934,7 +933,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
             futureList.add(asyncExecutor.execute(new Callable<R>() {
                 @Override
                 public R call() {
-                    R container = supplier.get();
+                    final R container = supplier.get();
                     double next = 0;
 
                     try {
@@ -1011,6 +1010,8 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     public OptionalDouble min() {
         if (elements.hasNext() == false) {
             return OptionalDouble.empty();
+        } else if (sorted) {
+            return OptionalDouble.of(elements.next());
         }
 
         double candidate = elements.next();
@@ -1019,7 +1020,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) > 0) {
+            if (N.compare(next, candidate) < 0) {
                 candidate = next;
             }
         }
@@ -1031,6 +1032,14 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
     public OptionalDouble max() {
         if (elements.hasNext() == false) {
             return OptionalDouble.empty();
+        } else if (sorted) {
+            double next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return OptionalDouble.of(next);
         }
 
         double candidate = elements.next();
@@ -1039,7 +1048,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) < 0) {
+            if (N.compare(next, candidate) > 0) {
                 candidate = next;
             }
         }
@@ -1049,7 +1058,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public OptionalDouble kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
         if (elements.hasNext() == false) {
             return OptionalDouble.empty();
@@ -1118,17 +1127,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1171,17 +1170,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1224,17 +1213,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1270,7 +1249,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
                             if (predicate.test(pair.right)) {
                                 synchronized (resultHolder) {
                                     if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                                        resultHolder.setValue(pair);
+                                        resultHolder.setValue(pair.copy());
                                     }
                                 }
 
@@ -1284,17 +1263,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
@@ -1317,7 +1286,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
                     final Pair<Long, Double> pair = new Pair<>();
 
                     try {
-                        while (resultHolder.value() == null && eHolder.value() == null) {
+                        while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
                                     pair.left = index.getAndIncrement();
@@ -1330,11 +1299,9 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
                             if (predicate.test(pair.right)) {
                                 synchronized (resultHolder) {
                                     if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                                        resultHolder.setValue(pair);
+                                        resultHolder.setValue(pair.copy());
                                     }
                                 }
-
-                                break;
                             }
                         }
                     } catch (Throwable e) {
@@ -1344,17 +1311,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
@@ -1402,17 +1359,7 @@ final class ParallelIteratorDoubleStream extends AbstractDoubleStream {
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == NONE ? OptionalDouble.empty() : OptionalDouble.of((Double) resultHolder.value());
     }

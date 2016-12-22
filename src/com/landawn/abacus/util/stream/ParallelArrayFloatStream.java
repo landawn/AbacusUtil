@@ -79,8 +79,8 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     private volatile ArrayFloatStream sequential;
     private volatile Stream<Float> boxed;
 
-    ParallelArrayFloatStream(float[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum,
-            Splitor splitor) {
+    ParallelArrayFloatStream(final float[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted,
+            int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
@@ -327,7 +327,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
         }
 
         final FloatStream[] a = new FloatStream[2];
-        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? FloatStream.empty() : new ArrayFloatStream(elements, fromIndex, middleIndex, null, sorted);
         a[1] = middleIndex == toIndex ? FloatStream.empty() : new ArrayFloatStream(elements, middleIndex, toIndex, null, sorted);
 
@@ -345,7 +345,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }
         });
 
-        return splitAt(first.isPresent() ? (int) first.get().index() : 0);
+        return splitAt(first.isPresent() ? (int) first.get().index() : toIndex - fromIndex);
     }
 
     @Override
@@ -367,9 +367,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream top(int n, Comparator<? super Float> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
@@ -495,17 +493,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
     }
 
     @Override
@@ -520,7 +508,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public List<Float> toList() {
-        final List<Float> result = new ArrayList<>();
+        final List<Float> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -542,7 +530,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Set<Float> toSet() {
-        final Set<Float> result = new HashSet<>();
+        final Set<Float> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -564,7 +552,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Multiset<Float> toMultiset() {
-        final Multiset<Float> result = new Multiset<>();
+        final Multiset<Float> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -586,7 +574,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public LongMultiset<Float> toLongMultiset() {
-        final LongMultiset<Float> result = new LongMultiset<>();
+        final LongMultiset<Float> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -607,7 +595,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
             return sequential().toMap(classifier, downstream, mapFactory);
@@ -895,7 +883,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                        R container = supplier.get();
+                        final R container = supplier.get();
 
                         try {
                             while (cursor < to && eHolder.value() == null) {
@@ -916,7 +904,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                 futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
-                        R container = supplier.get();
+                        final R container = supplier.get();
                         float next = 0;
 
                         try {
@@ -1007,7 +995,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }));
         }
 
-        Float min = null;
+        Float candidate = null;
 
         try {
             for (CompletableFuture<Float> future : futureList) {
@@ -1015,15 +1003,15 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
                 if (tmp == null) {
                     continue;
-                } else if (min == null || N.compare(tmp.floatValue(), min.floatValue()) < 0) {
-                    min = tmp;
+                } else if (candidate == null || N.compare(tmp.floatValue(), candidate.floatValue()) < 0) {
+                    candidate = tmp;
                 }
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
 
-        return min == null ? OptionalFloat.empty() : OptionalFloat.of(min);
+        return candidate == null ? OptionalFloat.empty() : OptionalFloat.of(candidate);
     }
 
     @Override
@@ -1052,7 +1040,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }));
         }
 
-        Float min = null;
+        Float candidate = null;
 
         try {
             for (CompletableFuture<Float> future : futureList) {
@@ -1060,22 +1048,22 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
                 if (tmp == null) {
                     continue;
-                } else if (min == null || N.compare(tmp.floatValue(), min.floatValue()) > 0) {
-                    min = tmp;
+                } else if (candidate == null || N.compare(tmp.floatValue(), candidate.floatValue()) > 0) {
+                    candidate = tmp;
                 }
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
 
-        return min == null ? OptionalFloat.empty() : OptionalFloat.of(min);
+        return candidate == null ? OptionalFloat.empty() : OptionalFloat.of(candidate);
     }
 
     @Override
     public OptionalFloat kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
-        if (fromIndex == toIndex || k > toIndex - fromIndex) {
+        if (k > toIndex - fromIndex) {
             return OptionalFloat.empty();
         } else if (sorted) {
             return OptionalFloat.of(elements[toIndex - k]);
@@ -1241,33 +1229,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream reverse() {
-        return new ParallelIteratorFloatStream(new ImmutableFloatIterator() {
-            private int cursor = toIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor > fromIndex;
-            }
-
-            @Override
-            public float next() {
-                if (cursor <= fromIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return elements[--cursor];
-            }
-
-            @Override
-            public long count() {
-                return cursor - fromIndex;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
-            }
-        }, closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorFloatStream(sequential().reverse().floatIterator(), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
@@ -1388,17 +1350,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1470,17 +1422,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1552,17 +1494,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1591,14 +1523,14 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                         final Pair<Integer, Float> pair = new Pair<>();
 
                         try {
-                            while (cursor < to && resultHolder.value() == null && eHolder.value() == null) {
+                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value.left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[cursor++];
 
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1634,7 +1566,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1649,17 +1581,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalFloat.empty() : OptionalFloat.of(resultHolder.value().right);
     }
@@ -1688,14 +1610,14 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                         final Pair<Integer, Float> pair = new Pair<>();
 
                         try {
-                            while (cursor > from && resultHolder.value() == null && eHolder.value() == null) {
+                            while (cursor > from && (resultHolder.value() == null || cursor > resultHolder.value().left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[--cursor];
 
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1731,7 +1653,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1746,17 +1668,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalFloat.empty() : OptionalFloat.of(resultHolder.value().right);
     }
@@ -1841,17 +1753,7 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == NONE ? OptionalFloat.empty() : OptionalFloat.of((Float) resultHolder.value());
     }
@@ -1882,15 +1784,15 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public double[] toArray() {
                 final double[] a = new double[toIndex - cursor];
 
-                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
-                    a[j] = elements[i];
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = elements[cursor++];
                 }
 
                 return a;

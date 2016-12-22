@@ -24,6 +24,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.FloatIterator;
+import com.landawn.abacus.util.IntIterator;
+import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
@@ -59,27 +63,27 @@ final class ArrayLongStream extends AbstractLongStream {
     private final int fromIndex;
     private final int toIndex;
 
-    ArrayLongStream(long[] values) {
+    ArrayLongStream(final long[] values) {
         this(values, 0, values.length);
     }
 
-    ArrayLongStream(long[] values, Collection<Runnable> closeHandlers) {
+    ArrayLongStream(final long[] values, final Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayLongStream(long[] values, Collection<Runnable> closeHandlers, boolean sorted) {
+    ArrayLongStream(final long[] values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         this(values, 0, values.length, closeHandlers, sorted);
     }
 
-    ArrayLongStream(long[] values, int fromIndex, int toIndex) {
+    ArrayLongStream(final long[] values, final int fromIndex, final int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    ArrayLongStream(long[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+    ArrayLongStream(final long[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, closeHandlers, false);
     }
 
-    ArrayLongStream(long[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+    ArrayLongStream(final long[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
@@ -221,7 +225,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -263,7 +267,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -305,7 +309,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -347,7 +351,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -389,7 +393,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -409,7 +413,7 @@ final class ArrayLongStream extends AbstractLongStream {
     public LongStream flatMap(final LongFunction<? extends LongStream> mapper) {
         return new IteratorLongStream(new ImmutableLongIterator() {
             private int cursor = fromIndex;
-            private ImmutableLongIterator cur = null;
+            private LongIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -435,7 +439,7 @@ final class ArrayLongStream extends AbstractLongStream {
     public IntStream flatMapToInt(final LongFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int cursor = fromIndex;
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -461,7 +465,7 @@ final class ArrayLongStream extends AbstractLongStream {
     public FloatStream flatMapToFloat(final LongFunction<? extends FloatStream> mapper) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
             private int cursor = fromIndex;
-            private ImmutableFloatIterator cur = null;
+            private FloatIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -487,7 +491,7 @@ final class ArrayLongStream extends AbstractLongStream {
     public DoubleStream flatMapToDouble(final LongFunction<? extends DoubleStream> mapper) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private int cursor = fromIndex;
-            private ImmutableDoubleIterator cur = null;
+            private DoubleIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -537,6 +541,8 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongStream> split(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
             private int cursor = fromIndex;
 
@@ -551,13 +557,15 @@ final class ArrayLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayLongStream(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted);
+                return new ArrayLongStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted);
             }
         }, closeHandlers);
     }
 
     @Override
     public Stream<LongList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<LongList>(new ImmutableIterator<LongList>() {
             private int cursor = fromIndex;
 
@@ -572,7 +580,7 @@ final class ArrayLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                return new LongList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+                return new LongList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
             }
         }, closeHandlers);
     }
@@ -595,15 +603,13 @@ final class ArrayLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -614,7 +620,7 @@ final class ArrayLongStream extends AbstractLongStream {
                     }
                 }
 
-                return LongStream.of(result.array(), 0, result.size());
+                return new ArrayLongStream(elements, from, cursor, null, sorted);
             }
         }, closeHandlers);
     }
@@ -637,15 +643,13 @@ final class ArrayLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -656,7 +660,7 @@ final class ArrayLongStream extends AbstractLongStream {
                     }
                 }
 
-                return result;
+                return new LongList(N.copyOfRange(elements, from, cursor));
             }
         }, closeHandlers);
     }
@@ -668,7 +672,7 @@ final class ArrayLongStream extends AbstractLongStream {
         }
 
         final LongStream[] a = new LongStream[2];
-        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? LongStream.empty() : new ArrayLongStream(elements, fromIndex, middleIndex, null, sorted);
         a[1] = middleIndex == toIndex ? LongStream.empty() : new ArrayLongStream(elements, middleIndex, toIndex, null, sorted);
 
@@ -712,10 +716,10 @@ final class ArrayLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                final ArrayLongStream result = new ArrayLongStream(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex, null,
+                final ArrayLongStream result = new ArrayLongStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null,
                         sorted);
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -743,9 +747,9 @@ final class ArrayLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                final LongList result = LongList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+                final LongList result = LongList.of(N.copyOfRange(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex));
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -760,9 +764,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream top(int n, Comparator<? super Long> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
+        N.checkArgument(n > 0, "'n' must be bigger than 0");
 
         if (n >= toIndex - fromIndex) {
             return this;
@@ -865,7 +867,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public List<Long> toList() {
-        final List<Long> result = new ArrayList<>();
+        final List<Long> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -887,7 +889,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Set<Long> toSet() {
-        final Set<Long> result = new HashSet<>();
+        final Set<Long> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -909,7 +911,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Multiset<Long> toMultiset() {
-        final Multiset<Long> result = new Multiset<>();
+        final Multiset<Long> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -931,7 +933,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongMultiset<Long> toLongMultiset() {
-        final LongMultiset<Long> result = new LongMultiset<>();
+        final LongMultiset<Long> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -952,7 +954,7 @@ final class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -963,6 +965,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
         for (int i = fromIndex; i < toIndex; i++) {
             key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -1097,9 +1100,9 @@ final class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
-        if (fromIndex == toIndex || k > toIndex - fromIndex) {
+        if (k > toIndex - fromIndex) {
             return OptionalLong.empty();
         } else if (sorted) {
             return OptionalLong.of(elements[toIndex - k]);
@@ -1152,7 +1155,18 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
+                cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
+            }
+
+            @Override
+            public long[] toArray() {
+                final long[] a = new long[cursor - fromIndex];
+
+                for (int i = 0, len = a.length; i < len; i++) {
+                    a[i] = elements[cursor - i - 1];
+                }
+
+                return a;
             }
         }, closeHandlers);
     }
@@ -1249,15 +1263,15 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public float[] toArray() {
                 final float[] a = new float[toIndex - cursor];
 
-                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
-                    a[j] = elements[i];
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = elements[cursor++];
                 }
 
                 return a;
@@ -1291,15 +1305,15 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public double[] toArray() {
                 final double[] a = new double[toIndex - cursor];
 
-                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
-                    a[j] = elements[i];
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = elements[cursor++];
                 }
 
                 return a;
@@ -1343,7 +1357,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -1385,7 +1399,7 @@ final class ArrayLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override

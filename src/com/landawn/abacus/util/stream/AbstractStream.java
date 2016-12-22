@@ -146,7 +146,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             return dropWhile(new Predicate<T>() {
                 @Override
                 public boolean test(T value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         } else {
@@ -155,7 +155,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             return dropWhile(new Predicate<T>() {
                 @Override
                 public boolean test(T value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         }
@@ -573,6 +573,36 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> split(final int size) {
+        return split0(size).map(new Function<ObjectList<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(ObjectList<T> t) {
+                return new ArrayStream<T>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+        return split0(identity, predicate, identityUpdate).map(new Function<ObjectList<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(ObjectList<T> t) {
+                return new ArrayStream<T>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+            }
+        });
+    }
+
+    @Override
+    public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
+        return sliding0(windowSize, increment).map(new Function<ObjectList<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(ObjectList<T> t) {
+                return new ArrayStream<T>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+            }
+        });
+    }
+
+    @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
         final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
 
@@ -594,7 +624,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, D, A> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream,
+    public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream,
             Supplier<Map<K, D>> mapFactory) {
         final Map<K, D> map = collect(Collectors.groupingBy(classifier, downstream, mapFactory));
 
@@ -660,6 +690,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <K, M extends Map<K, List<T>>> M toMap(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -687,6 +718,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapSupplier) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
@@ -828,6 +860,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <U> OptionalNullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return findAny(new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t, seed);
+            }
+        });
+    }
+
+    @Override
     public <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return anyMatch(new Predicate<T>() {
             @Override
@@ -876,7 +918,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             return OptionalNullable.empty();
         }
 
-        T next = null;
+        T next = iter.next();
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -916,7 +958,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Iterator<T> iter = this.iterator();
         final List<T> list = new ArrayList<>();
         T next = null;
-        Stream<T> p = null;
+        Stream<T> s = null;
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -924,7 +966,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             if (where.test(next)) {
                 list.add(next);
             } else {
-                p = Stream.of(next);
+                s = Stream.of(next);
 
                 break;
             }
@@ -932,11 +974,11 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
 
-        if (p != null) {
+        if (s != null) {
             if (sorted) {
-                new IteratorStream<T>(a[1].prepend(p).iterator(), null, sorted, cmp);
+                a[1] = new IteratorStream<T>(a[1].prepend(s).iterator(), null, sorted, cmp);
             } else {
-                a[1] = a[1].prepend(p);
+                a[1] = a[1].prepend(s);
             }
         }
 
@@ -1015,10 +1057,10 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> reverse() {
-        final T[] a = (T[]) toArray();
+        final T[] tmp = (T[]) toArray();
 
         return newStream(new ImmutableIterator<T>() {
-            private int cursor = a.length;
+            private int cursor = tmp.length;
 
             @Override
             public boolean hasNext() {
@@ -1031,17 +1073,28 @@ abstract class AbstractStream<T> extends Stream<T> {
                     throw new NoSuchElementException();
                 }
 
-                return a[--cursor];
+                return tmp[--cursor];
             }
 
             @Override
             public long count() {
-                return cursor - 0;
+                return cursor;
             }
 
             @Override
             public void skip(long n) {
-                cursor = cursor > n ? cursor - (int) n : 0;
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), cursor);
+
+                for (int i = 0, len = a.length; i < len; i++) {
+                    a[i] = (A) tmp[cursor - i - 1];
+                }
+
+                return a;
             }
         }, false, null);
     }
@@ -1066,9 +1119,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> distinct() {
-        return newStream(this.sequential().filter(new Predicate<T>() {
-            private final Set<Object> set = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
+        return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return set.add(hashKey(value));
@@ -1078,9 +1131,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
-        return newStream(this.sequential().filter(new Predicate<T>() {
-            private final Set<Object> set = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
+        return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return set.add(hashKey(keyMapper.apply(value)));
@@ -1092,7 +1145,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public Optional<Map<Percentage, T>> distribution() {
         final Object[] a = sorted().toArray();
 
-        if (a.length == 0) {
+        if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
 
@@ -1103,7 +1156,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public Optional<Map<Percentage, T>> distribution(Comparator<? super T> comparator) {
         final Object[] a = sorted(comparator).toArray();
 
-        if (a.length == 0) {
+        if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
 
@@ -1114,11 +1167,77 @@ abstract class AbstractStream<T> extends Stream<T> {
     public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizeChar2(ToCharFunction<? super T> mapper) {
         final char[] a = mapToChar(mapper).sorted().toArray();
 
-        final CharSummaryStatistics summaryStatistics = new CharSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Character>> distribution = a.length == 0 ? Optional.<Map<Percentage, Character>> empty()
-                : Optional.of(N.distribution(a));
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new CharSummaryStatistics(), Optional.<Map<Percentage, Character>> empty());
+        } else {
+            return Pair.of(new CharSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
+    }
 
-        return Pair.of(summaryStatistics, distribution);
+    @Override
+    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeByte2(ToByteFunction<? super T> mapper) {
+        final byte[] a = mapToByte(mapper).sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new ByteSummaryStatistics(), Optional.<Map<Percentage, Byte>> empty());
+        } else {
+            return Pair.of(new ByteSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
+    }
+
+    @Override
+    public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeShort2(ToShortFunction<? super T> mapper) {
+        final short[] a = mapToShort(mapper).sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new ShortSummaryStatistics(), Optional.<Map<Percentage, Short>> empty());
+        } else {
+            return Pair.of(new ShortSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
+    }
+
+    @Override
+    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizeInt2(ToIntFunction<? super T> mapper) {
+        final int[] a = mapToInt(mapper).sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new IntSummaryStatistics(), Optional.<Map<Percentage, Integer>> empty());
+        } else {
+            return Pair.of(new IntSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
+    }
+
+    @Override
+    public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeLong2(ToLongFunction<? super T> mapper) {
+        final long[] a = mapToLong(mapper).sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new LongSummaryStatistics(), Optional.<Map<Percentage, Long>> empty());
+        } else {
+            return Pair.of(new LongSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
+    }
+
+    @Override
+    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeFloat2(ToFloatFunction<? super T> mapper) {
+        final float[] a = mapToFloat(mapper).sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new FloatSummaryStatistics(), Optional.<Map<Percentage, Float>> empty());
+        } else {
+            return Pair.of(new FloatSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
+    }
+
+    @Override
+    public Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeDouble2(ToDoubleFunction<? super T> mapper) {
+        final double[] a = mapToDouble(mapper).sorted().toArray();
+
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new DoubleSummaryStatistics(), Optional.<Map<Percentage, Double>> empty());
+        } else {
+            return Pair.of(new DoubleSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
     }
 
     @Override
@@ -1126,16 +1245,15 @@ abstract class AbstractStream<T> extends Stream<T> {
         return newStream(PermutationIterator.of(toList()), false, null);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public Stream<List<T>> orderedPermutation() {
-        final Iterator<List<T>> iter = PermutationIterator.ordered((List) toList());
-        return newStream(iter, false, null);
+        return orderedPermutation(OBJECT_COMPARATOR);
     }
 
     @Override
     public Stream<List<T>> orderedPermutation(Comparator<? super T> comparator) {
         final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
+
         return newStream(iter, false, null);
     }
 
@@ -1149,66 +1267,6 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
 
         return newStream(N.powerSet(set).iterator(), false, null);
-    }
-
-    @Override
-    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeByte2(ToByteFunction<? super T> mapper) {
-        final byte[] a = mapToByte(mapper).sorted().toArray();
-
-        final ByteSummaryStatistics summaryStatistics = new ByteSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Byte>> distribution = a.length == 0 ? Optional.<Map<Percentage, Byte>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
-    }
-
-    @Override
-    public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeShort2(ToShortFunction<? super T> mapper) {
-        final short[] a = mapToShort(mapper).sorted().toArray();
-
-        final ShortSummaryStatistics summaryStatistics = new ShortSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Short>> distribution = a.length == 0 ? Optional.<Map<Percentage, Short>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
-    }
-
-    @Override
-    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizeInt2(ToIntFunction<? super T> mapper) {
-        final int[] a = mapToInt(mapper).sorted().toArray();
-
-        final IntSummaryStatistics summaryStatistics = new IntSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Integer>> distribution = a.length == 0 ? Optional.<Map<Percentage, Integer>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
-    }
-
-    @Override
-    public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeLong2(ToLongFunction<? super T> mapper) {
-        final long[] a = mapToLong(mapper).sorted().toArray();
-
-        final LongSummaryStatistics summaryStatistics = new LongSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Long>> distribution = a.length == 0 ? Optional.<Map<Percentage, Long>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
-    }
-
-    @Override
-    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeFloat2(ToFloatFunction<? super T> mapper) {
-        final float[] a = mapToFloat(mapper).sorted().toArray();
-
-        final FloatSummaryStatistics summaryStatistics = new FloatSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Float>> distribution = a.length == 0 ? Optional.<Map<Percentage, Float>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
-    }
-
-    @Override
-    public Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeDouble2(ToDoubleFunction<? super T> mapper) {
-        final double[] a = mapToDouble(mapper).sorted().toArray();
-
-        final DoubleSummaryStatistics summaryStatistics = new DoubleSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Double>> distribution = a.length == 0 ? Optional.<Map<Percentage, Double>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
     }
 
     @Override
@@ -1264,25 +1322,27 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
         final BinaryOperator<U> combiner = reducingCombiner;
+
         return reduce(identity, accumulator, combiner);
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
+
         return collect(supplier, accumulator, combiner);
     }
 
     @Override
     public Stream<Indexed<T>> indexed() {
-        return newStream(this.sequential().map(new Function<T, Indexed<T>>() {
-            final MutableLong idx = new MutableLong();
+        final MutableLong idx = new MutableLong();
 
+        return newStream(this.sequential().map(new Function<T, Indexed<T>>() {
             @Override
             public Indexed<T> apply(T t) {
                 return Indexed.of(idx.getAndIncrement(), t);
             }
-        }).iterator(), false, null);
+        }).iterator(), true, INDEXED_COMPARATOR);
     }
 
     @Override

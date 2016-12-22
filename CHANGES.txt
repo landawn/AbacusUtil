@@ -9,7 +9,11 @@
 4, Refacotoring: forEach(U identity, BiFunction<U, ? super T, U> accumulator, Predicate<? super U> predicate) :
 	Change "Predicate<? super U> predicate" to "BiPredicate<? super T, ? super U> predicate"
 
-6, Improvements and bug fix.
+5, Big improvements for Stream/IntStream/DoubleStream/... 
+
+6, update snappy-java from 1.1.2.1 to 1.1.2.6.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.38=========================================================================

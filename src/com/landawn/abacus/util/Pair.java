@@ -30,8 +30,8 @@ import java.util.Map;
  * @param <R>
  */
 public final class Pair<L, R> implements Map.Entry<L, R> {
-    public L left;
-    public R right;
+    public volatile L left;
+    public volatile R right;
 
     public Pair() {
     }
@@ -123,7 +123,14 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
     @Override
     public R setValue(R value) {
-        return this.right = value;
+        R oldValue = this.right;
+        this.right = value;
+
+        return oldValue;
+    }
+
+    public Pair<L, R> copy() {
+        return new Pair<>(this.left, this.right);
     }
 
     @Override

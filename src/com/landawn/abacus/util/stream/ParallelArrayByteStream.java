@@ -74,7 +74,8 @@ final class ParallelArrayByteStream extends AbstractByteStream {
     private volatile ArrayByteStream sequential;
     private volatile Stream<Byte> boxed;
 
-    ParallelArrayByteStream(byte[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted, int maxThreadNum, Splitor splitor) {
+    ParallelArrayByteStream(final byte[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted,
+            int maxThreadNum, Splitor splitor) {
         super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
@@ -257,7 +258,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final ByteStream[] a = new ByteStream[2];
-        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? ByteStream.empty() : new ArrayByteStream(elements, fromIndex, middleIndex, null, sorted);
         a[1] = middleIndex == toIndex ? ByteStream.empty() : new ArrayByteStream(elements, middleIndex, toIndex, null, sorted);
 
@@ -275,7 +276,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }
         });
 
-        return splitAt(first.isPresent() ? (int) first.get().index() : 0);
+        return splitAt(first.isPresent() ? (int) first.get().index() : toIndex - fromIndex);
     }
 
     @Override
@@ -403,17 +404,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
     }
 
     @Override
@@ -428,7 +419,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
 
     @Override
     public List<Byte> toList() {
-        final List<Byte> result = new ArrayList<>();
+        final List<Byte> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -450,7 +441,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
 
     @Override
     public Set<Byte> toSet() {
-        final Set<Byte> result = new HashSet<>();
+        final Set<Byte> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -472,7 +463,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
 
     @Override
     public Multiset<Byte> toMultiset() {
-        final Multiset<Byte> result = new Multiset<>();
+        final Multiset<Byte> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -494,7 +485,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
 
     @Override
     public LongMultiset<Byte> toLongMultiset() {
-        final LongMultiset<Byte> result = new LongMultiset<>();
+        final LongMultiset<Byte> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -515,7 +506,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
             return sequential().toMap(classifier, downstream, mapFactory);
@@ -821,7 +812,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         int cursor = fromIndex + sliceIndex * sliceSize;
                         final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                        R container = supplier.get();
+                        final R container = supplier.get();
 
                         try {
                             while (cursor < to && eHolder.value() == null) {
@@ -842,7 +833,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                 futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
-                        R container = supplier.get();
+                        final R container = supplier.get();
                         byte next = 0;
 
                         try {
@@ -915,7 +906,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }));
         }
 
-        Byte min = null;
+        Byte candidate = null;
 
         try {
             for (CompletableFuture<Byte> future : futureList) {
@@ -923,15 +914,15 @@ final class ParallelArrayByteStream extends AbstractByteStream {
 
                 if (tmp == null) {
                     continue;
-                } else if (min == null || tmp.byteValue() < min.byteValue()) {
-                    min = tmp;
+                } else if (candidate == null || tmp.byteValue() < candidate.byteValue()) {
+                    candidate = tmp;
                 }
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
 
-        return min == null ? OptionalByte.empty() : OptionalByte.of(min);
+        return candidate == null ? OptionalByte.empty() : OptionalByte.of(candidate);
     }
 
     @Override
@@ -960,7 +951,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }));
         }
 
-        Byte min = null;
+        Byte candidate = null;
 
         try {
             for (CompletableFuture<Byte> future : futureList) {
@@ -968,22 +959,22 @@ final class ParallelArrayByteStream extends AbstractByteStream {
 
                 if (tmp == null) {
                     continue;
-                } else if (min == null || tmp.byteValue() > min.byteValue()) {
-                    min = tmp;
+                } else if (candidate == null || tmp.byteValue() > candidate.byteValue()) {
+                    candidate = tmp;
                 }
             }
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
 
-        return min == null ? OptionalByte.empty() : OptionalByte.of(min);
+        return candidate == null ? OptionalByte.empty() : OptionalByte.of(candidate);
     }
 
     @Override
     public OptionalByte kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
-        if (fromIndex == toIndex || k > toIndex - fromIndex) {
+        if (k > toIndex - fromIndex) {
             return OptionalByte.empty();
         } else if (sorted) {
             return OptionalByte.of(elements[toIndex - k]);
@@ -1042,7 +1033,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(sum() / count());
+        return OptionalDouble.of(sum() / toIndex - fromIndex);
     }
 
     @Override
@@ -1052,33 +1043,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream reverse() {
-        return new ParallelIteratorByteStream(new ImmutableByteIterator() {
-            private int cursor = toIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor > fromIndex;
-            }
-
-            @Override
-            public byte next() {
-                if (cursor <= fromIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return elements[--cursor];
-            }
-
-            @Override
-            public long count() {
-                return cursor - fromIndex;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
-            }
-        }, closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorByteStream(sequential().reverse().byteIterator(), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
@@ -1199,17 +1164,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1281,17 +1236,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1363,17 +1308,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return result.value();
     }
@@ -1402,14 +1337,14 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         final Pair<Integer, Byte> pair = new Pair<>();
 
                         try {
-                            while (cursor < to && resultHolder.value() == null && eHolder.value() == null) {
+                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value.left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[cursor++];
 
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1445,7 +1380,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left < resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1460,17 +1395,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalByte.empty() : OptionalByte.of(resultHolder.value().right);
     }
@@ -1499,14 +1424,14 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         final Pair<Integer, Byte> pair = new Pair<>();
 
                         try {
-                            while (cursor > from && resultHolder.value() == null && eHolder.value() == null) {
+                            while (cursor > from && (resultHolder.value() == null || cursor > resultHolder.value().left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[--cursor];
 
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1542,7 +1467,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                                 if (predicate.test(pair.right)) {
                                     synchronized (resultHolder) {
                                         if (resultHolder.value() == null || pair.left > resultHolder.value().left) {
-                                            resultHolder.setValue(pair);
+                                            resultHolder.setValue(pair.copy());
                                         }
                                     }
 
@@ -1557,17 +1482,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == null ? OptionalByte.empty() : OptionalByte.of(resultHolder.value().right);
     }
@@ -1652,17 +1567,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
             }
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         return resultHolder.value() == NONE ? OptionalByte.empty() : OptionalByte.of((Byte) resultHolder.value());
     }
@@ -1693,15 +1598,15 @@ final class ParallelArrayByteStream extends AbstractByteStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public int[] toArray() {
                 final int[] a = new int[toIndex - cursor];
 
-                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
-                    a[j] = elements[i];
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = elements[cursor++];
                 }
 
                 return a;

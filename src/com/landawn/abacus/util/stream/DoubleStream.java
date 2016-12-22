@@ -243,7 +243,7 @@ public abstract class DoubleStream
      * @return
      * @see Collectors#groupingBy(Function, Collector, Supplier)
      */
-    public abstract <K, D, A, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory);
 
     /**
@@ -652,18 +652,7 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream of(final DoubleIterator iterator) {
-        return iterator == null ? empty()
-                : new IteratorDoubleStream(iterator instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) iterator : new ImmutableDoubleIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iterator.hasNext();
-                    }
-
-                    @Override
-                    public double next() {
-                        return iterator.next();
-                    }
-                });
+        return iterator == null ? empty() : new IteratorDoubleStream(iterator);
     }
 
     public static DoubleStream repeat(final double element, final long n) {
@@ -783,12 +772,12 @@ public abstract class DoubleStream
             private double t = 0;
             private double cur = 0;
             private boolean isFirst = true;
-            private boolean noMoreVal = false;
+            private boolean hasMore = true;
             private boolean hasNextVal = false;
 
             @Override
             public boolean hasNext() {
-                if (hasNextVal == false && noMoreVal == false) {
+                if (hasNextVal == false && hasMore) {
                     if (isFirst) {
                         isFirst = false;
                         hasNextVal = hasNext.test(cur = seed);
@@ -797,7 +786,7 @@ public abstract class DoubleStream
                     }
 
                     if (hasNextVal == false) {
-                        noMoreVal = true;
+                        hasMore = false;
                     }
                 }
 
@@ -862,30 +851,14 @@ public abstract class DoubleStream
     public static DoubleStream concat(final double[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private final Iterator<double[]> iter = N.asList(a).iterator();
-            private ImmutableDoubleIterator cur;
+            private DoubleIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = new ImmutableDoubleIterator() {
-                        private final double[] cur = iter.next();
-                        private int cursor = 0;
-
-                        @Override
-                        public boolean hasNext() {
-                            return cursor < cur.length;
-                        }
-
-                        @Override
-                        public double next() {
-                            if (cursor >= cur.length) {
-                                throw new NoSuchElementException();
-                            }
-
-                            return cur[cursor++];
-                        }
-                    };
+                    cur = ImmutableDoubleIterator.of(iter.next());
                 }
+
                 return cur != null && cur.hasNext();
             }
 
@@ -932,7 +905,7 @@ public abstract class DoubleStream
     public static DoubleStream concat(final Collection<? extends DoubleStream> c) {
         return N.isNullOrEmpty(c) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
             private final Iterator<? extends DoubleStream> iter = c.iterator();
-            private ImmutableDoubleIterator cur;
+            private DoubleIterator cur;
 
             @Override
             public boolean hasNext() {
@@ -951,28 +924,7 @@ public abstract class DoubleStream
 
                 return cur.next();
             }
-        }).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        }).onClose(newCloseHandler(c));
     }
 
     /**
@@ -1326,28 +1278,7 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream merge(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Nth> nextSelector) {
-        return merge(a.doubleIterator(), b.doubleIterator(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : N.asList(a, b)) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(a.doubleIterator(), b.doubleIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1385,28 +1316,7 @@ public abstract class DoubleStream
             result = merge(result.doubleIterator(), iter.next().doubleIterator(), nextSelector);
         }
 
-        return result.onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return result.onClose(newCloseHandler(c));
     }
 
     /**
@@ -1486,44 +1396,13 @@ public abstract class DoubleStream
             }));
         }
 
-        if (eHolder.value() != null) {
-            throw N.toRuntimeException(eHolder.value());
-        }
-
-        try {
-            for (CompletableFuture<Void> future : futureList) {
-                future.get();
-            }
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
-        }
+        complete(futureList, eHolder);
 
         // Should never happen.
         if (queue.size() != 2) {
             throw new AbacusException("Unknown error happened.");
         }
 
-        return merge(queue.poll(), queue.poll(), nextSelector).onClose(new Runnable() {
-            @Override
-            public void run() {
-                RuntimeException runtimeException = null;
-
-                for (DoubleStream stream : c) {
-                    try {
-                        stream.close();
-                    } catch (Throwable throwable) {
-                        if (runtimeException == null) {
-                            runtimeException = N.toRuntimeException(throwable);
-                        } else {
-                            runtimeException.addSuppressed(throwable);
-                        }
-                    }
-                }
-
-                if (runtimeException != null) {
-                    throw runtimeException;
-                }
-            }
-        });
+        return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
 }

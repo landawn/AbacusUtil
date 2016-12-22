@@ -38,7 +38,10 @@ import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -76,7 +79,7 @@ abstract class AbstractIntStream extends IntStream {
             return dropWhile(new IntPredicate() {
                 @Override
                 public boolean test(int value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         } else {
@@ -85,7 +88,7 @@ abstract class AbstractIntStream extends IntStream {
             return dropWhile(new IntPredicate() {
                 @Override
                 public boolean test(int value) {
-                    return cnt.decrementAndGet() >= 0;
+                    return cnt.getAndDecrement() > 0;
                 }
             }, action);
         }
@@ -110,6 +113,37 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
+    public Stream<IntStream> split(final int size) {
+        return split0(size).map(new Function<IntList, IntStream>() {
+            @Override
+            public IntStream apply(IntList t) {
+                return new ArrayIntStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<IntStream> split(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
+        return split0(identity, predicate, identityUpdate).map(new Function<IntList, IntStream>() {
+            @Override
+            public IntStream apply(IntList t) {
+                return new ArrayIntStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<IntStream> sliding(final int windowSize, final int increment) {
+        return sliding0(windowSize, increment).map(new Function<IntList, IntStream>() {
+            @Override
+            public IntStream apply(IntList t) {
+                return new ArrayIntStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
     public <K> Map<K, List<Integer>> toMap(IntFunction<? extends K> classifier) {
         return toMap(classifier, new Supplier<Map<K, List<Integer>>>() {
             @Override
@@ -122,6 +156,7 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public <K, M extends Map<K, List<Integer>>> M toMap(IntFunction<? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<Integer, ?, List<Integer>> downstream = Collectors.toList();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -148,6 +183,7 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+
         return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
     }
 
@@ -184,9 +220,9 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream distinct() {
-        return newStream(this.sequential().filter(new IntPredicate() {
-            private final Set<Object> set = new HashSet<>();
+        final Set<Object> set = new HashSet<>();
 
+        return newStream(this.sequential().filter(new IntPredicate() {
             @Override
             public boolean test(int value) {
                 return set.add(value);
@@ -209,7 +245,7 @@ abstract class AbstractIntStream extends IntStream {
             return OptionalInt.empty();
         }
 
-        int next = 0;
+        int next = iter.next();
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -272,19 +308,7 @@ abstract class AbstractIntStream extends IntStream {
             list.add(iter.next());
         }
 
-        final IntStream[] a = new IntStream[] { new ArrayIntStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorIntStream(iter instanceof ImmutableIntIterator ? (ImmutableIntIterator) iter : new ImmutableIntIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public int next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
+        final IntStream[] a = { new ArrayIntStream(list.array(), 0, list.size(), null, sorted), new IteratorIntStream(iter, null, sorted) };
 
         return this.newStream(a, false, null);
     }
@@ -296,7 +320,7 @@ abstract class AbstractIntStream extends IntStream {
         final IntIterator iter = this.intIterator();
         final IntList list = new IntList();
         int next = 0;
-        IntStream p = null;
+        IntStream s = null;
 
         while (iter.hasNext()) {
             next = iter.next();
@@ -304,31 +328,19 @@ abstract class AbstractIntStream extends IntStream {
             if (where.test(next)) {
                 list.add(next);
             } else {
-                p = IntStream.of(next);
+                s = IntStream.of(next);
 
                 break;
             }
         }
 
-        final IntStream[] a = new IntStream[] { new ArrayIntStream(list.array(), 0, list.size(), null, sorted),
-                new IteratorIntStream(iter instanceof ImmutableIntIterator ? (ImmutableIntIterator) iter : new ImmutableIntIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
+        final IntStream[] a = { new ArrayIntStream(list.array(), 0, list.size(), null, sorted), new IteratorIntStream(iter, null, sorted) };
 
-                    @Override
-                    public int next() {
-                        return iter.next();
-                    }
-
-                }, null, sorted) };
-
-        if (p != null) {
+        if (s != null) {
             if (sorted) {
-                new IteratorIntStream(a[1].prepend(p).intIterator(), null, sorted);
+                a[1] = new IteratorIntStream(a[1].prepend(s).intIterator(), null, sorted);
             } else {
-                a[1] = a[1].prepend(p);
+                a[1] = a[1].prepend(s);
             }
         }
 
@@ -337,10 +349,10 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream reverse() {
-        final int[] a = toArray();
+        final int[] tmp = toArray();
 
         return newStream(new ImmutableIntIterator() {
-            private int cursor = a.length;
+            private int cursor = tmp.length;
 
             @Override
             public boolean hasNext() {
@@ -353,17 +365,28 @@ abstract class AbstractIntStream extends IntStream {
                     throw new NoSuchElementException();
                 }
 
-                return a[--cursor];
+                return tmp[--cursor];
             }
 
             @Override
             public long count() {
-                return cursor - 0;
+                return cursor;
             }
 
             @Override
             public void skip(long n) {
-                cursor = cursor > n ? cursor - (int) n : 0;
+                cursor = n < cursor ? cursor - (int) n : 0;
+            }
+
+            @Override
+            public int[] toArray() {
+                final int[] a = new int[cursor];
+
+                for (int i = 0, len = tmp.length; i < len; i++) {
+                    a[i] = tmp[cursor - i - 1];
+                }
+
+                return a;
             }
         }, false);
     }
@@ -401,10 +424,11 @@ abstract class AbstractIntStream extends IntStream {
     public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarize2() {
         final int[] a = sorted().toArray();
 
-        final IntSummaryStatistics summaryStatistics = new IntSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]);
-        final Optional<Map<Percentage, Integer>> distribution = a.length == 0 ? Optional.<Map<Percentage, Integer>> empty() : Optional.of(N.distribution(a));
-
-        return Pair.of(summaryStatistics, distribution);
+        if (N.isNullOrEmpty(a)) {
+            return Pair.of(new IntSummaryStatistics(), Optional.<Map<Percentage, Integer>> empty());
+        } else {
+            return Pair.of(new IntSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+        }
     }
 
     @Override
@@ -436,25 +460,27 @@ abstract class AbstractIntStream extends IntStream {
         };
 
         final Joiner joiner = collect(supplier, accumulator, combiner);
+
         return joiner.toString();
     }
 
     @Override
     public <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator) {
         final BiConsumer<R, R> combiner = collectingCombiner;
+
         return collect(supplier, accumulator, combiner);
     }
 
     @Override
     public Stream<IndexedInt> indexed() {
-        return newStream(this.sequential().mapToObj(new IntFunction<IndexedInt>() {
-            final MutableLong idx = new MutableLong();
+        final MutableLong idx = new MutableLong();
 
+        return newStream(this.sequential().mapToObj(new IntFunction<IndexedInt>() {
             @Override
             public IndexedInt apply(int t) {
                 return IndexedInt.of(idx.getAndIncrement(), t);
             }
-        }).iterator(), false, null);
+        }).iterator(), true, INDEXED_INT_COMPARATOR);
     }
 
     @Override

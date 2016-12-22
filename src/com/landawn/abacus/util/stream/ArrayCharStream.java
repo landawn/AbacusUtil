@@ -23,8 +23,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -56,27 +58,27 @@ final class ArrayCharStream extends AbstractCharStream {
     private final int fromIndex;
     private final int toIndex;
 
-    ArrayCharStream(char[] values) {
+    ArrayCharStream(final char[] values) {
         this(values, 0, values.length);
     }
 
-    ArrayCharStream(char[] values, Collection<Runnable> closeHandlers) {
+    ArrayCharStream(final char[] values, final Collection<Runnable> closeHandlers) {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayCharStream(char[] values, Collection<Runnable> closeHandlers, boolean sorted) {
+    ArrayCharStream(final char[] values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         this(values, 0, values.length, closeHandlers, sorted);
     }
 
-    ArrayCharStream(char[] values, int fromIndex, int toIndex) {
+    ArrayCharStream(final char[] values, final int fromIndex, final int toIndex) {
         this(values, fromIndex, toIndex, null);
     }
 
-    ArrayCharStream(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers) {
+    ArrayCharStream(final char[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
         this(values, fromIndex, toIndex, closeHandlers, false);
     }
 
-    ArrayCharStream(char[] values, int fromIndex, int toIndex, Collection<Runnable> closeHandlers, boolean sorted) {
+    ArrayCharStream(final char[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
         checkIndex(fromIndex, toIndex, values.length);
@@ -218,7 +220,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -260,7 +262,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -302,7 +304,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -322,7 +324,7 @@ final class ArrayCharStream extends AbstractCharStream {
     public CharStream flatMap(final CharFunction<? extends CharStream> mapper) {
         return new IteratorCharStream(new ImmutableCharIterator() {
             private int cursor = fromIndex;
-            private ImmutableCharIterator cur = null;
+            private CharIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -348,7 +350,7 @@ final class ArrayCharStream extends AbstractCharStream {
     public IntStream flatMapToInt(final CharFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
             private int cursor = fromIndex;
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -398,6 +400,8 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharStream> split(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<CharStream>(new ImmutableIterator<CharStream>() {
             private int cursor = fromIndex;
 
@@ -412,13 +416,15 @@ final class ArrayCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayCharStream(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex), null, sorted);
+                return new ArrayCharStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted);
             }
         }, closeHandlers);
     }
 
     @Override
     public Stream<CharList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<CharList>(new ImmutableIterator<CharList>() {
             private int cursor = fromIndex;
 
@@ -433,7 +439,7 @@ final class ArrayCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                return new CharList(N.copyOfRange(elements, cursor, (cursor = toIndex - cursor > size ? cursor + size : toIndex)));
+                return new CharList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
             }
         }, closeHandlers);
     }
@@ -456,15 +462,13 @@ final class ArrayCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -475,7 +479,7 @@ final class ArrayCharStream extends AbstractCharStream {
                     }
                 }
 
-                return CharStream.of(result.array(), 0, result.size());
+                return new ArrayCharStream(elements, from, cursor, null, sorted);
             }
         }, closeHandlers);
     }
@@ -498,15 +502,13 @@ final class ArrayCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                final CharList result = CharList.of(N.EMPTY_CHAR_ARRAY);
+                final int from = cursor;
 
                 while (cursor < toIndex) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
-                        result.add(elements[cursor]);
+                    if (from == cursor) {
+                        preCondition = predicate.apply(elements[from], identity);
                         cursor++;
                     } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        result.add(elements[cursor]);
                         cursor++;
                     } else {
                         if (identityUpdate != null) {
@@ -517,7 +519,7 @@ final class ArrayCharStream extends AbstractCharStream {
                     }
                 }
 
-                return result;
+                return new CharList(N.copyOfRange(elements, from, cursor));
             }
         }, closeHandlers);
     }
@@ -529,7 +531,7 @@ final class ArrayCharStream extends AbstractCharStream {
         }
 
         final CharStream[] a = new CharStream[2];
-        final int middleIndex = n >= toIndex - fromIndex ? toIndex : fromIndex + n;
+        final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
         a[0] = middleIndex == fromIndex ? CharStream.empty() : new ArrayCharStream(elements, fromIndex, middleIndex, null, sorted);
         a[1] = middleIndex == toIndex ? CharStream.empty() : new ArrayCharStream(elements, middleIndex, toIndex, null, sorted);
 
@@ -573,10 +575,10 @@ final class ArrayCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                final ArrayCharStream result = new ArrayCharStream(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex, null,
+                final ArrayCharStream result = new ArrayCharStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null,
                         sorted);
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -604,9 +606,9 @@ final class ArrayCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                final CharList result = CharList.of(N.copyOfRange(elements, cursor, toIndex - cursor > windowSize ? cursor + windowSize : toIndex));
+                final CharList result = CharList.of(N.copyOfRange(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex));
 
-                cursor = cursor >= toIndex - increment || cursor >= toIndex - windowSize ? toIndex : cursor + increment;
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
             }
@@ -706,7 +708,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public List<Character> toList() {
-        final List<Character> result = new ArrayList<>();
+        final List<Character> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -728,7 +730,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Set<Character> toSet() {
-        final Set<Character> result = new HashSet<>();
+        final Set<Character> result = new HashSet<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -750,7 +752,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Multiset<Character> toMultiset() {
-        final Multiset<Character> result = new Multiset<>();
+        final Multiset<Character> result = new Multiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -772,7 +774,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public LongMultiset<Character> toLongMultiset() {
-        final LongMultiset<Character> result = new LongMultiset<>();
+        final LongMultiset<Character> result = new LongMultiset<>(N.min(9, N.initHashCapacity(toIndex - fromIndex)));
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -793,7 +795,7 @@ final class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -804,6 +806,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
         for (int i = fromIndex; i < toIndex; i++) {
             key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -938,9 +941,9 @@ final class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public OptionalChar kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
-        if (fromIndex == toIndex || k > toIndex - fromIndex) {
+        if (k > toIndex - fromIndex) {
             return OptionalChar.empty();
         } else if (sorted) {
             return OptionalChar.of(elements[toIndex - k]);
@@ -993,7 +996,18 @@ final class ArrayCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                cursor = cursor - fromIndex > n ? cursor - (int) n : fromIndex;
+                cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
+            }
+
+            @Override
+            public char[] toArray() {
+                final char[] a = new char[cursor - fromIndex];
+
+                for (int i = 0, len = a.length; i < len; i++) {
+                    a[i] = elements[cursor - i - 1];
+                }
+
+                return a;
             }
         }, closeHandlers);
     }
@@ -1090,15 +1104,15 @@ final class ArrayCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
             public int[] toArray() {
                 final int[] a = new int[toIndex - cursor];
 
-                for (int i = cursor, j = 0; i < toIndex; i++, j++) {
-                    a[j] = elements[i];
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a[i] = elements[cursor++];
                 }
 
                 return a;
@@ -1142,7 +1156,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -1184,7 +1198,7 @@ final class ArrayCharStream extends AbstractCharStream {
 
             @Override
             public void skip(long n) {
-                cursor = toIndex - cursor > n ? cursor + (int) n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override

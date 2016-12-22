@@ -24,6 +24,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.FloatIterator;
+import com.landawn.abacus.util.IntIterator;
+import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
@@ -62,18 +66,28 @@ final class IteratorLongStream extends AbstractLongStream {
     private long head;
     private LongStream tail;
 
-    IteratorLongStream(ImmutableLongIterator values) {
+    IteratorLongStream(final LongIterator values) {
         this(values, null);
     }
 
-    IteratorLongStream(ImmutableLongIterator values, Collection<Runnable> closeHandlers) {
+    IteratorLongStream(final LongIterator values, final Collection<Runnable> closeHandlers) {
         this(values, closeHandlers, false);
     }
 
-    IteratorLongStream(ImmutableLongIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
+    IteratorLongStream(final LongIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values;
+        this.elements = values instanceof ImmutableLongIterator ? (ImmutableLongIterator) values : new ImmutableLongIterator() {
+            @Override
+            public boolean hasNext() {
+                return values.hasNext();
+            }
+
+            @Override
+            public long next() {
+                return values.next();
+            }
+        };
     }
 
     @Override
@@ -319,7 +333,7 @@ final class IteratorLongStream extends AbstractLongStream {
     @Override
     public LongStream flatMap(final LongFunction<? extends LongStream> mapper) {
         return new IteratorLongStream(new ImmutableLongIterator() {
-            private ImmutableLongIterator cur = null;
+            private LongIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -344,7 +358,7 @@ final class IteratorLongStream extends AbstractLongStream {
     @Override
     public IntStream flatMapToInt(final LongFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -369,7 +383,7 @@ final class IteratorLongStream extends AbstractLongStream {
     @Override
     public FloatStream flatMapToFloat(final LongFunction<? extends FloatStream> mapper) {
         return new IteratorFloatStream(new ImmutableFloatIterator() {
-            private ImmutableFloatIterator cur = null;
+            private FloatIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -394,7 +408,7 @@ final class IteratorLongStream extends AbstractLongStream {
     @Override
     public DoubleStream flatMapToDouble(final LongFunction<? extends DoubleStream> mapper) {
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
-            private ImmutableDoubleIterator cur = null;
+            private DoubleIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -442,34 +456,9 @@ final class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public Stream<LongStream> split(final int size) {
-        return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public LongStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final long[] a = new long[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayLongStream(a, 0, cnt, null, sorted);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<LongList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<LongList>(new ImmutableIterator<LongList>() {
             @Override
             public boolean hasNext() {
@@ -482,63 +471,13 @@ final class IteratorLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                final long[] a = new long[size];
-                int cnt = 0;
+                final LongList result = new LongList(size);
 
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
+                while (result.size() < size && elements.hasNext()) {
+                    result.add(elements.next());
                 }
 
-                return LongList.of(a, cnt);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<LongStream> split(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
-            private long next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public LongStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
-
-                if (hasNext == false) {
-                    next = elements.next();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, identity) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
-                        }
-
-                        break;
-                    }
-                }
-
-                return LongStream.of(result.array(), 0, result.size());
+                return result;
             }
 
         }, closeHandlers);
@@ -563,7 +502,7 @@ final class IteratorLongStream extends AbstractLongStream {
                     throw new NoSuchElementException();
                 }
 
-                final LongList result = LongList.of(N.EMPTY_LONG_ARRAY);
+                final LongList result = new LongList();
 
                 if (hasNext == false) {
                     next = elements.next();
@@ -572,8 +511,8 @@ final class IteratorLongStream extends AbstractLongStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
                         result.add(next);
+                        preCondition = predicate.apply(next, identity);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
@@ -588,69 +527,6 @@ final class IteratorLongStream extends AbstractLongStream {
                 }
 
                 return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public Stream<LongStream> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
-
-        return new IteratorStream<LongStream>(new ImmutableIterator<LongStream>() {
-            private LongList prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public LongStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                LongList result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-
-                    if (cnt <= 8) {
-                        result = new LongList(windowSize);
-
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
-                    } else {
-                        final long[] dest = new long[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                        result = LongList.of(dest, cnt);
-                    }
-                } else {
-                    result = new LongList(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                prev = result;
-
-                return new ArrayLongStream(result.array(), 0, result.size(), null, sorted);
             }
 
         }, closeHandlers);
@@ -723,16 +599,7 @@ final class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream top(int n, Comparator<? super Long> comparator) {
-        if (n < 1) {
-            throw new IllegalArgumentException("'n' can not be less than 1");
-        }
-
-        return boxed().top(n, comparator).mapToLong(new ToLongFunction<Long>() {
-            @Override
-            public long applyAsLong(Long value) {
-                return value.longValue();
-            }
-        });
+        return boxed().top(n, comparator).mapToLong(ToLongFunction.UNBOX);
     }
 
     @Override
@@ -743,6 +610,7 @@ final class IteratorLongStream extends AbstractLongStream {
 
         return new IteratorLongStream(new ImmutableLongIterator() {
             long[] a = null;
+            int toIndex = 0;
             int cursor = 0;
 
             @Override
@@ -751,7 +619,7 @@ final class IteratorLongStream extends AbstractLongStream {
                     sort();
                 }
 
-                return cursor < a.length;
+                return cursor < toIndex;
             }
 
             @Override
@@ -760,7 +628,7 @@ final class IteratorLongStream extends AbstractLongStream {
                     sort();
                 }
 
-                if (cursor >= a.length) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -773,7 +641,7 @@ final class IteratorLongStream extends AbstractLongStream {
                     sort();
                 }
 
-                return a.length - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -782,7 +650,7 @@ final class IteratorLongStream extends AbstractLongStream {
                     sort();
                 }
 
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -794,12 +662,13 @@ final class IteratorLongStream extends AbstractLongStream {
                 if (cursor == 0) {
                     return a;
                 } else {
-                    return N.copyOfRange(a, cursor, a.length);
+                    return N.copyOfRange(a, cursor, toIndex);
                 }
             }
 
             private void sort() {
                 a = elements.toArray();
+                toIndex = a.length;
 
                 N.sort(a);
             }
@@ -827,8 +696,6 @@ final class IteratorLongStream extends AbstractLongStream {
     public LongStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize == Long.MAX_VALUE) {
-            return this;
         }
 
         return new IteratorLongStream(new ImmutableLongIterator() {
@@ -1025,7 +892,7 @@ final class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -1037,8 +904,8 @@ final class IteratorLongStream extends AbstractLongStream {
 
         while (elements.hasNext()) {
             element = elements.next();
-
             key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -1064,7 +931,6 @@ final class IteratorLongStream extends AbstractLongStream {
     public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
-
         long element = 0;
 
         while (elements.hasNext()) {
@@ -1079,7 +945,6 @@ final class IteratorLongStream extends AbstractLongStream {
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier) {
         final Multimap<K, U, V> result = mapSupplier.get();
-
         long element = 0;
 
         while (elements.hasNext()) {
@@ -1159,6 +1024,8 @@ final class IteratorLongStream extends AbstractLongStream {
     public OptionalLong min() {
         if (elements.hasNext() == false) {
             return OptionalLong.empty();
+        } else if (sorted) {
+            return OptionalLong.of(elements.next());
         }
 
         long candidate = elements.next();
@@ -1167,7 +1034,7 @@ final class IteratorLongStream extends AbstractLongStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) > 0) {
+            if (N.compare(next, candidate) < 0) {
                 candidate = next;
             }
         }
@@ -1179,6 +1046,14 @@ final class IteratorLongStream extends AbstractLongStream {
     public OptionalLong max() {
         if (elements.hasNext() == false) {
             return OptionalLong.empty();
+        } else if (sorted) {
+            long next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return OptionalLong.of(next);
         }
 
         long candidate = elements.next();
@@ -1187,7 +1062,7 @@ final class IteratorLongStream extends AbstractLongStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) < 0) {
+            if (N.compare(next, candidate) > 0) {
                 candidate = next;
             }
         }
@@ -1197,7 +1072,7 @@ final class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public OptionalLong kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
         if (elements.hasNext() == false) {
             return OptionalLong.empty();

@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,8 +23,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -59,18 +60,28 @@ final class IteratorByteStream extends AbstractByteStream {
     private byte head;
     private ByteStream tail;
 
-    IteratorByteStream(ImmutableByteIterator values) {
+    IteratorByteStream(final ByteIterator values) {
         this(values, null);
     }
 
-    IteratorByteStream(ImmutableByteIterator values, Collection<Runnable> closeHandlers) {
+    IteratorByteStream(final ByteIterator values, final Collection<Runnable> closeHandlers) {
         this(values, closeHandlers, false);
     }
 
-    IteratorByteStream(ImmutableByteIterator values, Collection<Runnable> closeHandlers, boolean sorted) {
+    IteratorByteStream(final ByteIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values;
+        this.elements = values instanceof ImmutableByteIterator ? (ImmutableByteIterator) values : new ImmutableByteIterator() {
+            @Override
+            public boolean hasNext() {
+                return values.hasNext();
+            }
+
+            @Override
+            public byte next() {
+                return values.next();
+            }
+        };
     }
 
     @Override
@@ -266,7 +277,7 @@ final class IteratorByteStream extends AbstractByteStream {
     @Override
     public ByteStream flatMap(final ByteFunction<? extends ByteStream> mapper) {
         return new IteratorByteStream(new ImmutableByteIterator() {
-            private ImmutableByteIterator cur = null;
+            private ByteIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -291,7 +302,7 @@ final class IteratorByteStream extends AbstractByteStream {
     @Override
     public IntStream flatMapToInt(final ByteFunction<? extends IntStream> mapper) {
         return new IteratorIntStream(new ImmutableIntIterator() {
-            private ImmutableIntIterator cur = null;
+            private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
@@ -339,34 +350,9 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteStream> split(final int size) {
-        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public ByteStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final byte[] a = new byte[size];
-                int cnt = 0;
-
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
-                }
-
-                return new ArrayByteStream(a, 0, cnt, null, sorted);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<ByteList> split0(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0");
+
         return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
             @Override
             public boolean hasNext() {
@@ -379,63 +365,13 @@ final class IteratorByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                final byte[] a = new byte[size];
-                int cnt = 0;
+                final ByteList result = new ByteList(size);
 
-                while (cnt < size && elements.hasNext()) {
-                    a[cnt++] = elements.next();
+                while (result.size() < size && elements.hasNext()) {
+                    result.add(elements.next());
                 }
 
-                return ByteList.of(a, cnt);
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
-            private byte next;
-            private boolean hasNext = false;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext == true || elements.hasNext();
-            }
-
-            @Override
-            public ByteStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
-
-                if (hasNext == false) {
-                    next = elements.next();
-                    hasNext = true;
-                }
-
-                while (hasNext) {
-                    if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else if (predicate.apply(next, identity) == preCondition) {
-                        result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
-                    } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
-                        }
-
-                        break;
-                    }
-                }
-
-                return ByteStream.of(result.array(), 0, result.size());
+                return result;
             }
 
         }, closeHandlers);
@@ -460,7 +396,7 @@ final class IteratorByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                final ByteList result = ByteList.of(N.EMPTY_BYTE_ARRAY);
+                final ByteList result = new ByteList();
 
                 if (hasNext == false) {
                     next = elements.next();
@@ -469,8 +405,8 @@ final class IteratorByteStream extends AbstractByteStream {
 
                 while (hasNext) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(next, identity);
                         result.add(next);
+                        preCondition = predicate.apply(next, identity);
                         next = (hasNext = elements.hasNext()) ? elements.next() : 0;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
@@ -485,69 +421,6 @@ final class IteratorByteStream extends AbstractByteStream {
                 }
 
                 return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public Stream<ByteStream> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
-
-        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
-            private ByteList prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public ByteStream next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                ByteList result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-
-                    if (cnt <= 8) {
-                        result = new ByteList(windowSize);
-
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
-                    } else {
-                        final byte[] dest = new byte[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                        result = ByteList.of(dest, cnt);
-                    }
-                } else {
-                    result = new ByteList(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                prev = result;
-
-                return new ArrayByteStream(result.array(), 0, result.size(), null, sorted);
             }
 
         }, closeHandlers);
@@ -622,6 +495,7 @@ final class IteratorByteStream extends AbstractByteStream {
 
         return new IteratorByteStream(new ImmutableByteIterator() {
             byte[] a = null;
+            int toIndex = 0;
             int cursor = 0;
 
             @Override
@@ -630,7 +504,7 @@ final class IteratorByteStream extends AbstractByteStream {
                     sort();
                 }
 
-                return cursor < a.length;
+                return cursor < toIndex;
             }
 
             @Override
@@ -639,7 +513,7 @@ final class IteratorByteStream extends AbstractByteStream {
                     sort();
                 }
 
-                if (cursor >= a.length) {
+                if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
@@ -652,7 +526,7 @@ final class IteratorByteStream extends AbstractByteStream {
                     sort();
                 }
 
-                return a.length - cursor;
+                return toIndex - cursor;
             }
 
             @Override
@@ -661,7 +535,7 @@ final class IteratorByteStream extends AbstractByteStream {
                     sort();
                 }
 
-                cursor = n >= a.length - cursor ? a.length : cursor + (int) n;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -673,14 +547,15 @@ final class IteratorByteStream extends AbstractByteStream {
                 if (cursor == 0) {
                     return a;
                 } else {
-                    return N.copyOfRange(a, cursor, a.length);
+                    return N.copyOfRange(a, cursor, toIndex);
                 }
             }
 
             private void sort() {
                 a = elements.toArray();
+                toIndex = a.length;
 
-                Arrays.sort(a);
+                N.sort(a);
             }
         }, closeHandlers, true);
     }
@@ -707,8 +582,6 @@ final class IteratorByteStream extends AbstractByteStream {
     public ByteStream limit(final long maxSize) {
         if (maxSize < 0) {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize == Long.MAX_VALUE) {
-            return this;
         }
 
         return new IteratorByteStream(new ImmutableByteIterator() {
@@ -905,7 +778,7 @@ final class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, D, A, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
+    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
@@ -917,8 +790,8 @@ final class IteratorByteStream extends AbstractByteStream {
 
         while (elements.hasNext()) {
             element = elements.next();
-
             key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
@@ -944,7 +817,6 @@ final class IteratorByteStream extends AbstractByteStream {
     public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapSupplier) {
         final M result = mapSupplier.get();
-
         byte element = 0;
 
         while (elements.hasNext()) {
@@ -959,7 +831,6 @@ final class IteratorByteStream extends AbstractByteStream {
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier) {
         final Multimap<K, U, V> result = mapSupplier.get();
-
         byte element = 0;
 
         while (elements.hasNext()) {
@@ -1039,6 +910,8 @@ final class IteratorByteStream extends AbstractByteStream {
     public OptionalByte min() {
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
+        } else if (sorted) {
+            return OptionalByte.of(elements.next());
         }
 
         byte candidate = elements.next();
@@ -1047,7 +920,7 @@ final class IteratorByteStream extends AbstractByteStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) > 0) {
+            if (N.compare(next, candidate) < 0) {
                 candidate = next;
             }
         }
@@ -1059,6 +932,14 @@ final class IteratorByteStream extends AbstractByteStream {
     public OptionalByte max() {
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
+        } else if (sorted) {
+            byte next = 0;
+
+            while (elements.hasNext()) {
+                next = elements.next();
+            }
+
+            return OptionalByte.of(next);
         }
 
         byte candidate = elements.next();
@@ -1067,7 +948,7 @@ final class IteratorByteStream extends AbstractByteStream {
         while (elements.hasNext()) {
             next = elements.next();
 
-            if (N.compare(candidate, next) < 0) {
+            if (N.compare(next, candidate) > 0) {
                 candidate = next;
             }
         }
@@ -1077,7 +958,7 @@ final class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public OptionalByte kthLargest(int k) {
-        N.checkArgument(k < 1, "'k' must not be less than 1");
+        N.checkArgument(k > 0, "'k' must be bigger than 0");
 
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
