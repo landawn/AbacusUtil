@@ -485,6 +485,24 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     public abstract FloatStream tail();
 
     /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * 
+     * @return
+     * @throws IllegalStateException if this stream is empty.
+     */
+    public abstract FloatStream head2();
+
+    /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract float tail2();
+
+    /**
      * Returns an {@code OptionalFloat} describing the minimum element of this
      * stream, or an empty OptionalFloat if this stream is empty.  The minimum
      * element will be {@code Float.NaN} if any stream element was NaN. Unlike

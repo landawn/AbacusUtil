@@ -87,6 +87,9 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
     private int head;
     private IntStream tail;
 
+    private IntStream head2;
+    private int tail2;
+
     ParallelIteratorIntStream(final IntIterator values, final Collection<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
         super(closeHandlers, sorted);
@@ -1104,6 +1107,36 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public IntStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final int[] a = elements.toArray();
+            head2 = new ParallelArrayIntStream(a, 0, a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public int tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final int[] a = elements.toArray();
+            head2 = new ArrayIntStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

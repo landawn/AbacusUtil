@@ -448,6 +448,24 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     public abstract ShortStream tail();
 
     /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * 
+     * @return
+     * @throws IllegalStateException if this stream is empty.
+     */
+    public abstract ShortStream head2();
+
+    /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract short tail2();
+
+    /**
      * Returns an {@code OptionalShort} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>

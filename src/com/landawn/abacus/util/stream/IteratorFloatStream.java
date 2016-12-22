@@ -65,6 +65,9 @@ final class IteratorFloatStream extends AbstractFloatStream {
     private float head;
     private FloatStream tail;
 
+    private FloatStream head2;
+    private float tail2;
+
     IteratorFloatStream(final FloatIterator values) {
         this(values, null);
     }
@@ -1017,6 +1020,36 @@ final class IteratorFloatStream extends AbstractFloatStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public FloatStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final float[] a = elements.toArray();
+            head2 = new ArrayFloatStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public float tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final float[] a = elements.toArray();
+            head2 = new ArrayFloatStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

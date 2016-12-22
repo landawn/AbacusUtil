@@ -62,6 +62,9 @@ final class IteratorShortStream extends AbstractShortStream {
     private short head;
     private ShortStream tail;
 
+    private ShortStream head2;
+    private short tail2;
+
     IteratorShortStream(final ShortIterator values) {
         this(values, null);
     }
@@ -915,6 +918,36 @@ final class IteratorShortStream extends AbstractShortStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public ShortStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final short[] a = elements.toArray();
+            head2 = new ArrayShortStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public short tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final short[] a = elements.toArray();
+            head2 = new ArrayShortStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

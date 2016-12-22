@@ -72,6 +72,9 @@ final class IteratorIntStream extends AbstractIntStream {
     private int head;
     private IntStream tail;
 
+    private IntStream head2;
+    private int tail2;
+
     IteratorIntStream(final IntIterator values) {
         this(values, null);
     }
@@ -1174,6 +1177,36 @@ final class IteratorIntStream extends AbstractIntStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public IntStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final int[] a = elements.toArray();
+            head2 = new ArrayIntStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public int tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final int[] a = elements.toArray();
+            head2 = new ArrayIntStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

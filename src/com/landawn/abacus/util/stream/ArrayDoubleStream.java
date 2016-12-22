@@ -1078,6 +1078,24 @@ final class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public DoubleStream head2() {
+        if (fromIndex == toIndex) {
+            throw new IllegalStateException();
+        }
+
+        return new ArrayDoubleStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
+    }
+
+    @Override
+    public double tail2() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[toIndex - 1];
+    }
+
+    @Override
     public OptionalDouble min() {
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();

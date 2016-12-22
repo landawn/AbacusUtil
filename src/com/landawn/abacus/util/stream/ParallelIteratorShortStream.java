@@ -77,6 +77,9 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
     private short head;
     private ShortStream tail;
 
+    private ShortStream head2;
+    private short tail2;
+
     ParallelIteratorShortStream(final ShortIterator values, final Collection<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
         super(closeHandlers, sorted);
@@ -937,6 +940,36 @@ final class ParallelIteratorShortStream extends AbstractShortStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public ShortStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final short[] a = elements.toArray();
+            head2 = new ParallelArrayShortStream(a, 0, a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public short tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final short[] a = elements.toArray();
+            head2 = new ArrayShortStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

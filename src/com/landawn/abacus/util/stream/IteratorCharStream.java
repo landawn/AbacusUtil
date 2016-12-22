@@ -60,6 +60,9 @@ final class IteratorCharStream extends AbstractCharStream {
     private char head;
     private CharStream tail;
 
+    private CharStream head2;
+    private char tail2;
+
     IteratorCharStream(final CharIterator values) {
         this(values, null);
     }
@@ -903,6 +906,36 @@ final class IteratorCharStream extends AbstractCharStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public CharStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final char[] a = elements.toArray();
+            head2 = new ArrayCharStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public char tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final char[] a = elements.toArray();
+            head2 = new ArrayCharStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

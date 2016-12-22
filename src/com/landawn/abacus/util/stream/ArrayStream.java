@@ -1518,6 +1518,24 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<T> head2() {
+        if (fromIndex == toIndex) {
+            throw new IllegalStateException();
+        }
+
+        return new ArrayStream<T>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp);
+    }
+
+    @Override
+    public T tail2() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[toIndex - 1];
+    }
+
+    @Override
     public OptionalNullable<T> min(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
             return OptionalNullable.empty();

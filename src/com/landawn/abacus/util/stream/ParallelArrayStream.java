@@ -2435,6 +2435,24 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<T> head2() {
+        if (fromIndex == toIndex) {
+            throw new IllegalStateException();
+        }
+
+        return new ParallelArrayStream<T>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+    }
+
+    @Override
+    public T tail2() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[toIndex - 1];
+    }
+
+    @Override
     public OptionalNullable<T> min(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
             return OptionalNullable.empty();

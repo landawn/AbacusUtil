@@ -76,6 +76,9 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
     private char head;
     private CharStream tail;
 
+    private CharStream head2;
+    private char tail2;
+
     ParallelIteratorCharStream(final CharIterator values, final Collection<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
         super(closeHandlers, sorted);
@@ -925,6 +928,36 @@ final class ParallelIteratorCharStream extends AbstractCharStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public CharStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final char[] a = elements.toArray();
+            head2 = new ParallelArrayCharStream(a, 0, a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public char tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final char[] a = elements.toArray();
+            head2 = new ArrayCharStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

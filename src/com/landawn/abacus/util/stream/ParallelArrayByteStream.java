@@ -792,6 +792,24 @@ final class ParallelArrayByteStream extends AbstractByteStream {
     }
 
     @Override
+    public ByteStream head2() {
+        if (fromIndex == toIndex) {
+            throw new IllegalStateException();
+        }
+
+        return new ParallelArrayByteStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted, maxThreadNum, splitor);
+    }
+
+    @Override
+    public byte tail2() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[toIndex - 1];
+    }
+
+    @Override
     public <R> R collect(final Supplier<R> supplier, final ObjByteConsumer<R> accumulator, final BiConsumer<R, R> combiner) {
         if (maxThreadNum <= 1) {
             return sequential().collect(supplier, accumulator, combiner);

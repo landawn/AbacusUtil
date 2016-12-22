@@ -74,6 +74,9 @@ final class IteratorStream<T> extends AbstractStream<T> {
     private T head;
     private Stream<T> tail;
 
+    private Stream<T> head2;
+    private T tail2;
+
     IteratorStream(final Iterator<? extends T> values) {
         this(values, null);
     }
@@ -1565,6 +1568,36 @@ final class IteratorStream<T> extends AbstractStream<T> {
         }
 
         return tail;
+    }
+
+    @Override
+    public Stream<T> head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final Object[] a = this.toArray();
+            head2 = new ArrayStream<T>((T[]) a, 0, a.length - 1, closeHandlers, sorted, cmp);
+            tail2 = (T) a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public T tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final Object[] a = this.toArray();
+            head2 = new ArrayStream<T>((T[]) a, 0, a.length - 1, closeHandlers, sorted, cmp);
+            tail2 = (T) a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

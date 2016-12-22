@@ -443,6 +443,24 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public abstract ByteStream tail();
 
     /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * 
+     * @return
+     * @throws IllegalStateException if this stream is empty.
+     */
+    public abstract ByteStream head2();
+
+    /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract byte tail2();
+
+    /**
      * Returns an {@code OptionalByte} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special
      * case of a <a href="package-summary.html#Reduction">reduction</a>

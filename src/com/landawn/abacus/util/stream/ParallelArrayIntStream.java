@@ -1074,6 +1074,24 @@ final class ParallelArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public IntStream head2() {
+        if (fromIndex == toIndex) {
+            throw new IllegalStateException();
+        }
+
+        return new ParallelArrayIntStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted, maxThreadNum, splitor);
+    }
+
+    @Override
+    public int tail2() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[toIndex - 1];
+    }
+
+    @Override
     public OptionalInt min() {
         if (fromIndex == toIndex) {
             return OptionalInt.empty();

@@ -1140,6 +1140,24 @@ public abstract class Stream<T>
     public abstract Stream<T> tail();
 
     /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * 
+     * @return
+     * @throws IllegalStateException if this stream is empty.
+     */
+    public abstract Stream<T> head2();
+
+    /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract T tail2();
+
+    /**
      * Returns the minimum element of this stream according to the provided
      * {@code Comparator}.  This is a special case of a
      * <a href="package-summary.html#Reduction">reduction</a>.
@@ -5361,32 +5379,34 @@ public abstract class Stream<T>
 
             @Override
             public boolean hasNext() {
-                try {
-                    while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
-                        nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
+                if (nextA == null || nextB == null) {
+                    try {
+                        while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                            nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
+                        }
+
+                        if (nextA == null) {
+                            onGoing.setFalse();
+
+                            return false;
+                        }
+
+                        while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                            nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
+                        }
+
+                        if (nextB == null) {
+                            onGoing.setFalse();
+
+                            return false;
+                        }
+                    } catch (Throwable e) {
+                        setError(eHolder, e, onGoing);
                     }
 
-                    if (nextA == null) {
-                        onGoing.setFalse();
-
-                        return false;
+                    if (eHolder.value() != null) {
+                        throwError(eHolder, onGoing);
                     }
-
-                    while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
-                        nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
-                    }
-
-                    if (nextB == null) {
-                        onGoing.setFalse();
-
-                        return false;
-                    }
-                } catch (Throwable e) {
-                    setError(eHolder, e, onGoing);
-                }
-
-                if (eHolder.value() != null) {
-                    throwError(eHolder, onGoing);
                 }
 
                 return true;
@@ -5463,42 +5483,44 @@ public abstract class Stream<T>
 
             @Override
             public boolean hasNext() {
-                try {
-                    while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
-                        nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
+                if (nextA == null || nextB == null || nextC == null) {
+                    try {
+                        while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                            nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
+                        }
+
+                        if (nextA == null) {
+                            onGoing.setFalse();
+
+                            return false;
+                        }
+
+                        while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                            nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
+                        }
+
+                        if (nextB == null) {
+                            onGoing.setFalse();
+
+                            return false;
+                        }
+
+                        while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
+                            nextC = queueC.poll(1, TimeUnit.MILLISECONDS);
+                        }
+
+                        if (nextC == null) {
+                            onGoing.setFalse();
+
+                            return false;
+                        }
+                    } catch (Throwable e) {
+                        setError(eHolder, e, onGoing);
                     }
 
-                    if (nextA == null) {
-                        onGoing.setFalse();
-
-                        return false;
+                    if (eHolder.value() != null) {
+                        throwError(eHolder, onGoing);
                     }
-
-                    while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
-                        nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
-                    }
-
-                    if (nextB == null) {
-                        onGoing.setFalse();
-
-                        return false;
-                    }
-
-                    while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
-                        nextC = queueC.poll(1, TimeUnit.MILLISECONDS);
-                    }
-
-                    if (nextC == null) {
-                        onGoing.setFalse();
-
-                        return false;
-                    }
-                } catch (Throwable e) {
-                    setError(eHolder, e, onGoing);
-                }
-
-                if (eHolder.value() != null) {
-                    throwError(eHolder, onGoing);
                 }
 
                 return true;
@@ -5704,25 +5726,32 @@ public abstract class Stream<T>
             public boolean hasNext() {
                 if (next == null) {
                     next = new Object[len];
-                }
 
-                for (int i = 0; i < len; i++) {
-                    try {
-                        while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
-                            next[i] = queues[i].poll(1, TimeUnit.MILLISECONDS);
+                    for (int i = 0; i < len; i++) {
+                        try {
+                            while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
+                                next[i] = queues[i].poll(1, TimeUnit.MILLISECONDS);
+                            }
+
+                            if (next[i] == null) {
+                                onGoing.setFalse();
+
+                                return false;
+                            }
+                        } catch (Throwable e) {
+                            setError(eHolder, e, onGoing);
                         }
 
-                        if (next[i] == null) {
-                            onGoing.setFalse();
-
-                            return false;
+                        if (eHolder.value() != null) {
+                            throwError(eHolder, onGoing);
                         }
-                    } catch (Throwable e) {
-                        setError(eHolder, e, onGoing);
                     }
 
-                    if (eHolder.value() != null) {
-                        throwError(eHolder, onGoing);
+                } else {
+                    for (int i = 0; i < len; i++) {
+                        if (next[i] == null) {
+                            return false;
+                        }
                     }
                 }
 
@@ -5731,20 +5760,8 @@ public abstract class Stream<T>
 
             @Override
             public R next() {
-                if (next == null) {
-                    if (hasNext() == false) {
-                        throw new NoSuchElementException();
-                    }
-                } else {
-                    for (int i = 0; i < len; i++) {
-                        if (next[i] == null) {
-                            if (hasNext() == false) {
-                                throw new NoSuchElementException();
-                            } else {
-                                break;
-                            }
-                        }
-                    }
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
                 }
 
                 for (int i = 0; i < len; i++) {
@@ -6013,20 +6030,22 @@ public abstract class Stream<T>
 
             @Override
             public boolean hasNext() {
-                try {
-                    while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
-                        nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
+                if (nextA == null && nextB == null) {
+                    try {
+                        while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                            nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
+                        }
+
+                        while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                            nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
+                        }
+                    } catch (Throwable e) {
+                        setError(eHolder, e, onGoing);
                     }
 
-                    while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
-                        nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
+                    if (eHolder.value() != null) {
+                        throwError(eHolder, onGoing);
                     }
-                } catch (Throwable e) {
-                    setError(eHolder, e, onGoing);
-                }
-
-                if (eHolder.value() != null) {
-                    throwError(eHolder, onGoing);
                 }
 
                 if (nextA != null || nextB != null) {
@@ -6132,24 +6151,26 @@ public abstract class Stream<T>
 
             @Override
             public boolean hasNext() {
-                try {
-                    while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
-                        nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
+                if (nextA == null && nextB == null && nextC == null) {
+                    try {
+                        while (nextA == null && onGoing.value() && (threadCounterA.get() > 0 || queueA.size() > 0)) { // (threadCounterA.get() > 0 || queueA.size() > 0) is wrong. has to check counter first
+                            nextA = queueA.poll(1, TimeUnit.MILLISECONDS);
+                        }
+
+                        while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
+                            nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
+                        }
+
+                        while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
+                            nextC = queueC.poll(1, TimeUnit.MILLISECONDS);
+                        }
+                    } catch (Throwable e) {
+                        setError(eHolder, e, onGoing);
                     }
 
-                    while (nextB == null && onGoing.value() && (threadCounterB.get() > 0 || queueB.size() > 0)) { // (threadCounterB.get() > 0 || queueB.size() > 0) is wrong. has to check counter first
-                        nextB = queueB.poll(1, TimeUnit.MILLISECONDS);
+                    if (eHolder.value() != null) {
+                        throwError(eHolder, onGoing);
                     }
-
-                    while (nextC == null && onGoing.value() && (threadCounterC.get() > 0 || queueC.size() > 0)) { // (threadCounterC.get() > 0 || queueC.size() > 0) is wrong. has to check counter first
-                        nextC = queueC.poll(1, TimeUnit.MILLISECONDS);
-                    }
-                } catch (Throwable e) {
-                    setError(eHolder, e, onGoing);
-                }
-
-                if (eHolder.value() != null) {
-                    throwError(eHolder, onGoing);
                 }
 
                 if (nextA != null || nextB != null || nextC != null) {
@@ -6400,19 +6421,19 @@ public abstract class Stream<T>
             public boolean hasNext() {
                 if (next == null) {
                     next = new Object[len];
-                }
 
-                for (int i = 0; i < len; i++) {
-                    try {
-                        while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
-                            next[i] = queues[i].poll(1, TimeUnit.MILLISECONDS);
+                    for (int i = 0; i < len; i++) {
+                        try {
+                            while (next[i] == null && onGoing.value() && (counters[i].get() > 0 || queues[i].size() > 0)) { // (counters[i].get() > 0 || queues[i].size() > 0) is wrong. has to check counter first
+                                next[i] = queues[i].poll(1, TimeUnit.MILLISECONDS);
+                            }
+                        } catch (Throwable e) {
+                            setError(eHolder, e, onGoing);
                         }
-                    } catch (Throwable e) {
-                        setError(eHolder, e, onGoing);
-                    }
 
-                    if (eHolder.value() != null) {
-                        throwError(eHolder, onGoing);
+                        if (eHolder.value() != null) {
+                            throwError(eHolder, onGoing);
+                        }
                     }
                 }
 
@@ -6428,20 +6449,8 @@ public abstract class Stream<T>
 
             @Override
             public R next() {
-                if (next == null) {
-                    if (hasNext() == false) {
-                        throw new NoSuchElementException();
-                    }
-                } else {
-                    for (int i = 0; i < len; i++) {
-                        if (next[i] == null) {
-                            if (hasNext() == false) {
-                                throw new NoSuchElementException();
-                            } else {
-                                break;
-                            }
-                        }
-                    }
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
                 }
 
                 for (int i = 0; i < len; i++) {

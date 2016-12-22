@@ -969,6 +969,24 @@ final class ParallelArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public FloatStream head2() {
+        if (fromIndex == toIndex) {
+            throw new IllegalStateException();
+        }
+
+        return new ParallelArrayFloatStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted, maxThreadNum, splitor);
+    }
+
+    @Override
+    public float tail2() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[toIndex - 1];
+    }
+
+    @Override
     public OptionalFloat min() {
         if (fromIndex == toIndex) {
             return OptionalFloat.empty();

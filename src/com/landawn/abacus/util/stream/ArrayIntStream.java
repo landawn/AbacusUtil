@@ -1286,6 +1286,24 @@ final class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public IntStream head2() {
+        if (fromIndex == toIndex) {
+            throw new IllegalStateException();
+        }
+
+        return new ArrayIntStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
+    }
+
+    @Override
+    public int tail2() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[toIndex - 1];
+    }
+
+    @Override
     public OptionalInt min() {
         if (fromIndex == toIndex) {
             return OptionalInt.empty();

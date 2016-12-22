@@ -65,6 +65,9 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
     private double head;
     private DoubleStream tail;
 
+    private DoubleStream head2;
+    private double tail2;
+
     IteratorDoubleStream(final DoubleIterator values) {
         this(values, null);
     }
@@ -1017,6 +1020,36 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public DoubleStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final double[] a = elements.toArray();
+            head2 = new ArrayDoubleStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public double tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final double[] a = elements.toArray();
+            head2 = new ArrayDoubleStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override

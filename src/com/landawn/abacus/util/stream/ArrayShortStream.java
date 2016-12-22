@@ -937,6 +937,24 @@ final class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public ShortStream head2() {
+        if (fromIndex == toIndex) {
+            throw new IllegalStateException();
+        }
+
+        return new ArrayShortStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
+    }
+
+    @Override
+    public short tail2() {
+        if (fromIndex == toIndex) {
+            throw new NoSuchElementException();
+        }
+
+        return elements[toIndex - 1];
+    }
+
+    @Override
     public OptionalShort min() {
         if (fromIndex == toIndex) {
             return OptionalShort.empty();

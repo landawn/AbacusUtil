@@ -484,6 +484,24 @@ public abstract class DoubleStream
     public abstract DoubleStream tail();
 
     /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * 
+     * @return
+     * @throws IllegalStateException if this stream is empty.
+     */
+    public abstract DoubleStream head2();
+
+    /**
+     * Head2 and tail2 should be used by pair. 
+     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * 
+     * @return
+     * @throws NoSuchElementException if this stream is empty.
+     */
+    public abstract double tail2();
+
+    /**
      * Returns an {@code OptionalDouble} describing the minimum element of this
      * stream, or an empty OptionalDouble if this stream is empty.  The minimum
      * element will be {@code Double.NaN} if any stream element was NaN. Unlike

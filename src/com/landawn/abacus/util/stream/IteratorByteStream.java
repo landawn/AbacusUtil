@@ -60,6 +60,9 @@ final class IteratorByteStream extends AbstractByteStream {
     private byte head;
     private ByteStream tail;
 
+    private ByteStream head2;
+    private byte tail2;
+
     IteratorByteStream(final ByteIterator values) {
         this(values, null);
     }
@@ -904,6 +907,36 @@ final class IteratorByteStream extends AbstractByteStream {
         }
 
         return tail;
+    }
+
+    @Override
+    public ByteStream head2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new IllegalStateException();
+            }
+
+            final byte[] a = elements.toArray();
+            head2 = new ArrayByteStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return head2;
+    }
+
+    @Override
+    public byte tail2() {
+        if (head2 == null) {
+            if (elements.hasNext() == false) {
+                throw new NoSuchElementException();
+            }
+
+            final byte[] a = elements.toArray();
+            head2 = new ArrayByteStream(a, 0, a.length - 1, closeHandlers, sorted);
+            tail2 = a[a.length - 1];
+        }
+
+        return tail2;
     }
 
     @Override
