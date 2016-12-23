@@ -1,3 +1,3 @@
 # AbacusUtil
 
-Documents: http://www.landawn.com/
+Docs: http://www.landawn.com/
