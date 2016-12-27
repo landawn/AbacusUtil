@@ -1,4 +1,18 @@
 
+========Changes in 0.9.40=========================================================================
+
+1, Add removeIf(predicate)/replaceAll(unaryOperator)/replaceIf(newValue, predicate) to ObjectList/IntList/CharList/...
+
+2, Add removeAllOccurrencesIf(predicate) and removeIf(occurrences, predicate), replaceAll(function) and replaceIf(newOccurrences, predicate) to Multiset/LongMultiset
+
+3, Add removeIf(value, predicate)/removeAllIf(values, predicate)/removeAllIf(predicate) and replaceIf(oldValue, newValue, predicate)/replaceAllIf(oldValue, newValue, predicate) and replaceAll(function) to Multimap
+
+7, Improvements and bug fix.
+
+
+========Changes in 0.9.38=========================================================================
+
+
 ========Changes in 0.9.39=========================================================================
 
 1, Add head()/tail(), head2()/tail2() to Stream/IntStream/DoubleStream/...

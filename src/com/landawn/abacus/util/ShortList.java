@@ -27,6 +27,7 @@ import com.landawn.abacus.util.function.IndexedShortConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortPredicate;
+import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.stream.ShortStream;
 
 /**
@@ -374,6 +375,25 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         return removeAll(of(a));
     }
 
+    @Override
+    public boolean removeIf(ShortPredicate p) {
+        final ShortList tmp = new ShortList(size());
+
+        for (int i = 0; i < size; i++) {
+            if (p.test(elementData[i]) == false) {
+                tmp.add(elementData[i]);
+            }
+        }
+
+        if (tmp.size() == this.size()) {
+            return false;
+        }
+
+        N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+
+        return true;
+    }
+
     public boolean retainAll(ShortList c) {
         return batchRemove(c, true) > 0;
     }
@@ -442,6 +462,26 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
                 elementData[i] = newVal;
 
                 result++;
+            }
+        }
+
+        return result;
+    }
+
+    public void replaceAll(ShortUnaryOperator operator) {
+        for (int i = 0, len = size(); i < len; i++) {
+            elementData[i] = operator.applyAsShort(elementData[i]);
+        }
+    }
+
+    public boolean replaceIf(short newValue, ShortPredicate predicate) {
+        boolean result = false;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (predicate.test(elementData[i])) {
+                elementData[i] = newValue;
+
+                result = true;
             }
         }
 

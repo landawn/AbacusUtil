@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharPredicate;
+import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.IndexedCharConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.CharStream;
@@ -406,6 +407,25 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return removeAll(of(a));
     }
 
+    @Override
+    public boolean removeIf(CharPredicate p) {
+        final CharList tmp = new CharList(size());
+
+        for (int i = 0; i < size; i++) {
+            if (p.test(elementData[i]) == false) {
+                tmp.add(elementData[i]);
+            }
+        }
+
+        if (tmp.size() == this.size()) {
+            return false;
+        }
+
+        N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+
+        return true;
+    }
+
     public boolean retainAll(CharList c) {
         return batchRemove(c, true) > 0;
     }
@@ -474,6 +494,26 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
                 elementData[i] = newVal;
 
                 result++;
+            }
+        }
+
+        return result;
+    }
+
+    public void replaceAll(CharUnaryOperator operator) {
+        for (int i = 0, len = size(); i < len; i++) {
+            elementData[i] = operator.applyAsChar(elementData[i]);
+        }
+    }
+
+    public boolean replaceIf(char newValue, CharPredicate predicate) {
+        boolean result = false;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (predicate.test(elementData[i])) {
+                elementData[i] = newValue;
+
+                result = true;
             }
         }
 

@@ -25,6 +25,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.IndexedDoubleConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
@@ -384,6 +385,25 @@ public final class DoubleList extends AbstractNumberList<DoubleConsumer, DoubleP
         return removeAll(of(a));
     }
 
+    @Override
+    public boolean removeIf(DoublePredicate p) {
+        final DoubleList tmp = new DoubleList(size());
+
+        for (int i = 0; i < size; i++) {
+            if (p.test(elementData[i]) == false) {
+                tmp.add(elementData[i]);
+            }
+        }
+
+        if (tmp.size() == this.size()) {
+            return false;
+        }
+
+        N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+
+        return true;
+    }
+
     public boolean retainAll(DoubleList c) {
         return batchRemove(c, true) > 0;
     }
@@ -452,6 +472,26 @@ public final class DoubleList extends AbstractNumberList<DoubleConsumer, DoubleP
                 elementData[i] = newVal;
 
                 result++;
+            }
+        }
+
+        return result;
+    }
+
+    public void replaceAll(DoubleUnaryOperator operator) {
+        for (int i = 0, len = size(); i < len; i++) {
+            elementData[i] = operator.applyAsDouble(elementData[i]);
+        }
+    }
+
+    public boolean replaceIf(double newValue, DoublePredicate predicate) {
+        boolean result = false;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (predicate.test(elementData[i])) {
+                elementData[i] = newValue;
+
+                result = true;
             }
         }
 

@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.BytePredicate;
+import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.IndexedByteConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.ByteStream;
@@ -376,6 +377,25 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         return removeAll(of(a));
     }
 
+    @Override
+    public boolean removeIf(BytePredicate p) {
+        final ByteList tmp = new ByteList(size());
+
+        for (int i = 0; i < size; i++) {
+            if (p.test(elementData[i]) == false) {
+                tmp.add(elementData[i]);
+            }
+        }
+
+        if (tmp.size() == this.size()) {
+            return false;
+        }
+
+        N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+
+        return true;
+    }
+
     public boolean retainAll(ByteList c) {
         return batchRemove(c, true) > 0;
     }
@@ -444,6 +464,26 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
                 elementData[i] = newVal;
 
                 result++;
+            }
+        }
+
+        return result;
+    }
+
+    public void replaceAll(ByteUnaryOperator operator) {
+        for (int i = 0, len = size(); i < len; i++) {
+            elementData[i] = operator.applyAsByte(elementData[i]);
+        }
+    }
+
+    public boolean replaceIf(byte newValue, BytePredicate predicate) {
+        boolean result = false;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (predicate.test(elementData[i])) {
+                elementData[i] = newValue;
+
+                result = true;
             }
         }
 

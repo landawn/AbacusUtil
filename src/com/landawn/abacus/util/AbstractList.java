@@ -74,6 +74,8 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      */
     public abstract boolean removeAll(A a);
 
+    public abstract boolean removeIf(P p);
+
     public abstract void deleteAll(int... indices);
 
     // public abstract boolean containsAll(L l);

@@ -25,6 +25,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatPredicate;
+import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.IndexedFloatConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.FloatStream;
@@ -398,6 +399,25 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         return removeAll(of(a));
     }
 
+    @Override
+    public boolean removeIf(FloatPredicate p) {
+        final FloatList tmp = new FloatList(size());
+
+        for (int i = 0; i < size; i++) {
+            if (p.test(elementData[i]) == false) {
+                tmp.add(elementData[i]);
+            }
+        }
+
+        if (tmp.size() == this.size()) {
+            return false;
+        }
+
+        N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+
+        return true;
+    }
+
     public boolean retainAll(FloatList c) {
         return batchRemove(c, true) > 0;
     }
@@ -466,6 +486,26 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
                 elementData[i] = newVal;
 
                 result++;
+            }
+        }
+
+        return result;
+    }
+
+    public void replaceAll(FloatUnaryOperator operator) {
+        for (int i = 0, len = size(); i < len; i++) {
+            elementData[i] = operator.applyAsFloat(elementData[i]);
+        }
+    }
+
+    public boolean replaceIf(float newValue, FloatPredicate predicate) {
+        boolean result = false;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (predicate.test(elementData[i])) {
+                elementData[i] = newValue;
+
+                result = true;
             }
         }
 

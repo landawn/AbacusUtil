@@ -27,6 +27,7 @@ import com.landawn.abacus.util.function.IndexedIntConsumer;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.stream.IntStream;
 
 /**
@@ -529,6 +530,25 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         return removeAll(of(a));
     }
 
+    @Override
+    public boolean removeIf(IntPredicate p) {
+        final IntList tmp = new IntList(size());
+
+        for (int i = 0; i < size; i++) {
+            if (p.test(elementData[i]) == false) {
+                tmp.add(elementData[i]);
+            }
+        }
+
+        if (tmp.size() == this.size()) {
+            return false;
+        }
+
+        N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+
+        return true;
+    }
+
     public boolean retainAll(IntList c) {
         return batchRemove(c, true) > 0;
     }
@@ -597,6 +617,26 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
                 elementData[i] = newVal;
 
                 result++;
+            }
+        }
+
+        return result;
+    }
+
+    public void replaceAll(IntUnaryOperator operator) {
+        for (int i = 0, len = size(); i < len; i++) {
+            elementData[i] = operator.applyAsInt(elementData[i]);
+        }
+    }
+
+    public boolean replaceIf(int newValue, IntPredicate predicate) {
+        boolean result = false;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (predicate.test(elementData[i])) {
+                elementData[i] = newValue;
+
+                result = true;
             }
         }
 

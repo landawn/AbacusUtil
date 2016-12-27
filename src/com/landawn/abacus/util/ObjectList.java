@@ -39,6 +39,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -410,6 +411,25 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return removeAll(of(a));
     }
 
+    @Override
+    public boolean removeIf(Predicate<? super T> p) {
+        final ObjectList<T> tmp = new ObjectList<T>(size());
+
+        for (int i = 0; i < size; i++) {
+            if (p.test(elementData[i]) == false) {
+                tmp.add(elementData[i]);
+            }
+        }
+
+        if (tmp.size() == this.size()) {
+            return false;
+        }
+
+        N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+
+        return true;
+    }
+
     /**
      * 
      * @param c
@@ -494,6 +514,26 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
 
                     result++;
                 }
+            }
+        }
+
+        return result;
+    }
+
+    public void replaceAll(UnaryOperator<T> operator) {
+        for (int i = 0, len = size(); i < len; i++) {
+            elementData[i] = operator.apply(elementData[i]);
+        }
+    }
+
+    public boolean replaceIf(T newValue, Predicate<? super T> predicate) {
+        boolean result = false;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (predicate.test(elementData[i])) {
+                elementData[i] = newValue;
+
+                result = true;
             }
         }
 

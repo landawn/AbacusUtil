@@ -19,7 +19,9 @@ package com.landawn.abacus.util;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,8 +32,10 @@ import java.util.Set;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.Stream;
@@ -495,7 +499,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return result;
     }
 
-    public boolean removeAll(final Map<?, ?> m) {
+    public boolean removeAll(final Map<? extends K, ? extends E> m) {
         if (N.isNullOrEmpty(m)) {
             return false;
         }
@@ -554,26 +558,223 @@ public final class Multimap<K, E, V extends Collection<E>> {
     }
 
     /**
+     * Remove the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param value
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean removeIf(E value, Predicate<? super K> predicate) {
+        Set<K> removingKeys = null;
+
+        for (K key : this.valueMap.keySet()) {
+            if (predicate.test(key)) {
+                if (removingKeys == null) {
+                    removingKeys = new HashSet<>();
+                }
+
+                removingKeys.add(key);
+            }
+        }
+
+        if (N.isNullOrEmpty(removingKeys)) {
+            return false;
+        }
+
+        boolean modified = false;
+
+        for (K k : removingKeys) {
+            if (remove(k, value)) {
+                modified = true;
+            }
+        }
+
+        return modified;
+    }
+
+    /**
+     * Remove the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param value
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean removeIf(E value, BiPredicate<? super K, ? super V> predicate) {
+        Set<K> removingKeys = null;
+
+        for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
+            if (predicate.test(entry.getKey(), entry.getValue())) {
+                if (removingKeys == null) {
+                    removingKeys = new HashSet<>();
+                }
+
+                removingKeys.add(entry.getKey());
+            }
+        }
+
+        if (N.isNullOrEmpty(removingKeys)) {
+            return false;
+        }
+
+        boolean modified = false;
+
+        for (K k : removingKeys) {
+            if (remove(k, value)) {
+                modified = true;
+            }
+        }
+
+        return modified;
+    }
+
+    /**
+     * Remove the specified values (all occurrences) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param value
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean removeAllIf(Collection<?> values, Predicate<? super K> predicate) {
+        Set<K> removingKeys = null;
+
+        for (K key : this.valueMap.keySet()) {
+            if (predicate.test(key)) {
+                if (removingKeys == null) {
+                    removingKeys = new HashSet<>();
+                }
+
+                removingKeys.add(key);
+            }
+        }
+
+        if (N.isNullOrEmpty(removingKeys)) {
+            return false;
+        }
+
+        boolean modified = false;
+
+        for (K k : removingKeys) {
+            if (removeAll(k, values)) {
+                modified = true;
+            }
+        }
+
+        return modified;
+    }
+
+    /**
+     * Remove the specified values (all occurrences) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param values
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean removeAllIf(Collection<?> values, BiPredicate<? super K, ? super V> predicate) {
+        Set<K> removingKeys = null;
+
+        for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
+            if (predicate.test(entry.getKey(), entry.getValue())) {
+                if (removingKeys == null) {
+                    removingKeys = new HashSet<>();
+                }
+
+                removingKeys.add(entry.getKey());
+            }
+        }
+
+        if (N.isNullOrEmpty(removingKeys)) {
+            return false;
+        }
+
+        boolean modified = false;
+
+        for (K k : removingKeys) {
+            if (removeAll(k, values)) {
+                modified = true;
+            }
+        }
+
+        return modified;
+    }
+
+    /**
+     * Remove all the values associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean removeAllIf(Predicate<? super K> predicate) {
+        Set<K> removingKeys = null;
+
+        for (K key : this.valueMap.keySet()) {
+            if (predicate.test(key)) {
+                if (removingKeys == null) {
+                    removingKeys = new HashSet<>();
+                }
+
+                removingKeys.add(key);
+            }
+        }
+
+        if (N.isNullOrEmpty(removingKeys)) {
+            return false;
+        }
+
+        for (K k : removingKeys) {
+            removeAll(k);
+        }
+
+        return true;
+    }
+
+    /**
+     * Remove all the values associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean removeAllIf(BiPredicate<? super K, ? super V> predicate) {
+        Set<K> removingKeys = null;
+
+        for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
+            if (predicate.test(entry.getKey(), entry.getValue())) {
+                if (removingKeys == null) {
+                    removingKeys = new HashSet<>();
+                }
+
+                removingKeys.add(entry.getKey());
+            }
+        }
+
+        if (N.isNullOrEmpty(removingKeys)) {
+            return false;
+        }
+
+        for (K k : removingKeys) {
+            removeAll(k);
+        }
+
+        return true;
+    }
+
+    /**
      * Replaces one of the specified <code>oldValue</code> with the specified <code>newValue</code>.
      * <code>False</code> is returned if no <code>oldValue</code> is found.
      *
      * @param key
      * @param oldValue
      * @param newValue
-     * @return <code>true</code> only if the old value is removed from the value collection successfully and the new value is added to value collection successfully.
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
     public boolean replace(final K key, final E oldValue, final E newValue) {
         V val = valueMap.get(key);
 
-        if (N.isNullOrEmpty(val)) {
-            return false;
+        if (val.remove(oldValue)) {
+            val.add(newValue);
+            return true;
         }
 
-        if (val.remove(oldValue) == false) {
-            return false;
-        }
-
-        return val.add(newValue);
+        return false;
     }
 
     /**
@@ -583,20 +784,119 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * @param key
      * @param oldValue
      * @param newValue
-     * @return <code>true</code> only if the all of the old values are removed from the value collection successfully and the new value is added to value collection successfully.
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
     public boolean replaceAll(final K key, final E oldValue, final E newValue) {
         V val = valueMap.get(key);
 
-        if (N.isNullOrEmpty(val)) {
-            return false;
+        if (val.removeAll(Arrays.asList(oldValue))) {
+            val.add(newValue);
+            return true;
         }
 
-        if (val.removeAll(N.asList(oldValue)) == false) {
-            return false;
+        return false;
+    }
+
+    /**
+     * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param value
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean replaceIf(E oldValue, E newValue, Predicate<? super K> predicate) {
+        boolean modified = false;
+
+        for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
+            if (predicate.test(entry.getKey())) {
+                if (entry.getValue().remove(oldValue)) {
+                    entry.getValue().add(newValue);
+                    modified = true;
+                }
+            }
         }
 
-        return val.add(newValue);
+        return modified;
+    }
+
+    /**
+     * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param value
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean replaceIf(E oldValue, E newValue, BiPredicate<? super K, ? super V> predicate) {
+        boolean modified = false;
+
+        for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
+            if (predicate.test(entry.getKey(), entry.getValue())) {
+                if (entry.getValue().remove(oldValue)) {
+                    entry.getValue().add(newValue);
+                    modified = true;
+                }
+            }
+        }
+
+        return modified;
+    }
+
+    /**
+     * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param value
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean replaceAllIf(E oldValue, E newValue, Predicate<? super K> predicate) {
+        boolean modified = false;
+
+        for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
+            if (predicate.test(entry.getKey())) {
+                if (entry.getValue().removeAll(Arrays.asList(oldValue))) {
+                    entry.getValue().add(newValue);
+                    modified = true;
+                }
+            }
+        }
+
+        return modified;
+    }
+
+    /**
+     * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * 
+     * @param value
+     * @param predicate
+     * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
+     */
+    public boolean replaceAllIf(E oldValue, E newValue, BiPredicate<? super K, ? super V> predicate) {
+        boolean modified = false;
+
+        for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
+            if (predicate.test(entry.getKey(), entry.getValue())) {
+                if (entry.getValue().removeAll(Arrays.asList(oldValue))) {
+                    entry.getValue().add(newValue);
+                    modified = true;
+                }
+            }
+        }
+
+        return modified;
+    }
+
+    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+        V newVal = null;
+
+        for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
+            newVal = function.apply(entry.getKey(), entry.getValue());
+
+            try {
+                entry.setValue(newVal);
+            } catch (IllegalStateException ise) {
+                throw new ConcurrentModificationException(ise);
+            }
+        }
     }
 
     public boolean contains(final Object key, final Object e) {

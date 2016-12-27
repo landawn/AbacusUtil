@@ -27,6 +27,7 @@ import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongPredicate;
+import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.stream.LongStream;
 
 /**
@@ -418,6 +419,25 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         return removeAll(of(a));
     }
 
+    @Override
+    public boolean removeIf(LongPredicate p) {
+        final LongList tmp = new LongList(size());
+
+        for (int i = 0; i < size; i++) {
+            if (p.test(elementData[i]) == false) {
+                tmp.add(elementData[i]);
+            }
+        }
+
+        if (tmp.size() == this.size()) {
+            return false;
+        }
+
+        N.copy(tmp.elementData, 0, this.elementData, 0, tmp.size());
+
+        return true;
+    }
+
     public boolean retainAll(LongList c) {
         return batchRemove(c, true) > 0;
     }
@@ -486,6 +506,26 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
                 elementData[i] = newVal;
 
                 result++;
+            }
+        }
+
+        return result;
+    }
+
+    public void replaceAll(LongUnaryOperator operator) {
+        for (int i = 0, len = size(); i < len; i++) {
+            elementData[i] = operator.applyAsLong(elementData[i]);
+        }
+    }
+
+    public boolean replaceIf(long newValue, LongPredicate predicate) {
+        boolean result = false;
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (predicate.test(elementData[i])) {
+                elementData[i] = newValue;
+
+                result = true;
             }
         }
 
