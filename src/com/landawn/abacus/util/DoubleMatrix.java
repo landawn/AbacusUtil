@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, DoubleMatrix> {
     static final DoubleMatrix EMPTY_DOUBLE_MATRIX = new DoubleMatrix(new double[0][0]);
 
@@ -19,23 +39,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return N.isNullOrEmpty(a) ? EMPTY_DOUBLE_MATRIX : new DoubleMatrix(a);
     }
 
-    public static DoubleMatrix from(final int n, final int m, final double[] a) {
-        final double[][] c = new double[n][m];
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new DoubleMatrix(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new DoubleMatrix(c);
-    }
-
-    public static DoubleMatrix from(final int[][] a) {
+    public static DoubleMatrix from(final int[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_DOUBLE_MATRIX;
         }
@@ -51,7 +55,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return new DoubleMatrix(c);
     }
 
-    public static DoubleMatrix from(final long[][] a) {
+    public static DoubleMatrix from(final long[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_DOUBLE_MATRIX;
         }
@@ -67,7 +71,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return new DoubleMatrix(c);
     }
 
-    public static DoubleMatrix from(final float[][] a) {
+    public static DoubleMatrix from(final float[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_DOUBLE_MATRIX;
         }
@@ -83,34 +87,12 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return new DoubleMatrix(c);
     }
 
-    public static DoubleMatrix random(final int n, final int m) {
-        final double[][] a = new double[n][m];
-
-        if (n == 0 || m == 0) {
-            return new DoubleMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                a[i][j] = RAND.nextInt();
-            }
-        }
-
-        return new DoubleMatrix(a);
+    public static DoubleMatrix random(final int len) {
+        return new DoubleMatrix(new double[][] { DoubleList.random(len).array() });
     }
 
-    public static DoubleMatrix repeat(final int n, final int m, final double val) {
-        final double[][] c = new double[n][m];
-
-        if (n == 0 || m == 0) {
-            return new DoubleMatrix(c);
-        }
-
-        for (int i = 0; i < n; i++) {
-            N.fill(c[i], val);
-        }
-
-        return new DoubleMatrix(c);
+    public static DoubleMatrix repeat(final double val, final int len) {
+        return new DoubleMatrix(new double[][] { Array.repeat(val, len) });
     }
 
     public double get(final int i, final int j) {
@@ -288,18 +270,45 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     }
 
     @Override
+    public DoubleMatrix transpose() {
+        final double[][] c = new double[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new DoubleMatrix(c);
+    }
+
+    @Override
     public DoubleMatrix reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final double[][] c = new double[n][m];
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new DoubleMatrix(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new DoubleMatrix(c);
     }
 
     @Override
     public double[] flatten() {
         final double[] c = new double[n * m];
-    
+
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
-    
+
         return c;
     }
 

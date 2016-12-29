@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatMatrix> {
     static final FloatMatrix EMPTY_FLOAT_MATRIX = new FloatMatrix(new float[0][0]);
 
@@ -19,50 +39,12 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
         return N.isNullOrEmpty(a) ? EMPTY_FLOAT_MATRIX : new FloatMatrix(a);
     }
 
-    public static FloatMatrix from(final int n, final int m, final float[] a) {
-        final float[][] c = new float[n][m];
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new FloatMatrix(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new FloatMatrix(c);
+    public static FloatMatrix random(final int len) {
+        return new FloatMatrix(new float[][] { FloatList.random(len).array() });
     }
 
-    public static FloatMatrix random(final int n, final int m) {
-        final float[][] a = new float[n][m];
-
-        if (n == 0 || m == 0) {
-            return new FloatMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                a[i][j] = RAND.nextInt();
-            }
-        }
-
-        return new FloatMatrix(a);
-    }
-
-    public static FloatMatrix repeat(final int n, final int m, final float val) {
-        final float[][] c = new float[n][m];
-
-        if (n == 0 || m == 0) {
-            return new FloatMatrix(c);
-        }
-
-        for (int i = 0; i < n; i++) {
-            N.fill(c[i], val);
-        }
-
-        return new FloatMatrix(c);
+    public static FloatMatrix repeat(final float val, final int len) {
+        return new FloatMatrix(new float[][] { Array.repeat(val, len) });
     }
 
     public float get(final int i, final int j) {
@@ -240,18 +222,45 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
     }
 
     @Override
+    public FloatMatrix transpose() {
+        final float[][] c = new float[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new FloatMatrix(c);
+    }
+
+    @Override
     public FloatMatrix reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final float[][] c = new float[n][m];
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new FloatMatrix(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new FloatMatrix(c);
     }
 
     @Override
     public float[] flatten() {
         final float[] c = new float[n * m];
-    
+
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
-    
+
         return c;
     }
 

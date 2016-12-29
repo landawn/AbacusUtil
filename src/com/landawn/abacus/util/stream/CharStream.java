@@ -35,6 +35,7 @@ import java.util.Queue;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.CharMatrix;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
@@ -285,6 +286,8 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier);
+
+    public abstract CharMatrix toMatrix();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the

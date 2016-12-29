@@ -27,6 +27,7 @@ import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.LongMatrix;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -215,6 +216,11 @@ abstract class AbstractLongStream extends LongStream {
                 return N.newListMultimap();
             }
         });
+    }
+
+    @Override
+    public LongMatrix toMatrix() {
+        return LongMatrix.of(toArray());
     }
 
     @Override

@@ -55,6 +55,7 @@ import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongSummaryStatistics;
+import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
@@ -772,6 +773,18 @@ abstract class AbstractStream<T> extends Stream<T> {
                 return N.newListMultimap();
             }
         });
+    }
+
+    @Override
+    public Matrix<T> toMatrix(final Class<T> type) {
+        final T[] a = toArray(new IntFunction<T[]>() {
+            @Override
+            public T[] apply(int value) {
+                return (T[]) N.newArray(type, 0);
+            }
+        });
+
+        return Matrix.of(a);
     }
 
     @Override

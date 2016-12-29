@@ -7,6 +7,8 @@
 
 3, Add removeIf(value, predicate)/removeAllIf(values, predicate)/removeAllIf(predicate) and replaceIf(oldValue, newValue, predicate)/replaceAllIf(oldValue, newValue, predicate) and replaceAll(function) to Multimap
 
+4, Add Matrix/IntMatrix/LongMatrix/...
+
 7, Improvements and bug fix.
 
 

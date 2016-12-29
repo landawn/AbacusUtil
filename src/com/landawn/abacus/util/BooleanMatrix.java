@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, BooleanMatrix> {
     static final BooleanMatrix EMPTY_BOOLEAN_MATRIX = new BooleanMatrix(new boolean[0][0]);
 
@@ -19,50 +39,12 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return N.isNullOrEmpty(a) ? EMPTY_BOOLEAN_MATRIX : new BooleanMatrix(a);
     }
 
-    public static BooleanMatrix from(final int n, final int m, final boolean[] a) {
-        final boolean[][] c = new boolean[n][m];
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new BooleanMatrix(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new BooleanMatrix(c);
+    public static BooleanMatrix random(final int len) {
+        return new BooleanMatrix(new boolean[][] { BooleanList.random(len).array() });
     }
 
-    public static BooleanMatrix random(final int n, final int m) {
-        final boolean[][] a = new boolean[n][m];
-
-        if (n == 0 || m == 0) {
-            return new BooleanMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                a[i][j] = RAND.nextBoolean();
-            }
-        }
-
-        return new BooleanMatrix(a);
-    }
-
-    public static BooleanMatrix repeat(final int n, final int m, final boolean val) {
-        final boolean[][] a = new boolean[n][m];
-
-        if (n == 0 || m == 0) {
-            return new BooleanMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            N.fill(a[i], val);
-        }
-
-        return new BooleanMatrix(a);
+    public static BooleanMatrix repeat(final boolean val, final int len) {
+        return new BooleanMatrix(new boolean[][] { Array.repeat(val, len) });
     }
 
     public boolean get(final int i, final int j) {
@@ -186,8 +168,35 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
     }
 
     @Override
+    public BooleanMatrix transpose() {
+        final boolean[][] c = new boolean[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new BooleanMatrix(c);
+    }
+
+    @Override
     public BooleanMatrix reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final boolean[][] c = new boolean[n][m];
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new BooleanMatrix(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new BooleanMatrix(c);
     }
 
     @Override
@@ -204,11 +213,11 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
     @Override
     public boolean[] flatten() {
         final boolean[] c = new boolean[n * m];
-    
+
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
-    
+
         return c;
     }
 

@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.Function;
@@ -13,6 +27,12 @@ import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T>> {
     private Class<T[]> arrayType;
     private Class<T> componentType;
@@ -27,43 +47,9 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         return new Matrix<T>(a);
     }
 
-    public static <T> Matrix<T> from(final int n, final int m, final T[] a) {
-        final T[][] c = N.newArray(a.getClass(), n);
-        final Class<T> cptType = (Class<T>) a.getClass().getComponentType();
-
-        for (int i = 0; i < n; i++) {
-            c[i] = N.newArray(cptType, m);
-        }
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new Matrix<T>(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new Matrix<T>(c);
-    }
-
-    public static <T> Matrix<T> repeat(final int n, final int m, final T val) {
-        final T[][] c = N.newArray(N.newArray(val.getClass(), 0).getClass(), n);
-        final Class<T> cptType = (Class<T>) c.getClass().getComponentType();
-
-        for (int i = 0; i < n; i++) {
-            c[i] = N.newArray(cptType, m);
-        }
-
-        if (n == 0 || m == 0) {
-            return new Matrix<T>(c);
-        }
-
-        for (int i = 0; i < n; i++) {
-            N.fill(c[i], val);
-        }
-
+    public static <T> Matrix<T> repeat(final T val, final int len) {
+        final T[][] c = N.newArray(N.newArray(val.getClass(), 0).getClass(), 1);
+        c[0] = Array.repeat(val, len);
         return new Matrix<T>(c);
     }
 
@@ -445,8 +431,43 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
     }
 
     @Override
+    public Matrix<T> transpose() {
+        final T[][] c = N.newArray(arrayType, m);
+
+        for (int i = 0; i < m; i++) {
+            c[i] = N.newArray(componentType, n);
+        }
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new Matrix<T>(c);
+    }
+
+    @Override
     public Matrix<T> reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final T[][] c = N.newArray(arrayType, n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = N.newArray(componentType, m);
+        }
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new Matrix<T>(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new Matrix<T>(c);
     }
 
     @Override

@@ -35,6 +35,7 @@ import java.util.Queue;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
@@ -285,6 +286,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier);
+
+    public abstract ByteMatrix toMatrix();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the

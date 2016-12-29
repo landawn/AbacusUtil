@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import java.security.SecureRandom;
@@ -8,6 +22,12 @@ import java.util.Random;
 import com.landawn.abacus.util.stream.ImmutableIterator;
 import com.landawn.abacus.util.stream.Stream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> {
     static final Map<Class<?>, Integer> numArrayClasses = ImmutableMap.of(byte[].class, 0, short[].class, 1, int[].class, 2, long[].class, 3, float[].class, 4,
             double[].class, 5);
@@ -100,6 +120,12 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
      * @return a new Matrix
      */
     public abstract X rotate270();
+
+    public abstract X transpose();
+
+    public X reshape(int m) {
+        return reshape((int) (count % m == 0 ? count / m : count / m + 1), m);
+    }
 
     public abstract X reshape(int n, int m);
 

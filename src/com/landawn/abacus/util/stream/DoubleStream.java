@@ -37,6 +37,7 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedDouble;
@@ -325,6 +326,8 @@ public abstract class DoubleStream
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier);
+
+    public abstract DoubleMatrix toMatrix();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the

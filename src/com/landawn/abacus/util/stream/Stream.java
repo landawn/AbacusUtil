@@ -75,6 +75,7 @@ import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongSummaryStatistics;
+import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
@@ -845,6 +846,8 @@ public abstract class Stream<T>
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier);
 
+    public abstract Matrix<T> toMatrix(Class<T> type);
+
     /**
      * 
      * @return
@@ -942,7 +945,6 @@ public abstract class Stream<T>
      *                    <a href="package-summary.html#Statelessness">stateless</a>
      *                    function for combining two values
      * @return an {@link Optional} describing the result of the reduction
-     * @throws NullPointerException if the result of the reduction is null
      * @see #reduce(Object, BinaryOperator)
      * @see #min(Comparator)
      * @see #max(Comparator)
@@ -1169,7 +1171,6 @@ public abstract class Stream<T>
      *                   {@code Comparator} to compare elements of this stream
      * @return an {@code Optional} describing the minimum element of this stream,
      * or an empty {@code Optional} if the stream is empty
-     * @throws NullPointerException if the minimum element is null
      */
     public abstract OptionalNullable<T> min(Comparator<? super T> comparator);
 
@@ -1186,7 +1187,6 @@ public abstract class Stream<T>
      *                   {@code Comparator} to compare elements of this stream
      * @return an {@code Optional} describing the maximum element of this stream,
      * or an empty {@code Optional} if the stream is empty
-     * @throws NullPointerException if the maximum element is null
      */
     public abstract OptionalNullable<T> max(Comparator<? super T> comparator);
 

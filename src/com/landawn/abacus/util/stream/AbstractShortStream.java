@@ -36,6 +36,7 @@ import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.ShortMatrix;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -216,6 +217,11 @@ abstract class AbstractShortStream extends ShortStream {
                 return N.newListMultimap();
             }
         });
+    }
+
+    @Override
+    public ShortMatrix toMatrix() {
+        return ShortMatrix.of(toArray());
     }
 
     @Override

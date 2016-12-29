@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.Joiner;
@@ -216,6 +217,11 @@ abstract class AbstractDoubleStream extends DoubleStream {
                 return N.newListMultimap();
             }
         });
+    }
+
+    @Override
+    public DoubleMatrix toMatrix() {
+        return DoubleMatrix.of(toArray());
     }
 
     @Override

@@ -48,6 +48,7 @@ import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.ShortMatrix;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -290,6 +291,8 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier);
+
+    public abstract ShortMatrix toMatrix();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the

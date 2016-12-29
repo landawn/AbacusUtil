@@ -37,6 +37,7 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedFloat;
@@ -326,6 +327,8 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier);
+
+    public abstract FloatMatrix toMatrix();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the

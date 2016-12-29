@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
     static final IntMatrix EMPTY_INT_MATRIX = new IntMatrix(new int[0][0]);
 
@@ -19,23 +39,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
         return N.isNullOrEmpty(a) ? EMPTY_INT_MATRIX : new IntMatrix(a);
     }
 
-    public static IntMatrix from(final int n, final int m, final int[] a) {
-        final int[][] c = new int[n][m];
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new IntMatrix(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new IntMatrix(c);
-    }
-
-    public static IntMatrix from(final char[][] a) {
+    public static IntMatrix from(final char[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_INT_MATRIX;
         }
@@ -51,7 +55,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
         return new IntMatrix(c);
     }
 
-    public static IntMatrix from(final byte[][] a) {
+    public static IntMatrix from(final byte[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_INT_MATRIX;
         }
@@ -67,7 +71,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
         return new IntMatrix(c);
     }
 
-    public static IntMatrix from(final short[][] a) {
+    public static IntMatrix from(final short[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_INT_MATRIX;
         }
@@ -83,34 +87,28 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
         return new IntMatrix(c);
     }
 
-    public static IntMatrix random(final int n, final int m) {
-        final int[][] a = new int[n][m];
-
-        if (n == 0 || m == 0) {
-            return new IntMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                a[i][j] = RAND.nextInt();
-            }
-        }
-
-        return new IntMatrix(a);
+    public static IntMatrix random(final int len) {
+        return new IntMatrix(new int[][] { IntList.random(len).array() });
     }
 
-    public static IntMatrix repeat(final int n, final int m, final int val) {
-        final int[][] c = new int[n][m];
+    public static IntMatrix repeat(final int val, final int len) {
+        return new IntMatrix(new int[][] { Array.repeat(val, len) });
+    }
 
-        if (n == 0 || m == 0) {
-            return new IntMatrix(c);
-        }
+    public static IntMatrix range(int startInclusive, final int endExclusive) {
+        return new IntMatrix(new int[][] { Array.range(startInclusive, endExclusive) });
+    }
 
-        for (int i = 0; i < n; i++) {
-            N.fill(c[i], val);
-        }
+    public static IntMatrix range(int startInclusive, final int endExclusive, final int by) {
+        return new IntMatrix(new int[][] { Array.range(startInclusive, endExclusive, by) });
+    }
 
-        return new IntMatrix(c);
+    public static IntMatrix rangeClosed(int startInclusive, final int endInclusive) {
+        return new IntMatrix(new int[][] { Array.rangeClosed(startInclusive, endInclusive) });
+    }
+
+    public static IntMatrix rangeClosed(int startInclusive, final int endInclusive, final int by) {
+        return new IntMatrix(new int[][] { Array.rangeClosed(startInclusive, endInclusive, by) });
     }
 
     public int get(final int i, final int j) {
@@ -290,18 +288,45 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
     }
 
     @Override
+    public IntMatrix transpose() {
+        final int[][] c = new int[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new IntMatrix(c);
+    }
+
+    @Override
     public IntMatrix reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final int[][] c = new int[n][m];
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new IntMatrix(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new IntMatrix(c);
     }
 
     @Override
     public int[] flatten() {
         final int[] c = new int[n * m];
-    
+
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
-    
+
         return c;
     }
 

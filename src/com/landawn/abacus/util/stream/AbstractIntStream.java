@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.IntMatrix;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
@@ -216,6 +217,11 @@ abstract class AbstractIntStream extends IntStream {
                 return N.newListMultimap();
             }
         });
+    }
+
+    @Override
+    public IntMatrix toMatrix() {
+        return IntMatrix.of(toArray());
     }
 
     @Override

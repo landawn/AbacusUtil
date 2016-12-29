@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.Joiner;
@@ -215,6 +216,11 @@ abstract class AbstractByteStream extends ByteStream {
                 return N.newListMultimap();
             }
         });
+    }
+
+    @Override
+    public ByteMatrix toMatrix() {
+        return ByteMatrix.of(toArray());
     }
 
     @Override

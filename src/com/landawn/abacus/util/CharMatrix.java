@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatrix> {
     static final CharMatrix EMPTY_CHAR_MATRIX = new CharMatrix(new char[0][0]);
 
@@ -19,50 +39,28 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
         return N.isNullOrEmpty(a) ? EMPTY_CHAR_MATRIX : new CharMatrix(a);
     }
 
-    public static CharMatrix from(final int n, final int m, final char[] a) {
-        final char[][] c = new char[n][m];
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new CharMatrix(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new CharMatrix(c);
+    public static CharMatrix random(final int len) {
+        return new CharMatrix(new char[][] { CharList.random(len).array() });
     }
 
-    public static CharMatrix random(final int n, final int m) {
-        final char[][] a = new char[n][m];
-
-        if (n == 0 || m == 0) {
-            return new CharMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                a[i][j] = (char) RAND.nextInt();
-            }
-        }
-
-        return new CharMatrix(a);
+    public static CharMatrix repeat(final char val, final int len) {
+        return new CharMatrix(new char[][] { Array.repeat(val, len) });
     }
 
-    public static CharMatrix repeat(final int n, final int m, final char val) {
-        final char[][] c = new char[n][m];
+    public static CharMatrix range(char startInclusive, final char endExclusive) {
+        return new CharMatrix(new char[][] { Array.range(startInclusive, endExclusive) });
+    }
 
-        if (n == 0 || m == 0) {
-            return new CharMatrix(c);
-        }
+    public static CharMatrix range(char startInclusive, final char endExclusive, final int by) {
+        return new CharMatrix(new char[][] { Array.range(startInclusive, endExclusive, by) });
+    }
 
-        for (int i = 0; i < n; i++) {
-            N.fill(c[i], val);
-        }
+    public static CharMatrix rangeClosed(char startInclusive, final char endInclusive) {
+        return new CharMatrix(new char[][] { Array.rangeClosed(startInclusive, endInclusive) });
+    }
 
-        return new CharMatrix(c);
+    public static CharMatrix rangeClosed(char startInclusive, final char endInclusive, final int by) {
+        return new CharMatrix(new char[][] { Array.rangeClosed(startInclusive, endInclusive, by) });
     }
 
     public char get(final int i, final int j) {
@@ -242,18 +240,45 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
     }
 
     @Override
+    public CharMatrix transpose() {
+        final char[][] c = new char[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new CharMatrix(c);
+    }
+
+    @Override
     public CharMatrix reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final char[][] c = new char[n][m];
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new CharMatrix(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new CharMatrix(c);
     }
 
     @Override
     public char[] flatten() {
         final char[] c = new char[n * m];
-    
+
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
-    
+
         return c;
     }
 

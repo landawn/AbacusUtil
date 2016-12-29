@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatrix> {
     static final ByteMatrix EMPTY_BYTE_MATRIX = new ByteMatrix(new byte[0][0]);
 
@@ -19,50 +39,28 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
         return N.isNullOrEmpty(a) ? EMPTY_BYTE_MATRIX : new ByteMatrix(a);
     }
 
-    public static ByteMatrix from(final int n, final int m, final byte[] a) {
-        final byte[][] c = new byte[n][m];
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new ByteMatrix(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new ByteMatrix(c);
+    public static ByteMatrix random(final int len) {
+        return new ByteMatrix(new byte[][] { ByteList.random(len).array() });
     }
 
-    public static ByteMatrix random(final int n, final int m) {
-        final byte[][] a = new byte[n][m];
-
-        if (n == 0 || m == 0) {
-            return new ByteMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                a[i][j] = (byte) RAND.nextInt();
-            }
-        }
-
-        return new ByteMatrix(a);
+    public static ByteMatrix repeat(final byte val, final int len) {
+        return new ByteMatrix(new byte[][] { Array.repeat(val, len) });
     }
 
-    public static ByteMatrix repeat(final int n, final int m, final byte val) {
-        final byte[][] c = new byte[n][m];
+    public static ByteMatrix range(byte startInclusive, final byte endExclusive) {
+        return new ByteMatrix(new byte[][] { Array.range(startInclusive, endExclusive) });
+    }
 
-        if (n == 0 || m == 0) {
-            return new ByteMatrix(c);
-        }
+    public static ByteMatrix range(byte startInclusive, final byte endExclusive, final byte by) {
+        return new ByteMatrix(new byte[][] { Array.range(startInclusive, endExclusive, by) });
+    }
 
-        for (int i = 0; i < n; i++) {
-            N.fill(c[i], val);
-        }
+    public static ByteMatrix rangeClosed(byte startInclusive, final byte endInclusive) {
+        return new ByteMatrix(new byte[][] { Array.rangeClosed(startInclusive, endInclusive) });
+    }
 
-        return new ByteMatrix(c);
+    public static ByteMatrix rangeClosed(byte startInclusive, final byte endInclusive, final byte by) {
+        return new ByteMatrix(new byte[][] { Array.rangeClosed(startInclusive, endInclusive, by) });
     }
 
     public byte get(final int i, final int j) {
@@ -242,18 +240,45 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
     }
 
     @Override
+    public ByteMatrix transpose() {
+        final byte[][] c = new byte[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new ByteMatrix(c);
+    }
+
+    @Override
     public ByteMatrix reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final byte[][] c = new byte[n][m];
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new ByteMatrix(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new ByteMatrix(c);
     }
 
     @Override
     public byte[] flatten() {
         final byte[] c = new byte[n * m];
-    
+
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
-    
+
         return c;
     }
 

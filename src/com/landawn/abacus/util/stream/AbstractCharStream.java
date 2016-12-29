@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.CharMatrix;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.Joiner;
@@ -216,6 +217,11 @@ abstract class AbstractCharStream extends CharStream {
                 return N.newListMultimap();
             }
         });
+    }
+
+    @Override
+    public CharMatrix toMatrix() {
+        return CharMatrix.of(toArray());
     }
 
     @Override

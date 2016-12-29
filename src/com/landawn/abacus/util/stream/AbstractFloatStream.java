@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.Joiner;
@@ -217,6 +218,11 @@ abstract class AbstractFloatStream extends FloatStream {
                 return N.newListMultimap();
             }
         });
+    }
+
+    @Override
+    public FloatMatrix toMatrix() {
+        return FloatMatrix.of(toArray());
     }
 
     @Override

@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortMatrix> {
     static final ShortMatrix EMPTY_SHORT_MATRIX = new ShortMatrix(new short[0][0]);
 
@@ -19,50 +39,28 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
         return N.isNullOrEmpty(a) ? EMPTY_SHORT_MATRIX : new ShortMatrix(a);
     }
 
-    public static ShortMatrix from(final int n, final int m, final short[] a) {
-        final short[][] c = new short[n][m];
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new ShortMatrix(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new ShortMatrix(c);
+    public static ShortMatrix random(final int len) {
+        return new ShortMatrix(new short[][] { ShortList.random(len).array() });
     }
 
-    public static ShortMatrix random(final int n, final int m) {
-        final short[][] a = new short[n][m];
-
-        if (n == 0 || m == 0) {
-            return new ShortMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                a[i][j] = (short) RAND.nextInt();
-            }
-        }
-
-        return new ShortMatrix(a);
+    public static ShortMatrix repeat(final short val, final int len) {
+        return new ShortMatrix(new short[][] { Array.repeat(val, len) });
     }
 
-    public static ShortMatrix repeat(final int n, final int m, final short val) {
-        final short[][] c = new short[n][m];
+    public static ShortMatrix range(short startInclusive, final short endExclusive) {
+        return new ShortMatrix(new short[][] { Array.range(startInclusive, endExclusive) });
+    }
 
-        if (n == 0 || m == 0) {
-            return new ShortMatrix(c);
-        }
+    public static ShortMatrix range(short startInclusive, final short endExclusive, final short by) {
+        return new ShortMatrix(new short[][] { Array.range(startInclusive, endExclusive, by) });
+    }
 
-        for (int i = 0; i < n; i++) {
-            N.fill(c[i], val);
-        }
+    public static ShortMatrix rangeClosed(short startInclusive, final short endInclusive) {
+        return new ShortMatrix(new short[][] { Array.rangeClosed(startInclusive, endInclusive) });
+    }
 
-        return new ShortMatrix(c);
+    public static ShortMatrix rangeClosed(short startInclusive, final short endInclusive, final short by) {
+        return new ShortMatrix(new short[][] { Array.rangeClosed(startInclusive, endInclusive, by) });
     }
 
     public short get(final int i, final int j) {
@@ -242,18 +240,45 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
     }
 
     @Override
+    public ShortMatrix transpose() {
+        final short[][] c = new short[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new ShortMatrix(c);
+    }
+
+    @Override
     public ShortMatrix reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final short[][] c = new short[n][m];
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new ShortMatrix(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new ShortMatrix(c);
     }
 
     @Override
     public short[] flatten() {
         final short[] c = new short[n * m];
-    
+
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
-    
+
         return c;
     }
 

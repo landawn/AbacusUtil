@@ -40,6 +40,7 @@ import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.LongMatrix;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
@@ -327,6 +328,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier);
+
+    public abstract LongMatrix toMatrix();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the

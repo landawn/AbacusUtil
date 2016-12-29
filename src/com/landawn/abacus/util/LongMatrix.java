@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2016 HaiYang Li
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.stream.IntStream;
 
+/**
+ * 
+ * @since 0.8
+ * 
+ * @author Haiyang Li
+ */
 public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatrix> {
     static final LongMatrix EMPTY_LONG_MATRIX = new LongMatrix(new long[0][0]);
 
@@ -19,23 +39,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
         return N.isNullOrEmpty(a) ? EMPTY_LONG_MATRIX : new LongMatrix(a);
     }
 
-    public static LongMatrix from(final int n, final int m, final long[] a) {
-        final long[][] c = new long[n][m];
-
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new LongMatrix(c);
-        }
-
-        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
-                c[i][j] = a[off + j];
-            }
-        }
-
-        return new LongMatrix(c);
-    }
-
-    public static LongMatrix from(final int[][] a) {
+    public static LongMatrix from(final int[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_LONG_MATRIX;
         }
@@ -51,34 +55,28 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
         return new LongMatrix(c);
     }
 
-    public static LongMatrix random(final int n, final int m) {
-        final long[][] a = new long[n][m];
-
-        if (n == 0 || m == 0) {
-            return new LongMatrix(a);
-        }
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                a[i][j] = RAND.nextInt();
-            }
-        }
-
-        return new LongMatrix(a);
+    public static LongMatrix random(final int len) {
+        return new LongMatrix(new long[][] { LongList.random(len).array() });
     }
 
-    public static LongMatrix repeat(final int n, final int m, final long val) {
-        final long[][] c = new long[n][m];
+    public static LongMatrix repeat(final long val, final int len) {
+        return new LongMatrix(new long[][] { Array.repeat(val, len) });
+    }
 
-        if (n == 0 || m == 0) {
-            return new LongMatrix(c);
-        }
+    public static LongMatrix range(long startInclusive, final long endExclusive) {
+        return new LongMatrix(new long[][] { Array.range(startInclusive, endExclusive) });
+    }
 
-        for (int i = 0; i < n; i++) {
-            N.fill(c[i], val);
-        }
+    public static LongMatrix range(long startInclusive, final long endExclusive, final long by) {
+        return new LongMatrix(new long[][] { Array.range(startInclusive, endExclusive, by) });
+    }
 
-        return new LongMatrix(c);
+    public static LongMatrix rangeClosed(long startInclusive, final long endInclusive) {
+        return new LongMatrix(new long[][] { Array.rangeClosed(startInclusive, endInclusive) });
+    }
+
+    public static LongMatrix rangeClosed(long startInclusive, final long endInclusive, final long by) {
+        return new LongMatrix(new long[][] { Array.rangeClosed(startInclusive, endInclusive, by) });
     }
 
     public long get(final int i, final int j) {
@@ -258,18 +256,45 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
     }
 
     @Override
+    public LongMatrix transpose() {
+        final long[][] c = new long[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][i];
+            }
+        }
+
+        return new LongMatrix(c);
+    }
+
+    @Override
     public LongMatrix reshape(final int n, final int m) {
-        return from(n, m, this.flatten());
+        final long[][] c = new long[n][m];
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new LongMatrix(c);
+        }
+
+        long cnt = 0;
+
+        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            }
+        }
+
+        return new LongMatrix(c);
     }
 
     @Override
     public long[] flatten() {
         final long[] c = new long[n * m];
-    
+
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
-    
+
         return c;
     }
 

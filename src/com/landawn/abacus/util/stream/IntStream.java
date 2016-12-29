@@ -39,6 +39,7 @@ import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.IntMatrix;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
@@ -356,6 +357,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapSupplier);
+
+    public abstract IntMatrix toMatrix();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the

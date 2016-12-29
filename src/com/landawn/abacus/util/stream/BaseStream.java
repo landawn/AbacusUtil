@@ -565,7 +565,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *
      * @return an {@code Optional} describing the first element of this stream,
      * or an empty {@code Optional} if the stream is empty
-     * @throws NullPointerException if the element selected is null
      */
     OT findFirst(P predicate);
 
@@ -592,7 +591,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *
      * @return an {@code Optional} describing some element of this stream, or an
      * empty {@code Optional} if the stream is empty
-     * @throws NullPointerException if the element selected is null
      * @see #findFirst()
      */
     OT findAny(P predicate);
