@@ -1,434 +1,498 @@
 package com.landawn.abacus.util;
 
-import java.security.SecureRandom;
-import java.util.Map;
-import java.util.Random;
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntConsumer;
+import com.landawn.abacus.util.function.ToBooleanFunction;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.UnaryOperator;
+import com.landawn.abacus.util.stream.IntStream;
 
-import com.landawn.abacus.util.stream.Stream;
+public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T>> {
+    private Class<T[]> arrayType;
+    private Class<T> componentType;
 
-public abstract class Matrix<T> {
-    static final Map<Class<?>, Integer> numArrayClasses = ImmutableMap.of(byte[].class, 0, short[].class, 1, int[].class, 2, long[].class, 3, float[].class, 4,
-            double[].class, 5);
-
-    static final Random RAND = new SecureRandom();
-
-    public final int n;
-    public final int m;
-    final T[] a;
-    final long count;
-
-    public Matrix(T[] a) {
-        this.a = a;
-        this.m = a.length == 0 ? 0 : Array.getLength(a[0]);
-        this.n = a.length;
-
-        for (int i = 0, len = a.length; i < len; i++) {
-            if (Array.getLength(a[i]) != this.m) {
-                throw new IllegalArgumentException("The length of sub arrays must be same");
-            }
-        }
-
-        this.count = this.m * this.n * 1L;
+    public Matrix(final T[][] a) {
+        super(a);
+        this.arrayType = (Class<T[]>) a.getClass().getComponentType();
+        this.componentType = (Class<T>) arrayType.getComponentType();
     }
 
-    public T[] array() {
-        return a;
+    public static <T> Matrix<T> of(final T[]... a) {
+        return new Matrix<T>(a);
     }
 
-    public long count() {
-        return count;
+    public static <T> Matrix<T> from(final int n, final int m, final T[] a) {
+        final T[][] c = N.newArray(a.getClass(), n);
+        final Class<T> cptType = (Class<T>) a.getClass().getComponentType();
+
+        for (int i = 0; i < n; i++) {
+            c[i] = N.newArray(cptType, m);
+        }
+
+        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+            return new Matrix<T>(c);
+        }
+
+        for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
+            for (int j = 0, col = N.min(m, a.length - i * m), off = i * m; j < col; j++) {
+                c[i][j] = a[off + j];
+            }
+        }
+
+        return new Matrix<T>(c);
     }
 
-    public void println() {
-        for (T e : a) {
-            N.println(e);
+    public static <T> Matrix<T> repeat(final int n, final int m, final T val) {
+        final T[][] c = N.newArray(N.newArray(val.getClass(), 0).getClass(), n);
+        final Class<T> cptType = (Class<T>) c.getClass().getComponentType();
+
+        for (int i = 0; i < n; i++) {
+            c[i] = N.newArray(cptType, m);
+        }
+
+        if (n == 0 || m == 0) {
+            return new Matrix<T>(c);
+        }
+
+        for (int i = 0; i < n; i++) {
+            N.fill(c[i], val);
+        }
+
+        return new Matrix<T>(c);
+    }
+
+    public T get(final int i, final int j) {
+        return a[i][j];
+    }
+
+    public void set(final int i, final int j, final T val) {
+        a[i][j] = val;
+    }
+
+    public void fill(final T val) {
+        for (int i = 0; i < n; i++) {
+            N.fill(a[i], val);
         }
     }
 
-    public boolean isEmpty() {
-        return m == 0 || n == 0;
-    }
-
-    /**
-     * @param b
-     * @return a new Matrix
-     */
-    public abstract Matrix<T> add(Matrix<T> b);
-
-    /**
-     * 
-     * @param b
-     * @return a new Matrix
-     */
-    public abstract Matrix<T> subtract(Matrix<T> b);
-
-    public abstract Matrix<T> multiply(Matrix<T> b);
-
-    public abstract Matrix<T> copy();
-
-    public abstract Matrix<T> copy(int fromRow, int toRow);
-
-    public abstract Matrix<T> copy(int fromRow, int toRow, int fromColumn, int toColumn);
-
-    public abstract T flatten();
-
-    public abstract Matrix<T> reshape(int n, int m);
-
-    public Stream<T> stream() {
-        return Stream.of(a);
-    }
-
-    public Stream<T> stream(int fromIndex, int toIndex) {
-        return Stream.of(a, fromIndex, toIndex);
-    }
-
-    public static final class IntMatrix extends Matrix<int[]> {
-        static final IntMatrix EMPTY_INT_MATRIX = new IntMatrix(new int[0][0]);
-
-        public IntMatrix(final int[][] a) {
-            super(a == null ? new int[0][0] : a);
-        }
-
-        public static IntMatrix empty() {
-            return EMPTY_INT_MATRIX;
-        }
-
-        public static IntMatrix of(final int[]... a) {
-            return N.isNullOrEmpty(a) ? EMPTY_INT_MATRIX : new IntMatrix(a);
-        }
-
-        public static IntMatrix of(final int n, final int m, final int[] a) {
-            final int[][] c = new int[n][m];
-
-            if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-                return new IntMatrix(c);
-            }
-
-            for (int i = 0, len = N.min(n, a.length % m == 0 ? a.length / m : a.length / m + 1); i < len; i++) {
-                for (int j = 0, col = N.min(m, a.length - i * m); j < col; j++) {
-                    c[i][j] = a[i * m + j];
-                }
-            }
-
-            return new IntMatrix(c);
-        }
-
-        public static IntMatrix from(final char[]... a) {
-            if (N.isNullOrEmpty(a)) {
-                return EMPTY_INT_MATRIX;
-            }
-
-            final int[][] c = new int[a.length][a[0].length];
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                for (int j = 0, col = a[0].length; j < col; j++) {
-                    c[i][j] = a[i][j];
-                }
-            }
-
-            return new IntMatrix(c);
-        }
-
-        public static IntMatrix from(final byte[]... a) {
-            if (N.isNullOrEmpty(a)) {
-                return EMPTY_INT_MATRIX;
-            }
-
-            final int[][] c = new int[a.length][a[0].length];
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                for (int j = 0, col = a[0].length; j < col; j++) {
-                    c[i][j] = a[i][j];
-                }
-            }
-
-            return new IntMatrix(c);
-        }
-
-        public static IntMatrix from(final short[]... a) {
-            if (N.isNullOrEmpty(a)) {
-                return EMPTY_INT_MATRIX;
-            }
-
-            final int[][] c = new int[a.length][a[0].length];
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                for (int j = 0, col = a[0].length; j < col; j++) {
-                    c[i][j] = a[i][j];
-                }
-            }
-
-            return new IntMatrix(c);
-        }
-
-        public static IntMatrix random(final int n, final int m) {
-            final int[][] a = new int[n][m];
-
-            if (n == 0 || m == 0) {
-                return new IntMatrix(a);
-            }
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                for (int j = 0, col = a[0].length; j < col; j++) {
-                    a[i][j] = RAND.nextInt();
-                }
-            }
-
-            return new IntMatrix(a);
-        }
-
-        public static IntMatrix repeat(final int n, final int m, final int val) {
-            final int[][] a = new int[n][m];
-
-            if (n == 0 || m == 0) {
-                return new IntMatrix(a);
-            }
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                N.fill(a[i], val);
-            }
-
-            return new IntMatrix(a);
-        }
-
-        public int get(int i, int j) {
-            return a[i][j];
-        }
-
-        public void set(int i, int j, int val) {
-            a[i][j] = val;
-        }
-
-        public void fill(int val) {
-            for (int i = 0; i < n; i++) {
-                N.fill(a[i], val);
-            }
-        }
-
-        /**
-         * 
-         * @param val
-         * @return a new Matrix
-         */
-        public IntMatrix add(int val) {
-            final int[][] c = new int[n][m];
-
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
-                    c[i][j] = a[i][j] + val;
-                }
-            }
-
-            return new IntMatrix(c);
-        }
-
-        @Override
-        public IntMatrix add(Matrix<int[]> b) {
-            N.checkArgument(this.n == b.n && this.m == b.m, "The 'n' and length are not equal");
-
-            final int[][] c = new int[n][m];
-
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
-                    c[i][j] = a[i][j] + b.a[i][j];
-                }
-            }
-
-            return new IntMatrix(c);
-        }
-
-        @Override
-        public IntMatrix subtract(Matrix<int[]> b) {
-            N.checkArgument(this.n == b.n && this.m == b.m, "The 'n' and length are not equal");
-
-            final int[][] c = new int[n][m];
-
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
-                    c[i][j] = a[i][j] - b.a[i][j];
-                }
-            }
-
-            return new IntMatrix(c);
-        }
-
-        @Override
-        public IntMatrix multiply(Matrix<int[]> b) {
-            N.checkArgument(this.m == b.n, "Illegal matrix dimensions");
-
-            final int[][] c = new int[n][b.m];
-            final int[][] a2 = b.a;
-
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < b.m; j++) {
-                    for (int k = 0; k < m; k++) {
-                        c[i][j] += a[i][k] * a2[k][j];
+    public void replaceAll(final UnaryOperator<T> operator) {
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        a[i][j] = operator.apply(a[i][j]);
                     }
                 }
-            }
-
-            return new IntMatrix(c);
-        }
-
-        public OptionalInt min() {
-            if (isEmpty()) {
-                return OptionalInt.empty();
-            }
-
-            int candicate = Integer.MAX_VALUE;
-
+            });
+        } else {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < m; j++) {
-                    if (a[i][j] < candicate) {
-                        candicate = a[i][j];
-                    }
+                    a[i][j] = operator.apply(a[i][j]);
                 }
             }
-
-            return OptionalInt.of(candicate);
-        }
-
-        public OptionalInt max() {
-            if (isEmpty()) {
-                return OptionalInt.empty();
-            }
-
-            int candicate = Integer.MIN_VALUE;
-
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
-                    if (a[i][j] > candicate) {
-                        candicate = a[i][j];
-                    }
-                }
-            }
-
-            return OptionalInt.of(candicate);
-        }
-
-        public Long sum() {
-            long sum = 0;
-
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
-                    sum += a[i][j];
-                }
-            }
-
-            return sum;
-        }
-
-        public OptionalDouble average() {
-            if (isEmpty()) {
-                return OptionalDouble.empty();
-            }
-
-            return OptionalDouble.of(sum() / (m * n));
-        }
-
-        @Override
-        public IntMatrix copy() {
-            final int[][] b = new int[n][];
-
-            for (int i = 0; i < n; i++) {
-                b[i] = a[i].clone();
-            }
-
-            return new IntMatrix(b);
-        }
-
-        @Override
-        public IntMatrix copy(int fromRow, int toRow) {
-            N.checkIndex(fromRow, toRow, n);
-
-            final int[][] b = new int[toRow - fromRow][];
-
-            for (int i = fromRow; i < toRow; i++) {
-                b[i - fromRow] = a[i].clone();
-            }
-
-            return new IntMatrix(b);
-        }
-
-        @Override
-        public IntMatrix copy(int fromRow, int toRow, int fromColumn, int toColumn) {
-            N.checkIndex(fromRow, toRow, n);
-            N.checkIndex(fromColumn, toColumn, m);
-
-            final int[][] b = new int[toRow - fromRow][];
-
-            for (int i = fromRow; i < toRow; i++) {
-                b[i - fromRow] = N.copyOfRange(a[i], fromColumn, toColumn);
-            }
-
-            return new IntMatrix(b);
-        }
-
-        @Override
-        public int[] flatten() {
-            final int[] result = new int[n * m];
-
-            for (int i = 0; i < n; i++) {
-                N.copy(a[i], 0, result, i * m, m);
-            }
-
-            return result;
-        }
-
-        @Override
-        public IntMatrix reshape(int n, int m) {
-            return of(n, m, this.flatten());
-        }
-
-        public IntList row(int i) {
-            return IntList.of(a[i].clone());
-        }
-
-        public IntList column(int j) {
-            final int[] c = new int[n];
-
-            for (int i = 0; i < n; i++) {
-                c[i] = a[i][j];
-            }
-
-            return IntList.of(c);
-        }
-
-        @Override
-        public int hashCode() {
-            return N.deepHashCode(a);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-
-            if (obj instanceof IntMatrix) {
-                final IntMatrix another = (IntMatrix) obj;
-
-                return N.deepEquals(this.a, another.a);
-            }
-
-            return false;
-        }
-
-        @Override
-        public String toString() {
-            return N.deepToString(a);
         }
     }
 
-    public static abstract class LongMaxtrix extends Matrix<long[]> {
-        public LongMaxtrix(long[][] a) {
-            super(a);
+    // Replaced by stream and stream2.
+    //    public OptionalNullable<T> min(final Comparator<? super T> cmp) {
+    //        if (isEmpty()) {
+    //            return OptionalNullable.empty();
+    //        }
+    //
+    //        final Comparator<? super T> comparator = cmp == null ? N.NULL_MIN_COMPARATOR : cmp;
+    //        T candicate = a[0][0];
+    //
+    //        for (int i = 0; i < n; i++) {
+    //            for (int j = 0; j < m; j++) {
+    //                if (comparator.compare(a[i][j], candicate) < 0) {
+    //                    candicate = a[i][j];
+    //                }
+    //            }
+    //        }
+    //
+    //        return OptionalNullable.of(candicate);
+    //    }
+    //
+    //    public OptionalNullable<T> max(final Comparator<? super T> cmp) {
+    //        if (isEmpty()) {
+    //            return OptionalNullable.empty();
+    //        }
+    //
+    //        final Comparator<? super T> comparator = cmp == null ? N.NULL_MIN_COMPARATOR : cmp;
+    //        T candicate = a[0][0];
+    //
+    //        for (int i = 0; i < n; i++) {
+    //            for (int j = 0; j < m; j++) {
+    //                if (comparator.compare(a[i][j], candicate) > 0) {
+    //                    candicate = a[i][j];
+    //                }
+    //            }
+    //        }
+    //
+    //        return OptionalNullable.of(candicate);
+    //    }
+    //
+    //    @Override
+    //    public ObjectList<T> row(final int i) {
+    //        return ObjectList.of(a[i].clone());
+    //    }
+    //
+    //    @Override
+    //    public ObjectList<T> column(final int j) {
+    //        return ObjectList.of(column2(j));
+    //    }
+
+    public <R> Matrix<R> map(final Class<R> cls, final Function<? super T, R> func) {
+        final R[][] c = N.newArray(N.newArray(cls, 0).getClass(), n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = N.newArray(cls, m);
         }
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.apply(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.apply(a[i][j]);
+                }
+            }
+        }
+
+        return Matrix.of(c);
     }
 
-    public static abstract class DoubleMatrix extends Matrix<double[]> {
-        public DoubleMatrix(double[][] a) {
-            super(a);
+    public BooleanMatrix mapToBoolean(final ToBooleanFunction<? super T> func) {
+        final boolean[][] c = new boolean[n][m];
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsBoolean(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.applyAsBoolean(a[i][j]);
+                }
+            }
         }
+
+        return BooleanMatrix.of(c);
+    }
+
+    public ByteMatrix mapToByte(final ToByteFunction<? super T> func) {
+        final byte[][] c = new byte[n][m];
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsByte(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.applyAsByte(a[i][j]);
+                }
+            }
+        }
+
+        return ByteMatrix.of(c);
+    }
+
+    public CharMatrix mapToChar(final ToCharFunction<? super T> func) {
+        final char[][] c = new char[n][m];
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsChar(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.applyAsChar(a[i][j]);
+                }
+            }
+        }
+
+        return CharMatrix.of(c);
+    }
+
+    public ShortMatrix mapToShort(final ToShortFunction<? super T> func) {
+        final short[][] c = new short[n][m];
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsShort(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.applyAsShort(a[i][j]);
+                }
+            }
+        }
+
+        return ShortMatrix.of(c);
+    }
+
+    public IntMatrix mapToInt(final ToIntFunction<? super T> func) {
+        final int[][] c = new int[n][m];
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsInt(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.applyAsInt(a[i][j]);
+                }
+            }
+        }
+
+        return IntMatrix.of(c);
+    }
+
+    public LongMatrix mapToLong(final ToLongFunction<? super T> func) {
+        final long[][] c = new long[n][m];
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsLong(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.applyAsLong(a[i][j]);
+                }
+            }
+        }
+
+        return LongMatrix.of(c);
+    }
+
+    public FloatMatrix mapToFloat(final ToFloatFunction<? super T> func) {
+        final float[][] c = new float[n][m];
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsFloat(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.applyAsFloat(a[i][j]);
+                }
+            }
+        }
+
+        return FloatMatrix.of(c);
+    }
+
+    public DoubleMatrix mapToDouble(final ToDoubleFunction<? super T> func) {
+        final double[][] c = new double[n][m];
+
+        if (isParallelable()) {
+            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                @Override
+                public void accept(final int i) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsDouble(a[i][j]);
+                    }
+                }
+            });
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = func.applyAsDouble(a[i][j]);
+                }
+            }
+        }
+
+        return DoubleMatrix.of(c);
+    }
+
+    @Override
+    public Matrix<T> copy() {
+        final T[][] c = N.newArray(arrayType, n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[i].clone();
+        }
+
+        return new Matrix<T>(c);
+    }
+
+    @Override
+    public Matrix<T> copy(final int fromRowIndex, final int toRowIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, n);
+
+        final T[][] c = N.newArray(arrayType, toRowIndex - fromRowIndex);
+
+        for (int i = fromRowIndex; i < toRowIndex; i++) {
+            c[i - fromRowIndex] = a[i].clone();
+        }
+
+        return new Matrix<T>(c);
+    }
+
+    @Override
+    public Matrix<T> copy(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+
+        final T[][] c = N.newArray(arrayType, toRowIndex - fromRowIndex);
+
+        for (int i = fromRowIndex; i < toRowIndex; i++) {
+            c[i - fromRowIndex] = N.copyOfRange(a[i], fromColumnIndex, toColumnIndex);
+        }
+
+        return new Matrix<T>(c);
+    }
+
+    @Override
+    public Matrix<T> rotate90() {
+        final T[][] c = N.newArray(arrayType, m);
+
+        for (int i = 0; i < m; i++) {
+            c[i] = N.newArray(this.componentType, n);
+        }
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[n - j - 1][i];
+            }
+        }
+
+        return new Matrix<T>(c);
+    }
+
+    @Override
+    public Matrix<T> rotate180() {
+        final T[][] c = N.newArray(arrayType, n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[n - i - 1].clone();
+            N.reverse(c[i]);
+        }
+
+        return new Matrix<T>(c);
+    }
+
+    @Override
+    public Matrix<T> rotate270() {
+        final T[][] c = N.newArray(arrayType, m);
+
+        for (int i = 0; i < m; i++) {
+            c[i] = N.newArray(this.componentType, n);
+        }
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                c[i][j] = a[j][m - i - 1];
+            }
+        }
+
+        return new Matrix<T>(c);
+    }
+
+    @Override
+    public Matrix<T> reshape(final int n, final int m) {
+        return from(n, m, this.flatten());
+    }
+
+    @Override
+    T[] column2(final int j) {
+        final T[] c = N.newArray(componentType, n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[i][j];
+        }
+
+        return c;
+    }
+
+    @Override
+    public T[] flatten() {
+        final T[] c = N.newArray(componentType, n * m);
+
+        for (int i = 0; i < n; i++) {
+            N.copy(a[i], 0, c, i * m, m);
+        }
+
+        return c;
+    }
+
+    @Override
+    public int hashCode() {
+        return N.deepHashCode(a);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof Matrix) {
+            final Matrix<T> another = (Matrix<T>) obj;
+
+            return N.deepEquals(this.a, another.a);
+        }
+
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return N.deepToString(a);
     }
 }
