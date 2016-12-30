@@ -1054,7 +1054,7 @@ public final class LongMultiset<E> implements Iterable<E> {
      * 
      * @return a list with all elements, each of them is repeated with the occurrences in this <code>LongMultiset</code>   
      */
-    public List<E> flatten() {
+    public ObjectList<E> flatten() {
         final long totalOccurrences = sumOfOccurrences().longValue();
 
         if (totalOccurrences > Integer.MAX_VALUE) {
@@ -1073,7 +1073,11 @@ public final class LongMultiset<E> implements Iterable<E> {
             fromIndex = toIndex;
         }
 
-        return N.asList((E[]) a);
+        return ObjectList.of((E[]) a);
+    }
+
+    public List<E> flatten2() {
+        return N.asList((E[]) flatten().array());
     }
 
     public void forEach(BiConsumer<? super E, Long> action) {

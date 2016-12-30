@@ -272,14 +272,14 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
     }
 
     @Override
-    public char[] flatten() {
+    public CharList flatten() {
         final char[] c = new char[n * m];
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return c;
+        return CharList.of(c);
     }
 
     public CharMatrix add(final CharMatrix b) {

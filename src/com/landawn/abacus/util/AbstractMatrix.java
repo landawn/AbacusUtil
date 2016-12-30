@@ -129,7 +129,7 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
 
     public abstract X reshape(int n, int m);
 
-    public abstract A flatten();
+    public abstract PL flatten();
 
     /**
      * 

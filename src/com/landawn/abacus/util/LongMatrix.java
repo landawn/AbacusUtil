@@ -288,14 +288,14 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
     }
 
     @Override
-    public long[] flatten() {
+    public LongList flatten() {
         final long[] c = new long[n * m];
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return c;
+        return LongList.of(c);
     }
 
     public LongMatrix add(final LongMatrix b) {

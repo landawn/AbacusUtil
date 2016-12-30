@@ -482,14 +482,14 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
     }
 
     @Override
-    public T[] flatten() {
+    public ObjectList<T> flatten() {
         final T[] c = N.newArray(componentType, n * m);
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return c;
+        return ObjectList.of(c);
     }
 
     @Override

@@ -254,14 +254,14 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
     }
 
     @Override
-    public float[] flatten() {
+    public FloatList flatten() {
         final float[] c = new float[n * m];
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return c;
+        return FloatList.of(c);
     }
 
     public FloatMatrix add(final FloatMatrix b) {

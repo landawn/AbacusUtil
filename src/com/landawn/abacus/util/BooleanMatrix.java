@@ -211,14 +211,14 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
     }
 
     @Override
-    public boolean[] flatten() {
+    public BooleanList flatten() {
         final boolean[] c = new boolean[n * m];
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return c;
+        return BooleanList.of(c);
     }
 
     @Override

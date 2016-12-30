@@ -272,14 +272,14 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
     }
 
     @Override
-    public byte[] flatten() {
+    public ByteList flatten() {
         final byte[] c = new byte[n * m];
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return c;
+        return ByteList.of(c);
     }
 
     public ByteMatrix add(final ByteMatrix b) {

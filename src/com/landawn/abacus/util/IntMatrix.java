@@ -320,14 +320,14 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
     }
 
     @Override
-    public int[] flatten() {
+    public IntList flatten() {
         final int[] c = new int[n * m];
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return c;
+        return IntList.of(c);
     }
 
     public IntMatrix add(final IntMatrix b) {

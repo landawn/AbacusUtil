@@ -9,7 +9,9 @@
 
 4, Add Matrix/IntMatrix/LongMatrix/...
 
-7, Improvements and bug fix.
+5, Refactoring flatten in Multiset/LongMultiset: change the return type from List to ObjectList and add flatten2 which returns List.
+
+6, Improvements and bug fix.
 
 
 ========Changes in 0.9.38=========================================================================

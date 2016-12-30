@@ -272,14 +272,14 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
     }
 
     @Override
-    public short[] flatten() {
+    public ShortList flatten() {
         final short[] c = new short[n * m];
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return c;
+        return ShortList.of(c);
     }
 
     public ShortMatrix add(final ShortMatrix b) {
