@@ -1,4 +1,9 @@
 
+========Changes in 0.9.41=========================================================================
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.40=========================================================================
 
 1, Add removeIf(predicate)/replaceAll(unaryOperator)/replaceIf(newValue, predicate) to ObjectList/IntList/CharList/...
@@ -12,9 +17,6 @@
 5, Refactoring flatten in Multiset/LongMultiset: change the return type from List to ObjectList and add flatten2 which returns List.
 
 6, Improvements and bug fix.
-
-
-========Changes in 0.9.38=========================================================================
 
 
 ========Changes in 0.9.39=========================================================================

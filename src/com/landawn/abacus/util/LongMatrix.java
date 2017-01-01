@@ -276,11 +276,27 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
             return new LongMatrix(c);
         }
 
-        long cnt = 0;
+        if (a.length == 1) {
+            final long[] a0 = a[0];
 
-        for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
-            for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
-                c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            if (m < 8) {
+                for (int cnt = 0, i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+                    for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++) {
+                        c[i][j] = a0[cnt++];
+                    }
+                }
+            } else {
+                for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+                    N.copy(a0, i * m, c[i], 0, (int) N.min(m, count - i * m));
+                }
+            }
+        } else {
+            long cnt = 0;
+
+            for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+                for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
+                    c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+                }
             }
         }
 

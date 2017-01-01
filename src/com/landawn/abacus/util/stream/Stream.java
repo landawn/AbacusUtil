@@ -1426,7 +1426,34 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> of(final Iterator<? extends T> iterator) {
-        return iterator == null ? (Stream<T>) empty() : new IteratorStream<T>(iterator);
+        if (iterator == null) {
+            return empty();
+        }
+
+        if (iterator instanceof RowIterator) {
+            final RowIterator rowIterator = ((RowIterator) iterator);
+
+            return new IteratorStream<T>(new ImmutableIterator<T>() {
+                @Override
+                public boolean hasNext() {
+                    return iterator.hasNext();
+                }
+
+                @Override
+                public T next() {
+                    return iterator.next();
+                }
+
+                @Override
+                public void skip(long n) {
+                    if (n-- > 0 && rowIterator.hasNext()) {
+                        rowIterator.moveToNext();
+                    }
+                }
+            });
+        } else {
+            return new IteratorStream<T>(iterator);
+        }
     }
 
     /**
@@ -1482,13 +1509,13 @@ public abstract class Stream<T>
         return of(targetClass, resultSet, 0, Long.MAX_VALUE);
     }
 
-    public static Stream<Object[]> of(final ResultSet resultSet, long startIndex, long endIndex) {
+    static Stream<Object[]> of(final ResultSet resultSet, long startIndex, long endIndex) {
         N.requireNonNull(resultSet);
 
         return of(new RowIterator(resultSet, startIndex, endIndex));
     }
 
-    public static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet, long startIndex, long endIndex) {
+    static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet, long startIndex, long endIndex) {
         N.requireNonNull(targetClass);
         N.requireNonNull(resultSet);
 
