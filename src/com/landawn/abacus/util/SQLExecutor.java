@@ -1371,8 +1371,8 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
-                .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
+        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size())
+                : Stream.concat2(iterators)).skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
 
             final NamedSQL namedSQL = getNamedSQL(sql);
             final ResultSet rs = iterators.get(0).resultSet();
@@ -1460,8 +1460,8 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
-                .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
+        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size())
+                : Stream.concat2(iterators)).skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
 
             final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
             final ResultSet rs = iterators.get(0).resultSet();
@@ -1872,8 +1872,8 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
-                .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
+        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size())
+                : Stream.concat2(iterators)).skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
 
             final NamedSQL namedSQL = getNamedSQL(sql);
             final ResultSet rs = iterators.get(0).resultSet();
@@ -1936,8 +1936,8 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
-                .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
+        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size())
+                : Stream.concat2(iterators)).skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
 
             final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
             final ResultSet rs = iterators.get(0).resultSet();
@@ -1996,11 +1996,11 @@ public final class SQLExecutor implements Closeable {
     //        return query(conn, sql, statementSetter, MAP_RESULT_SET_EXTRACTOR, null, parameters);
     //    }
 
-    public RowIterator iterate(final String sql, final Object... parameters) {
+    RowIterator iterate(final String sql, final Object... parameters) {
         return iterate(sql, null, parameters);
     }
 
-    public RowIterator iterate(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    RowIterator iterate(final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return iterate(sql, statementSetter, null, parameters);
     }
 
@@ -2013,7 +2013,7 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public RowIterator iterate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    RowIterator iterate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return iterate(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
@@ -2042,7 +2042,7 @@ public final class SQLExecutor implements Closeable {
         return query(conn, sql, statementSetter, ROW_ITERATOR_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
     }
 
-    public List<RowIterator> iterateAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    List<RowIterator> iterateAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
         return iterateAll(sql, null, jdbcSettings, parameters);
     }
 
@@ -2055,7 +2055,7 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public List<RowIterator> iterateAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    List<RowIterator> iterateAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return iterateAll(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
@@ -2147,7 +2147,7 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    public List<RowIterator> iterateAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+    List<RowIterator> iterateAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
         return iterateAll(sqls, null, jdbcSettings, parameters);
     }
 
@@ -2160,8 +2160,7 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public List<RowIterator> iterateAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    List<RowIterator> iterateAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return iterateAll(null, sqls, statementSetter, jdbcSettings, parameters);
     }
 
@@ -2298,7 +2297,7 @@ public final class SQLExecutor implements Closeable {
         final RowIterator iterator = this.iterate(conn, sql, statementSetter, jdbcSettings, parameters);
 
         return Stream.of(iterator).onClose(new Runnable() {
-            private boolean isClosed = false;
+            private volatile boolean isClosed = false;
 
             @Override
             public void run() {
@@ -2356,9 +2355,9 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
 
-        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators)).skip(jdbcSettings.getOffset())
-                .limit(jdbcSettings.getCount()).onClose(new Runnable() {
-                    private boolean isClosed = false;
+        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
+                .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount()).onClose(new Runnable() {
+                    private volatile boolean isClosed = false;
 
                     @Override
                     public void run() {
@@ -2416,9 +2415,9 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
 
-        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators)).skip(jdbcSettings.getOffset())
-                .limit(jdbcSettings.getCount()).onClose(new Runnable() {
-                    private boolean isClosed = false;
+        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcat2(iterators, iterators.size()) : Stream.concat2(iterators))
+                .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount()).onClose(new Runnable() {
+                    private volatile boolean isClosed = false;
 
                     @Override
                     public void run() {
@@ -2519,7 +2518,7 @@ public final class SQLExecutor implements Closeable {
                     }
                 }
             }).onClose(new Runnable() {
-                private boolean isClosed = false;
+                private volatile boolean isClosed = false;
 
                 @Override
                 public void run() {
@@ -2624,7 +2623,7 @@ public final class SQLExecutor implements Closeable {
                             }
                         }
                     }).onClose(new Runnable() {
-                        private boolean isClosed = false;
+                        private volatile boolean isClosed = false;
 
                         @Override
                         public void run() {
@@ -2729,7 +2728,7 @@ public final class SQLExecutor implements Closeable {
                             }
                         }
                     }).onClose(new Runnable() {
-                        private boolean isClosed = false;
+                        private volatile boolean isClosed = false;
 
                         @Override
                         public void run() {

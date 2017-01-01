@@ -1,6 +1,10 @@
 
 ========Changes in 0.9.41=========================================================================
 
+1, Add Stream/rotate/toDataSet/toMatrix to Sheet.
+
+2, Remove iterate/iterateAll from SQLExecutor and Stream.of(resultSet, startIndex, endIndex) from Stream.
+
 3, Improvements and bug fix.
 
 

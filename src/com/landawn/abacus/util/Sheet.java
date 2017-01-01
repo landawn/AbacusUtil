@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.DataSet;
+import com.landawn.abacus.util.stream.Stream;
+
 /**
  *
  * @since 0.8
@@ -91,5 +94,35 @@ public interface Sheet<R, C, E> {
 
     <T extends Sheet<R, C, E>> T copy();
 
+    Sheet<C, R, E> rotate();
+
+    /**
+     * 
+     * @return a stream based on row
+     */
+    Stream<E> stream();
+
+    /**
+     * 
+     * @return a stream based on column.
+     */
+    Stream<E> stream2();
+
+    /**
+     * 
+     * @return a DataSet based on row.
+     */
+    DataSet toDataSet();
+
+    /**
+     * 
+     * @return a DataSet based on column.
+     */
+    DataSet toDataSet2();
+
+    Matrix<E> toMatrix(Class<E> cls);
+
     Object[][] toArray();
+
+    void println();
 }
