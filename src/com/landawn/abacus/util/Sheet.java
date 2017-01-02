@@ -122,7 +122,11 @@ public interface Sheet<R, C, E> {
 
     Matrix<E> toMatrix(Class<E> cls);
 
+    Matrix<E> toMatrix2(Class<E> cls);
+
     Object[][] toArray();
+
+    Object[][] toArray2();
 
     void println();
 }

@@ -54,25 +54,25 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         this.rowKeySet = new LinkedHashSet<>(rowKeySet);
         this.columnKeySet = new LinkedHashSet<>(columnKeySet);
 
-        if (N.notNullOrEmpty(rows)) {
-            N.checkArgument(rows.length == rowKeySet.size() && rows[0].length == columnKeySet.size(),
-                    "The length of array is not equal to size of row/column key set");
+        final int rowLength = this.rowKeySet.size();
+        final int columnLength = this.columnKeySet.size();
 
-            final int rowLength = rowKeySet.size();
+        if (N.notNullOrEmpty(rows)) {
+            N.checkArgument(rows.length == rowLength && rows[0].length == columnLength, "The length of array is not equal to size of row/column key set");
+
             rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
             int index = 0;
-            for (R rowKey : rowKeySet) {
+            for (R rowKey : this.rowKeySet) {
                 rowKeyIndexMap.put(rowKey, index++);
             }
 
-            final int columnLength = columnKeySet.size();
             columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
             index = 0;
-            for (C columnKey : columnKeySet) {
+            for (C columnKey : this.columnKeySet) {
                 columnKeyIndexMap.put(columnKey, index++);
             }
 
-            columnList = new ArrayList<>(columnLength);
+            this.columnList = new ArrayList<>(columnLength);
 
             for (int i = 0; i < columnLength; i++) {
                 final List<E> column = new ArrayList<>(rowLength);
@@ -81,7 +81,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
                     column.add((E) rows[j][i]);
                 }
 
-                columnList.add(column);
+                this.columnList.add(column);
             }
 
             initialized = true;
@@ -92,21 +92,22 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         this.rowKeySet = new LinkedHashSet<>(rowKeySet);
         this.columnKeySet = new LinkedHashSet<>(columnKeySet);
 
+        final int rowLength = this.rowKeySet.size();
+        final int columnLength = this.columnKeySet.size();
+
         if (N.notNullOrEmpty(columns)) {
-            N.checkArgument(columns.size() == rowKeySet.size() && columns.iterator().next().size() == columnKeySet.size(),
+            N.checkArgument(columns.size() == columnLength && columns.iterator().next().size() == rowLength,
                     "The length of array is not equal to size of row/column key set");
 
-            final int rowLength = rowKeySet.size();
             rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
             int index = 0;
-            for (R rowKey : rowKeySet) {
+            for (R rowKey : this.rowKeySet) {
                 rowKeyIndexMap.put(rowKey, index++);
             }
 
-            final int columnLength = columnKeySet.size();
             columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
             index = 0;
-            for (C columnKey : columnKeySet) {
+            for (C columnKey : this.columnKeySet) {
                 columnKeyIndexMap.put(columnKey, index++);
             }
 
@@ -803,23 +804,48 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
 
     @Override
     public Matrix<E> toMatrix(Class<E> cls) {
-        final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), rowKeySet.size());
+        final int rowLength = rowKeySet.size();
+        final int columnLength = columnKeySet.size();
+        final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), rowLength);
 
         for (int i = 0, len = c.length; i < len; i++) {
-            c[i] = N.newArray(cls, columnKeySet.size());
+            c[i] = N.newArray(cls, columnLength);
         }
 
-        if (columnKeySet.size() == 0 || rowKeySet.size() == 0) {
+        if (rowLength == 0 || columnLength == 0 || initialized == false) {
             return new Matrix<E>(c);
         }
 
-        if (initialized) {
-            for (int j = 0, col = columnKeySet.size(); j < col; j++) {
-                final List<E> column = columnList.get(j);
+        for (int i = 0; i < columnLength; i++) {
+            final List<E> column = columnList.get(i);
 
-                for (int i = 0, len = rowKeySet.size(); i < len; i++) {
-                    c[i][j] = column.get(i);
-                }
+            for (int j = 0; j < rowLength; j++) {
+                c[j][i] = column.get(j);
+            }
+        }
+
+        return new Matrix<E>(c);
+    }
+
+    @Override
+    public Matrix<E> toMatrix2(Class<E> cls) {
+        final int rowLength = rowKeySet.size();
+        final int columnLength = columnKeySet.size();
+        final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), columnLength);
+
+        for (int i = 0, len = c.length; i < len; i++) {
+            c[i] = N.newArray(cls, rowLength);
+        }
+
+        if (rowLength == 0 || columnLength == 0 || initialized == false) {
+            return new Matrix<E>(c);
+        }
+
+        for (int i = 0; i < columnLength; i++) {
+            final List<E> column = columnList.get(i);
+
+            for (int j = 0; j < rowLength; j++) {
+                c[i][j] = column.get(j);
             }
         }
 
@@ -845,77 +871,23 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         return copy;
     }
 
-    private void init() {
-        if (!initialized) {
-            final int rowLength = rowKeySet.size();
-            rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
-            int index = 0;
-            for (R rowKey : rowKeySet) {
-                rowKeyIndexMap.put(rowKey, index++);
-            }
+    @Override
+    public Object[][] toArray2() {
+        final int rowLength = rowKeySet.size();
+        final int columnLength = columnKeySet.size();
+        final Object[][] copy = new Object[columnLength][rowLength];
 
-            final int columnLength = columnKeySet.size();
-            columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
-            index = 0;
-            for (C columnKey : columnKeySet) {
-                columnKeyIndexMap.put(columnKey, index++);
-            }
-
-            columnList = new ArrayList<>(columnLength);
-
+        if (initialized) {
             for (int i = 0; i < columnLength; i++) {
-                final List<E> column = new ArrayList<>(rowLength);
-                N.fill(column, 0, rowLength, null);
-                columnList.add(column);
+                final List<E> column = columnList.get(i);
+
+                for (int j = 0; j < rowLength; j++) {
+                    copy[i][j] = column.get(j);
+                }
             }
-
-            initialized = true;
-        }
-    }
-
-    private void checkRowKey(R rowKey) {
-        if (!rowKeySet.contains(rowKey)) {
-            throw new IllegalArgumentException("No row found by key: " + rowKey);
-        }
-    }
-
-    private void checkColumnKey(C columnKey) {
-        if (!columnKeySet.contains(columnKey)) {
-            throw new IllegalArgumentException("No column found by key: " + columnKey);
-        }
-    }
-
-    private void checkRowIndex(int rowIndex) {
-        if (rowIndex < 0 || rowIndex >= rowKeySet.size()) {
-            throw new IndexOutOfBoundsException("Row index: " + rowIndex + " can't be negative or equals to or bigger than the row size: " + rowKeySet.size());
-        }
-    }
-
-    private void checkColumnIndex(int columnIndex) {
-        if (columnIndex < 0 || columnIndex >= columnKeySet.size()) {
-            throw new IndexOutOfBoundsException(
-                    "Column index: " + columnIndex + " can't be negative or equals to or bigger than the column size: " + columnKeySet.size());
-        }
-    }
-
-    private int getRowIndex(R rowKey) {
-        Integer index = rowKeyIndexMap.get(rowKey);
-
-        if (index == null) {
-            throw new IllegalArgumentException("No row found by key: " + rowKey);
         }
 
-        return index;
-    }
-
-    private int getColumnIndex(C columnKey) {
-        Integer index = columnKeyIndexMap.get(columnKey);
-
-        if (index == null) {
-            throw new IllegalArgumentException("No column found by key: " + columnKey);
-        }
-
-        return index;
+        return copy;
     }
 
     @Override
@@ -1007,5 +979,78 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         ObjectFactory.recycle(sb);
 
         return str;
+    }
+
+    private void init() {
+        if (!initialized) {
+            final int rowLength = rowKeySet.size();
+            rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
+            int index = 0;
+            for (R rowKey : rowKeySet) {
+                rowKeyIndexMap.put(rowKey, index++);
+            }
+
+            final int columnLength = columnKeySet.size();
+            columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
+            index = 0;
+            for (C columnKey : columnKeySet) {
+                columnKeyIndexMap.put(columnKey, index++);
+            }
+
+            columnList = new ArrayList<>(columnLength);
+
+            for (int i = 0; i < columnLength; i++) {
+                final List<E> column = new ArrayList<>(rowLength);
+                N.fill(column, 0, rowLength, null);
+                columnList.add(column);
+            }
+
+            initialized = true;
+        }
+    }
+
+    private void checkRowKey(R rowKey) {
+        if (!rowKeySet.contains(rowKey)) {
+            throw new IllegalArgumentException("No row found by key: " + rowKey);
+        }
+    }
+
+    private void checkColumnKey(C columnKey) {
+        if (!columnKeySet.contains(columnKey)) {
+            throw new IllegalArgumentException("No column found by key: " + columnKey);
+        }
+    }
+
+    private void checkRowIndex(int rowIndex) {
+        if (rowIndex < 0 || rowIndex >= rowKeySet.size()) {
+            throw new IndexOutOfBoundsException("Row index: " + rowIndex + " can't be negative or equals to or bigger than the row size: " + rowKeySet.size());
+        }
+    }
+
+    private void checkColumnIndex(int columnIndex) {
+        if (columnIndex < 0 || columnIndex >= columnKeySet.size()) {
+            throw new IndexOutOfBoundsException(
+                    "Column index: " + columnIndex + " can't be negative or equals to or bigger than the column size: " + columnKeySet.size());
+        }
+    }
+
+    private int getRowIndex(R rowKey) {
+        Integer index = rowKeyIndexMap.get(rowKey);
+
+        if (index == null) {
+            throw new IllegalArgumentException("No row found by key: " + rowKey);
+        }
+
+        return index;
+    }
+
+    private int getColumnIndex(C columnKey) {
+        Integer index = columnKeyIndexMap.get(columnKey);
+
+        if (index == null) {
+            throw new IllegalArgumentException("No column found by key: " + columnKey);
+        }
+
+        return index;
     }
 }
