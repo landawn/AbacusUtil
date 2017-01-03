@@ -816,53 +816,53 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         });
     }
 
-    //    @Override
-    //    public Stream<Sheet.Cell<R, C, E>> cells0() {
-    //        return cells0(0, columnKeySet.size());
-    //    }
-    //
-    //    @Override
-    //    public Stream<Sheet.Cell<R, C, E>> cells0(final int fromColumnIndex, final int toColumnIndex) {
-    //        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
-    //
-    //        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
-    //            return Stream.empty();
-    //        }
-    //
-    //        return Stream.of(new ImmutableIterator<Sheet.Cell<R, C, E>>() {
-    //            private final int rowLength = rowKeySet.size();
-    //            private final long toIndex = toColumnIndex * rowLength * 1L;
-    //            private long cursor = fromColumnIndex * rowLength * 1L;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                return cursor < toIndex;
-    //            }
-    //
-    //            @Override
-    //            public Sheet.Cell<R, C, E> next() {
-    //                if (cursor >= toIndex) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                final int rowIndex = (int) (cursor % rowLength);
-    //                final int columnIndex = (int) (cursor++ / rowLength);
-    //
-    //                return new Cell0<R, C, E>(rowKeyIndexMap.getByValue(rowIndex), columnKeyIndexMap.getByValue(columnIndex),
-    //                        initialized ? columnList.get(columnIndex).get(rowIndex) : null);
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                cursor = n < toIndex - cursor ? cursor + n : toIndex;
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                return toIndex - cursor;
-    //            }
-    //        });
-    //    }
+    @Override
+    public Stream<Sheet.Cell<R, C, E>> cells0() {
+        return cells0(0, columnKeySet.size());
+    }
+
+    @Override
+    public Stream<Sheet.Cell<R, C, E>> cells0(final int fromColumnIndex, final int toColumnIndex) {
+        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
+
+        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<Sheet.Cell<R, C, E>>() {
+            private final int rowLength = rowKeySet.size();
+            private final long toIndex = toColumnIndex * rowLength * 1L;
+            private long cursor = fromColumnIndex * rowLength * 1L;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Sheet.Cell<R, C, E> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int rowIndex = (int) (cursor % rowLength);
+                final int columnIndex = (int) (cursor++ / rowLength);
+
+                return new Cell0<R, C, E>(rowKeyIndexMap.getByValue(rowIndex), columnKeyIndexMap.getByValue(columnIndex),
+                        initialized ? columnList.get(columnIndex).get(rowIndex) : null);
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
 
     @Override
     public Stream<E> stream() {
@@ -913,54 +913,54 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         });
     }
 
-    //    @Override
-    //    public Stream<E> stream0() {
-    //        return stream0(0, columnKeySet.size());
-    //    }
-    //
-    //    @Override
-    //    public Stream<E> stream0(final int fromColumnIndex, final int toColumnIndex) {
-    //        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
-    //
-    //        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
-    //            return Stream.empty();
-    //        }
-    //
-    //        return Stream.of(new ImmutableIterator<E>() {
-    //            private final int rowLength = rowKeySet.size();
-    //            private final long toIndex = toColumnIndex * rowLength * 1L;
-    //            private long cursor = fromColumnIndex * rowLength * 1L;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                return cursor < toIndex;
-    //            }
-    //
-    //            @Override
-    //            public E next() {
-    //                if (cursor >= toIndex) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                if (initialized) {
-    //                    return columnList.get((int) (cursor / rowLength)).get((int) (cursor++ % rowLength));
-    //                } else {
-    //                    cursor++;
-    //                    return null;
-    //                }
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                cursor = n < toIndex - cursor ? cursor + n : toIndex;
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                return toIndex - cursor;
-    //            }
-    //        });
-    //    }
+    @Override
+    public Stream<E> stream0() {
+        return stream0(0, columnKeySet.size());
+    }
+
+    @Override
+    public Stream<E> stream0(final int fromColumnIndex, final int toColumnIndex) {
+        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
+
+        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<E>() {
+            private final int rowLength = rowKeySet.size();
+            private final long toIndex = toColumnIndex * rowLength * 1L;
+            private long cursor = fromColumnIndex * rowLength * 1L;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public E next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                if (initialized) {
+                    return columnList.get((int) (cursor / rowLength)).get((int) (cursor++ % rowLength));
+                } else {
+                    cursor++;
+                    return null;
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
 
     @Override
     public Stream<Stream<E>> stream2() {
@@ -1033,48 +1033,48 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         });
     }
 
-    //    @Override
-    //    public Stream<Stream<E>> stream02() {
-    //        return stream02(0, columnKeySet.size());
-    //    }
-    //
-    //    @Override
-    //    public Stream<Stream<E>> stream02(final int fromColumnIndex, final int toColumnIndex) {
-    //        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
-    //
-    //        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
-    //            return Stream.empty();
-    //        }
-    //
-    //        return Stream.of(new ImmutableIterator<Stream<E>>() {
-    //            private final int toIndex = toColumnIndex;
-    //            private int cursor = fromColumnIndex;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                return cursor < toIndex;
-    //            }
-    //
-    //            @Override
-    //            public Stream<E> next() {
-    //                if (cursor >= toIndex) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                return Stream.of(columnList.get(cursor++));
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                return toIndex - cursor;
-    //            }
-    //        });
-    //    }
+    @Override
+    public Stream<Stream<E>> stream02() {
+        return stream02(0, columnKeySet.size());
+    }
+
+    @Override
+    public Stream<Stream<E>> stream02(final int fromColumnIndex, final int toColumnIndex) {
+        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
+
+        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<Stream<E>>() {
+            private final int toIndex = toColumnIndex;
+            private int cursor = fromColumnIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<E> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return Stream.of(columnList.get(cursor++));
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
 
     @Override
     public DataSet toDataSet() {
@@ -1101,36 +1101,36 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         return new RowDataSet(_columnNameList, _columnList);
     }
 
-    //    @Override
-    //    public DataSet toDataSet0() {
-    //        final List<String> _columnNameList = new ArrayList<>(rowKeySet.size());
-    //
-    //        for (R rowKey : rowKeySet) {
-    //            _columnNameList.add(N.toString(rowKey));
-    //        }
-    //
-    //        final List<List<Object>> _columnList = new ArrayList<>(_columnNameList.size());
-    //
-    //        if (initialized) {
-    //            for (int i = 0, len = _columnNameList.size(); i < len; i++) {
-    //                final List<Object> column = new ArrayList<>(columnKeySet.size());
-    //
-    //                for (int j = 0, col = columnKeySet.size(); j < col; j++) {
-    //                    column.add(columnList.get(j).get(i));
-    //                }
-    //
-    //                _columnList.add(column);
-    //            }
-    //        } else {
-    //            for (int i = 0, len = _columnNameList.size(); i < len; i++) {
-    //                List<Object> column = new ArrayList<>(columnKeySet.size());
-    //                N.fill(column, 0, columnKeySet.size(), null);
-    //                _columnList.add(column);
-    //            }
-    //        }
-    //
-    //        return new RowDataSet(_columnNameList, _columnList);
-    //    }
+    @Override
+    public DataSet toDataSet0() {
+        final List<String> _columnNameList = new ArrayList<>(rowKeySet.size());
+
+        for (R rowKey : rowKeySet) {
+            _columnNameList.add(N.toString(rowKey));
+        }
+
+        final List<List<Object>> _columnList = new ArrayList<>(_columnNameList.size());
+
+        if (initialized) {
+            for (int i = 0, len = _columnNameList.size(); i < len; i++) {
+                final List<Object> column = new ArrayList<>(columnKeySet.size());
+
+                for (int j = 0, col = columnKeySet.size(); j < col; j++) {
+                    column.add(columnList.get(j).get(i));
+                }
+
+                _columnList.add(column);
+            }
+        } else {
+            for (int i = 0, len = _columnNameList.size(); i < len; i++) {
+                List<Object> column = new ArrayList<>(columnKeySet.size());
+                N.fill(column, 0, columnKeySet.size(), null);
+                _columnList.add(column);
+            }
+        }
+
+        return new RowDataSet(_columnNameList, _columnList);
+    }
 
     @Override
     public Matrix<E> toMatrix(Class<E> cls) {
@@ -1157,30 +1157,30 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         return new Matrix<E>(c);
     }
 
-    //    @Override
-    //    public Matrix<E> toMatrix0(Class<E> cls) {
-    //        final int rowLength = rowKeySet.size();
-    //        final int columnLength = columnKeySet.size();
-    //        final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), columnLength);
-    //
-    //        for (int i = 0, len = c.length; i < len; i++) {
-    //            c[i] = N.newArray(cls, rowLength);
-    //        }
-    //
-    //        if (rowLength == 0 || columnLength == 0 || initialized == false) {
-    //            return new Matrix<E>(c);
-    //        }
-    //
-    //        for (int i = 0; i < columnLength; i++) {
-    //            final List<E> column = columnList.get(i);
-    //
-    //            for (int j = 0; j < rowLength; j++) {
-    //                c[i][j] = column.get(j);
-    //            }
-    //        }
-    //
-    //        return new Matrix<E>(c);
-    //    }
+    @Override
+    public Matrix<E> toMatrix0(Class<E> cls) {
+        final int rowLength = rowKeySet.size();
+        final int columnLength = columnKeySet.size();
+        final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), columnLength);
+
+        for (int i = 0, len = c.length; i < len; i++) {
+            c[i] = N.newArray(cls, rowLength);
+        }
+
+        if (rowLength == 0 || columnLength == 0 || initialized == false) {
+            return new Matrix<E>(c);
+        }
+
+        for (int i = 0; i < columnLength; i++) {
+            final List<E> column = columnList.get(i);
+
+            for (int j = 0; j < rowLength; j++) {
+                c[i][j] = column.get(j);
+            }
+        }
+
+        return new Matrix<E>(c);
+    }
 
     @Override
     public Object[][] toArray() {
@@ -1201,24 +1201,24 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         return copy;
     }
 
-    //    @Override
-    //    public Object[][] toArray0() {
-    //        final int rowLength = rowKeySet.size();
-    //        final int columnLength = columnKeySet.size();
-    //        final Object[][] copy = new Object[columnLength][rowLength];
-    //
-    //        if (initialized) {
-    //            for (int i = 0; i < columnLength; i++) {
-    //                final List<E> column = columnList.get(i);
-    //
-    //                for (int j = 0; j < rowLength; j++) {
-    //                    copy[i][j] = column.get(j);
-    //                }
-    //            }
-    //        }
-    //
-    //        return copy;
-    //    }
+    @Override
+    public Object[][] toArray0() {
+        final int rowLength = rowKeySet.size();
+        final int columnLength = columnKeySet.size();
+        final Object[][] copy = new Object[columnLength][rowLength];
+
+        if (initialized) {
+            for (int i = 0; i < columnLength; i++) {
+                final List<E> column = columnList.get(i);
+
+                for (int j = 0; j < rowLength; j++) {
+                    copy[i][j] = column.get(j);
+                }
+            }
+        }
+
+        return copy;
+    }
 
     @Override
     public <T> T[][] toArray(Class<T> cls) {
@@ -1236,6 +1236,29 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
 
                 for (int j = 0; j < rowLength; j++) {
                     copy[j][i] = (T) column.get(j);
+                }
+            }
+        }
+
+        return copy;
+    }
+
+    @Override
+    public <T> T[][] toArray0(Class<T> cls) {
+        final int rowLength = rowKeySet.size();
+        final int columnLength = columnKeySet.size();
+        final T[][] copy = N.newArray(N.newArray(cls, 0).getClass(), columnLength);
+
+        for (int i = 0; i < columnLength; i++) {
+            copy[i] = N.newArray(cls, rowLength);
+        }
+
+        if (initialized) {
+            for (int i = 0; i < columnLength; i++) {
+                final List<E> column = columnList.get(i);
+
+                for (int j = 0; j < rowLength; j++) {
+                    copy[i][j] = (T) column.get(j);
                 }
             }
         }

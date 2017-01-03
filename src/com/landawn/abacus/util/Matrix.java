@@ -16,6 +16,7 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.ToBooleanFunction;
@@ -765,57 +766,58 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         });
     }
 
-    // TODO undecided.
-    //    /**
-    //     * 
-    //     * @return a stream based on the order of column.
-    //     */
-    //    public Stream<T> stream0() {
-    //        return stream0(0, m);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param fromColumnIndex
-    //     * @param toColumnIndex
-    //     * @return a stream based on the order of column.
-    //     */
-    //    public Stream<T> stream0(final int fromColumnIndex, final int toColumnIndex) {
-    //        N.checkIndex(fromColumnIndex, toColumnIndex, m);
-    //
-    //        if (isEmpty()) {
-    //            return Stream.empty();
-    //        }
-    //
-    //        return Stream.of(new ImmutableIterator<T>() {
-    //            private final long toIndex = toColumnIndex * n * 1L;
-    //            private long cursor = fromColumnIndex * n * 1L;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                return cursor < toIndex;
-    //            }
-    //
-    //            @Override
-    //            public T next() {
-    //                if (cursor >= toIndex) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                return a[(int) (cursor % n)][(int) (cursor++ / n)];
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                cursor = n < toIndex - cursor ? cursor + n : toIndex;
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                return toIndex - cursor;
-    //            }
-    //        });
-    //    }
+    /**
+     * 
+     * @return a stream based on the order of column.
+     */
+    @Beta
+    public Stream<T> stream0() {
+        return stream0(0, m);
+    }
+
+    /**
+     * 
+     * @param fromColumnIndex
+     * @param toColumnIndex
+     * @return a stream based on the order of column.
+     */
+    @Beta
+    public Stream<T> stream0(final int fromColumnIndex, final int toColumnIndex) {
+        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<T>() {
+            private final long toIndex = toColumnIndex * n * 1L;
+            private long cursor = fromColumnIndex * n * 1L;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[(int) (cursor % n)][(int) (cursor++ / n)];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
 
     /**
      * 
@@ -868,85 +870,86 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         });
     }
 
-    // TODO undecided.
-    //    /**
-    //     * 
-    //     * @return a column stream based on the order of column.
-    //     */
-    //    public Stream<Stream<T>> stream02() {
-    //        return stream02(0, m);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param fromColumnIndex
-    //     * @param toColumnIndex
-    //     * @return a column stream based on the order of column.
-    //     */
-    //    public Stream<Stream<T>> stream02(final int fromColumnIndex, final int toColumnIndex) {
-    //        N.checkIndex(fromColumnIndex, toColumnIndex, m);
-    //
-    //        if (isEmpty()) {
-    //            return Stream.empty();
-    //        }
-    //
-    //        return Stream.of(new ImmutableIterator<Stream<T>>() {
-    //            private final int toIndex = toColumnIndex;
-    //            private volatile int cursor = fromColumnIndex;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                return cursor < toIndex;
-    //            }
-    //
-    //            @Override
-    //            public Stream<T> next() {
-    //                if (cursor >= toIndex) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                return Stream.of(new ImmutableIterator<T>() {
-    //                    private final int columnIndex = cursor++;
-    //                    private final int toIndex2 = n;
-    //                    private int cursor2 = 0;
-    //
-    //                    @Override
-    //                    public boolean hasNext() {
-    //                        return cursor2 < toIndex2;
-    //                    }
-    //
-    //                    @Override
-    //                    public T next() {
-    //                        if (cursor2 >= toIndex2) {
-    //                            throw new NoSuchElementException();
-    //                        }
-    //
-    //                        return a[cursor2++][columnIndex];
-    //                    }
-    //
-    //                    @Override
-    //                    public void skip(long n) {
-    //                        cursor2 = n < toIndex2 - cursor2 ? cursor2 + (int) n : toIndex2;
-    //                    }
-    //
-    //                    @Override
-    //                    public long count() {
-    //                        return toIndex2 - cursor2;
-    //                    }
-    //                });
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                return toIndex - cursor;
-    //            }
-    //        });
-    //    }
+    /**
+     * 
+     * @return a column stream based on the order of column.
+     */
+    @Beta
+    public Stream<Stream<T>> stream02() {
+        return stream02(0, m);
+    }
+
+    /**
+     * 
+     * @param fromColumnIndex
+     * @param toColumnIndex
+     * @return a column stream based on the order of column.
+     */
+    @Beta
+    public Stream<Stream<T>> stream02(final int fromColumnIndex, final int toColumnIndex) {
+        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<Stream<T>>() {
+            private final int toIndex = toColumnIndex;
+            private volatile int cursor = fromColumnIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return Stream.of(new ImmutableIterator<T>() {
+                    private final int columnIndex = cursor++;
+                    private final int toIndex2 = n;
+                    private int cursor2 = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        return cursor2 < toIndex2;
+                    }
+
+                    @Override
+                    public T next() {
+                        if (cursor2 >= toIndex2) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return a[cursor2++][columnIndex];
+                    }
+
+                    @Override
+                    public void skip(long n) {
+                        cursor2 = n < toIndex2 - cursor2 ? cursor2 + (int) n : toIndex2;
+                    }
+
+                    @Override
+                    public long count() {
+                        return toIndex2 - cursor2;
+                    }
+                });
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
 
     @Override
     public int hashCode() {

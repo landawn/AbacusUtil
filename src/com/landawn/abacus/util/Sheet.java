@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -110,18 +111,19 @@ public interface Sheet<R, C, E> {
      */
     Stream<Cell<R, C, E>> cells(int fromRowIndex, int toRowIndex);
 
-    // TODO undecided.
-    //    /**
-    //     * 
-    //     * @return a stream of Cells based on the order of column.
-    //     */
-    //    Stream<Cell<R, C, E>> cells0();
-    //
-    //    /**
-    //     * 
-    //     * @return a stream of Cells based on the order of column.
-    //     */
-    //    Stream<Cell<R, C, E>> cells0(int fromColumnIndex, int toColumnIndex);
+    /**
+     * 
+     * @return a stream of Cells based on the order of column.
+     */
+    @Beta
+    Stream<Cell<R, C, E>> cells0();
+
+    /**
+     * 
+     * @return a stream of Cells based on the order of column.
+     */
+    @Beta
+    Stream<Cell<R, C, E>> cells0(int fromColumnIndex, int toColumnIndex);
 
     /**
      * 
@@ -137,20 +139,21 @@ public interface Sheet<R, C, E> {
      */
     Stream<E> stream(int fromRowIndex, int toRowIndex);
 
-    // TODO undecided.
-    //    /**
-    //     * 
-    //     * @return a stream based on the order of column.
-    //     */
-    //    Stream<E> stream0();
-    //
-    //    /**
-    //     * 
-    //     * @param fromColumnIndex
-    //     * @param toColumnIndex
-    //     * @return a stream based on the order of column.
-    //     */
-    //    Stream<E> stream0(int fromColumnIndex, int toColumnIndex);
+    /**
+     * 
+     * @return a stream based on the order of column.
+     */
+    @Beta
+    Stream<E> stream0();
+
+    /**
+     * 
+     * @param fromColumnIndex
+     * @param toColumnIndex
+     * @return a stream based on the order of column.
+     */
+    @Beta
+    Stream<E> stream0(int fromColumnIndex, int toColumnIndex);
 
     /**
      * 
@@ -166,20 +169,21 @@ public interface Sheet<R, C, E> {
      */
     Stream<Stream<E>> stream2(int fromRowIndex, int toRowIndex);
 
-    // TODO undecided.
-    //    /**
-    //     * 
-    //     * @return a column stream based on the order of column.
-    //     */
-    //    Stream<Stream<E>> stream02();
-    //
-    //    /**
-    //     * 
-    //     * @param fromColumnIndex
-    //     * @param toColumnIndex
-    //     * @return a column stream based on the order of column.
-    //     */
-    //    Stream<Stream<E>> stream02(int fromColumnIndex, int toColumnIndex);
+    /**
+     * 
+     * @return a column stream based on the order of column.
+     */
+    @Beta
+    Stream<Stream<E>> stream02();
+
+    /**
+     * 
+     * @param fromColumnIndex
+     * @param toColumnIndex
+     * @return a column stream based on the order of column.
+     */
+    @Beta
+    Stream<Stream<E>> stream02(int fromColumnIndex, int toColumnIndex);
 
     /**
      * 
@@ -187,12 +191,12 @@ public interface Sheet<R, C, E> {
      */
     DataSet toDataSet();
 
-    // TODO undecided.
-    //    /**
-    //     * 
-    //     * @return a DataSet based on column.
-    //     */
-    //    DataSet toDataSet0();
+    /**
+     * 
+     * @return a DataSet based on column.
+     */
+    @Beta
+    DataSet toDataSet0();
 
     /**
      * 
@@ -201,13 +205,13 @@ public interface Sheet<R, C, E> {
      */
     Matrix<E> toMatrix(Class<E> cls);
 
-    // TODO undecided.
-    //    /**
-    //     * 
-    //     * @param cls
-    //     * @return a Matrix based on column.
-    //     */
-    //    Matrix<E> toMatrix0(Class<E> cls);
+    /**
+     * 
+     * @param cls
+     * @return a Matrix based on column.
+     */
+    @Beta
+    Matrix<E> toMatrix0(Class<E> cls);
 
     /**
      * 
@@ -221,12 +225,19 @@ public interface Sheet<R, C, E> {
      */
     <T> T[][] toArray(Class<T> cls);
 
-    // TODO undecided.
-    //    /**
-    //     * 
-    //     * @return a 2D array based on column.
-    //     */
-    //    Object[][] toArray0();
+    /**
+     * 
+     * @return a 2D array based on column.
+     */
+    @Beta
+    Object[][] toArray0();
+
+    /**
+     * 
+     * @return a 2D array based on row.
+     */
+    @Beta
+    <T> T[][] toArray0(Class<T> cls);
 
     void println();
 
