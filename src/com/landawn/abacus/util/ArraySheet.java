@@ -17,6 +17,7 @@
 package com.landawn.abacus.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -48,11 +49,24 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     public ArraySheet(Collection<R> rowKeySet, Collection<C> columnKeySet) {
         this.rowKeySet = new LinkedHashSet<>(rowKeySet);
         this.columnKeySet = new LinkedHashSet<>(columnKeySet);
+
+        final int rowLength = rowKeySet.size();
+        rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
+        int index = 0;
+        for (R rowKey : rowKeySet) {
+            rowKeyIndexMap.put(rowKey, index++);
+        }
+
+        final int columnLength = columnKeySet.size();
+        columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
+        index = 0;
+        for (C columnKey : columnKeySet) {
+            columnKeyIndexMap.put(columnKey, index++);
+        }
     }
 
     public ArraySheet(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] rows) {
-        this.rowKeySet = new LinkedHashSet<>(rowKeySet);
-        this.columnKeySet = new LinkedHashSet<>(columnKeySet);
+        this(rowKeySet, columnKeySet);
 
         final int rowLength = this.rowKeySet.size();
         final int columnLength = this.columnKeySet.size();
@@ -60,16 +74,8 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         if (N.notNullOrEmpty(rows)) {
             N.checkArgument(rows.length == rowLength && rows[0].length == columnLength, "The length of array is not equal to size of row/column key set");
 
-            rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
-            int index = 0;
-            for (R rowKey : this.rowKeySet) {
-                rowKeyIndexMap.put(rowKey, index++);
-            }
-
-            columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
-            index = 0;
-            for (C columnKey : this.columnKeySet) {
-                columnKeyIndexMap.put(columnKey, index++);
+            for (Object[] e : rows) {
+                N.checkArgument(e.length == columnLength, "The length of array is not equal to size of row/column key set");
             }
 
             this.columnList = new ArrayList<>(columnLength);
@@ -88,37 +94,125 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         }
     }
 
-    public ArraySheet(Collection<R> rowKeySet, Collection<C> columnKeySet, Collection<? extends Collection<? extends E>> columns) {
-        this.rowKeySet = new LinkedHashSet<>(rowKeySet);
-        this.columnKeySet = new LinkedHashSet<>(columnKeySet);
+    public static <R, C, E> ArraySheet<R, C, E> of(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] rows) {
+        //        final ArraySheet<R, C, E> instance = new ArraySheet<>(rowKeySet, columnKeySet);
+        //
+        //        final int rowLength = instance.rowKeySet.size();
+        //        final int columnLength = instance.columnKeySet.size();
+        //
+        //        if (N.notNullOrEmpty(rows)) {
+        //            N.checkArgument(rows.length == rowLength && rows[0].length == columnLength, "The length of array is not equal to size of row/column key set");
+        //
+        //            for (Object[] e : rows) {
+        //                N.checkArgument(e.length == columnLength, "The length of array is not equal to size of row/column key set");
+        //            }
+        //
+        //            instance.columnList = new ArrayList<>(columnLength);
+        //
+        //            for (int i = 0; i < columnLength; i++) {
+        //                final List<E> column = new ArrayList<>(rowLength);
+        //
+        //                for (int j = 0; j < rowLength; j++) {
+        //                    column.add((E) rows[j][i]);
+        //                }
+        //
+        //                instance.columnList.add(column);
+        //            }
+        //
+        //            instance.initialized = true;
+        //        }
+        //
+        //        return instance;
 
-        final int rowLength = this.rowKeySet.size();
-        final int columnLength = this.columnKeySet.size();
+        return new ArraySheet<>(rowKeySet, columnKeySet, rows);
+    }
+
+    public static <R, C, E> ArraySheet<R, C, E> of(Collection<R> rowKeySet, Collection<C> columnKeySet, Collection<? extends Collection<? extends E>> rows) {
+        final ArraySheet<R, C, E> instance = new ArraySheet<>(rowKeySet, columnKeySet);
+
+        final int rowLength = instance.rowKeySet.size();
+        final int columnLength = instance.columnKeySet.size();
+
+        if (N.notNullOrEmpty(rows)) {
+            N.checkArgument(rows.size() == rowLength && rows.iterator().next().size() == columnLength,
+                    "The size of collection is not equal to size of row/column key set");
+
+            for (Collection<? extends E> e : rows) {
+                N.checkArgument(e.size() == columnLength, "The length of array is not equal to size of row/column key set");
+            }
+
+            instance.columnList = new ArrayList<>(columnLength);
+
+            for (int i = 0; i < columnLength; i++) {
+                instance.columnList.add(new ArrayList<E>(rowLength));
+            }
+
+            for (Collection<? extends E> row : rows) {
+                final Iterator<? extends E> iter = row.iterator();
+
+                for (int i = 0; i < columnLength; i++) {
+                    instance.columnList.get(i).add(iter.next());
+                }
+            }
+
+            instance.initialized = true;
+        }
+
+        return instance;
+
+    }
+
+    public static <R, C, E> ArraySheet<R, C, E> from(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] columns) {
+        final ArraySheet<R, C, E> instance = new ArraySheet<>(rowKeySet, columnKeySet);
+
+        final int rowLength = instance.rowKeySet.size();
+        final int columnLength = instance.columnKeySet.size();
+
+        if (N.notNullOrEmpty(columns)) {
+            N.checkArgument(columns.length == columnLength && columns[0].length == rowLength, "The length of array is not equal to size of row/column key set");
+
+            for (Object[] e : columns) {
+                N.checkArgument(e.length == rowLength, "The length of array is not equal to size of row/column key set");
+            }
+
+            instance.columnList = new ArrayList<>(columnLength);
+
+            for (Object[] e : columns) {
+                instance.columnList.add(new ArrayList<>((List<E>) Arrays.asList(e)));
+            }
+
+            instance.initialized = true;
+        }
+
+        return instance;
+
+    }
+
+    public static <R, C, E> ArraySheet<R, C, E> from(Collection<R> rowKeySet, Collection<C> columnKeySet,
+            Collection<? extends Collection<? extends E>> columns) {
+        final ArraySheet<R, C, E> instance = new ArraySheet<>(rowKeySet, columnKeySet);
+
+        final int rowLength = instance.rowKeySet.size();
+        final int columnLength = instance.columnKeySet.size();
 
         if (N.notNullOrEmpty(columns)) {
             N.checkArgument(columns.size() == columnLength && columns.iterator().next().size() == rowLength,
-                    "The length of array is not equal to size of row/column key set");
-
-            rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
-            int index = 0;
-            for (R rowKey : this.rowKeySet) {
-                rowKeyIndexMap.put(rowKey, index++);
-            }
-
-            columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
-            index = 0;
-            for (C columnKey : this.columnKeySet) {
-                columnKeyIndexMap.put(columnKey, index++);
-            }
-
-            this.columnList = new ArrayList<>(columnLength);
+                    "The size of collection is not equal to size of row/column key set");
 
             for (Collection<? extends E> e : columns) {
-                this.columnList.add(new ArrayList<>(e));
+                N.checkArgument(e.size() == rowLength, "The length of array is not equal to size of row/column key set");
             }
 
-            initialized = true;
+            instance.columnList = new ArrayList<>(columnLength);
+
+            for (Collection<? extends E> e : columns) {
+                instance.columnList.add(new ArrayList<>(e));
+            }
+
+            instance.initialized = true;
         }
+
+        return instance;
     }
 
     @Override
@@ -132,7 +226,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public E get(R rowKey, C columnKey) {
+    public E get(Object rowKey, Object columnKey) {
         if (initialized) {
             final int rowIndex = getRowIndex(rowKey);
             final int columnIndex = getColumnIndex(columnKey);
@@ -201,7 +295,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public E remove(R rowKey, C columnKey) {
+    public E remove(Object rowKey, Object columnKey) {
         if (initialized) {
             final int rowIndex = getRowIndex(rowKey);
             final int columnIndex = getColumnIndex(columnKey);
@@ -229,30 +323,47 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public boolean containsValue(Object value) {
-        if (value == null) {
-            for (R r : rowKeySet()) {
-                for (C c : columnKeySet()) {
-                    if (this.get(r, c) == null) {
-                        return true;
-                    }
-                }
-            }
-        } else {
-            for (R r : rowKeySet()) {
-                for (C c : columnKeySet()) {
-                    if (value.equals(this.get(r, c))) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
+    public boolean contains(Object rowKey, Object columnKey) {
+        return get(rowKey, columnKey) != null;
     }
 
     @Override
-    public List<E> getRow(R rowKey) {
+    public boolean containsValue(Object value) {
+        //        if (value == null) {
+        //            for (R r : rowKeySet()) {
+        //                for (C c : columnKeySet()) {
+        //                    if (this.get(r, c) == null) {
+        //                        return true;
+        //                    }
+        //                }
+        //            }
+        //        } else {
+        //            for (R r : rowKeySet()) {
+        //                for (C c : columnKeySet()) {
+        //                    if (value.equals(this.get(r, c))) {
+        //                        return true;
+        //                    }
+        //                }
+        //            }
+        //        }
+        //
+        //        return false;
+
+        if (this.initialized) {
+            for (List<E> column : this.columnList) {
+                if (column.contains(value)) {
+                    return true;
+                }
+            }
+
+            return false;
+        } else {
+            return value == null;
+        }
+    }
+
+    @Override
+    public List<E> getRow(Object rowKey) {
         final int columnLength = columnKeySet.size();
         final List<E> row = new ArrayList<E>(columnLength);
 
@@ -282,14 +393,15 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             throw new IllegalArgumentException("Row: " + row + " not matches the column key: " + columnKeySet);
         }
 
-        final Iterator<? extends E> it = row.iterator();
         if (N.isNullOrEmpty(row)) {
             for (int columnIndex = 0; columnIndex < columnLength; columnIndex++) {
                 columnList.get(columnIndex).set(rowIndex, null);
             }
         } else {
+            final Iterator<? extends E> iter = row.iterator();
+
             for (int columnIndex = 0; columnIndex < columnLength; columnIndex++) {
-                columnList.get(columnIndex).set(rowIndex, it.next());
+                columnList.get(columnIndex).set(rowIndex, iter.next());
             }
         }
     }
@@ -304,32 +416,30 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             throw new IllegalArgumentException("Row: " + row + " not matches the column key: " + columnKeySet);
         }
 
+        init();
+
         rowKeySet.add(rowKey);
 
         final int columnLength = columnKeySet.size();
         final int newRowLength = rowKeySet.size();
         final int newRowIndex = newRowLength - 1;
-
-        if (initialized) {
-            rowKeyIndexMap.put(rowKey, newRowIndex);
-        } else {
-            init();
-        }
+        rowKeyIndexMap.put(rowKey, newRowIndex);
 
         if (N.isNullOrEmpty(row)) {
             for (int columnIndex = 0; columnIndex < columnLength; columnIndex++) {
                 columnList.get(columnIndex).add(null);
             }
         } else {
-            final Iterator<? extends E> it = row.iterator();
+            final Iterator<? extends E> iter = row.iterator();
+
             for (int columnIndex = 0; columnIndex < columnLength; columnIndex++) {
-                columnList.get(columnIndex).add(it.next());
+                columnList.get(columnIndex).add(iter.next());
             }
         }
     }
 
     @Override
-    public void removeRow(R rowKey) {
+    public void removeRow(Object rowKey) {
         checkRowKey(rowKey);
 
         rowKeySet.remove(rowKey);
@@ -354,12 +464,12 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public boolean containsRow(R rowKey) {
+    public boolean containsRow(Object rowKey) {
         return rowKeySet.contains(rowKey);
     }
 
     @Override
-    public Map<C, E> row(R rowKey) {
+    public Map<C, E> row(Object rowKey) {
         final int columnLength = columnKeySet.size();
         Map<C, E> rowMap = new LinkedHashMap<>(N.initHashCapacity(columnLength));
 
@@ -414,7 +524,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public List<E> getColumn(C columnKey) {
+    public List<E> getColumn(Object columnKey) {
         final int rowLength = rowKeySet.size();
         List<E> column = null;
 
@@ -443,11 +553,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         if (N.isNullOrEmpty(column)) {
             N.fill(columnList.get(columnIndex), 0, rowLength, null);
         } else {
-            final Iterator<? extends E> it = column.iterator();
-
-            for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
-                columnList.get(columnIndex).set(rowIndex, it.next());
-            }
+            columnList.set(columnIndex, new ArrayList<E>(column));
         }
     }
 
@@ -461,17 +567,14 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             throw new IllegalArgumentException("Column: " + column + " not matches the row key: " + rowKeySet);
         }
 
+        init();
+
         columnKeySet.add(columnKey);
 
         final int rowLength = rowKeySet.size();
         final int newColumnLength = columnKeySet.size();
         final int newColumnIndex = newColumnLength - 1;
-
-        if (initialized) {
-            columnKeyIndexMap.put(columnKey, newColumnIndex);
-        } else {
-            init();
-        }
+        columnKeyIndexMap.put(columnKey, newColumnIndex);
 
         if (N.isNullOrEmpty(column)) {
             List<E> newColumn = new ArrayList<>();
@@ -483,7 +586,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public void removeColumn(C columnKey) {
+    public void removeColumn(Object columnKey) {
         checkColumnKey(columnKey);
 
         columnKeySet.remove(columnKey);
@@ -505,12 +608,12 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public boolean containsColumn(C columnKey) {
+    public boolean containsColumn(Object columnKey) {
         return columnKeySet.contains(columnKey);
     }
 
     @Override
-    public Map<R, E> column(C columnKey) {
+    public Map<R, E> column(Object columnKey) {
         final int rowLength = rowKeySet.size();
         final Map<R, E> columnMap = new LinkedHashMap<>(N.initHashCapacity(rowLength));
 
@@ -629,7 +732,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     }
 
     @Override
-    public Sheet<C, R, E> rotate() {
+    public Sheet<C, R, E> transpose() {
         final ArraySheet<C, R, E> copy = new ArraySheet<C, R, E>(this.columnKeySet, this.rowKeySet);
 
         if (this.initialized) {
@@ -660,20 +763,124 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             }
 
             copy.initialized = true;
-
         }
 
         return copy;
     }
 
     @Override
-    public Stream<E> stream() {
-        return Stream.of(new ImmutableIterator<E>() {
-            private final int rowLength = rowKeySet.size();
-            private final int columnLength = columnKeySet.size();
-            private final long toIndex = rowLength * columnLength * 1L;
+    public Stream<Sheet.Cell<R, C, E>> cells() {
+        return cells(0, rowKeySet.size());
+    }
 
-            private long cursor = 0;
+    @Override
+    public Stream<Sheet.Cell<R, C, E>> cells(final int fromRowIndex, final int toRowIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, rowKeySet.size());
+
+        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<Sheet.Cell<R, C, E>>() {
+            private final int columnLength = columnKeySet.size();
+            private final long toIndex = toRowIndex * columnLength * 1L;
+            private long cursor = fromRowIndex * columnLength * 1L;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Sheet.Cell<R, C, E> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int rowIndex = (int) (cursor / columnLength);
+                final int columnIndex = (int) (cursor++ % columnLength);
+
+                return new Cell0<R, C, E>(rowKeyIndexMap.getByValue(rowIndex), columnKeyIndexMap.getByValue(columnIndex),
+                        initialized ? columnList.get(columnIndex).get(rowIndex) : null);
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    //    @Override
+    //    public Stream<Sheet.Cell<R, C, E>> cells0() {
+    //        return cells0(0, columnKeySet.size());
+    //    }
+    //
+    //    @Override
+    //    public Stream<Sheet.Cell<R, C, E>> cells0(final int fromColumnIndex, final int toColumnIndex) {
+    //        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
+    //
+    //        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+    //            return Stream.empty();
+    //        }
+    //
+    //        return Stream.of(new ImmutableIterator<Sheet.Cell<R, C, E>>() {
+    //            private final int rowLength = rowKeySet.size();
+    //            private final long toIndex = toColumnIndex * rowLength * 1L;
+    //            private long cursor = fromColumnIndex * rowLength * 1L;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public Sheet.Cell<R, C, E> next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final int rowIndex = (int) (cursor % rowLength);
+    //                final int columnIndex = (int) (cursor++ / rowLength);
+    //
+    //                return new Cell0<R, C, E>(rowKeyIndexMap.getByValue(rowIndex), columnKeyIndexMap.getByValue(columnIndex),
+    //                        initialized ? columnList.get(columnIndex).get(rowIndex) : null);
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                return toIndex - cursor;
+    //            }
+    //        });
+    //    }
+
+    @Override
+    public Stream<E> stream() {
+        return stream(0, rowKeySet.size());
+    }
+
+    @Override
+    public Stream<E> stream(final int fromRowIndex, final int toRowIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, rowKeySet.size());
+
+        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<E>() {
+            private final int columnLength = columnKeySet.size();
+            private final long toIndex = toRowIndex * columnLength * 1L;
+            private long cursor = fromRowIndex * columnLength * 1L;
 
             @Override
             public boolean hasNext() {
@@ -706,14 +913,71 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         });
     }
 
-    @Override
-    public Stream<E> stream2() {
-        return Stream.of(new ImmutableIterator<E>() {
-            private final int rowLength = rowKeySet.size();
-            private final int columnLength = columnKeySet.size();
-            private final long toIndex = rowLength * columnLength * 1L;
+    //    @Override
+    //    public Stream<E> stream0() {
+    //        return stream0(0, columnKeySet.size());
+    //    }
+    //
+    //    @Override
+    //    public Stream<E> stream0(final int fromColumnIndex, final int toColumnIndex) {
+    //        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
+    //
+    //        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+    //            return Stream.empty();
+    //        }
+    //
+    //        return Stream.of(new ImmutableIterator<E>() {
+    //            private final int rowLength = rowKeySet.size();
+    //            private final long toIndex = toColumnIndex * rowLength * 1L;
+    //            private long cursor = fromColumnIndex * rowLength * 1L;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public E next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                if (initialized) {
+    //                    return columnList.get((int) (cursor / rowLength)).get((int) (cursor++ % rowLength));
+    //                } else {
+    //                    cursor++;
+    //                    return null;
+    //                }
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                return toIndex - cursor;
+    //            }
+    //        });
+    //    }
 
-            private long cursor = 0;
+    @Override
+    public Stream<Stream<E>> stream2() {
+        return stream2(0, rowKeySet.size());
+    }
+
+    @Override
+    public Stream<Stream<E>> stream2(final int fromRowIndex, final int toRowIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, rowKeySet.size());
+
+        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<Stream<E>>() {
+            private final int toIndex = toRowIndex;
+            private volatile int cursor = fromRowIndex;
 
             @Override
             public boolean hasNext() {
@@ -721,22 +985,45 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             }
 
             @Override
-            public E next() {
+            public Stream<E> next() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
 
-                if (initialized) {
-                    return columnList.get((int) (cursor / rowLength)).get((int) (cursor++ % rowLength));
-                } else {
-                    cursor++;
-                    return null;
-                }
+                return Stream.of(new ImmutableIterator<E>() {
+                    private final int rowIndex = cursor++;
+                    private final int toIndex2 = columnKeySet.size();
+                    private int cursor2 = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        return cursor2 < toIndex2;
+                    }
+
+                    @Override
+                    public E next() {
+                        if (cursor2 >= toIndex2) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return columnList.get(cursor2++).get(rowIndex);
+                    }
+
+                    @Override
+                    public void skip(long n) {
+                        cursor2 = n < toIndex2 - cursor2 ? cursor2 + (int) n : toIndex2;
+                    }
+
+                    @Override
+                    public long count() {
+                        return toIndex2 - cursor2;
+                    }
+                });
             }
 
             @Override
             public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
             @Override
@@ -745,6 +1032,49 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
             }
         });
     }
+
+    //    @Override
+    //    public Stream<Stream<E>> stream02() {
+    //        return stream02(0, columnKeySet.size());
+    //    }
+    //
+    //    @Override
+    //    public Stream<Stream<E>> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    //        N.checkIndex(fromColumnIndex, toColumnIndex, columnKeySet.size());
+    //
+    //        if (rowKeySet.size() == 0 || columnKeySet.size() == 0) {
+    //            return Stream.empty();
+    //        }
+    //
+    //        return Stream.of(new ImmutableIterator<Stream<E>>() {
+    //            private final int toIndex = toColumnIndex;
+    //            private int cursor = fromColumnIndex;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public Stream<E> next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                return Stream.of(columnList.get(cursor++));
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                return toIndex - cursor;
+    //            }
+    //        });
+    //    }
 
     @Override
     public DataSet toDataSet() {
@@ -771,36 +1101,36 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         return new RowDataSet(_columnNameList, _columnList);
     }
 
-    @Override
-    public DataSet toDataSet2() {
-        final List<String> _columnNameList = new ArrayList<>(rowKeySet.size());
-
-        for (R rowKey : rowKeySet) {
-            _columnNameList.add(N.toString(rowKey));
-        }
-
-        final List<List<Object>> _columnList = new ArrayList<>(_columnNameList.size());
-
-        if (initialized) {
-            for (int i = 0, len = _columnNameList.size(); i < len; i++) {
-                final List<Object> column = new ArrayList<>(columnKeySet.size());
-
-                for (int j = 0, col = columnKeySet.size(); j < col; j++) {
-                    column.add(columnList.get(j).get(i));
-                }
-
-                _columnList.add(column);
-            }
-        } else {
-            for (int i = 0, len = _columnNameList.size(); i < len; i++) {
-                List<Object> column = new ArrayList<>(columnKeySet.size());
-                N.fill(column, 0, columnKeySet.size(), null);
-                _columnList.add(column);
-            }
-        }
-
-        return new RowDataSet(_columnNameList, _columnList);
-    }
+    //    @Override
+    //    public DataSet toDataSet0() {
+    //        final List<String> _columnNameList = new ArrayList<>(rowKeySet.size());
+    //
+    //        for (R rowKey : rowKeySet) {
+    //            _columnNameList.add(N.toString(rowKey));
+    //        }
+    //
+    //        final List<List<Object>> _columnList = new ArrayList<>(_columnNameList.size());
+    //
+    //        if (initialized) {
+    //            for (int i = 0, len = _columnNameList.size(); i < len; i++) {
+    //                final List<Object> column = new ArrayList<>(columnKeySet.size());
+    //
+    //                for (int j = 0, col = columnKeySet.size(); j < col; j++) {
+    //                    column.add(columnList.get(j).get(i));
+    //                }
+    //
+    //                _columnList.add(column);
+    //            }
+    //        } else {
+    //            for (int i = 0, len = _columnNameList.size(); i < len; i++) {
+    //                List<Object> column = new ArrayList<>(columnKeySet.size());
+    //                N.fill(column, 0, columnKeySet.size(), null);
+    //                _columnList.add(column);
+    //            }
+    //        }
+    //
+    //        return new RowDataSet(_columnNameList, _columnList);
+    //    }
 
     @Override
     public Matrix<E> toMatrix(Class<E> cls) {
@@ -827,30 +1157,30 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         return new Matrix<E>(c);
     }
 
-    @Override
-    public Matrix<E> toMatrix2(Class<E> cls) {
-        final int rowLength = rowKeySet.size();
-        final int columnLength = columnKeySet.size();
-        final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), columnLength);
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            c[i] = N.newArray(cls, rowLength);
-        }
-
-        if (rowLength == 0 || columnLength == 0 || initialized == false) {
-            return new Matrix<E>(c);
-        }
-
-        for (int i = 0; i < columnLength; i++) {
-            final List<E> column = columnList.get(i);
-
-            for (int j = 0; j < rowLength; j++) {
-                c[i][j] = column.get(j);
-            }
-        }
-
-        return new Matrix<E>(c);
-    }
+    //    @Override
+    //    public Matrix<E> toMatrix0(Class<E> cls) {
+    //        final int rowLength = rowKeySet.size();
+    //        final int columnLength = columnKeySet.size();
+    //        final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), columnLength);
+    //
+    //        for (int i = 0, len = c.length; i < len; i++) {
+    //            c[i] = N.newArray(cls, rowLength);
+    //        }
+    //
+    //        if (rowLength == 0 || columnLength == 0 || initialized == false) {
+    //            return new Matrix<E>(c);
+    //        }
+    //
+    //        for (int i = 0; i < columnLength; i++) {
+    //            final List<E> column = columnList.get(i);
+    //
+    //            for (int j = 0; j < rowLength; j++) {
+    //                c[i][j] = column.get(j);
+    //            }
+    //        }
+    //
+    //        return new Matrix<E>(c);
+    //    }
 
     @Override
     public Object[][] toArray() {
@@ -871,18 +1201,41 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         return copy;
     }
 
+    //    @Override
+    //    public Object[][] toArray0() {
+    //        final int rowLength = rowKeySet.size();
+    //        final int columnLength = columnKeySet.size();
+    //        final Object[][] copy = new Object[columnLength][rowLength];
+    //
+    //        if (initialized) {
+    //            for (int i = 0; i < columnLength; i++) {
+    //                final List<E> column = columnList.get(i);
+    //
+    //                for (int j = 0; j < rowLength; j++) {
+    //                    copy[i][j] = column.get(j);
+    //                }
+    //            }
+    //        }
+    //
+    //        return copy;
+    //    }
+
     @Override
-    public Object[][] toArray2() {
+    public <T> T[][] toArray(Class<T> cls) {
         final int rowLength = rowKeySet.size();
         final int columnLength = columnKeySet.size();
-        final Object[][] copy = new Object[columnLength][rowLength];
+        final T[][] copy = N.newArray(N.newArray(cls, 0).getClass(), rowLength);
+
+        for (int i = 0; i < rowLength; i++) {
+            copy[i] = N.newArray(cls, columnLength);
+        }
 
         if (initialized) {
             for (int i = 0; i < columnLength; i++) {
                 final List<E> column = columnList.get(i);
 
                 for (int j = 0; j < rowLength; j++) {
-                    copy[i][j] = column.get(j);
+                    copy[j][i] = (T) column.get(j);
                 }
             }
         }
@@ -983,20 +1336,8 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
 
     private void init() {
         if (!initialized) {
-            final int rowLength = rowKeySet.size();
-            rowKeyIndexMap = new BiMap<>(N.initHashCapacity(rowLength));
-            int index = 0;
-            for (R rowKey : rowKeySet) {
-                rowKeyIndexMap.put(rowKey, index++);
-            }
-
-            final int columnLength = columnKeySet.size();
-            columnKeyIndexMap = new BiMap<>(N.initHashCapacity(columnLength));
-            index = 0;
-            for (C columnKey : columnKeySet) {
-                columnKeyIndexMap.put(columnKey, index++);
-            }
-
+            final int rowLength = this.rowKeySet.size();
+            final int columnLength = this.columnKeySet.size();
             columnList = new ArrayList<>(columnLength);
 
             for (int i = 0; i < columnLength; i++) {
@@ -1009,13 +1350,13 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         }
     }
 
-    private void checkRowKey(R rowKey) {
+    private void checkRowKey(Object rowKey) {
         if (!rowKeySet.contains(rowKey)) {
             throw new IllegalArgumentException("No row found by key: " + rowKey);
         }
     }
 
-    private void checkColumnKey(C columnKey) {
+    private void checkColumnKey(Object columnKey) {
         if (!columnKeySet.contains(columnKey)) {
             throw new IllegalArgumentException("No column found by key: " + columnKey);
         }
@@ -1034,7 +1375,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         }
     }
 
-    private int getRowIndex(R rowKey) {
+    private int getRowIndex(Object rowKey) {
         Integer index = rowKeyIndexMap.get(rowKey);
 
         if (index == null) {
@@ -1044,7 +1385,7 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         return index;
     }
 
-    private int getColumnIndex(C columnKey) {
+    private int getColumnIndex(Object columnKey) {
         Integer index = columnKeyIndexMap.get(columnKey);
 
         if (index == null) {
@@ -1052,5 +1393,60 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
         }
 
         return index;
+    }
+
+    static class Cell0<R, C, E> implements Sheet.Cell<R, C, E> {
+        private final R rowKey;
+        private final C columnKey;
+        private final E value;
+
+        public Cell0(R rowKey, C columnKey, E value) {
+            this.rowKey = rowKey;
+            this.columnKey = columnKey;
+            this.value = value;
+        }
+
+        @Override
+        public R rowKey() {
+            return rowKey;
+        }
+
+        @Override
+        public C columnKey() {
+            return columnKey;
+        }
+
+        @Override
+        public E value() {
+            return value;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = N.hashCode(rowKey);
+            result = result * 31 + N.hashCode(columnKey);
+            result = result * 31 + N.hashCode(value);
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Cell0) {
+                final Cell0<R, C, E> other = (Cell0<R, C, E>) obj;
+
+                return N.equals(rowKey, other.rowKey) && N.equals(columnKey, other.columnKey) && N.equals(value, other.value);
+            }
+
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "{rowKey=" + N.toString(rowKey) + ", columnKey=" + N.toString(columnKey) + ", value=" + N.toString(value) + "}";
+        }
     }
 }

@@ -14,9 +14,13 @@
 
 package com.landawn.abacus.util;
 
+import java.util.NoSuchElementException;
+
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
+import com.landawn.abacus.util.stream.ImmutableIterator;
 import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -63,24 +67,99 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
 
     public void replaceAll(final BooleanUnaryOperator operator) {
         if (isParallelable()) {
-            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
-                @Override
-                public void accept(final int i) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            a[i][j] = operator.applyAsBoolean(a[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            a[i][j] = operator.applyAsBoolean(a[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         a[i][j] = operator.applyAsBoolean(a[i][j]);
                     }
                 }
-            });
-        } else {
-            for (int i = 0; i < n; i++) {
+            } else {
                 for (int j = 0; j < m; j++) {
-                    a[i][j] = operator.applyAsBoolean(a[i][j]);
+                    for (int i = 0; i < n; i++) {
+                        a[i][j] = operator.applyAsBoolean(a[i][j]);
+                    }
                 }
             }
         }
     }
 
     // Replaced by stream and stream2.
+    //    public OptionalBoolean min() {
+    //        if (isEmpty()) {
+    //            return OptionalBoolean.empty();
+    //        }
+    //
+    //        boolean candicate = Boolean.MAX_VALUE;
+    //
+    //        for (int i = 0; i < n; i++) {
+    //            for (int j = 0; j < m; j++) {
+    //                if (a[i][j] < candicate) {
+    //                    candicate = a[i][j];
+    //                }
+    //            }
+    //        }
+    //
+    //        return OptionalBoolean.of(candicate);
+    //    }
+    //
+    //    public OptionalBoolean max() {
+    //        if (isEmpty()) {
+    //            return OptionalBoolean.empty();
+    //        }
+    //
+    //        boolean candicate = Boolean.MIN_VALUE;
+    //
+    //        for (int i = 0; i < n; i++) {
+    //            for (int j = 0; j < m; j++) {
+    //                if (a[i][j] > candicate) {
+    //                    candicate = a[i][j];
+    //                }
+    //            }
+    //        }
+    //
+    //        return OptionalBoolean.of(candicate);
+    //    }
+    //
+    //    public Long sum() {
+    //        long sum = 0;
+    //
+    //        for (int i = 0; i < n; i++) {
+    //            for (int j = 0; j < m; j++) {
+    //                sum += a[i][j];
+    //            }
+    //        }
+    //
+    //        return sum;
+    //    }
+    //
+    //    public OptionalDouble average() {
+    //        if (isEmpty()) {
+    //            return OptionalDouble.empty();
+    //        }
+    //
+    //        return OptionalDouble.of(sum() / count);
+    //    }
+    //
     //    @Override
     //    public BooleanList row(final int i) {
     //        return BooleanList.of(a[i].clone());
@@ -120,22 +199,30 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         N.checkIndex(fromRowIndex, toRowIndex, n);
         N.checkIndex(fromColumnIndex, toColumnIndex, m);
 
-        final boolean[][] b = new boolean[toRowIndex - fromRowIndex][];
+        final boolean[][] c = new boolean[toRowIndex - fromRowIndex][];
 
         for (int i = fromRowIndex; i < toRowIndex; i++) {
-            b[i - fromRowIndex] = N.copyOfRange(a[i], fromColumnIndex, toColumnIndex);
+            c[i - fromRowIndex] = N.copyOfRange(a[i], fromColumnIndex, toColumnIndex);
         }
 
-        return new BooleanMatrix(b);
+        return new BooleanMatrix(c);
     }
 
     @Override
     public BooleanMatrix rotate90() {
         final boolean[][] c = new boolean[m][n];
 
-        for (int i = 0; i < m; i++) {
+        if (n <= m) {
             for (int j = 0; j < n; j++) {
-                c[i][j] = a[n - j - 1][i];
+                for (int i = 0; i < m; i++) {
+                    c[i][j] = a[n - j - 1][i];
+                }
+            }
+        } else {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    c[i][j] = a[n - j - 1][i];
+                }
             }
         }
 
@@ -158,9 +245,17 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
     public BooleanMatrix rotate270() {
         final boolean[][] c = new boolean[m][n];
 
-        for (int i = 0; i < m; i++) {
+        if (n <= m) {
             for (int j = 0; j < n; j++) {
-                c[i][j] = a[j][m - i - 1];
+                for (int i = 0; i < m; i++) {
+                    c[i][j] = a[j][m - i - 1];
+                }
+            }
+        } else {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    c[i][j] = a[j][m - i - 1];
+                }
             }
         }
 
@@ -171,9 +266,17 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
     public BooleanMatrix transpose() {
         final boolean[][] c = new boolean[m][n];
 
-        for (int i = 0; i < m; i++) {
+        if (n <= m) {
             for (int j = 0; j < n; j++) {
-                c[i][j] = a[j][i];
+                for (int i = 0; i < m; i++) {
+                    c[i][j] = a[j][i];
+                }
+            }
+        } else {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    c[i][j] = a[j][i];
+                }
             }
         }
 
@@ -216,17 +319,6 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
     }
 
     @Override
-    boolean[] column2(final int j) {
-        final boolean[] c = new boolean[n];
-
-        for (int i = 0; i < n; i++) {
-            c[i] = a[i][j];
-        }
-
-        return c;
-    }
-
-    @Override
     public BooleanList flatten() {
         final boolean[] c = new boolean[n * m];
 
@@ -236,6 +328,240 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
 
         return BooleanList.of(c);
     }
+
+    /**
+     * 
+     * @return a stream based on the order of row.
+     */
+    public Stream<Boolean> stream() {
+        return stream(0, n);
+    }
+
+    /**
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a stream based on the order of row.
+     */
+    public Stream<Boolean> stream(final int fromRowIndex, final int toRowIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, n);
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<Boolean>() {
+            private final long toIndex = toRowIndex * m * 1L;
+            private long cursor = fromRowIndex * m * 1L;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Boolean next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[(int) (cursor / m)][(int) (cursor++ % m)];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a stream based on the order of column.
+    //     */
+    //    public Stream<Boolean> stream0() {
+    //        return stream0(0, m);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param fromColumnIndex
+    //     * @param toColumnIndex
+    //     * @return a stream based on the order of column.
+    //     */
+    //    public Stream<Boolean> stream0(final int fromColumnIndex, final int toColumnIndex) {
+    //        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+    //
+    //        if (isEmpty()) {
+    //            return Stream.empty();
+    //        }
+    //
+    //        return Stream.of(new ImmutableIterator<Boolean>() {
+    //            private final long toIndex = toColumnIndex * n * 1L;
+    //            private long cursor = fromColumnIndex * n * 1L;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public Boolean next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                return a[(int) (cursor % n)][(int) (cursor++ / n)];
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                return toIndex - cursor;
+    //            }
+    //        });
+    //    }
+
+    /**
+     * 
+     * @return a row stream based on the order of row.
+     */
+    public Stream<Stream<Boolean>> stream2() {
+        return stream2(0, n);
+    }
+
+    /**
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a row stream based on the order of row.
+     */
+    public Stream<Stream<Boolean>> stream2(final int fromRowIndex, final int toRowIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, n);
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<Stream<Boolean>>() {
+            private final int toIndex = toRowIndex;
+            private int cursor = fromRowIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<Boolean> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return Stream.from(a[cursor++]);
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a column stream based on the order of column.
+    //     */
+    //    public Stream<Stream<Boolean>> stream02() {
+    //        return stream02(0, m);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param fromColumnIndex
+    //     * @param toColumnIndex
+    //     * @return a column stream based on the order of column.
+    //     */
+    //    public Stream<Stream<Boolean>> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    //        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+    //
+    //        if (isEmpty()) {
+    //            return Stream.empty();
+    //        }
+    //
+    //        return Stream.of(new ImmutableIterator<Stream<Boolean>>() {
+    //            private final int toIndex = toColumnIndex;
+    //            private volatile int cursor = fromColumnIndex;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public Stream<Boolean> next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                return Stream.of(new ImmutableIterator<Boolean>() {
+    //                    private final int columnIndex = cursor++;
+    //                    private final int toIndex2 = n;
+    //                    private int cursor2 = 0;
+    //
+    //                    @Override
+    //                    public boolean hasNext() {
+    //                        return cursor2 < toIndex2;
+    //                    }
+    //
+    //                    @Override
+    //                    public Boolean next() {
+    //                        if (cursor2 >= toIndex2) {
+    //                            throw new NoSuchElementException();
+    //                        }
+    //
+    //                        return a[cursor2++][columnIndex];
+    //                    }
+    //
+    //                    @Override
+    //                    public void skip(long n) {
+    //                        cursor2 = n < toIndex2 - cursor2 ? cursor2 + (int) n : toIndex2;
+    //                    }
+    //
+    //                    @Override
+    //                    public long count() {
+    //                        return toIndex2 - cursor2;
+    //                    }
+    //                });
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                return toIndex - cursor;
+    //            }
+    //        });
+    //    }
 
     @Override
     public int hashCode() {

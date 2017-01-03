@@ -36,41 +36,43 @@ public interface Sheet<R, C, E> {
 
     Set<C> columnKeySet();
 
-    E get(R rowKey, C columnKey);
+    E get(Object rowKey, Object columnKey);
 
     E put(R rowKey, C columnKey, E value);
 
     void putAll(Sheet<? extends R, ? extends C, ? extends E> source);
 
-    E remove(R rowKey, C columnKey);
+    E remove(Object rowKey, Object columnKey);
+
+    boolean contains(Object rowKey, Object columnKey);
 
     boolean containsValue(Object value);
 
-    List<E> getRow(R rowKey);
+    List<E> getRow(Object rowKey);
 
     void setRow(R rowKey, Collection<? extends E> row);
 
     void addRow(R rowKey, Collection<? extends E> row);
 
-    void removeRow(R rowKey);
+    void removeRow(Object rowKey);
 
-    boolean containsRow(R rowKey);
+    boolean containsRow(Object rowKey);
 
-    Map<C, E> row(R rowKey);
+    Map<C, E> row(Object rowKey);
 
     Map<R, Map<C, E>> rowMap();
 
-    List<E> getColumn(C columnKey);
+    List<E> getColumn(Object columnKey);
 
     void setColumn(C columnKey, Collection<? extends E> column);
 
     void addColumn(C columnKey, Collection<? extends E> column);
 
-    void removeColumn(C columnKey);
+    void removeColumn(Object columnKey);
 
-    boolean containsColumn(C columnKey);
+    boolean containsColumn(Object columnKey);
 
-    Map<R, E> column(C columnKey);
+    Map<R, E> column(Object columnKey);
 
     Map<C, Map<R, E>> columnMap();
 
@@ -94,19 +96,90 @@ public interface Sheet<R, C, E> {
 
     <T extends Sheet<R, C, E>> T copy();
 
-    Sheet<C, R, E> rotate();
+    Sheet<C, R, E> transpose();
 
     /**
      * 
-     * @return a stream based on row
+     * @return a stream of Cells based on the order of row.
+     */
+    Stream<Cell<R, C, E>> cells();
+
+    /**
+     * 
+     * @return a stream of Cells based on the order of row.
+     */
+    Stream<Cell<R, C, E>> cells(int fromRowIndex, int toRowIndex);
+
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a stream of Cells based on the order of column.
+    //     */
+    //    Stream<Cell<R, C, E>> cells0();
+    //
+    //    /**
+    //     * 
+    //     * @return a stream of Cells based on the order of column.
+    //     */
+    //    Stream<Cell<R, C, E>> cells0(int fromColumnIndex, int toColumnIndex);
+
+    /**
+     * 
+     * @return a stream based on the order of row.
      */
     Stream<E> stream();
 
     /**
      * 
-     * @return a stream based on column.
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a stream based on the order of row.
      */
-    Stream<E> stream2();
+    Stream<E> stream(int fromRowIndex, int toRowIndex);
+
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a stream based on the order of column.
+    //     */
+    //    Stream<E> stream0();
+    //
+    //    /**
+    //     * 
+    //     * @param fromColumnIndex
+    //     * @param toColumnIndex
+    //     * @return a stream based on the order of column.
+    //     */
+    //    Stream<E> stream0(int fromColumnIndex, int toColumnIndex);
+
+    /**
+     * 
+     * @return a row stream based on the order of row.
+     */
+    Stream<Stream<E>> stream2();
+
+    /**
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a row stream based on the order of row.
+     */
+    Stream<Stream<E>> stream2(int fromRowIndex, int toRowIndex);
+
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a column stream based on the order of column.
+    //     */
+    //    Stream<Stream<E>> stream02();
+    //
+    //    /**
+    //     * 
+    //     * @param fromColumnIndex
+    //     * @param toColumnIndex
+    //     * @return a column stream based on the order of column.
+    //     */
+    //    Stream<Stream<E>> stream02(int fromColumnIndex, int toColumnIndex);
 
     /**
      * 
@@ -114,19 +187,54 @@ public interface Sheet<R, C, E> {
      */
     DataSet toDataSet();
 
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a DataSet based on column.
+    //     */
+    //    DataSet toDataSet0();
+
     /**
      * 
-     * @return a DataSet based on column.
+     * @param cls
+     * @return a Matrix based on row.
      */
-    DataSet toDataSet2();
-
     Matrix<E> toMatrix(Class<E> cls);
 
-    Matrix<E> toMatrix2(Class<E> cls);
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @param cls
+    //     * @return a Matrix based on column.
+    //     */
+    //    Matrix<E> toMatrix0(Class<E> cls);
 
+    /**
+     * 
+     * @return a 2D array based on row.
+     */
     Object[][] toArray();
 
-    Object[][] toArray2();
+    /**
+     * 
+     * @return a 2D array based on row.
+     */
+    <T> T[][] toArray(Class<T> cls);
+
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a 2D array based on column.
+    //     */
+    //    Object[][] toArray0();
 
     void println();
+
+    public interface Cell<R, C, E> {
+        R rowKey();
+
+        C columnKey();
+
+        E value();
+    }
 }

@@ -14,9 +14,15 @@
 
 package com.landawn.abacus.util;
 
+import java.util.NoSuchElementException;
+
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
+import com.landawn.abacus.util.stream.DoubleStream;
+import com.landawn.abacus.util.stream.ImmutableDoubleIterator;
+import com.landawn.abacus.util.stream.ImmutableIterator;
 import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -111,18 +117,37 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
 
     public void replaceAll(final DoubleUnaryOperator operator) {
         if (isParallelable()) {
-            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
-                @Override
-                public void accept(final int i) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            a[i][j] = operator.applyAsDouble(a[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            a[i][j] = operator.applyAsDouble(a[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         a[i][j] = operator.applyAsDouble(a[i][j]);
                     }
                 }
-            });
-        } else {
-            for (int i = 0; i < n; i++) {
+            } else {
                 for (int j = 0; j < m; j++) {
-                    a[i][j] = operator.applyAsDouble(a[i][j]);
+                    for (int i = 0; i < n; i++) {
+                        a[i][j] = operator.applyAsDouble(a[i][j]);
+                    }
                 }
             }
         }
@@ -138,7 +163,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     //
     //        for (int i = 0; i < n; i++) {
     //            for (int j = 0; j < m; j++) {
-    //                if (N.compare(a[i][j], candicate) < 0) {
+    //                if (a[i][j] < candicate) {
     //                    candicate = a[i][j];
     //                }
     //            }
@@ -156,7 +181,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     //
     //        for (int i = 0; i < n; i++) {
     //            for (int j = 0; j < m; j++) {
-    //                if (N.compare(a[i][j], candicate) > 0) {
+    //                if (a[i][j] > candicate) {
     //                    candicate = a[i][j];
     //                }
     //            }
@@ -165,11 +190,13 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     //        return OptionalDouble.of(candicate);
     //    }
     //
-    //    public Double sum() {
-    //        double sum = 0;
+    //    public Long sum() {
+    //        long sum = 0;
     //
     //        for (int i = 0; i < n; i++) {
-    //            sum += N.sum(a[i]);
+    //            for (int j = 0; j < m; j++) {
+    //                sum += a[i][j];
+    //            }
     //        }
     //
     //        return sum;
@@ -235,9 +262,17 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     public DoubleMatrix rotate90() {
         final double[][] c = new double[m][n];
 
-        for (int i = 0; i < m; i++) {
+        if (n <= m) {
             for (int j = 0; j < n; j++) {
-                c[i][j] = a[n - j - 1][i];
+                for (int i = 0; i < m; i++) {
+                    c[i][j] = a[n - j - 1][i];
+                }
+            }
+        } else {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    c[i][j] = a[n - j - 1][i];
+                }
             }
         }
 
@@ -260,9 +295,17 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     public DoubleMatrix rotate270() {
         final double[][] c = new double[m][n];
 
-        for (int i = 0; i < m; i++) {
+        if (n <= m) {
             for (int j = 0; j < n; j++) {
-                c[i][j] = a[j][m - i - 1];
+                for (int i = 0; i < m; i++) {
+                    c[i][j] = a[j][m - i - 1];
+                }
+            }
+        } else {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    c[i][j] = a[j][m - i - 1];
+                }
             }
         }
 
@@ -273,9 +316,17 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     public DoubleMatrix transpose() {
         final double[][] c = new double[m][n];
 
-        for (int i = 0; i < m; i++) {
+        if (n <= m) {
             for (int j = 0; j < n; j++) {
-                c[i][j] = a[j][i];
+                for (int i = 0; i < m; i++) {
+                    c[i][j] = a[j][i];
+                }
+            }
+        } else {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    c[i][j] = a[j][i];
+                }
             }
         }
 
@@ -334,18 +385,37 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         final double[][] c = new double[n][m];
 
         if (isParallelable()) {
-            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
-                @Override
-                public void accept(final int i) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            c[i][j] = a[i][j] + b.a[i][j];
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            c[i][j] = a[i][j] + b.a[i][j];
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         c[i][j] = a[i][j] + b.a[i][j];
                     }
                 }
-            });
-        } else {
-            for (int i = 0; i < n; i++) {
+            } else {
                 for (int j = 0; j < m; j++) {
-                    c[i][j] = a[i][j] + b.a[i][j];
+                    for (int i = 0; i < n; i++) {
+                        c[i][j] = a[i][j] + b.a[i][j];
+                    }
                 }
             }
         }
@@ -359,18 +429,37 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         final double[][] c = new double[n][m];
 
         if (isParallelable()) {
-            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
-                @Override
-                public void accept(final int i) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            c[i][j] = a[i][j] - b.a[i][j];
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            c[i][j] = a[i][j] - b.a[i][j];
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         c[i][j] = a[i][j] - b.a[i][j];
                     }
                 }
-            });
-        } else {
-            for (int i = 0; i < n; i++) {
+            } else {
                 for (int j = 0; j < m; j++) {
-                    c[i][j] = a[i][j] - b.a[i][j];
+                    for (int i = 0; i < n; i++) {
+                        c[i][j] = a[i][j] - b.a[i][j];
+                    }
                 }
             }
         }
@@ -385,21 +474,132 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         final double[][] a2 = b.a;
 
         if (isParallelable(b.m)) {
-            IntStream.range(0, n).parallel().forEach(new IntConsumer() {
-                @Override
-                public void accept(final int i) {
-                    for (int j = 0; j < b.m; j++) {
+            if (N.min(n, m, b.m) == n) {
+                if (N.min(m, b.m) == m) {
+                    IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                        @Override
+                        public void accept(final int i) {
+                            for (int k = 0; k < m; k++) {
+                                for (int j = 0; j < b.m; j++) {
+                                    c[i][j] += a[i][k] * a2[k][j];
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                        @Override
+                        public void accept(final int i) {
+                            for (int j = 0; j < b.m; j++) {
+                                for (int k = 0; k < m; k++) {
+                                    c[i][j] += a[i][k] * a2[k][j];
+                                }
+                            }
+                        }
+                    });
+                }
+            } else if (N.min(n, m, b.m) == m) {
+                if (N.min(n, b.m) == n) {
+                    IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                        @Override
+                        public void accept(final int k) {
+                            for (int i = 0; i < n; i++) {
+                                for (int j = 0; j < b.m; j++) {
+                                    c[i][j] += a[i][k] * a2[k][j];
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                        @Override
+                        public void accept(final int k) {
+                            for (int j = 0; j < b.m; j++) {
+                                for (int i = 0; i < n; i++) {
+                                    c[i][j] += a[i][k] * a2[k][j];
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                if (N.min(n, m) == n) {
+                    IntStream.range(0, b.m).parallel().forEach(new IntConsumer() {
+                        @Override
+                        public void accept(final int j) {
+                            for (int i = 0; i < n; i++) {
+                                for (int k = 0; k < m; k++) {
+                                    c[i][j] += a[i][k] * a2[k][j];
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    IntStream.range(0, b.m).parallel().forEach(new IntConsumer() {
+                        @Override
+                        public void accept(final int j) {
+                            for (int k = 0; k < m; k++) {
+                                for (int i = 0; i < n; i++) {
+                                    c[i][j] += a[i][k] * a2[k][j];
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        } else {
+            if (N.min(n, m, b.m) == n) {
+                if (N.min(m, b.m) == m) {
+                    for (int i = 0; i < n; i++) {
                         for (int k = 0; k < m; k++) {
-                            c[i][j] += a[i][k] * a2[k][j];
+                            for (int j = 0; j < b.m; j++) {
+                                c[i][j] += a[i][k] * a2[k][j];
+                            }
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < n; i++) {
+                        for (int j = 0; j < b.m; j++) {
+                            for (int k = 0; k < m; k++) {
+                                c[i][j] += a[i][k] * a2[k][j];
+                            }
                         }
                     }
                 }
-            });
-        } else {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < b.m; j++) {
+            } else if (N.min(n, m, b.m) == m) {
+                if (N.min(n, b.m) == n) {
                     for (int k = 0; k < m; k++) {
-                        c[i][j] += a[i][k] * a2[k][j];
+                        for (int i = 0; i < n; i++) {
+                            for (int j = 0; j < b.m; j++) {
+                                c[i][j] += a[i][k] * a2[k][j];
+                            }
+                        }
+                    }
+                } else {
+                    for (int k = 0; k < m; k++) {
+                        for (int j = 0; j < b.m; j++) {
+                            for (int i = 0; i < n; i++) {
+                                c[i][j] += a[i][k] * a2[k][j];
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (N.min(n, m) == n) {
+                    for (int j = 0; j < b.m; j++) {
+                        for (int i = 0; i < n; i++) {
+                            for (int k = 0; k < m; k++) {
+                                c[i][j] += a[i][k] * a2[k][j];
+                            }
+                        }
+                    }
+                } else {
+                    for (int j = 0; j < b.m; j++) {
+                        for (int k = 0; k < m; k++) {
+                            for (int i = 0; i < n; i++) {
+                                c[i][j] += a[i][k] * a2[k][j];
+                            }
+                        }
                     }
                 }
             }
@@ -408,16 +608,239 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return new DoubleMatrix(c);
     }
 
-    @Override
-    double[] column2(final int j) {
-        final double[] c = new double[n];
+    /**
+     * 
+     * @return a stream based on the order of row.
+     */
+    public DoubleStream stream() {
+        return stream(0, n);
+    }
 
-        for (int i = 0; i < n; i++) {
-            c[i] = a[i][j];
+    /**
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a stream based on the order of row.
+     */
+    public DoubleStream stream(final int fromRowIndex, final int toRowIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, n);
+
+        if (isEmpty()) {
+            return DoubleStream.empty();
         }
 
-        return c;
+        return DoubleStream.of(new ImmutableDoubleIterator() {
+            private final long toIndex = toRowIndex * m * 1L;
+            private long cursor = fromRowIndex * m * 1L;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public double next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[(int) (cursor / m)][(int) (cursor++ % m)];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
     }
+
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a stream based on the order of column.
+    //     */
+    //    public DoubleStream stream0() {
+    //        return stream0(0, m);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param fromColumnIndex
+    //     * @param toColumnIndex
+    //     * @return a stream based on the order of column.
+    //     */
+    //    public DoubleStream stream0(final int fromColumnIndex, final int toColumnIndex) {
+    //        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+    //
+    //        if (isEmpty()) {
+    //            return DoubleStream.empty();
+    //        }
+    //
+    //        return DoubleStream.of(new ImmutableDoubleIterator() {
+    //            private final long toIndex = toColumnIndex * n * 1L;
+    //            private long cursor = fromColumnIndex * n * 1L;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public double next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                return a[(int) (cursor % n)][(int) (cursor++ / n)];
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                return toIndex - cursor;
+    //            }
+    //        });
+    //    }
+
+    /**
+     * 
+     * @return a row stream based on the order of row.
+     */
+    public Stream<DoubleStream> stream2() {
+        return stream2(0, n);
+    }
+
+    /**
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a row stream based on the order of row.
+     */
+    public Stream<DoubleStream> stream2(final int fromRowIndex, final int toRowIndex) {
+        N.checkIndex(fromRowIndex, toRowIndex, n);
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<DoubleStream>() {
+            private final int toIndex = toRowIndex;
+            private int cursor = fromRowIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return DoubleStream.of(a[cursor++]);
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    // TODO undecided.
+    //    /**
+    //     * 
+    //     * @return a column stream based on the order of column.
+    //     */
+    //    public Stream<DoubleStream> stream02() {
+    //        return stream02(0, m);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param fromColumnIndex
+    //     * @param toColumnIndex
+    //     * @return a column stream based on the order of column.
+    //     */
+    //    public Stream<DoubleStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    //        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+    //
+    //        if (isEmpty()) {
+    //            return Stream.empty();
+    //        }
+    //
+    //        return Stream.of(new ImmutableIterator<DoubleStream>() {
+    //            private final int toIndex = toColumnIndex;
+    //            private volatile int cursor = fromColumnIndex;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                return cursor < toIndex;
+    //            }
+    //
+    //            @Override
+    //            public DoubleStream next() {
+    //                if (cursor >= toIndex) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                return DoubleStream.of(new ImmutableDoubleIterator() {
+    //                    private final int columnIndex = cursor++;
+    //                    private final int toIndex2 = n;
+    //                    private int cursor2 = 0;
+    //
+    //                    @Override
+    //                    public boolean hasNext() {
+    //                        return cursor2 < toIndex2;
+    //                    }
+    //
+    //                    @Override
+    //                    public double next() {
+    //                        if (cursor2 >= toIndex2) {
+    //                            throw new NoSuchElementException();
+    //                        }
+    //
+    //                        return a[cursor2++][columnIndex];
+    //                    }
+    //
+    //                    @Override
+    //                    public void skip(long n) {
+    //                        cursor2 = n < toIndex2 - cursor2 ? cursor2 + (int) n : toIndex2;
+    //                    }
+    //
+    //                    @Override
+    //                    public long count() {
+    //                        return toIndex2 - cursor2;
+    //                    }
+    //                });
+    //            }
+    //
+    //            @Override
+    //            public void skip(long n) {
+    //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+    //            }
+    //
+    //            @Override
+    //            public long count() {
+    //                return toIndex - cursor;
+    //            }
+    //        });
+    //    }
 
     @Override
     public int hashCode() {
