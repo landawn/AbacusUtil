@@ -779,7 +779,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     public static CharStream random() {
         final int mod = Character.MAX_VALUE + 1;
 
-        return iterate(new CharSupplier() {
+        return generate(new CharSupplier() {
             @Override
             public char getAsChar() {
                 return (char) RAND.nextInt(mod);
@@ -793,7 +793,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         }
 
         if (startInclusive == endInclusive) {
-            return iterate(new CharSupplier() {
+            return generate(new CharSupplier() {
                 @Override
                 public char getAsChar() {
                     return startInclusive;
@@ -802,7 +802,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         } else {
             final int mod = endInclusive - startInclusive + 1;
 
-            return iterate(new CharSupplier() {
+            return generate(new CharSupplier() {
                 @Override
                 public char getAsChar() {
                     return (char) (RAND.nextInt(mod) + startInclusive);
@@ -820,7 +820,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
         final int n = candicates.length;
 
-        return iterate(new CharSupplier() {
+        return generate(new CharSupplier() {
             @Override
             public char getAsChar() {
                 return candicates[RAND.nextInt(n)];
@@ -943,7 +943,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
-    public static CharStream iterate(final char seed, final CharUnaryOperator f) {
+    public static CharStream generate(final char seed, final CharUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorCharStream(new ImmutableCharIterator() {
@@ -969,7 +969,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
-    public static CharStream iterate(final CharSupplier s) {
+    public static CharStream generate(final CharSupplier s) {
         N.requireNonNull(s);
 
         return new IteratorCharStream(new ImmutableCharIterator() {

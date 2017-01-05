@@ -39,13 +39,13 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T>> {
-    private Class<T[]> arrayType;
-    private Class<T> componentType;
+    private final Class<T[]> arrayType;
+    private final Class<T> componentType;
 
     public Matrix(final T[][] a) {
         super(a);
-        this.arrayType = (Class<T[]>) a.getClass().getComponentType();
-        this.componentType = (Class<T>) arrayType.getComponentType();
+        this.arrayType = (Class<T[]>) this.a.getClass().getComponentType();
+        this.componentType = (Class<T>) this.arrayType.getComponentType();
     }
 
     public static <T> Matrix<T> of(final T[]... a) {
@@ -56,6 +56,51 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         final T[][] c = N.newArray(N.newArray(val.getClass(), 0).getClass(), 1);
         c[0] = Array.repeat(val, len);
         return new Matrix<T>(c);
+    }
+
+    public static <T> Matrix<T> diagonal(final T[] leftUp2RightLowDiagonal) {
+        return diagonal(leftUp2RightLowDiagonal, null);
+    }
+
+    public static <T> Matrix<T> diagonal(final T[] leftUp2RightLowDiagonal, T[] rightUp2LeftLowDiagonal) {
+        N.checkArgument(
+                N.isNullOrEmpty(leftUp2RightLowDiagonal) || N.isNullOrEmpty(rightUp2LeftLowDiagonal)
+                        || leftUp2RightLowDiagonal.length == rightUp2LeftLowDiagonal.length,
+                "The length of 'leftUp2RightLowDiagonal' and 'rightUp2LeftLowDiagonal' must be same");
+
+        final Class<?> arrayClass = leftUp2RightLowDiagonal != null ? leftUp2RightLowDiagonal.getClass() : rightUp2LeftLowDiagonal.getClass();
+        final Class<?> componentClass = arrayClass.getComponentType();
+        final int len = leftUp2RightLowDiagonal != null ? leftUp2RightLowDiagonal.length : rightUp2LeftLowDiagonal.length;
+
+        final T[][] c = N.newArray(arrayClass, len);
+
+        for (int i = 0; i < len; i++) {
+            c[i] = N.newArray(componentClass, len);
+        }
+
+        if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
+            if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
+                return new Matrix<T>(c);
+            } else {
+                for (int i = 0, j = len - 1; i < len; i++, j--) {
+                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                }
+
+                return new Matrix<T>(c);
+            }
+        } else {
+            for (int i = 0; i < len; i++) {
+                c[i][i] = leftUp2RightLowDiagonal[i];
+            }
+
+            if (N.notNullOrEmpty(rightUp2LeftLowDiagonal)) {
+                for (int i = 0, j = len - 1; i < len; i++, j--) {
+                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                }
+            }
+
+            return new Matrix<T>(c);
+        }
     }
 
     public T get(final int i, final int j) {
@@ -680,16 +725,8 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         if (a.length == 1) {
             final T[] a0 = a[0];
 
-            if (m < 8) {
-                for (int cnt = 0, i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
-                    for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++) {
-                        c[i][j] = a0[cnt++];
-                    }
-                }
-            } else {
-                for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
-                    N.copy(a0, i * m, c[i], 0, (int) N.min(m, count - i * m));
-                }
+            for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+                N.copy(a0, i * m, c[i], 0, (int) N.min(m, count - i * m));
             }
         } else {
             long cnt = 0;
@@ -713,6 +750,88 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         }
 
         return ObjectList.of(c);
+    }
+
+    /**
+     * 
+     * @return a stream composed by elements on the diagonal line from left up to right down.
+     */
+    public Stream<T> diagonal() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<T>() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][cursor++];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @return a stream composed by elements on the diagonal line from right up to left down.
+     */
+    public Stream<T> diagonal2() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ImmutableIterator<T>() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][n - ++cursor];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
     }
 
     /**
@@ -949,6 +1068,11 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
                 return toIndex - cursor;
             }
         });
+    }
+
+    @Override
+    protected int length(T[] a) {
+        return a == null ? 0 : a.length;
     }
 
     @Override

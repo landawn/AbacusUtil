@@ -4705,6 +4705,10 @@ public abstract class SQLBuilder<T> {
             return new Pair2(sql, parameters);
         }
 
+        public Pair<String, List<Object>> __() {
+            return Pair.of(sql, parameters);
+        }
+
         @Override
         public int hashCode() {
             return N.hashCode(sql) * 31 + N.hashCode(parameters);

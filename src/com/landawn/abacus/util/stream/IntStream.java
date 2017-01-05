@@ -860,7 +860,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream random() {
-        return iterate(new IntSupplier() {
+        return generate(new IntSupplier() {
             @Override
             public int getAsInt() {
                 return RAND.nextInt();
@@ -874,7 +874,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         }
 
         if (startInclusive == endInclusive) {
-            return iterate(new IntSupplier() {
+            return generate(new IntSupplier() {
                 @Override
                 public int getAsInt() {
                     return startInclusive;
@@ -886,14 +886,14 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             if (mod <= Integer.MAX_VALUE) {
                 final int n = (int) mod;
 
-                return iterate(new IntSupplier() {
+                return generate(new IntSupplier() {
                     @Override
                     public int getAsInt() {
                         return RAND.nextInt(n) + startInclusive;
                     }
                 });
             } else {
-                return iterate(new IntSupplier() {
+                return generate(new IntSupplier() {
                     @Override
                     public int getAsInt() {
                         return (int) (Math.abs(RAND.nextLong() % mod) + startInclusive);
@@ -1018,7 +1018,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
-    public static IntStream iterate(final int seed, final IntUnaryOperator f) {
+    public static IntStream generate(final int seed, final IntUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorIntStream(new ImmutableIntIterator() {
@@ -1044,7 +1044,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
-    public static IntStream iterate(final IntSupplier s) {
+    public static IntStream generate(final IntSupplier s) {
         N.requireNonNull(s);
 
         return new IteratorIntStream(new ImmutableIntIterator() {

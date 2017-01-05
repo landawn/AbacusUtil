@@ -729,7 +729,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     }
 
     public static ByteStream random() {
-        return iterate(new ByteSupplier() {
+        return generate(new ByteSupplier() {
             @Override
             public byte getAsByte() {
                 return (byte) RAND.nextInt();
@@ -852,7 +852,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         });
     }
 
-    public static ByteStream iterate(final byte seed, final ByteUnaryOperator f) {
+    public static ByteStream generate(final byte seed, final ByteUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorByteStream(new ImmutableByteIterator() {
@@ -878,7 +878,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         });
     }
 
-    public static ByteStream iterate(final ByteSupplier s) {
+    public static ByteStream generate(final ByteSupplier s) {
         N.requireNonNull(s);
 
         return new IteratorByteStream(new ImmutableByteIterator() {

@@ -136,6 +136,10 @@ public final class Triple<L, M, R> {
         return new Triple<>(this.left, this.middle, this.right);
     }
 
+    public Triple0<L, M, R> __() {
+        return Triple0.of(left, middle, right);
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -224,6 +228,10 @@ public final class Triple<L, M, R> {
 
         public R right() {
             return right;
+        }
+
+        public Triple<L, M, R> __() {
+            return Triple.of(left, middle, right);
         }
 
         @Override

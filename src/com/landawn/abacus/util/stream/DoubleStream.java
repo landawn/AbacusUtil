@@ -704,7 +704,7 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream random() {
-        return iterate(new DoubleSupplier() {
+        return generate(new DoubleSupplier() {
             @Override
             public double getAsDouble() {
                 return RAND.nextDouble();
@@ -827,7 +827,7 @@ public abstract class DoubleStream
         });
     }
 
-    public static DoubleStream iterate(final double seed, final DoubleUnaryOperator f) {
+    public static DoubleStream generate(final double seed, final DoubleUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {
@@ -853,7 +853,7 @@ public abstract class DoubleStream
         });
     }
 
-    public static DoubleStream iterate(final DoubleSupplier s) {
+    public static DoubleStream generate(final DoubleSupplier s) {
         N.requireNonNull(s);
 
         return new IteratorDoubleStream(new ImmutableDoubleIterator() {

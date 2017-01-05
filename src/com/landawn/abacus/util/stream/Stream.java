@@ -1870,7 +1870,7 @@ public abstract class Stream<T>
         });
     }
 
-    public static <T> Stream<T> iterate(final T seed, final UnaryOperator<T> f) {
+    public static <T> Stream<T> generate(final T seed, final UnaryOperator<T> f) {
         N.requireNonNull(f);
 
         return of(new ImmutableIterator<T>() {
@@ -1888,7 +1888,7 @@ public abstract class Stream<T>
         });
     }
 
-    public static <T> Stream<T> iterate(final Supplier<T> s) {
+    public static <T> Stream<T> generate(final Supplier<T> s) {
         N.requireNonNull(s);
 
         return of(new ImmutableIterator<T>() {

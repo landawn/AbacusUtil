@@ -70,6 +70,47 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
         return new FloatMatrix(new float[][] { Array.repeat(val, len) });
     }
 
+    public static FloatMatrix diagonal(final float[] leftUp2RightLowDiagonal) {
+        return diagonal(leftUp2RightLowDiagonal, null);
+    }
+
+    public static FloatMatrix diagonal(final float[] leftUp2RightLowDiagonal, float[] rightUp2LeftLowDiagonal) {
+        N.checkArgument(
+                N.isNullOrEmpty(leftUp2RightLowDiagonal) || N.isNullOrEmpty(rightUp2LeftLowDiagonal)
+                        || leftUp2RightLowDiagonal.length == rightUp2LeftLowDiagonal.length,
+                "The length of 'leftUp2RightLowDiagonal' and 'rightUp2LeftLowDiagonal' must be same");
+
+        if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
+            if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
+                return empty();
+            } else {
+                final int len = rightUp2LeftLowDiagonal.length;
+                final float[][] c = new float[len][len];
+
+                for (int i = 0, j = len - 1; i < len; i++, j--) {
+                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                }
+
+                return new FloatMatrix(c);
+            }
+        } else {
+            final int len = leftUp2RightLowDiagonal.length;
+            final float[][] c = new float[len][len];
+
+            for (int i = 0; i < len; i++) {
+                c[i][i] = leftUp2RightLowDiagonal[i];
+            }
+
+            if (N.notNullOrEmpty(rightUp2LeftLowDiagonal)) {
+                for (int i = 0, j = len - 1; i < len; i++, j--) {
+                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                }
+            }
+
+            return new FloatMatrix(c);
+        }
+    }
+
     public float get(final int i, final int j) {
         return a[i][j];
     }
@@ -313,16 +354,8 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
         if (a.length == 1) {
             final float[] a0 = a[0];
 
-            if (m < 8) {
-                for (int cnt = 0, i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
-                    for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++) {
-                        c[i][j] = a0[cnt++];
-                    }
-                }
-            } else {
-                for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
-                    N.copy(a0, i * m, c[i], 0, (int) N.min(m, count - i * m));
-                }
+            for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
+                N.copy(a0, i * m, c[i], 0, (int) N.min(m, count - i * m));
             }
         } else {
             long cnt = 0;
@@ -583,6 +616,88 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
 
     /**
      * 
+     * @return a stream composed by elements on the diagonal line from left up to right down.
+     */
+    public FloatStream diagonal() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+
+        if (isEmpty()) {
+            return FloatStream.empty();
+        }
+
+        return FloatStream.of(new ImmutableFloatIterator() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public float next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][cursor++];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @return a stream composed by elements on the diagonal line from right up to left down.
+     */
+    public FloatStream diagonal2() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+
+        if (isEmpty()) {
+            return FloatStream.empty();
+        }
+
+        return FloatStream.of(new ImmutableFloatIterator() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public float next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][n - ++cursor];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
      * @return a stream based on the order of row.
      */
     public FloatStream stream() {
@@ -815,6 +930,11 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
                 return toIndex - cursor;
             }
         });
+    }
+
+    @Override
+    protected int length(float[] a) {
+        return a == null ? 0 : a.length;
     }
 
     @Override

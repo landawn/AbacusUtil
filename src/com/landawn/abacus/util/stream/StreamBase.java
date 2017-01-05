@@ -519,7 +519,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     @Override
     public int maxThreadNum() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
+        // throw new UnsupportedOperationException();
 
         // ignore, do nothing if it's sequential stream.
         return 1;
@@ -527,7 +527,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     @Override
     public S maxThreadNum(int maxThreadNum) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");  
+        // throw new UnsupportedOperationException();  
 
         // ignore, do nothing if it's sequential stream.
         return (S) this;
@@ -535,7 +535,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     @Override
     public Splitor splitor() {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
+        // throw new UnsupportedOperationException();
 
         // ignore, do nothing if it's sequential stream.
         return DEFAULT_SPLITOR;
@@ -543,7 +543,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     @Override
     public S splitor(Splitor splitor) {
-        // throw new UnsupportedOperationException("It's not supported sequential stream.");
+        // throw new UnsupportedOperationException();
 
         // ignore, do nothing if it's sequential stream.
         return (S) this;

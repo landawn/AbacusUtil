@@ -717,7 +717,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     }
 
     public static FloatStream random() {
-        return iterate(new FloatSupplier() {
+        return generate(new FloatSupplier() {
             @Override
             public float getAsFloat() {
                 return RAND.nextFloat();
@@ -840,7 +840,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         });
     }
 
-    public static FloatStream iterate(final float seed, final FloatUnaryOperator f) {
+    public static FloatStream generate(final float seed, final FloatUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorFloatStream(new ImmutableFloatIterator() {
@@ -866,7 +866,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         });
     }
 
-    public static FloatStream iterate(final FloatSupplier s) {
+    public static FloatStream generate(final FloatSupplier s) {
         N.requireNonNull(s);
 
         return new IteratorFloatStream(new ImmutableFloatIterator() {

@@ -16819,7 +16819,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -16844,7 +16844,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -16869,7 +16869,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -16894,7 +16894,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -16919,7 +16919,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -16944,7 +16944,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -16969,7 +16969,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -16994,7 +16994,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -17019,7 +17019,7 @@ public final class N {
             throw new IllegalArgumentException("The size of dest array less than " + (destPos + length));
         }
 
-        if (length < 8) {
+        if (length < 9) {
             // for same array copy.
             if (destPos > srcPos) {
                 for (int i = length - 1; i >= 0; i--) {
@@ -17064,6 +17064,10 @@ public final class N {
      * @return
      */
     public static boolean[] copyOf(final boolean[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         final boolean[] copy = new boolean[newLength];
 
         if (N.notNullOrEmpty(original)) {
@@ -17081,6 +17085,10 @@ public final class N {
      * @return
      */
     public static char[] copyOf(final char[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         final char[] copy = new char[newLength];
 
         if (N.notNullOrEmpty(original)) {
@@ -17098,6 +17106,10 @@ public final class N {
      * @return
      */
     public static byte[] copyOf(final byte[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         final byte[] copy = new byte[newLength];
 
         if (N.notNullOrEmpty(original)) {
@@ -17115,6 +17127,10 @@ public final class N {
      * @return
      */
     public static short[] copyOf(final short[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         final short[] copy = new short[newLength];
 
         if (N.notNullOrEmpty(original)) {
@@ -17132,6 +17148,10 @@ public final class N {
      * @return
      */
     public static int[] copyOf(final int[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         final int[] copy = new int[newLength];
 
         if (N.notNullOrEmpty(original)) {
@@ -17149,6 +17169,10 @@ public final class N {
      * @return
      */
     public static long[] copyOf(final long[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         final long[] copy = new long[newLength];
 
         if (N.notNullOrEmpty(original)) {
@@ -17166,6 +17190,10 @@ public final class N {
      * @return
      */
     public static float[] copyOf(final float[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         final float[] copy = new float[newLength];
 
         if (N.notNullOrEmpty(original)) {
@@ -17183,6 +17211,10 @@ public final class N {
      * @return
      */
     public static double[] copyOf(final double[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         final double[] copy = new double[newLength];
 
         if (N.notNullOrEmpty(original)) {
@@ -17200,6 +17232,10 @@ public final class N {
      * @return
      */
     public static <T> T[] copyOf(final T[] original, final int newLength) {
+        if (newLength == original.length) {
+            return original.clone();
+        }
+
         return (T[]) copyOf(original, newLength, original.getClass());
     }
 
@@ -17229,6 +17265,10 @@ public final class N {
      * @return
      */
     public static boolean[] copyOfRange(final boolean[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         final int newLength = to - from;
         final boolean[] copy = new boolean[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
@@ -17272,6 +17312,10 @@ public final class N {
      * @return
      */
     public static char[] copyOfRange(final char[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         final int newLength = to - from;
         final char[] copy = new char[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
@@ -17315,6 +17359,10 @@ public final class N {
      * @return
      */
     public static byte[] copyOfRange(final byte[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         final int newLength = to - from;
         final byte[] copy = new byte[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
@@ -17358,6 +17406,10 @@ public final class N {
      * @return
      */
     public static short[] copyOfRange(final short[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         final int newLength = to - from;
         final short[] copy = new short[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
@@ -17401,6 +17453,10 @@ public final class N {
      * @return
      */
     public static int[] copyOfRange(final int[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         final int newLength = to - from;
         final int[] copy = new int[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
@@ -17444,6 +17500,10 @@ public final class N {
      * @return
      */
     public static long[] copyOfRange(final long[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         final int newLength = to - from;
         final long[] copy = new long[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
@@ -17487,6 +17547,10 @@ public final class N {
      * @return
      */
     public static float[] copyOfRange(final float[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         final int newLength = to - from;
         final float[] copy = new float[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
@@ -17530,6 +17594,10 @@ public final class N {
      * @return
      */
     public static double[] copyOfRange(final double[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         final int newLength = to - from;
         final double[] copy = new double[newLength];
         copy(original, from, copy, 0, Math.min(original.length - from, newLength));
@@ -17572,6 +17640,10 @@ public final class N {
      * @return
      */
     public static <T> T[] copyOfRange(final T[] original, final int from, final int to) {
+        if (from == 0 && to == original.length) {
+            return original.clone();
+        }
+
         return copyOfRange(original, from, to, (Class<T[]>) original.getClass());
     }
 

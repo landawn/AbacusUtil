@@ -133,6 +133,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return new Pair<>(this.left, this.right);
     }
 
+    public Pair0<L, R> __() {
+        return Pair0.of(left, right);
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -228,6 +232,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         @Deprecated
         public R setValue(R value) {
             throw new UnsupportedOperationException();
+        }
+
+        public Pair<L, R> __() {
+            return Pair.of(left, right);
         }
 
         @Override

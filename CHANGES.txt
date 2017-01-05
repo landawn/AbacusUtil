@@ -1,4 +1,12 @@
 
+========Changes in 0.9.42=========================================================================
+1, Add diagonal to Matrix/IntMatrix/LongMatrix/DoubleMatrix...
+
+2,  rename iterate(supplier)/iterate(seed, unaryOperator) to generate(supplier)/generate(seed, unaryOperator) in Stream/IntStream/LongStream/DoubleStream...
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.41=========================================================================
 
 1, Add stream/transpose/toDataSet/toMatrix to Sheet.

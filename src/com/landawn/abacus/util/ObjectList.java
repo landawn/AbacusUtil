@@ -205,6 +205,10 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     public static <T> ObjectList<T> repeat(T element, int len) {
+        if (element == null) {
+            return new ObjectList<T>((T[]) new Object[len]);
+        }
+
         return new ObjectList<T>(Array.repeat(element, len));
     }
 

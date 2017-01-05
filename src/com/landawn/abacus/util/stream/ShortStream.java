@@ -730,7 +730,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     }
 
     public static ShortStream random() {
-        return iterate(new ShortSupplier() {
+        return generate(new ShortSupplier() {
             @Override
             public short getAsShort() {
                 return (short) RAND.nextInt();
@@ -853,7 +853,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         });
     }
 
-    public static ShortStream iterate(final short seed, final ShortUnaryOperator f) {
+    public static ShortStream generate(final short seed, final ShortUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorShortStream(new ImmutableShortIterator() {
@@ -879,7 +879,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         });
     }
 
-    public static ShortStream iterate(final ShortSupplier s) {
+    public static ShortStream generate(final ShortSupplier s) {
         N.requireNonNull(s);
 
         return new IteratorShortStream(new ImmutableShortIterator() {

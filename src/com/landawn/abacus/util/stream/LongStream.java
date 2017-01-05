@@ -828,7 +828,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream random() {
-        return iterate(new LongSupplier() {
+        return generate(new LongSupplier() {
             @Override
             public long getAsLong() {
                 return RAND.nextLong();
@@ -951,7 +951,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
-    public static LongStream iterate(final long seed, final LongUnaryOperator f) {
+    public static LongStream generate(final long seed, final LongUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorLongStream(new ImmutableLongIterator() {
@@ -977,7 +977,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
-    public static LongStream iterate(final LongSupplier s) {
+    public static LongStream generate(final LongSupplier s) {
         N.requireNonNull(s);
 
         return new IteratorLongStream(new ImmutableLongIterator() {

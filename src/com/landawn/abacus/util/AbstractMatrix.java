@@ -15,7 +15,6 @@
 package com.landawn.abacus.util;
 
 import java.security.SecureRandom;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -25,10 +24,23 @@ import java.util.Random;
  * @author Haiyang Li
  */
 public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> {
-    static final Map<Class<?>, Integer> numArrayClasses = ImmutableMap.of(byte[].class, 0, short[].class, 1, int[].class, 2, long[].class, 3, float[].class, 4,
-            double[].class, 5);
-
     static final Random RAND = new SecureRandom();
+
+    static final boolean isParallelStreamSupported;
+    static {
+        boolean tmp = false;
+
+        try {
+            if (N.forClass("com.landawn.abacus.util.stream.ParallelArrayIntStream") != null
+                    && N.forClass("com.landawn.abacus.util.stream.ParallelIteratorIntStream") != null) {
+                tmp = true;
+            }
+        } catch (Throwable e) {
+            // ignore.
+        }
+
+        isParallelStreamSupported = tmp;
+    }
 
     public final int n;
     public final int m;
@@ -37,12 +49,14 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
 
     protected AbstractMatrix(A[] a) {
         this.a = a;
-        this.m = a.length == 0 ? 0 : Array.getLength(a[0]);
+        this.m = a.length == 0 ? 0 : length(a[0]);
         this.n = a.length;
 
-        for (int i = 0, len = a.length; i < len; i++) {
-            if (Array.getLength(a[i]) != this.m) {
-                throw new IllegalArgumentException("The length of sub arrays must be same");
+        if (a.length > 1) {
+            for (int i = 1, len = a.length; i < len; i++) {
+                if (length(a[i]) != this.m) {
+                    throw new IllegalArgumentException("The length of sub arrays must be same");
+                }
             }
         }
 
@@ -195,11 +209,13 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
     //
     //    abstract A column2(final int j);
 
+    protected abstract int length(A a);
+
     boolean isParallelable() {
-        return N.IS_PLATFORM_ANDROID == false && count > 8192;
+        return isParallelStreamSupported && count > 8192;
     }
 
     boolean isParallelable(final int bm) {
-        return N.IS_PLATFORM_ANDROID == false && count * bm > 8192;
+        return isParallelStreamSupported && count * bm > 8192;
     }
 }

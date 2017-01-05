@@ -4401,6 +4401,10 @@ public abstract class CQLBuilder<T> {
             return new Pair3(cql, parameters);
         }
 
+        public Pair<String, List<Object>> __() {
+            return Pair.of(cql, parameters);
+        }
+
         @Override
         public int hashCode() {
             return N.hashCode(cql) * 31 + N.hashCode(parameters);
