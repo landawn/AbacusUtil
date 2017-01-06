@@ -36,7 +36,7 @@ import com.landawn.abacus.util.stream.LongStream;
  * 
  * @author Haiyang Li
  */
-public final class LongList extends AbstractNumberList<LongConsumer, LongPredicate, Long, long[], LongList> {
+public final class LongList extends AbstractList<LongConsumer, LongPredicate, Long, long[], LongList> {
     private long[] elementData = N.EMPTY_LONG_ARRAY;
     private int size = 0;
 
@@ -777,7 +777,10 @@ public final class LongList extends AbstractNumberList<LongConsumer, LongPredica
         return N.sum(elementData, fromIndex, toIndex);
     }
 
-    @Override
+    public OptionalDouble average() {
+        return average(0, size());
+    }
+
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 

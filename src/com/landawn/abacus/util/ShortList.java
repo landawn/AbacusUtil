@@ -36,7 +36,7 @@ import com.landawn.abacus.util.stream.ShortStream;
  * 
  * @author Haiyang Li
  */
-public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPredicate, Short, short[], ShortList> {
+public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate, Short, short[], ShortList> {
     private short[] elementData = N.EMPTY_SHORT_ARRAY;
     private int size = 0;
 
@@ -727,7 +727,10 @@ public final class ShortList extends AbstractNumberList<ShortConsumer, ShortPred
         return N.sum(elementData, fromIndex, toIndex);
     }
 
-    @Override
+    public OptionalDouble average() {
+        return average(0, size());
+    }
+
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 

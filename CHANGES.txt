@@ -13,7 +13,9 @@
 
 6, Add Math2.
 
-7, Improvements and bug fix.
+7, Exclude CodeGenerator and more classes from abacus-android-*.jar to reduce library size.
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.41=========================================================================

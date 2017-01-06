@@ -36,7 +36,7 @@ import com.landawn.abacus.util.stream.IntStream;
  *
  * @author Haiyang Li
  */
-public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate, Integer, int[], IntList> {
+public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integer, int[], IntList> {
     private int[] elementData = N.EMPTY_INT_ARRAY;
     private int size = 0;
 
@@ -913,7 +913,10 @@ public final class IntList extends AbstractNumberList<IntConsumer, IntPredicate,
         return N.sum(elementData, fromIndex, toIndex);
     }
 
-    @Override
+    public OptionalDouble average() {
+        return average(0, size());
+    }
+
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 

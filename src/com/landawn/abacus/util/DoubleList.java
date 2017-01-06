@@ -36,7 +36,7 @@ import com.landawn.abacus.util.stream.DoubleStream;
  * 
  * @author Haiyang Li
  */
-public final class DoubleList extends AbstractNumberList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
+public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
     private double[] elementData = N.EMPTY_DOUBLE_ARRAY;
     private int size = 0;
 
@@ -737,7 +737,10 @@ public final class DoubleList extends AbstractNumberList<DoubleConsumer, DoubleP
         return N.sum(elementData, fromIndex, toIndex);
     }
 
-    @Override
+    public OptionalDouble average() {
+        return average(0, size());
+    }
+
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 

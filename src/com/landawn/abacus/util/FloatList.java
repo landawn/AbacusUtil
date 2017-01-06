@@ -36,7 +36,7 @@ import com.landawn.abacus.util.stream.FloatStream;
  * 
  * @author Haiyang Li
  */
-public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
+public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
     private float[] elementData = N.EMPTY_FLOAT_ARRAY;
     private int size = 0;
 
@@ -751,7 +751,10 @@ public final class FloatList extends AbstractNumberList<FloatConsumer, FloatPred
         return N.sum(elementData, fromIndex, toIndex);
     }
 
-    @Override
+    public OptionalDouble average() {
+        return average(0, size());
+    }
+
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 

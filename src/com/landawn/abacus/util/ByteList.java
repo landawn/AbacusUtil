@@ -35,7 +35,7 @@ import com.landawn.abacus.util.stream.ByteStream;
  * 
  * @author Haiyang Li
  */
-public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredicate, Byte, byte[], ByteList> {
+public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, Byte, byte[], ByteList> {
     private byte[] elementData = N.EMPTY_BYTE_ARRAY;
     private int size = 0;
 
@@ -735,7 +735,10 @@ public final class ByteList extends AbstractNumberList<ByteConsumer, BytePredica
         return N.sum(elementData, fromIndex, toIndex);
     }
 
-    @Override
+    public OptionalDouble average() {
+        return average(0, size());
+    }
+
     public OptionalDouble average(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
