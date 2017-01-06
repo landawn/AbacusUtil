@@ -610,8 +610,88 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
         return new ShortMatrix(c);
     }
 
+    public Matrix<Short> boxed() {
+        final Short[][] c = new Short[n][m];
+    
+        if (n <= m) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        } else {
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < n; i++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        }
+    
+        return new Matrix<Short>(c);
+    }
+
     public IntMatrix toIntMatrix() {
         return IntMatrix.from(a);
+    }
+
+    public LongMatrix toLongMatrix() {
+        final long[][] c = new long[n][m];
+
+        if (n <= m) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        } else {
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < n; i++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        }
+
+        return new LongMatrix(c);
+    }
+
+    public FloatMatrix toFloatMatrix() {
+        final float[][] c = new float[n][m];
+
+        if (n <= m) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        } else {
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < n; i++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        }
+
+        return new FloatMatrix(c);
+    }
+
+    public DoubleMatrix toDoubleMatrix() {
+        final double[][] c = new double[n][m];
+
+        if (n <= m) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        } else {
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < n; i++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        }
+
+        return new DoubleMatrix(c);
     }
 
     /**

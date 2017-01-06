@@ -363,6 +363,26 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return BooleanList.of(c);
     }
 
+    public Matrix<Boolean> boxed() {
+        final Boolean[][] c = new Boolean[n][m];
+
+        if (n <= m) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        } else {
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < n; i++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        }
+
+        return new Matrix<Boolean>(c);
+    }
+
     /**
      * 
      * @return a stream composed by elements on the diagonal line from left up to right down.

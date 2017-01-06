@@ -626,6 +626,46 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
         return new LongMatrix(c);
     }
 
+    public Matrix<Long> boxed() {
+        final Long[][] c = new Long[n][m];
+    
+        if (n <= m) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        } else {
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < n; i++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        }
+    
+        return new Matrix<Long>(c);
+    }
+
+    public FloatMatrix toFloatMatrix() {
+        final float[][] c = new float[n][m];
+
+        if (n <= m) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        } else {
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < n; i++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        }
+
+        return new FloatMatrix(c);
+    }
+
     public DoubleMatrix toDoubleMatrix() {
         return DoubleMatrix.from(a);
     }

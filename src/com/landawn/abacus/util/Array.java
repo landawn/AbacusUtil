@@ -1115,7 +1115,7 @@ public final class Array {
     }
 
     public static Class<?> box(final Class<?> cls) {
-        Class<?> result = PRIMITIVE_2_WRAPPER.get(cls);
+        final Class<?> result = PRIMITIVE_2_WRAPPER.get(cls);
 
         if (result == null) {
             throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive (array) type");
@@ -1468,6 +1468,118 @@ public final class Array {
             default:
                 throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive array");
         }
+    }
+
+    public static Boolean[][] box(boolean[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final Boolean[][] result = new Boolean[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = box(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Character[][] box(char[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final Character[][] result = new Character[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = box(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Byte[][] box(byte[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final Byte[][] result = new Byte[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = box(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Short[][] box(short[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final Short[][] result = new Short[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = box(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Integer[][] box(int[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final Integer[][] result = new Integer[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = box(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Long[][] box(long[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final Long[][] result = new Long[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = box(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Float[][] box(float[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final Float[][] result = new Float[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = box(a[i]);
+        }
+
+        return result;
+    }
+
+    public static Double[][] box(double[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final Double[][] result = new Double[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = box(a[i]);
+        }
+
+        return result;
     }
 
     public static Class<?> unbox(final Class<?> cls) {
@@ -1940,6 +2052,150 @@ public final class Array {
 
         for (int i = 0, j = fromIndex; j < toIndex; i++, j++) {
             result[i] = (a[j] == null ? valueForNull : a[j].doubleValue());
+        }
+
+        return result;
+    }
+
+    public static boolean[][] unbox(Boolean[][] a) {
+        return unbox(a, false);
+    }
+
+    public static boolean[][] unbox(Boolean[][] a, boolean valueForNull) {
+        if (a == null) {
+            return null;
+        }
+
+        final boolean[][] result = new boolean[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = unbox(a[i], valueForNull);
+        }
+
+        return result;
+    }
+
+    public static char[][] unbox(Character[][] a) {
+        return unbox(a, (char) 0);
+    }
+
+    public static char[][] unbox(Character[][] a, char valueForNull) {
+        if (a == null) {
+            return null;
+        }
+
+        final char[][] result = new char[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = unbox(a[i], valueForNull);
+        }
+
+        return result;
+    }
+
+    public static byte[][] unbox(Byte[][] a) {
+        return unbox(a, (byte) 0);
+    }
+
+    public static byte[][] unbox(Byte[][] a, byte valueForNull) {
+        if (a == null) {
+            return null;
+        }
+
+        final byte[][] result = new byte[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = unbox(a[i], valueForNull);
+        }
+
+        return result;
+    }
+
+    public static short[][] unbox(Short[][] a) {
+        return unbox(a, (short) 0);
+    }
+
+    public static short[][] unbox(Short[][] a, short valueForNull) {
+        if (a == null) {
+            return null;
+        }
+
+        final short[][] result = new short[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = unbox(a[i], valueForNull);
+        }
+
+        return result;
+    }
+
+    public static int[][] unbox(Integer[][] a) {
+        return unbox(a, 0);
+    }
+
+    public static int[][] unbox(Integer[][] a, int valueForNull) {
+        if (a == null) {
+            return null;
+        }
+
+        final int[][] result = new int[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = unbox(a[i], valueForNull);
+        }
+
+        return result;
+    }
+
+    public static long[][] unbox(Long[][] a) {
+        return unbox(a, 0);
+    }
+
+    public static long[][] unbox(Long[][] a, long valueForNull) {
+        if (a == null) {
+            return null;
+        }
+
+        final long[][] result = new long[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = unbox(a[i], valueForNull);
+        }
+
+        return result;
+    }
+
+    public static float[][] unbox(Float[][] a) {
+        return unbox(a, 0);
+    }
+
+    public static float[][] unbox(Float[][] a, float valueForNull) {
+        if (a == null) {
+            return null;
+        }
+
+        final float[][] result = new float[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = unbox(a[i], valueForNull);
+        }
+
+        return result;
+    }
+
+    public static double[][] unbox(Double[][] a) {
+        return unbox(a, 0);
+    }
+
+    public static double[][] unbox(Double[][] a, double valueForNull) {
+        if (a == null) {
+            return null;
+        }
+
+        final double[][] result = new double[a.length][];
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            result[i] = unbox(a[i], valueForNull);
         }
 
         return result;

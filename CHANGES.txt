@@ -2,9 +2,18 @@
 ========Changes in 0.9.42=========================================================================
 1, Add diagonal to Matrix/IntMatrix/LongMatrix/DoubleMatrix...
 
-2,  rename iterate(supplier)/iterate(seed, unaryOperator) to generate(supplier)/generate(seed, unaryOperator) in Stream/IntStream/LongStream/DoubleStream...
+2, Rename iterate(supplier)/iterate(seed, unaryOperator) to generate(supplier)/generate(seed, unaryOperator) in Stream/IntStream/LongStream/DoubleStream... 
+   to keep consistent with the APIs in JDK
 
-3, Improvements and bug fix.
+3, Add method __() to Pair/Triple/Holder.
+
+4, Add boxed to IntMatrix/LongMatrix/DoubleMatrix...
+
+5, Add box/unbox methods for 2D array to Array.java.
+
+6, Add Math2.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.41=========================================================================

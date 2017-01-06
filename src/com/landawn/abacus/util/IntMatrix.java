@@ -657,6 +657,26 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
         return new IntMatrix(c);
     }
 
+    public Matrix<Integer> boxed() {
+        final Integer[][] c = new Integer[n][m];
+    
+        if (n <= m) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        } else {
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < n; i++) {
+                    c[i][j] = a[i][j];
+                }
+            }
+        }
+    
+        return new Matrix<Integer>(c);
+    }
+
     public LongMatrix toLongMatrix() {
         return LongMatrix.from(a);
     }
