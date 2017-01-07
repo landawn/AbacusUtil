@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -52,7 +53,6 @@ import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntSummaryStatistics;
-import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Matrix;
@@ -1468,7 +1468,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {
-            JdbcUtil.closeQuietly(stmt);
+            closeQuietly(stmt);
         }
     }
 
@@ -1503,5 +1503,23 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         return cnt;
+    }
+
+    private static void closeQuietly(final Statement stmt) {
+        if (stmt != null) {
+            if (stmt instanceof PreparedStatement) {
+                try {
+                    ((PreparedStatement) stmt).clearParameters();
+                } catch (Throwable e) {
+                    logger.error("Failed to clear parameters", e);
+                }
+            }
+
+            try {
+                stmt.close();
+            } catch (Throwable e) {
+                logger.error("Failed to close Statement", e);
+            }
+        }
     }
 }

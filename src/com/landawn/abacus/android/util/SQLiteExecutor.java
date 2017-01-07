@@ -38,14 +38,12 @@ import java.util.Set;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
-import com.landawn.abacus.EntityId;
 import com.landawn.abacus.condition.Between;
 import com.landawn.abacus.condition.Binary;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.condition.Expression;
 import com.landawn.abacus.condition.Junction;
-import com.landawn.abacus.core.EntityManagerUtil;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.NonUniqueResultException;
@@ -67,9 +65,6 @@ import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.SQLBuilder;
-import com.landawn.abacus.util.SQLBuilder.NE;
-import com.landawn.abacus.util.SQLBuilder.NE2;
-import com.landawn.abacus.util.SQLBuilder.NE3;
 import com.landawn.abacus.util.SQLBuilder.Pair2;
 import com.landawn.abacus.util.SQLBuilder.RE;
 import com.landawn.abacus.util.SQLBuilder.RE2;
@@ -848,11 +843,11 @@ public final class SQLiteExecutor {
         return ret;
     }
 
-    // mess up
-    @Deprecated
-    int update(EntityId entityId, Map<String, Object> props) {
-        return update(entityId.entityName(), props, EntityManagerUtil.entityId2Condition(entityId));
-    }
+    //    // mess up
+    //    @Deprecated
+    //    int update(EntityId entityId, Map<String, Object> props) {
+    //        return update(entityId.entityName(), props, EntityManagerUtil.entityId2Condition(entityId));
+    //    }
 
     /**
      * Update the records in data store with the properties which have been updated/set in the specified <code>entity</code> by id property in the entity.
@@ -930,11 +925,11 @@ public final class SQLiteExecutor {
         }
     }
 
-    // mess up
-    @Deprecated
-    int delete(EntityId entityId) {
-        return delete(entityId.entityName(), EntityManagerUtil.entityId2Condition(entityId));
-    }
+    //    // mess up
+    //    @Deprecated
+    //    int delete(EntityId entityId) {
+    //        return delete(entityId.entityName(), EntityManagerUtil.entityId2Condition(entityId));
+    //    }
 
     /**
      * Delete the entity by id value in the entity.
@@ -1040,34 +1035,34 @@ public final class SQLiteExecutor {
         }
     }
 
-    // mess up
-    @Deprecated
-    boolean exists(EntityId entityId) {
-        final Pair2 pair = generateQuerySQL(entityId, NE._1_list);
-
-        return exists(pair.sql, pair.parameters);
-    }
-
-    private Pair2 generateQuerySQL(EntityId entityId, Collection<String> selectPropNames) {
-        final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
-
-        switch (columnNamingPolicy) {
-            case LOWER_CASE_WITH_UNDERSCORE: {
-                return NE.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
-            }
-
-            case UPPER_CASE_WITH_UNDERSCORE: {
-                return NE2.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
-            }
-
-            case CAMEL_CASE: {
-                return NE3.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
-            }
-
-            default:
-                throw new AbacusException("Unsupported naming policy");
-        }
-    }
+    //    // mess up
+    //    @Deprecated
+    //    boolean exists(EntityId entityId) {
+    //        final Pair2 pair = generateQuerySQL(entityId, NE._1_list);
+    //
+    //        return exists(pair.sql, pair.parameters);
+    //    }
+    //
+    //    private Pair2 generateQuerySQL(EntityId entityId, Collection<String> selectPropNames) {
+    //        final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
+    //
+    //        switch (columnNamingPolicy) {
+    //            case LOWER_CASE_WITH_UNDERSCORE: {
+    //                return NE.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
+    //            }
+    //
+    //            case UPPER_CASE_WITH_UNDERSCORE: {
+    //                return NE2.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
+    //            }
+    //
+    //            case CAMEL_CASE: {
+    //                return NE3.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
+    //            }
+    //
+    //            default:
+    //                throw new AbacusException("Unsupported naming policy");
+    //        }
+    //    }
 
     public boolean exists(Class<?> entityClass, Condition whereClause) {
         return exists(getTableNameByEntity(entityClass), whereClause);
@@ -1128,33 +1123,33 @@ public final class SQLiteExecutor {
         }
     }
 
-    // mess up
-    @Deprecated
-    <T> T get(Class<T> targetClass, EntityId entityId, String... selectPropNames) {
-        return get(targetClass, entityId, N.asList(selectPropNames));
-    }
-
-    /**
-     * Find the entity from table specified by entityName in <code>entityId</code> by the id values in <code>entityId</code>
-     * 
-     * @param targetClass
-     * @param entityId
-     * @param selectPropNames
-     * @return
-     * @throws NonUniqueResultException if more than one records are found.
-     */
-    // mess up
-    @Deprecated
-    <T> T get(Class<T> targetClass, EntityId entityId, Collection<String> selectPropNames) {
-        final Condition whereClause = EntityManagerUtil.entityId2Condition(entityId);
-        final List<T> entities = find(targetClass, selectPropNames, whereClause, null, 0, 2);
-
-        if (entities.size() > 1) {
-            throw new NonUniqueResultException("More than one records found by condition: " + whereClause.toString());
-        }
-
-        return (entities.size() > 0) ? entities.get(0) : null;
-    }
+    //    // mess up
+    //    @Deprecated
+    //    <T> T get(Class<T> targetClass, EntityId entityId, String... selectPropNames) {
+    //        return get(targetClass, entityId, N.asList(selectPropNames));
+    //    }
+    //
+    //    /**
+    //     * Find the entity from table specified by entityName in <code>entityId</code> by the id values in <code>entityId</code>
+    //     * 
+    //     * @param targetClass
+    //     * @param entityId
+    //     * @param selectPropNames
+    //     * @return
+    //     * @throws NonUniqueResultException if more than one records are found.
+    //     */
+    //    // mess up
+    //    @Deprecated
+    //    <T> T get(Class<T> targetClass, EntityId entityId, Collection<String> selectPropNames) {
+    //        final Condition whereClause = EntityManagerUtil.entityId2Condition(entityId);
+    //        final List<T> entities = find(targetClass, selectPropNames, whereClause, null, 0, 2);
+    //
+    //        if (entities.size() > 1) {
+    //            throw new NonUniqueResultException("More than one records found by condition: " + whereClause.toString());
+    //        }
+    //
+    //        return (entities.size() > 0) ? entities.get(0) : null;
+    //    }
 
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
