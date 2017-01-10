@@ -61,13 +61,13 @@ public final class Reflection<T> {
         return new Reflection<T>((Class<T>) target.getClass(), target);
     }
 
-    public Reflection<T> new_() {
+    public Reflection<T> _new() {
         return new Reflection<T>(cls, N.newInstance(cls));
     }
 
-    public Reflection<T> new_(Object... args) {
+    public Reflection<T> _new(Object... args) {
         if (N.isNullOrEmpty(args)) {
-            return new_();
+            return _new();
         }
 
         final Constructor<T> constructor = getDeclaredConstructor(cls, getTypes(args));

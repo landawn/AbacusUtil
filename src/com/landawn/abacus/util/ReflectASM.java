@@ -35,7 +35,7 @@ final class ReflectASM<T> {
         return new ReflectASM<T>((Class<T>) target.getClass(), target);
     }
 
-    public ReflectASM<T> newInstance() {
+    public ReflectASM<T> _new() {
         return new ReflectASM<T>(cls, getConstructorAccess(cls).newInstance());
     }
 
