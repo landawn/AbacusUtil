@@ -850,6 +850,16 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return OptionalLong.empty();
     }
 
+    public Optional<IndexedLong> findFirst2(LongPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedLong.of(i, elementData[i]));
+            }
+        }
+    
+        return Optional.empty();
+    }
+
     public OptionalLong findLast(LongPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
@@ -858,6 +868,16 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         }
 
         return OptionalLong.empty();
+    }
+
+    public Optional<IndexedLong> findLast2(LongPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedLong.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Override

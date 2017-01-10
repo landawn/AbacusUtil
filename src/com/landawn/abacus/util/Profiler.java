@@ -228,7 +228,7 @@ public final class Profiler {
         }
 
         while (threadCounter.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         final long endTimeInNano = System.nanoTime();

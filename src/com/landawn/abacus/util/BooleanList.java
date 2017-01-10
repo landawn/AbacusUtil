@@ -695,6 +695,16 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return OptionalBoolean.empty();
     }
 
+    public Optional<IndexedBoolean> findFirst2(BooleanPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedBoolean.of(i, elementData[i]));
+            }
+        }
+    
+        return Optional.empty();
+    }
+
     public OptionalBoolean findLast(BooleanPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
@@ -703,6 +713,16 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         }
 
         return OptionalBoolean.empty();
+    }
+
+    public Optional<IndexedBoolean> findLast2(BooleanPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedBoolean.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Override

@@ -1004,6 +1004,16 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     //        return size() == 0 ? OptionalInt.empty() : OptionalInt.of(elementData[size - 1]);
     //    }
 
+    public Optional<IndexedInt> findFirst2(IntPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedInt.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
+    }
+
     public OptionalInt findLast(IntPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
@@ -1012,6 +1022,16 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         }
 
         return OptionalInt.empty();
+    }
+
+    public Optional<IndexedInt> findLast2(IntPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedInt.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Override

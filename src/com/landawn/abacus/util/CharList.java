@@ -832,6 +832,16 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return OptionalChar.empty();
     }
 
+    public Optional<IndexedChar> findFirst2(CharPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedChar.of(i, elementData[i]));
+            }
+        }
+    
+        return Optional.empty();
+    }
+
     public OptionalChar findLast(CharPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
@@ -840,6 +850,16 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         }
 
         return OptionalChar.empty();
+    }
+
+    public Optional<IndexedChar> findLast2(CharPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedChar.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Override

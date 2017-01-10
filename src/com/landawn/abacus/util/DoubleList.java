@@ -810,6 +810,16 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return OptionalDouble.empty();
     }
 
+    public Optional<IndexedDouble> findFirst2(DoublePredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedDouble.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
+    }
+
     public OptionalDouble findLast(DoublePredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
@@ -818,6 +828,16 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         }
 
         return OptionalDouble.empty();
+    }
+
+    public Optional<IndexedDouble> findLast2(DoublePredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedDouble.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Override

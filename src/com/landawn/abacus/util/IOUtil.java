@@ -4302,7 +4302,8 @@ public final class IOUtil {
         }
 
         try (final Stream<T> stream = ((readThreadNum > 1 || processThreadNumber > 0)
-                ? Stream.parallelConcat2(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize)) : Stream.concat2(iterators))) {
+                ? Stream.parallelConcat2(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
+                : Stream.concat2(iterators))) {
 
             final Iterator<? extends T> iteratorII = stream.skip(offset).limit(count).iterator();
 
@@ -4352,7 +4353,7 @@ public final class IOUtil {
                 }
 
                 while (activeThreadNum.get() > 0) {
-                    N.sleep(10);
+                    N.sleep(1);
                 }
 
                 if (errorHolder.value() == null) {

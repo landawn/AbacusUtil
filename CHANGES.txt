@@ -1,5 +1,16 @@
 
+========Changes in 0.9.43=========================================================================
+
+1, Add findFirst2/findLast2 to ObjectList/IntList/LongList/DoubleList/...
+
+2, Add Reflection
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.42=========================================================================
+0, Release new libraries: abacus-android-se-*.jar and abacus-android-se-jdk7-*.jar with smaller (API/method) size.
+
 1, Add diagonal to Matrix/IntMatrix/LongMatrix/DoubleMatrix...
 
 2, Rename iterate(supplier)/iterate(seed, unaryOperator) to generate(supplier)/generate(seed, unaryOperator) in Stream/IntStream/LongStream/DoubleStream... 

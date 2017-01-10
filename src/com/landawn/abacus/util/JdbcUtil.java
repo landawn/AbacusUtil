@@ -2283,7 +2283,7 @@ public final class JdbcUtil {
                 }
 
                 while (activeThreadNum.get() > 0) {
-                    N.sleep(10);
+                    N.sleep(1);
                 }
 
                 if (errorHolder.value() == null) {

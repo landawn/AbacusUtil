@@ -824,6 +824,16 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return OptionalFloat.empty();
     }
 
+    public Optional<IndexedFloat> findFirst2(FloatPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedFloat.of(i, elementData[i]));
+            }
+        }
+    
+        return Optional.empty();
+    }
+
     public OptionalFloat findLast(FloatPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
@@ -832,6 +842,16 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         }
 
         return OptionalFloat.empty();
+    }
+
+    public Optional<IndexedFloat> findLast2(FloatPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedFloat.of(i, elementData[i]));
+            }
+        }
+    
+        return Optional.empty();
     }
 
     @Override

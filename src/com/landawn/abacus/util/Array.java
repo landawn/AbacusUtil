@@ -2684,7 +2684,7 @@ public final class Array {
         }
 
         while (activeThreadNum.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         if (errorHolder.value() != null) {
@@ -2724,7 +2724,7 @@ public final class Array {
             }
 
             while (activeThreadNum.get() > 0) {
-                N.sleep(10);
+                N.sleep(1);
             }
 
             if (errorHolder.value() != null) {
@@ -2805,7 +2805,7 @@ public final class Array {
         }
 
         while (activeThreadNum.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         if (errorHolder.value() != null) {
@@ -2845,7 +2845,7 @@ public final class Array {
             }
 
             while (activeThreadNum.get() > 0) {
-                N.sleep(10);
+                N.sleep(1);
             }
 
             if (errorHolder.value() != null) {
@@ -2926,7 +2926,7 @@ public final class Array {
         }
 
         while (activeThreadNum.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         if (errorHolder.value() != null) {
@@ -2966,7 +2966,7 @@ public final class Array {
             }
 
             while (activeThreadNum.get() > 0) {
-                N.sleep(10);
+                N.sleep(1);
             }
 
             if (errorHolder.value() != null) {
@@ -3047,7 +3047,7 @@ public final class Array {
         }
 
         while (activeThreadNum.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         if (errorHolder.value() != null) {
@@ -3087,7 +3087,7 @@ public final class Array {
             }
 
             while (activeThreadNum.get() > 0) {
-                N.sleep(10);
+                N.sleep(1);
             }
 
             if (errorHolder.value() != null) {
@@ -3168,7 +3168,7 @@ public final class Array {
         }
 
         while (activeThreadNum.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         if (errorHolder.value() != null) {
@@ -3208,7 +3208,7 @@ public final class Array {
             }
 
             while (activeThreadNum.get() > 0) {
-                N.sleep(10);
+                N.sleep(1);
             }
 
             if (errorHolder.value() != null) {
@@ -3289,7 +3289,7 @@ public final class Array {
         }
 
         while (activeThreadNum.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         if (errorHolder.value() != null) {
@@ -3329,7 +3329,7 @@ public final class Array {
             }
 
             while (activeThreadNum.get() > 0) {
-                N.sleep(10);
+                N.sleep(1);
             }
 
             if (errorHolder.value() != null) {
@@ -3429,7 +3429,7 @@ public final class Array {
         }
 
         while (activeThreadNum.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         if (errorHolder.value() != null) {
@@ -3469,7 +3469,7 @@ public final class Array {
             }
 
             while (activeThreadNum.get() > 0) {
-                N.sleep(10);
+                N.sleep(1);
             }
 
             if (errorHolder.value() != null) {
@@ -3582,7 +3582,7 @@ public final class Array {
         }
 
         while (activeThreadNum.get() > 0) {
-            N.sleep(10);
+            N.sleep(1);
         }
 
         if (errorHolder.value() != null) {
@@ -3623,7 +3623,7 @@ public final class Array {
             }
 
             while (activeThreadNum.get() > 0) {
-                N.sleep(10);
+                N.sleep(1);
             }
 
             if (errorHolder.value() != null) {

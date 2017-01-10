@@ -800,6 +800,16 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return OptionalShort.empty();
     }
 
+    public Optional<IndexedShort> findFirst2(ShortPredicate predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedShort.of(i, elementData[i]));
+            }
+        }
+    
+        return Optional.empty();
+    }
+
     public OptionalShort findLast(ShortPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
@@ -808,6 +818,16 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         }
 
         return OptionalShort.empty();
+    }
+
+    public Optional<IndexedShort> findLast2(ShortPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(IndexedShort.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Override

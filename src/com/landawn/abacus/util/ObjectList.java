@@ -1155,6 +1155,16 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return OptionalNullable.empty();
     }
 
+    public Optional<Indexed<T>> findFirst2(Predicate<? super T> predicate) {
+        for (int i = 0; i < size; i++) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(Indexed.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
+    }
+
     public OptionalNullable<T> findLast(Predicate<? super T> predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
@@ -1163,6 +1173,16 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
 
         return OptionalNullable.empty();
+    }
+
+    public Optional<Indexed<T>> findLast2(Predicate<? super T> predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return Optional.of(Indexed.of(i, elementData[i]));
+            }
+        }
+
+        return Optional.empty();
     }
 
     @Override

@@ -3063,8 +3063,8 @@ public final class N {
             } else {
                 return invoke(N.getDeclaredConstructor(cls));
             }
-        } catch (Exception e) {
-            throw new AbacusException(e);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw N.toRuntimeException(e);
         }
     }
 
@@ -10424,6 +10424,14 @@ public final class N {
 
     public static boolean isPrimitiveArray(final Class<?> cls) {
         return typeOf(cls).isPrimitiveArray();
+    }
+
+    public static Class<?> wrap(final Class<?> cls) {
+        return N.isPrimitive(cls) ? Array.box(cls) : cls;
+    }
+
+    public static Class<?> unwrap(final Class<?> cls) {
+        return N.isPrimitiveWapper(cls) ? Array.unbox(cls) : cls;
     }
 
     public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
