@@ -1,7 +1,7 @@
 
 ========Changes in 0.9.43=========================================================================
 
-1, Add findFirst2/findLast2 to ObjectList/IntList/LongList/DoubleList/...
+1, Add findFirstIndex/findLastIndex to ObjectList/IntList/LongList/DoubleList/...
 
 2, Add Reflection
 

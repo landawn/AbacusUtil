@@ -347,6 +347,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return batchRemove(c, true) > 0;
     }
 
+    public boolean retainAll(boolean[] a) {
+        return retainAll(BooleanList.of(a));
+    }
+
     private int batchRemove(BooleanList c, boolean complement) {
         final boolean[] elementData = this.elementData;
 
@@ -695,15 +699,15 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return OptionalBoolean.empty();
     }
 
-    public Optional<IndexedBoolean> findFirst2(BooleanPredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return Optional.of(IndexedBoolean.of(i, elementData[i]));
-            }
-        }
-    
-        return Optional.empty();
-    }
+    //    public Optional<IndexedBoolean> findFirst2(BooleanPredicate predicate) {
+    //        for (int i = 0; i < size; i++) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(IndexedBoolean.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
 
     public OptionalBoolean findLast(BooleanPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -715,14 +719,34 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return OptionalBoolean.empty();
     }
 
-    public Optional<IndexedBoolean> findLast2(BooleanPredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
+    //    public Optional<IndexedBoolean> findLast2(BooleanPredicate predicate) {
+    //        for (int i = size - 1; i >= 0; i--) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(IndexedBoolean.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
+
+    public OptionalInt findFirstIndex(BooleanPredicate predicate) {
+        for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
-                return Optional.of(IndexedBoolean.of(i, elementData[i]));
+                return OptionalInt.of(i);
             }
         }
 
-        return Optional.empty();
+        return OptionalInt.empty();
+    }
+
+    public OptionalInt findLastIndex(BooleanPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalInt.of(i);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
     @Override

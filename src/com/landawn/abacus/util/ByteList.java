@@ -400,6 +400,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return batchRemove(c, true) > 0;
     }
 
+    public boolean retainAll(byte[] a) {
+        return retainAll(ByteList.of(a));
+    }
+
     private int batchRemove(ByteList c, boolean complement) {
         final byte[] elementData = this.elementData;
 
@@ -808,15 +812,15 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return OptionalByte.empty();
     }
 
-    public Optional<IndexedByte> findFirst2(BytePredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return Optional.of(IndexedByte.of(i, elementData[i]));
-            }
-        }
-
-        return Optional.empty();
-    }
+    //    public Optional<IndexedByte> findFirst2(BytePredicate predicate) {
+    //        for (int i = 0; i < size; i++) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(IndexedByte.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
 
     public OptionalByte findLast(BytePredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -828,14 +832,34 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return OptionalByte.empty();
     }
 
-    public Optional<IndexedByte> findLast2(BytePredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
+    //    public Optional<IndexedByte> findLast2(BytePredicate predicate) {
+    //        for (int i = size - 1; i >= 0; i--) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(IndexedByte.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
+
+    public OptionalInt findFirstIndex(BytePredicate predicate) {
+        for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
-                return Optional.of(IndexedByte.of(i, elementData[i]));
+                return OptionalInt.of(i);
             }
         }
 
-        return Optional.empty();
+        return OptionalInt.empty();
+    }
+
+    public OptionalInt findLastIndex(BytePredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalInt.of(i);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
     @Override
@@ -1103,6 +1127,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         }
 
         return ObjectList.of(b);
+    }
+
+    public IntList toIntList() {
+        return IntList.from(elementData, 0, size);
     }
 
     @Override

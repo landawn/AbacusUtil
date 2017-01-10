@@ -444,6 +444,10 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return batchRemove(c, true) > 0;
     }
 
+    public boolean retainAll(Object[] a) {
+        return retainAll(ObjectList.of(a));
+    }
+
     private int batchRemove(ObjectList<?> c, boolean complement) {
         final T[] elementData = this.elementData;
 
@@ -1155,15 +1159,15 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return OptionalNullable.empty();
     }
 
-    public Optional<Indexed<T>> findFirst2(Predicate<? super T> predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return Optional.of(Indexed.of(i, elementData[i]));
-            }
-        }
-
-        return Optional.empty();
-    }
+    //    public Optional<Indexed<T>> findFirst2(Predicate<? super T> predicate) {
+    //        for (int i = 0; i < size; i++) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(Indexed.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
 
     public OptionalNullable<T> findLast(Predicate<? super T> predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -1175,14 +1179,34 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return OptionalNullable.empty();
     }
 
-    public Optional<Indexed<T>> findLast2(Predicate<? super T> predicate) {
-        for (int i = size - 1; i >= 0; i--) {
+    //    public Optional<Indexed<T>> findLast2(Predicate<? super T> predicate) {
+    //        for (int i = size - 1; i >= 0; i--) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(Indexed.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
+
+    public OptionalInt findFirstIndex(Predicate<? super T> predicate) {
+        for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
-                return Optional.of(Indexed.of(i, elementData[i]));
+                return OptionalInt.of(i);
             }
         }
 
-        return Optional.empty();
+        return OptionalInt.empty();
+    }
+
+    public OptionalInt findLastIndex(Predicate<? super T> predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalInt.of(i);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
     @Override

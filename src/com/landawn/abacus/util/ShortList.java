@@ -398,6 +398,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return batchRemove(c, true) > 0;
     }
 
+    public boolean retainAll(short[] a) {
+        return retainAll(ShortList.of(a));
+    }
+
     private int batchRemove(ShortList c, boolean complement) {
         final short[] elementData = this.elementData;
 
@@ -800,15 +804,15 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return OptionalShort.empty();
     }
 
-    public Optional<IndexedShort> findFirst2(ShortPredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return Optional.of(IndexedShort.of(i, elementData[i]));
-            }
-        }
-    
-        return Optional.empty();
-    }
+    //    public Optional<IndexedShort> findFirst2(ShortPredicate predicate) {
+    //        for (int i = 0; i < size; i++) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(IndexedShort.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
 
     public OptionalShort findLast(ShortPredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -820,14 +824,34 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return OptionalShort.empty();
     }
 
-    public Optional<IndexedShort> findLast2(ShortPredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
+    //    public Optional<IndexedShort> findLast2(ShortPredicate predicate) {
+    //        for (int i = size - 1; i >= 0; i--) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(IndexedShort.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
+
+    public OptionalInt findFirstIndex(ShortPredicate predicate) {
+        for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
-                return Optional.of(IndexedShort.of(i, elementData[i]));
+                return OptionalInt.of(i);
             }
         }
 
-        return Optional.empty();
+        return OptionalInt.empty();
+    }
+
+    public OptionalInt findLastIndex(ShortPredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalInt.of(i);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
     @Override
@@ -1115,6 +1139,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         }
 
         return ObjectList.of(b);
+    }
+
+    public IntList toIntList() {
+        return IntList.from(elementData, 0, size);
     }
 
     @Override

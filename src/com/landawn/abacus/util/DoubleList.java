@@ -408,6 +408,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return batchRemove(c, true) > 0;
     }
 
+    public boolean retainAll(double[] a) {
+        return retainAll(DoubleList.of(a));
+    }
+
     private int batchRemove(DoubleList c, boolean complement) {
         final double[] elementData = this.elementData;
 
@@ -810,15 +814,15 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return OptionalDouble.empty();
     }
 
-    public Optional<IndexedDouble> findFirst2(DoublePredicate predicate) {
-        for (int i = 0; i < size; i++) {
-            if (predicate.test(elementData[i])) {
-                return Optional.of(IndexedDouble.of(i, elementData[i]));
-            }
-        }
-
-        return Optional.empty();
-    }
+    //    public Optional<IndexedDouble> findFirst2(DoublePredicate predicate) {
+    //        for (int i = 0; i < size; i++) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(IndexedDouble.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
 
     public OptionalDouble findLast(DoublePredicate predicate) {
         for (int i = size - 1; i >= 0; i--) {
@@ -830,14 +834,34 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return OptionalDouble.empty();
     }
 
-    public Optional<IndexedDouble> findLast2(DoublePredicate predicate) {
-        for (int i = size - 1; i >= 0; i--) {
+    //    public Optional<IndexedDouble> findLast2(DoublePredicate predicate) {
+    //        for (int i = size - 1; i >= 0; i--) {
+    //            if (predicate.test(elementData[i])) {
+    //                return Optional.of(IndexedDouble.of(i, elementData[i]));
+    //            }
+    //        }
+    //
+    //        return Optional.empty();
+    //    }
+
+    public OptionalInt findFirstIndex(DoublePredicate predicate) {
+        for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
-                return Optional.of(IndexedDouble.of(i, elementData[i]));
+                return OptionalInt.of(i);
             }
         }
 
-        return Optional.empty();
+        return OptionalInt.empty();
+    }
+
+    public OptionalInt findLastIndex(DoublePredicate predicate) {
+        for (int i = size - 1; i >= 0; i--) {
+            if (predicate.test(elementData[i])) {
+                return OptionalInt.of(i);
+            }
+        }
+
+        return OptionalInt.empty();
     }
 
     @Override
