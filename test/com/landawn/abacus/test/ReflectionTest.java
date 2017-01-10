@@ -12,21 +12,21 @@ public class ReflectionTest extends TestCase {
 
     @Test
     public void test_perf() {
-        Profiler.run(3, 10000, 3, "m_01 by refelct", () -> Reflection.on(X.class)._new().invoke("m_01")).printResult();
+        Profiler.run(3, 100000, 3, "m_01 by refelct", () -> Reflection.on(X.class)._new().invoke("m_01")).printResult();
 
-        Profiler.run(3, 10000, 3, "m_01 direct call", () -> new X().m_01()).printResult();
+        Profiler.run(3, 100000, 3, "m_01 direct call", () -> new X().m_01()).printResult();
 
-        Profiler.run(3, 10000, 3, "m_02 by refelct", () -> Reflection.on(X.class)._new().invoke("m_02")).printResult();
+        Profiler.run(3, 100000, 3, "m_02 by refelct", () -> Reflection.on(X.class)._new().invoke("m_02")).printResult();
 
-        Profiler.run(3, 10000, 3, "m_02 direct call", () -> new X().m_02()).printResult();
+        Profiler.run(3, 100000, 3, "m_02 direct call", () -> new X().m_02()).printResult();
 
-        Profiler.run(3, 10000, 3, "m_11 by refelct", () -> Reflection.on(X.class)._new().invoke("m_11")).printResult();
+        Profiler.run(3, 100000, 3, "m_11 by refelct", () -> Reflection.on(X.class)._new().invoke("m_11")).printResult();
 
-        Profiler.run(3, 10000, 3, "m_11 direct call", () -> X.m_11()).printResult();
+        Profiler.run(3, 100000, 3, "m_11 direct call", () -> X.m_11()).printResult();
 
-        Profiler.run(3, 10000, 3, "m_12 by refelct", () -> Reflection.on(X.class)._new().invoke("m_12")).printResult();
+        Profiler.run(3, 100000, 3, "m_12 by refelct", () -> Reflection.on(X.class)._new().invoke("m_12")).printResult();
 
-        Profiler.run(3, 10000, 3, "m_12 direct call", () -> X.m_12()).printResult();
+        Profiler.run(3, 100000, 3, "m_12 direct call", () -> X.m_12()).printResult();
     }
 
     static class X {
