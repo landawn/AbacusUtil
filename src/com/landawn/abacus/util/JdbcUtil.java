@@ -904,6 +904,17 @@ public final class JdbcUtil {
         }
     }
 
+    public static String[] getColumnLabels(final ResultSet rs) throws SQLException {
+        final ResultSetMetaData metaData = rs.getMetaData();
+        final String[] labels = new String[metaData.getColumnCount()];
+
+        for (int i = 0, len = labels.length; i < len; i++) {
+            labels[i] = metaData.getColumnLabel(i + 1);
+        }
+
+        return labels;
+    }
+
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 
