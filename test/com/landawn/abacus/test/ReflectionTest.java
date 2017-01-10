@@ -29,7 +29,7 @@ public class ReflectionTest extends TestCase {
         Profiler.run(3, 100000, 3, "m_12 direct call", () -> X.m_12()).printResult();
     }
 
-    static class X {
+    public static class X {
         public long m_01() {
             return m_11();
         }
