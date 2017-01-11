@@ -904,30 +904,6 @@ public final class JdbcUtil {
         }
     }
 
-    public static String[] getColumnLabels(final ResultSet rs) throws SQLException {
-        final ResultSetMetaData metaData = rs.getMetaData();
-        final int columnCount = metaData.getColumnCount();
-        final String[] labels = new String[columnCount];
-
-        for (int i = 0; i < columnCount; i++) {
-            labels[i] = metaData.getColumnLabel(i + 1);
-        }
-
-        return labels;
-    }
-
-    public static List<String> getColumnLabelList(final ResultSet rs) throws SQLException {
-        final ResultSetMetaData metaData = rs.getMetaData();
-        final int columnCount = metaData.getColumnCount();
-        final List<String> labels = new ArrayList<>(columnCount);
-
-        for (int i = 0; i < columnCount; i++) {
-            labels.add(metaData.getColumnLabel(i + 1));
-        }
-
-        return labels;
-    }
-
     /**
      * Imports the data from <code>DataSet</code> to database. 
      * 

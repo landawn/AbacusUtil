@@ -1376,7 +1376,7 @@ public final class SQLExecutor implements Closeable {
 
             final NamedSQL namedSQL = getNamedSQL(sql);
             final ResultSet rs = iterators.get(0).resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL, rs).toArray(new String[0]);
+            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
             final int columnCount = columnLabels.length;
             final boolean isMap = Map.class.isAssignableFrom(targetClass);
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
@@ -1465,7 +1465,7 @@ public final class SQLExecutor implements Closeable {
 
             final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
             final ResultSet rs = iterators.get(0).resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL, rs).toArray(new String[0]);
+            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
             final int columnCount = columnLabels.length;
             final boolean isMap = Map.class.isAssignableFrom(targetClass);
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
@@ -1877,7 +1877,7 @@ public final class SQLExecutor implements Closeable {
 
             final NamedSQL namedSQL = getNamedSQL(sql);
             final ResultSet rs = iterators.get(0).resultSet();
-            final List<String> columnLabelList = getColumnLabelList(namedSQL, rs);
+            final List<String> columnLabelList = getColumnLabelList(namedSQL.getPureSQL(), rs);
             final int columnCount = columnLabelList.size();
             final List<String> columnNameList = new ArrayList<>(columnCount);
             final List<List<Object>> columnList = new ArrayList<>(columnCount);
@@ -1941,7 +1941,7 @@ public final class SQLExecutor implements Closeable {
 
             final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
             final ResultSet rs = iterators.get(0).resultSet();
-            final List<String> columnLabelList = getColumnLabelList(namedSQL, rs);
+            final List<String> columnLabelList = getColumnLabelList(namedSQL.getPureSQL(), rs);
             final int columnCount = columnLabelList.size();
             final List<String> columnNameList = new ArrayList<>(columnCount);
             final List<List<Object>> columnList = new ArrayList<>(columnCount);
@@ -2481,7 +2481,7 @@ public final class SQLExecutor implements Closeable {
         try {
             final NamedSQL namedSQL = getNamedSQL(sql);
             final ResultSet rs = iterator.resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL, rs).toArray(new String[0]);
+            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
             final int columnCount = columnLabels.length;
             final boolean isMap = Map.class.isAssignableFrom(targetClass);
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
@@ -2585,7 +2585,7 @@ public final class SQLExecutor implements Closeable {
         try {
             final NamedSQL namedSQL = getNamedSQL(sql);
             final ResultSet rs = iterators.get(0).resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL, rs).toArray(new String[0]);
+            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
             final int columnCount = columnLabels.length;
             final boolean isMap = Map.class.isAssignableFrom(targetClass);
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
@@ -2690,7 +2690,7 @@ public final class SQLExecutor implements Closeable {
         try {
             final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
             final ResultSet rs = iterators.get(0).resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL, rs).toArray(new String[0]);
+            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
             final int columnCount = columnLabels.length;
             final boolean isMap = Map.class.isAssignableFrom(targetClass);
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
@@ -3291,8 +3291,7 @@ public final class SQLExecutor implements Closeable {
         JdbcUtil.closeQuietly(rs, stmt, inputConn == null ? localConn : null);
     }
 
-    protected static List<String> getColumnLabelList(final NamedSQL namedSQL, final ResultSet rs) throws SQLException {
-        String sql = namedSQL.getPureSQL();
+    protected static List<String> getColumnLabelList(final String sql, final ResultSet rs) throws SQLException {
         List<String> labelList = _sqlColumnLabelPool.get(sql);
 
         if (labelList == null) {
@@ -3304,20 +3303,21 @@ public final class SQLExecutor implements Closeable {
                 labelList.add(metaData.getColumnLabel(i));
             }
 
-            int fromIndex = SQLParser.indexWord(sql, D.FROM, 0, false);
-
-            boolean isCachable = true;
-            for (int i = 6; i < fromIndex; i++) {
-                char ch = sql.charAt(i);
-
-                if (ch == '*' && (sql.charAt(i - 1) != '(' || sql.charAt(i + 1) != ')')) {
-                    isCachable = false;
-
-                    break;
-                }
-            }
-
-            if (isCachable) {
+            //            int fromIndex = SQLParser.indexWord(sql, D.FROM, 0, false);
+            //
+            //            boolean isCachable = true;
+            //            for (int i = 6; i < fromIndex; i++) {
+            //                char ch = sql.charAt(i);
+            //
+            //                if (ch == '*' && (sql.charAt(i - 1) != '(' || sql.charAt(i + 1) != ')')) {
+            //                    isCachable = false;
+            //
+            //                    break;
+            //                }
+            //            }
+            //
+            //            if (isCachable) {
+            if (sql.length() < 4098) {
                 labelList = N.asImmutableList(labelList);
 
                 if (_sqlColumnLabelPool.size() >= SQL_CACHE_SIZE) {
@@ -3494,7 +3494,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         protected List<String> getColumnLabelList(final NamedSQL namedSQL, final ResultSet rs) throws SQLException {
-            return SQLExecutor.getColumnLabelList(namedSQL, rs);
+            return SQLExecutor.getColumnLabelList(namedSQL.getPureSQL(), rs);
         }
     }
 
