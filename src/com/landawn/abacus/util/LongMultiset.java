@@ -1077,7 +1077,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public List<E> flatten2() {
-        return N.asList((E[]) flatten().array());
+        return N.asList2((E[]) flatten().array());
     }
 
     public void forEach(BiConsumer<? super E, Long> action) {

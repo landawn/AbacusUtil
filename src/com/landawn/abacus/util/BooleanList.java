@@ -1054,7 +1054,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     //    }
 
     public Stream<Boolean> stream() {
-        return stream(0, size());
+        return Stream.from(elementData, 0, size());
     }
 
     public Stream<Boolean> stream(final int fromIndex, final int toIndex) {

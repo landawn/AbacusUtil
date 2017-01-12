@@ -1397,7 +1397,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public IntStream stream() {
-        return stream(0, size());
+        return IntStream.of(elementData, 0, size());
     }
 
     public IntStream stream(final int fromIndex, final int toIndex) {

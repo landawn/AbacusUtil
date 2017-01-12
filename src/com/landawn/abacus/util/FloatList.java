@@ -1209,7 +1209,7 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     public FloatStream stream() {
-        return stream(0, size());
+        return FloatStream.of(elementData, 0, size());
     }
 
     public FloatStream stream(final int fromIndex, final int toIndex) {

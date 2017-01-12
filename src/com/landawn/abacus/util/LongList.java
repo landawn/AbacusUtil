@@ -1239,7 +1239,7 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public LongStream stream() {
-        return stream(0, size());
+        return LongStream.of(elementData, 0, size());
     }
 
     public LongStream stream(final int fromIndex, final int toIndex) {

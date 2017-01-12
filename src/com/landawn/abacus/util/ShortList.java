@@ -1185,7 +1185,7 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     public ShortStream stream() {
-        return stream(0, size());
+        return ShortStream.of(elementData, 0, size());
     }
 
     public ShortStream stream(final int fromIndex, final int toIndex) {

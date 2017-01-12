@@ -1198,7 +1198,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public CharStream stream() {
-        return stream(0, size());
+        return CharStream.of(elementData, 0, size());
     }
 
     public CharStream stream(final int fromIndex, final int toIndex) {

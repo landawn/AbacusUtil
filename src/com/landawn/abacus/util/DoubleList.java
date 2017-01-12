@@ -1191,7 +1191,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public DoubleStream stream() {
-        return stream(0, size());
+        return DoubleStream.of(elementData, 0, size());
     }
 
     public DoubleStream stream(final int fromIndex, final int toIndex) {

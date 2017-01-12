@@ -1173,7 +1173,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public ByteStream stream() {
-        return stream(0, size());
+        return ByteStream.of(elementData, 0, size());
     }
 
     public ByteStream stream(final int fromIndex, final int toIndex) {

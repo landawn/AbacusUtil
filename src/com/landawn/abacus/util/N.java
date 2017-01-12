@@ -1074,7 +1074,7 @@ public final class N {
     static final Field listElementDataField;
     static final Field listSizeField;
     static volatile boolean isListElementDataFieldGettable = true;
-    // static volatile boolean isListElementDataFieldSettable = true;
+    static volatile boolean isListElementDataFieldSettable = true;
 
     static {
         Field tmp = null;
@@ -3933,9 +3933,6 @@ public final class N {
     }
 
     /**
-     * Create an array list by initializing its elements data with the specified array <code>a</code>.
-     * The returned list may share the same elements with the specified array <code>a</code>. That's to say any change on the List/Array will affect the Array/List
-     *
      * @param a
      * @return
      */
@@ -3944,19 +3941,45 @@ public final class N {
             return new ArrayList<T>();
         }
 
-        //        if (isListElementDataFieldSettable && listElementDataField != null && listSizeField != null) {
-        //            final List<T> list = new ArrayList<T>();
-        //
-        //            try {
-        //                listElementDataField.set(list, a);
-        //                listSizeField.set(list, a.length);
-        //
-        //                return list;
-        //            } catch (Throwable e) {
-        //                // ignore;
-        //                isListElementDataFieldSettable = false;
-        //            }
-        //        }
+        final List<T> list = new ArrayList<T>(a.length);
+
+        if (a.length < 9) {
+            for (T e : a) {
+                list.add(e);
+            }
+        } else {
+            list.addAll(Arrays.asList(a));
+        }
+
+        return list;
+    }
+
+    /**
+     * Create an array list by initializing its elements data with the specified array <code>a</code>.
+     * The returned list may share the same elements with the specified array <code>a</code>.
+     * That's to say any change on the List/Array will affect the Array/List.
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> List<T> asList2(final T... a) {
+        if (a.length == 0) {
+            return new ArrayList<T>();
+        }
+
+        if (isListElementDataFieldSettable && listElementDataField != null && listSizeField != null) {
+            final List<T> list = new ArrayList<T>();
+
+            try {
+                listElementDataField.set(list, a);
+                listSizeField.set(list, a.length);
+
+                return list;
+            } catch (Throwable e) {
+                // ignore;
+                isListElementDataFieldSettable = false;
+            }
+        }
 
         final List<T> list = new ArrayList<T>(a.length);
 
@@ -15626,16 +15649,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         boolean tmp = false;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -15670,16 +15689,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         char tmp = 0;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -15714,16 +15729,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         byte tmp = 0;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -15758,16 +15769,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         short tmp = 0;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -15802,16 +15809,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         int tmp = 0;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -15846,16 +15849,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         long tmp = 0L;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -15890,16 +15889,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         float tmp = 0f;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -15934,16 +15929,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         double tmp = 0d;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -15984,16 +15975,12 @@ public final class N {
             return;
         }
 
-        toIndex = toIndex - 1;
         Object tmp = null;
 
-        while (fromIndex < toIndex) {
-            tmp = a[toIndex];
-            a[toIndex] = a[fromIndex];
-            a[fromIndex] = tmp;
-
-            fromIndex++;
-            toIndex--;
+        for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+            tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
         }
     }
 
@@ -16015,13 +16002,8 @@ public final class N {
         final List<Object> l = (List<Object>) list;
 
         if (toIndex - fromIndex < REVERSE_THRESHOLD || list instanceof RandomAccess) {
-            toIndex = toIndex - 1;
-
-            while (fromIndex < toIndex) {
-                l.set(fromIndex, l.set(toIndex, l.get(fromIndex)));
-
-                fromIndex++;
-                toIndex--;
+            for (int i = fromIndex, j = toIndex - 1; i < j; i++, j--) {
+                l.set(i, l.set(j, l.get(i)));
             }
         } else {
             final ListIterator<Object> fwd = l.listIterator(fromIndex);

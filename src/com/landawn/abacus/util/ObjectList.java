@@ -445,7 +445,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     public boolean retainAll(Object[] a) {
-        return retainAll(ObjectList.of(a));
+        return retainAll(a == null ? empty() : ObjectList.of(a));
     }
 
     private int batchRemove(ObjectList<?> c, boolean complement) {
@@ -1745,7 +1745,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     public Stream<T> stream() {
-        return stream(0, size());
+        return Stream.of(elementData, 0, size());
     }
 
     public Stream<T> stream(final int fromIndex, final int toIndex) {
