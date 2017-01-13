@@ -1280,14 +1280,14 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return of(N.filter(elementData, fromIndex, toIndex, filter, max));
     }
 
-    public <U> ObjectList<T> filter(final U check, final BiPredicate<? super T, ? super U> predicate) {
-        return filter(0, size, check, predicate);
+    public <U> ObjectList<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return filter(0, size, seed, predicate);
     }
 
-    public <U> ObjectList<T> filter(final int fromIndex, final int toIndex, final U check, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> ObjectList<T> filter(final int fromIndex, final int toIndex, final U seed, final BiPredicate<? super T, ? super U> predicate) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, check, predicate));
+        return of(N.filter(elementData, fromIndex, toIndex, seed, predicate));
     }
 
     public <R> ObjectList<R> map(final Function<? super T, ? extends R> func) {

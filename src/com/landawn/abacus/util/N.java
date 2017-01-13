@@ -165,7 +165,6 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.ImmutableIterator;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * <p>
@@ -22132,43 +22131,42 @@ public final class N {
         return outputResult;
     }
 
-    public static <T, U> T[] filter(final T[] a, final U check, final BiPredicate<? super T, ? super U> filter) {
+    static <T, U> T[] filter(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter) {
         if (N.isNullOrEmpty(a)) {
             return a;
         }
 
-        return filter(a, 0, a.length, check, filter);
+        return filter(a, 0, a.length, seed, filter);
     }
 
-    public static <T, U> T[] filter(final T[] a, final int fromIndex, final int toIndex, final U check, final BiPredicate<? super T, ? super U> filter) {
+    static <T, U> T[] filter(final T[] a, final int fromIndex, final int toIndex, final U seed, final BiPredicate<? super T, ? super U> filter) {
         return filter(a, fromIndex, toIndex, new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return filter.test(value, check);
+                return filter.test(value, seed);
             }
         });
     }
 
-    public static <T, U, R extends Collection<T>> R filter(final T[] a, final U check, final BiPredicate<? super T, ? super U> filter,
-            final IntFunction<R> supplier) {
+    static <T, U, R extends Collection<T>> R filter(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
-        return filter(a, 0, a.length, check, filter, supplier);
+        return filter(a, 0, a.length, seed, filter, supplier);
     }
 
-    public static <T, U, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final U check,
+    static <T, U, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final U seed,
             final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
         return filter(a, fromIndex, toIndex, new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return filter.test(value, check);
+                return filter.test(value, seed);
             }
         }, supplier);
     }
 
-    public static <T, U> List<T> filter(final Collection<? extends T> c, final U check, final BiPredicate<? super T, ? super U> filter) {
+    static <T, U> List<T> filter(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -22176,22 +22174,22 @@ public final class N {
         return filter(c, new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return filter.test(value, check);
+                return filter.test(value, seed);
             }
         });
     }
 
-    public static <T, U> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U check,
+    static <T, U> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
             final BiPredicate<? super T, ? super U> filter) {
         return filter(c, fromIndex, toIndex, new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return filter.test(value, check);
+                return filter.test(value, seed);
             }
         });
     }
 
-    public static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final U check, final BiPredicate<? super T, ? super U> filter,
+    static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter,
             final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
@@ -22200,17 +22198,17 @@ public final class N {
         return filter(c, new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return filter.test(value, check);
+                return filter.test(value, seed);
             }
         }, supplier);
     }
 
-    public static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U check,
+    static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
             final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
         return filter(c, fromIndex, toIndex, new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return filter.test(value, check);
+                return filter.test(value, seed);
             }
         }, supplier);
     }
@@ -25361,18 +25359,42 @@ public final class N {
         return c;
     }
 
-    public static <T> Iterator<T> concat(Iterator<? extends T> a, Iterator<? extends T> b) {
-        return Stream.concat(a, b).iterator();
+    public static <T> Iterator<T> concat(final Iterator<? extends T> a, final Iterator<? extends T> b) {
+        return concat(Arrays.asList(a, b));
     }
 
-    public static <T> Iterator<T> concat(Iterator<? extends T>... a) {
-        return Stream.concat(a).iterator();
+    public static <T> Iterator<T> concat(final Iterator<? extends T>... a) {
+        return concat(Arrays.asList(a));
     }
 
     public static <T> Iterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
-        final Iterator<T> iter = (Iterator<T>) Stream.concat2(c).iterator();
+        return new Iterator<T>() {
+            private final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
+            private Iterator<? extends T> cur;
 
-        return iter;
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     public static int replaceAll(final boolean[] a, final boolean oldVal, final boolean newVal) {
