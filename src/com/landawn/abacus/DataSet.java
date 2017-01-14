@@ -35,6 +35,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Properties;
+import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
@@ -779,8 +780,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
 
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
 
     /**
      * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
@@ -792,14 +792,13 @@ public interface DataSet extends Iterable<Object[]> {
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
+    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
+            boolean shareRowArray);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
+    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
+            boolean shareRowArray);
 
     <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
             BiPredicate<? super Object[], ? super R> predicate);
@@ -3166,6 +3165,7 @@ public interface DataSet extends Iterable<Object[]> {
      *
      * @param dataSet
      * @return a new DataSet
+     * @see com.landawn.abacus.util.IntList#intersect(com.landawn.abacus.util.IntList)
      */
     DataSet intersect(DataSet dataSet);
 
@@ -3174,8 +3174,33 @@ public interface DataSet extends Iterable<Object[]> {
      *
      * @param dataSet
      * @return a new DataSet
+     * @see com.landawn.abacus.util.IntList#except(com.landawn.abacus.util.IntList)
      */
     DataSet except(DataSet dataSet);
+
+    /**
+     * 
+     * @param dataSet
+     * @return
+     * @see com.landawn.abacus.util.IntList#xor(com.landawn.abacus.util.IntList)
+     */
+    DataSet xor(DataSet dataSet);
+
+    /**
+     * 
+     * @param dataSet
+     * @return
+     * @see java.util.Collection#retainAll(Collection)
+     */
+    DataSet retainAll(DataSet dataSet);
+
+    /**
+     * 
+     * @param dataSet
+     * @return
+     * @see java.util.Collection#removeAll(Collection)
+     */
+    DataSet removeAll(DataSet dataSet);
 
     /**
      * Returns a new <code>DataSet</code> by appending the specified <code>from</code> <code>DataSet</code> into this <code>DataSet</code>.
@@ -3595,6 +3620,8 @@ public interface DataSet extends Iterable<Object[]> {
     // <V, R extends Map<String, V>> __<R> shift3(Class<? extends R> rowClass);
 
     // <V, R extends Map<String, V>> __<R> shift3(Class<? extends R> rowClass, Class<? extends V> valueType);
+
+    <T> Sheet<Integer, String, T> toSheet();
 
     /**
      * it's same as: N.println(toString());
