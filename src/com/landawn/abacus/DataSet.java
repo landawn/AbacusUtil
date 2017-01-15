@@ -442,6 +442,44 @@ public interface DataSet extends Iterable<Object[]> {
     void addColumn(int columnIndex, String columnName, List<?> column);
 
     /**
+     * Generate the new column values from the specified column by the specified <code>Function</code>.
+     * 
+     * @param fromColumnName
+     * @param newColumnName
+     * @param func
+     */
+    void addColumn(String fromColumnName, String newColumnName, Function<?, ?> func);
+
+    /**
+     * Generate the new column values from the specified column by the specified <code>Function</code>.
+     * 
+     * @param columnIndex
+     * @param fromColumnName
+     * @param newColumnName
+     * @param func
+     */
+    void addColumn(int columnIndex, String fromColumnName, String newColumnName, Function<?, ?> func);
+
+    /**
+     * Generate the new column values from the specified columns by the specified <code>Function</code>.
+     * 
+     * @param fromColumnNames
+     * @param newColumnName
+     * @param func
+     */
+    void addColumn(Collection<String> fromColumnNames, String newColumnName, Function<? super Object[], ?> func);
+
+    /**
+     * Generate the new column values from the specified columns by the specified <code>Function</code>.
+     * 
+     * @param columnIndex
+     * @param fromColumnNames
+     * @param newColumnName
+     * @param func
+     */
+    void addColumn(int columnIndex, Collection<String> fromColumnNames, String newColumnName, Function<? super Object[], ?> func);
+
+    /**
      * Remove the column with the specified columnName from this DataSet.
      *
      * @param columnName
@@ -3634,18 +3672,16 @@ public interface DataSet extends Iterable<Object[]> {
      */
     static interface __<T> {
         /**
-         * Must NOT modify the returned list.
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnIndex
          * @return
          */
         <E> List<E> getColumn(Class<? extends E> columnType, int columnIndex);
 
         /**
-         * Must NOT modify the returned list.
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @return
          */
@@ -3653,7 +3689,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param valueType
          * @param keyColumnName
          * @param valueColumnName
@@ -3663,7 +3699,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          *
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param valueType
          * @param keyColumnName
          * @param valueColumnName
@@ -3676,7 +3712,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param valueType
          * @param keyColumnName
          * @param valueColumnName
@@ -3689,7 +3725,7 @@ public interface DataSet extends Iterable<Object[]> {
                 int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
 
         /**
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param keyColumnName
          * @param valueColumnNames
          * @return
@@ -3698,7 +3734,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          *
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param keyColumnName
          * @param valueColumnNames
          * @param fromRowIndex
@@ -3709,7 +3745,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param keyColumnName
          * @param valueColumnNames
          * @param fromRowIndex
@@ -3754,7 +3790,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          *
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param keyColumnName
          * @param valueColumnNames
          * @return
@@ -3763,7 +3799,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          *
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param keyColumnName
          * @param valueColumnNames
          * @param fromRowIndex
@@ -3775,7 +3811,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param keyType
+         * @param keyType it's only used to identify the type.
          * @param keyColumnName
          * @param valueColumnNames
          * @param fromRowIndex
@@ -3787,7 +3823,7 @@ public interface DataSet extends Iterable<Object[]> {
                 int fromRowIndex, int toRowIndex, IntFunction<Multimap<K, T, V>> supplier);
 
         /**
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @return
          */
@@ -3795,7 +3831,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          *
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3805,7 +3841,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3816,14 +3852,14 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @return
          */
         <E extends Comparable<? super E>> OptionalNullable<E> min(Class<? extends E> columnType, String columnName);
 
         /**
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param comparator
          * @return
@@ -3832,7 +3868,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3842,7 +3878,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3853,7 +3889,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @return
          */
@@ -3861,7 +3897,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          *
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param comparator
          * @return
@@ -3870,7 +3906,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3880,7 +3916,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3891,7 +3927,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @return
          */
@@ -3899,7 +3935,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          *
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param comparator
          * @return
@@ -3908,7 +3944,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3918,7 +3954,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3929,7 +3965,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param k
          * @return
@@ -3938,7 +3974,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          *
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param k
          * @param comparator
@@ -3948,7 +3984,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex
@@ -3960,7 +3996,7 @@ public interface DataSet extends Iterable<Object[]> {
 
         /**
          * 
-         * @param columnType
+         * @param columnType it's only used to identify the type.
          * @param columnName
          * @param fromRowIndex
          * @param toRowIndex

@@ -9,7 +9,9 @@
 
 4, Add removeAll/retainAll/toSheet to DataSet.
 
-5, Improvements and bug fix.
+5, Add addColumn(String fromColumnName, String newColumnName, Function<?, ?> mapper)/... to DataSet
+
+6, Improvements and bug fix.
 
 
 ========Changes in 0.9.42=========================================================================
