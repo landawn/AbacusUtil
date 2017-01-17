@@ -26,6 +26,14 @@ import com.landawn.abacus.util.N;
  */
 public interface BinaryOperator<T> extends BiFunction<T, T, T>, java.util.function.BinaryOperator<T> {
 
+    @SuppressWarnings("rawtypes")
+    public static final BinaryOperator THROWING_MERGER = new BinaryOperator<Object>() {
+        @Override
+        public Object apply(Object t, Object u) {
+            throw new IllegalStateException(String.format("Duplicate key %s", u));
+        }
+    };
+
     public static <T> BinaryOperator<T> minBy(Comparator<? super T> comparator) {
         N.requireNonNull(comparator);
 

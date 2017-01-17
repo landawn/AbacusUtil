@@ -688,6 +688,24 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayIntStream(a, startIndex, endIndex);
     }
 
+    public static IntStream of(final int[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToInt(new Function<int[], IntStream>() {
+            @Override
+            public IntStream apply(int[] t) {
+                return IntStream.of(t);
+            }
+        });
+    }
+
+    public static IntStream of(final int[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToInt(new Function<int[][], IntStream>() {
+            @Override
+            public IntStream apply(int[][] t) {
+                return IntStream.of(t);
+            }
+        });
+    }
+
     public static IntStream of(final IntIterator iterator) {
         return iterator == null ? empty() : new IteratorIntStream(iterator);
     }
@@ -868,38 +886,29 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
-    public static IntStream random(final int startInclusive, final int endInclusive) {
-        if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+    public static IntStream random(final int startInclusive, final int endExclusive) {
+        if (startInclusive >= endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' must be less than 'endExclusive'");
         }
 
-        if (startInclusive == endInclusive) {
+        final long mod = (long) endExclusive - (long) startInclusive;
+
+        if (mod < Integer.MAX_VALUE) {
+            final int n = (int) mod;
+
             return generate(new IntSupplier() {
                 @Override
                 public int getAsInt() {
-                    return startInclusive;
+                    return RAND.nextInt(n) + startInclusive;
                 }
             });
         } else {
-            final long mod = endInclusive - startInclusive + 1L;
-
-            if (mod <= Integer.MAX_VALUE) {
-                final int n = (int) mod;
-
-                return generate(new IntSupplier() {
-                    @Override
-                    public int getAsInt() {
-                        return RAND.nextInt(n) + startInclusive;
-                    }
-                });
-            } else {
-                return generate(new IntSupplier() {
-                    @Override
-                    public int getAsInt() {
-                        return (int) (Math.abs(RAND.nextLong() % mod) + startInclusive);
-                    }
-                });
-            }
+            return generate(new IntSupplier() {
+                @Override
+                public int getAsInt() {
+                    return (int) (Math.abs(RAND.nextLong() % mod) + startInclusive);
+                }
+            });
         }
     }
 

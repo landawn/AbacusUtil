@@ -184,17 +184,13 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return of(a);
     }
 
-    public static CharList random(final char startInclusive, final char endInclusive, final int len) {
-        if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
-        }
-
-        if (startInclusive == endInclusive) {
-            return repeat(startInclusive, len);
+    public static CharList random(final char startInclusive, final char endExclusive, final int len) {
+        if (startInclusive >= endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' must be less than 'endExclusive'");
         }
 
         final char[] a = new char[len];
-        final int mod = endInclusive - startInclusive + 1;
+        final int mod = endExclusive - startInclusive;
 
         for (int i = 0; i < len; i++) {
             a[i] = (char) (RAND.nextInt(mod) + startInclusive);

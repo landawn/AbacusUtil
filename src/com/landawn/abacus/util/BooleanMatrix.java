@@ -101,6 +101,24 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         a[i][j] = val;
     }
 
+    public boolean[] row(final int rowIndex) {
+        N.checkArgument(rowIndex >= 0 && rowIndex < n, "Invalid row Index: %s", rowIndex);
+
+        return a[rowIndex];
+    }
+
+    public boolean[] col(final int columnIndex) {
+        N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
+
+        final boolean[] c = new boolean[n];
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[i][columnIndex];
+        }
+
+        return c;
+    }
+
     public void fill(final boolean val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);

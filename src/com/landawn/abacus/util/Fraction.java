@@ -642,11 +642,11 @@ public final class Fraction extends Number implements Comparable<Fraction> {
             }
             return this.invert().pow(-power);
         } else {
-            final Fraction f = this.multiplyBy(this);
+            final Fraction f = this.multipliedBy(this);
             if (power % 2 == 0) { // if even...
                 return f.pow(power / 2);
             } else { // if odd...
-                return f.pow(power / 2).multiplyBy(this);
+                return f.pow(power / 2).multipliedBy(this);
             }
         }
     }
@@ -900,7 +900,7 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * @throws ArithmeticException
      *             if the resulting numerator or denominator exceeds <code>Integer.MAX_VALUE</code>
      */
-    public Fraction multiplyBy(final Fraction fraction) {
+    public Fraction multipliedBy(final Fraction fraction) {
         if (fraction == null) {
             throw new IllegalArgumentException("The fraction must not be null");
         }
@@ -929,14 +929,14 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * @throws ArithmeticException
      *             if the resulting numerator or denominator exceeds <code>Integer.MAX_VALUE</code>
      */
-    public Fraction divideBy(final Fraction fraction) {
+    public Fraction dividedBy(final Fraction fraction) {
         if (fraction == null) {
             throw new IllegalArgumentException("The fraction must not be null");
         }
         if (fraction.numerator == 0) {
             throw new ArithmeticException("The fraction to divide by must not be zero");
         }
-        return multiplyBy(fraction.invert());
+        return multipliedBy(fraction.invert());
     }
 
     // Basics

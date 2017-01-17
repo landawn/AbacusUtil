@@ -166,6 +166,24 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
         a[i][j] = val;
     }
 
+    public int[] row(final int rowIndex) {
+        N.checkArgument(rowIndex >= 0 && rowIndex < n, "Invalid row Index: %s", rowIndex);
+
+        return a[rowIndex];
+    }
+
+    public int[] col(final int columnIndex) {
+        N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
+
+        final int[] c = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[i][columnIndex];
+        }
+
+        return c;
+    }
+
     public void fill(final int val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);
@@ -659,7 +677,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
 
     public Matrix<Integer> boxed() {
         final Integer[][] c = new Integer[n][m];
-    
+
         if (n <= m) {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < m; j++) {
@@ -673,7 +691,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
                 }
             }
         }
-    
+
         return new Matrix<Integer>(c);
     }
 

@@ -672,6 +672,24 @@ public abstract class DoubleStream
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayDoubleStream(a, startIndex, endIndex);
     }
 
+    public static DoubleStream of(final double[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(new Function<double[], DoubleStream>() {
+            @Override
+            public DoubleStream apply(double[] t) {
+                return DoubleStream.of(t);
+            }
+        });
+    }
+
+    public static DoubleStream of(final double[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToDouble(new Function<double[][], DoubleStream>() {
+            @Override
+            public DoubleStream apply(double[][] t) {
+                return DoubleStream.of(t);
+            }
+        });
+    }
+
     public static DoubleStream of(final DoubleIterator iterator) {
         return iterator == null ? empty() : new IteratorDoubleStream(iterator);
     }

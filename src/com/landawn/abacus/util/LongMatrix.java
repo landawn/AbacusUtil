@@ -135,6 +135,24 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
         a[i][j] = val;
     }
 
+    public long[] row(final int rowIndex) {
+        N.checkArgument(rowIndex >= 0 && rowIndex < n, "Invalid row Index: %s", rowIndex);
+
+        return a[rowIndex];
+    }
+
+    public long[] col(final int columnIndex) {
+        N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
+
+        final long[] c = new long[n];
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[i][columnIndex];
+        }
+
+        return c;
+    }
+
     public void fill(final long val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);
@@ -628,7 +646,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
 
     public Matrix<Long> boxed() {
         final Long[][] c = new Long[n][m];
-    
+
         if (n <= m) {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < m; j++) {
@@ -642,7 +660,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
                 }
             }
         }
-    
+
         return new Matrix<Long>(c);
     }
 

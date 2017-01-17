@@ -316,19 +316,15 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return of(a);
     }
 
-    public static IntList random(final int startInclusive, final int endInclusive, final int len) {
-        if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
-        }
-
-        if (startInclusive == endInclusive) {
-            return repeat(startInclusive, len);
+    public static IntList random(final int startInclusive, final int endExclusive, final int len) {
+        if (startInclusive >= endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' must be less than 'endExclusive'");
         }
 
         final int[] a = new int[len];
-        final long mod = endInclusive - startInclusive + 1L;
+        final long mod = (long) endExclusive - (long) startInclusive;
 
-        if (mod <= Integer.MAX_VALUE) {
+        if (mod < Integer.MAX_VALUE) {
             final int n = (int) mod;
 
             for (int i = 0; i < len; i++) {

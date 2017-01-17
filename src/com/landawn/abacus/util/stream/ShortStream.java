@@ -574,6 +574,24 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayShortStream(a, startIndex, endIndex);
     }
 
+    public static ShortStream of(final short[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToShort(new Function<short[], ShortStream>() {
+            @Override
+            public ShortStream apply(short[] t) {
+                return ShortStream.of(t);
+            }
+        });
+    }
+
+    public static ShortStream of(final short[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToShort(new Function<short[][], ShortStream>() {
+            @Override
+            public ShortStream apply(short[][] t) {
+                return ShortStream.of(t);
+            }
+        });
+    }
+
     public static ShortStream of(final ShortIterator iterator) {
         return iterator == null ? empty() : new IteratorShortStream(iterator);
     }

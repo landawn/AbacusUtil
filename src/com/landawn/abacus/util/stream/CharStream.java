@@ -569,6 +569,24 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayCharStream(a, startIndex, endIndex);
     }
 
+    public static CharStream of(final char[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToChar(new Function<char[], CharStream>() {
+            @Override
+            public CharStream apply(char[] t) {
+                return CharStream.of(t);
+            }
+        });
+    }
+
+    public static CharStream of(final char[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToChar(new Function<char[][], CharStream>() {
+            @Override
+            public CharStream apply(char[][] t) {
+                return CharStream.of(t);
+            }
+        });
+    }
+
     public static CharStream of(final CharIterator iterator) {
         return iterator == null ? empty() : new IteratorCharStream(iterator);
     }
@@ -787,28 +805,19 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
-    public static CharStream random(final char startInclusive, final char endInclusive) {
-        if (startInclusive > endInclusive) {
-            throw new IllegalArgumentException("'startInclusive' is bigger than 'endInclusive'");
+    public static CharStream random(final char startInclusive, final char endExclusive) {
+        if (startInclusive >= endExclusive) {
+            throw new IllegalArgumentException("'startInclusive' must be less than 'endExclusive'");
         }
 
-        if (startInclusive == endInclusive) {
-            return generate(new CharSupplier() {
-                @Override
-                public char getAsChar() {
-                    return startInclusive;
-                }
-            });
-        } else {
-            final int mod = endInclusive - startInclusive + 1;
+        final int mod = endExclusive - startInclusive;
 
-            return generate(new CharSupplier() {
-                @Override
-                public char getAsChar() {
-                    return (char) (RAND.nextInt(mod) + startInclusive);
-                }
-            });
-        }
+        return generate(new CharSupplier() {
+            @Override
+            public char getAsChar() {
+                return (char) (RAND.nextInt(mod) + startInclusive);
+            }
+        });
     }
 
     public static CharStream random(final char[] candicates) {

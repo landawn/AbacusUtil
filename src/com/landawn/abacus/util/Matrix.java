@@ -111,6 +111,24 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         a[i][j] = val;
     }
 
+    public T[] row(final int rowIndex) {
+        N.checkArgument(rowIndex >= 0 && rowIndex < n, "Invalid row Index: %s", rowIndex);
+
+        return a[rowIndex];
+    }
+
+    public T[] col(final int columnIndex) {
+        N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
+
+        final T[] c = N.newArray(componentType, n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[i][columnIndex];
+        }
+
+        return c;
+    }
+
     public void fill(final T val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);

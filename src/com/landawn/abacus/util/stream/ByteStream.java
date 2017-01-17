@@ -577,6 +577,24 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayByteStream(a, startIndex, endIndex);
     }
 
+    public static ByteStream of(final byte[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToByte(new Function<byte[], ByteStream>() {
+            @Override
+            public ByteStream apply(byte[] t) {
+                return ByteStream.of(t);
+            }
+        });
+    }
+
+    public static ByteStream of(final byte[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToByte(new Function<byte[][], ByteStream>() {
+            @Override
+            public ByteStream apply(byte[][] t) {
+                return ByteStream.of(t);
+            }
+        });
+    }
+
     public static ByteStream from(final int... a) {
         return N.isNullOrEmpty(a) ? empty() : of(ByteList.from(a).trimToSize().array());
     }

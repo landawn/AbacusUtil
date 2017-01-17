@@ -9114,7 +9114,7 @@ public final class N {
             }
         }
 
-        return str.substring(start);
+        return start == 0 ? str : str.substring(start);
     }
 
     public static String[] stripStart(final String[] strs, final String stripChars) {
@@ -9181,7 +9181,7 @@ public final class N {
             }
         }
 
-        return str.substring(0, end);
+        return end == str.length() ? str : str.substring(0, end);
     }
 
     public static String[] stripEnd(final String[] strs, final String stripChars) {
@@ -9307,7 +9307,7 @@ public final class N {
             lastIdx++;
         }
 
-        return str.substring(0, lastIdx);
+        return lastIdx == str.length() ? str : str.substring(0, lastIdx);
     }
 
     public static String[] chomp(final String[] strs) {

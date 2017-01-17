@@ -151,6 +151,24 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         a[i][j] = val;
     }
 
+    public double[] row(final int rowIndex) {
+        N.checkArgument(rowIndex >= 0 && rowIndex < n, "Invalid row Index: %s", rowIndex);
+
+        return a[rowIndex];
+    }
+
+    public double[] col(final int columnIndex) {
+        N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
+
+        final double[] c = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[i][columnIndex];
+        }
+
+        return c;
+    }
+
     public void fill(final double val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);
@@ -644,7 +662,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
 
     public Matrix<Double> boxed() {
         final Double[][] c = new Double[n][m];
-    
+
         if (n <= m) {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < m; j++) {
@@ -658,7 +676,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
                 }
             }
         }
-    
+
         return new Matrix<Double>(c);
     }
 

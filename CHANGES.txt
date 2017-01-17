@@ -11,7 +11,15 @@
 
 5, Add addColumn(String fromColumnName, String newColumnName, Function<?, ?> mapper)/... to DataSet
 
-6, Improvements and bug fix.
+6, rename multiplyBy/divideBy to dividedBy/multipliedBy in Fraction.
+
+7, change random(startInclusive, endInclusive...) to random(startInclusive, endExclusive...) in CharList/IntList/CharStream/IntStream.
+
+8, Add f for calculation based on multiple dimensions array.  
+
+9, Add row(rowIndex)/col(columnIndex) methods to Matrix/IntMatrix/LongMatrix/DoubleMatrix.
+
+10, Improvements and bug fix.
 
 
 ========Changes in 0.9.42=========================================================================

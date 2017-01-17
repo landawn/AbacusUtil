@@ -685,6 +685,24 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayFloatStream(a, startIndex, endIndex);
     }
 
+    public static FloatStream of(final float[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(new Function<float[], FloatStream>() {
+            @Override
+            public FloatStream apply(float[] t) {
+                return FloatStream.of(t);
+            }
+        });
+    }
+
+    public static FloatStream of(final float[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToFloat(new Function<float[][], FloatStream>() {
+            @Override
+            public FloatStream apply(float[][] t) {
+                return FloatStream.of(t);
+            }
+        });
+    }
+
     public static FloatStream of(final FloatIterator iterator) {
         return iterator == null ? empty() : new IteratorFloatStream(iterator);
     }

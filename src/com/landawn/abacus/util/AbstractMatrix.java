@@ -49,8 +49,8 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
 
     protected AbstractMatrix(A[] a) {
         this.a = a;
-        this.m = a.length == 0 ? 0 : length(a[0]);
         this.n = a.length;
+        this.m = a.length == 0 ? 0 : length(a[0]);
 
         if (a.length > 1) {
             for (int i = 1, len = a.length; i < len; i++) {

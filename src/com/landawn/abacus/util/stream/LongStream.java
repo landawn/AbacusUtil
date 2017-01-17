@@ -648,6 +648,24 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : new ArrayLongStream(a, startIndex, endIndex);
     }
 
+    public static LongStream of(final long[][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToLong(new Function<long[], LongStream>() {
+            @Override
+            public LongStream apply(long[] t) {
+                return LongStream.of(t);
+            }
+        });
+    }
+
+    public static LongStream of(final long[][][] a) {
+        return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToLong(new Function<long[][], LongStream>() {
+            @Override
+            public LongStream apply(long[][] t) {
+                return LongStream.of(t);
+            }
+        });
+    }
+
     public static LongStream of(final LongIterator iterator) {
         return iterator == null ? empty() : new IteratorLongStream(iterator);
     }

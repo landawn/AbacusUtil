@@ -119,6 +119,24 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
         a[i][j] = val;
     }
 
+    public short[] row(final int rowIndex) {
+        N.checkArgument(rowIndex >= 0 && rowIndex < n, "Invalid row Index: %s", rowIndex);
+
+        return a[rowIndex];
+    }
+
+    public short[] col(final int columnIndex) {
+        N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
+
+        final short[] c = new short[n];
+
+        for (int i = 0; i < n; i++) {
+            c[i] = a[i][columnIndex];
+        }
+
+        return c;
+    }
+
     public void fill(final short val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);
@@ -612,7 +630,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
 
     public Matrix<Short> boxed() {
         final Short[][] c = new Short[n][m];
-    
+
         if (n <= m) {
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < m; j++) {
@@ -626,7 +644,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
                 }
             }
         }
-    
+
         return new Matrix<Short>(c);
     }
 
