@@ -23,7 +23,6 @@ import java.util.Map;
 
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -159,21 +158,21 @@ public final class Splitter {
         return split(output, type, source);
     }
 
-    public <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
-        return this.split(supplier.get(), source);
-    }
-
-    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
-        return this.split(supplier.get(), targetType, source);
-    }
-
-    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
-        return this.split(supplier.get(), type, source);
-    }
-
-    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
-        return this.split(supplier.get(), typeName, source);
-    }
+    //    public <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
+    //        return this.split(supplier.get(), source);
+    //    }
+    //
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
+    //        return this.split(supplier.get(), targetType, source);
+    //    }
+    //
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
+    //        return this.split(supplier.get(), type, source);
+    //    }
+    //
+    //    public <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
+    //        return this.split(supplier.get(), typeName, source);
+    //    }
 
     public <T> T split(CharSequence source, Function<? super String[], T> converter) {
         return converter.apply(this.splitToArray(source));
@@ -275,21 +274,21 @@ public final class Splitter {
             return Splitter.defauLt().split(output, typeName, source);
         }
 
-        public static <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
-            return Splitter.defauLt().split(supplier, source);
-        }
-
-        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
-            return Splitter.defauLt().split(supplier, targetType, source);
-        }
-
-        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
-            return Splitter.defauLt().split(supplier, type, source);
-        }
-
-        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
-            return Splitter.defauLt().split(supplier, typeName, source);
-        }
+        //        public static <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
+        //            return Splitter.defauLt().split(supplier, source);
+        //        }
+        //
+        //        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
+        //            return Splitter.defauLt().split(supplier, targetType, source);
+        //        }
+        //
+        //        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
+        //            return Splitter.defauLt().split(supplier, type, source);
+        //        }
+        //
+        //        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
+        //            return Splitter.defauLt().split(supplier, typeName, source);
+        //        }
 
         public static <T> T split(CharSequence source, Function<? super String[], T> converter) {
             return converter.apply(Splitter.defauLt().splitToArray(source));
@@ -546,21 +545,21 @@ public final class Splitter {
             return split(output, typeOfKey, typeOfValue, source);
         }
 
-        public <M extends Map<String, String>> M split(final Supplier<M> supplier, CharSequence source) {
-            return this.split(supplier.get(), source);
-        }
-
-        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Class<K> keyType, Class<V> valueType, CharSequence source) {
-            return this.split(supplier.get(), keyType, valueType, source);
-        }
-
-        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Type<K> keyType, Type<V> valueType, CharSequence source) {
-            return this.split(supplier.get(), keyType, valueType, source);
-        }
-
-        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, String keyTypeName, String valueTypeName, CharSequence source) {
-            return this.split(supplier.get(), keyTypeName, valueTypeName, source);
-        }
+        //        public <M extends Map<String, String>> M split(final Supplier<M> supplier, CharSequence source) {
+        //            return this.split(supplier.get(), source);
+        //        }
+        //
+        //        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Class<K> keyType, Class<V> valueType, CharSequence source) {
+        //            return this.split(supplier.get(), keyType, valueType, source);
+        //        }
+        //
+        //        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Type<K> keyType, Type<V> valueType, CharSequence source) {
+        //            return this.split(supplier.get(), keyType, valueType, source);
+        //        }
+        //
+        //        public <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, String keyTypeName, String valueTypeName, CharSequence source) {
+        //            return this.split(supplier.get(), keyTypeName, valueTypeName, source);
+        //        }
 
         public <T> T split(CharSequence source, Function<? super Map<String, String>, T> converter) {
             return converter.apply(this.split(source));
@@ -603,21 +602,21 @@ public final class Splitter {
                 return MapSplitter.defauLt().split(output, keyTypeName, valueTypeName, source);
             }
 
-            public static <M extends Map<String, String>> M split(final Supplier<M> supplier, CharSequence source) {
-                return MapSplitter.defauLt().split(supplier, source);
-            }
-
-            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Class<K> keyType, Class<V> valueType, CharSequence source) {
-                return MapSplitter.defauLt().split(supplier, keyType, valueType, source);
-            }
-
-            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Type<K> keyType, Type<V> valueType, CharSequence source) {
-                return MapSplitter.defauLt().split(supplier, keyType, valueType, source);
-            }
-
-            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, String keyTypeName, String valueTypeName, CharSequence source) {
-                return MapSplitter.defauLt().split(supplier, keyTypeName, valueTypeName, source);
-            }
+            //            public static <M extends Map<String, String>> M split(final Supplier<M> supplier, CharSequence source) {
+            //                return MapSplitter.defauLt().split(supplier, source);
+            //            }
+            //
+            //            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Class<K> keyType, Class<V> valueType, CharSequence source) {
+            //                return MapSplitter.defauLt().split(supplier, keyType, valueType, source);
+            //            }
+            //
+            //            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Type<K> keyType, Type<V> valueType, CharSequence source) {
+            //                return MapSplitter.defauLt().split(supplier, keyType, valueType, source);
+            //            }
+            //
+            //            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, String keyTypeName, String valueTypeName, CharSequence source) {
+            //                return MapSplitter.defauLt().split(supplier, keyTypeName, valueTypeName, source);
+            //            }
 
             public static <T> T split(CharSequence source, Function<? super Map<String, String>, T> converter) {
                 return converter.apply(MapSplitter.defauLt().split(source));

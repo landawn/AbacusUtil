@@ -611,8 +611,8 @@ public final class N {
      * It's default timestamp format.
      */
     public static final String ISO_8601_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-    private static final Map<String, Queue<DateFormat>> dfPool = new ObjectPool<String, Queue<DateFormat>>(64);
-    private static final Map<TimeZone, Queue<Calendar>> calendarPool = new ObjectPool<TimeZone, Queue<Calendar>>(64);
+    private static final Map<String, Queue<DateFormat>> dfPool = new ObjectPool<>(64);
+    private static final Map<TimeZone, Queue<Calendar>> calendarPool = new ObjectPool<>(64);
     private static final Queue<DateFormat> utcTimestampDFPool = new ArrayBlockingQueue<>(POOL_SIZE);
     private static final Queue<DateFormat> utcDateTimeDFPool = new ArrayBlockingQueue<>(POOL_SIZE);
     private static final Queue<Calendar> utcCalendarPool = new ArrayBlockingQueue<>(POOL_SIZE);
@@ -813,28 +813,28 @@ public final class N {
         CLASS_TYPE_ENUM.put(Double.class, 28);
     }
 
-    private static final Map<Class<?>, Boolean> registeredXMLBindingClassList = new ObjectPool<Class<?>, Boolean>(POOL_SIZE);
-    private static final Map<Class<?>, Set<String>> registeredNonPropGetSetMethodPool = new ObjectPool<Class<?>, Set<String>>(POOL_SIZE);
+    private static final Map<Class<?>, Boolean> registeredXMLBindingClassList = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Set<String>> registeredNonPropGetSetMethodPool = new ObjectPool<>(POOL_SIZE);
 
-    private static final Map<Class<?>, Map<String, Field>> entityPropFieldPool = new ObjectPool<Class<?>, Map<String, Field>>(POOL_SIZE);
-
-    // ...
-    private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropGetMethodList = new ObjectPool<Class<?>, Map<String, Method>>(POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropSetMethodList = new ObjectPool<Class<?>, Map<String, Method>>(POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Method>> entityPropGetMethodPool = new ObjectPool<Class<?>, Map<String, Method>>(POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Method>> entityPropSetMethodPool = new ObjectPool<Class<?>, Map<String, Method>>(POOL_SIZE);
-    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropGetMethodPool = new ObjectPool<Class<?>, Map<String, List<Method>>>(
-            POOL_SIZE);
-    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropSetMethodPool = new ObjectPool<Class<?>, Map<String, List<Method>>>(
-            POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Field>> entityPropFieldPool = new ObjectPool<>(POOL_SIZE);
 
     // ...
-    private static final Map<String, String> formalizedPropNamePool = new ObjectPool<String, String>(POOL_SIZE * 2);
-    private static final Map<Method, String> methodPropNamePool = new ObjectPool<Method, String>(POOL_SIZE * 2);
-    private static final Map<Method, Class<?>[]> methodTypeArgumentsPool = new ObjectPool<Method, Class<?>[]>(POOL_SIZE * 2);
+    private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropGetMethodList = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropSetMethodList = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Method>> entityPropGetMethodPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Method>> entityPropSetMethodPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropGetMethodPool = new ObjectPool<>(
+            POOL_SIZE);
+    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropSetMethodPool = new ObjectPool<>(
+            POOL_SIZE);
 
-    private static final Map<String, String> lowerCaseWithUnderscorePropNamePool = new ObjectPool<String, String>(POOL_SIZE * 2);
-    private static final Map<String, String> upperCaseWithUnderscorePropNamePool = new ObjectPool<String, String>(POOL_SIZE * 2);
+    // ...
+    private static final Map<String, String> formalizedPropNamePool = new ObjectPool<>(POOL_SIZE * 2);
+    private static final Map<Method, String> methodPropNamePool = new ObjectPool<>(POOL_SIZE * 2);
+    private static final Map<Method, Class<?>[]> methodTypeArgumentsPool = new ObjectPool<>(POOL_SIZE * 2);
+
+    private static final Map<String, String> lowerCaseWithUnderscorePropNamePool = new ObjectPool<>(POOL_SIZE * 2);
+    private static final Map<String, String> upperCaseWithUnderscorePropNamePool = new ObjectPool<>(POOL_SIZE * 2);
 
     // reserved words.
     private static final Map<String, String> keyWordMapper = new HashMap<>(16);
@@ -851,7 +851,7 @@ public final class N {
     }
 
     // formalized property name list.
-    private static final Map<String, Class<?>> BUILT_IN_TYPE = new ObjectPool<String, Class<?>>(POOL_SIZE); // new LinkedHashMap<>();
+    private static final Map<String, Class<?>> BUILT_IN_TYPE = new ObjectPool<>(POOL_SIZE); // new LinkedHashMap<>();
 
     static {
         BUILT_IN_TYPE.put(boolean.class.getCanonicalName(), boolean.class);
@@ -1033,31 +1033,31 @@ public final class N {
     }
 
     // ...
-    private static final Map<Class<? extends Enum<?>>, List<? extends Enum<?>>> enumListPool = new ObjectPool<Class<? extends Enum<?>>, List<? extends Enum<?>>>(
+    private static final Map<Class<? extends Enum<?>>, List<? extends Enum<?>>> enumListPool = new ObjectPool<>(
             POOL_SIZE);
-    private static final Map<Class<? extends Enum<?>>, Set<? extends Enum<?>>> enumSetPool = new ObjectPool<Class<? extends Enum<?>>, Set<? extends Enum<?>>>(
+    private static final Map<Class<? extends Enum<?>>, Set<? extends Enum<?>>> enumSetPool = new ObjectPool<>(
             POOL_SIZE);
-    private static final Map<Class<? extends Enum<?>>, BiMap<? extends Enum<?>, String>> enumMapPool = new ObjectPool<Class<? extends Enum<?>>, BiMap<? extends Enum<?>, String>>(
+    private static final Map<Class<? extends Enum<?>>, BiMap<? extends Enum<?>, String>> enumMapPool = new ObjectPool<>(
             POOL_SIZE);
-    private static final Map<Class<?>, Package> packagePool = new ObjectPool<Class<?>, Package>(POOL_SIZE);
-    private static final Map<Class<?>, String> packageNamePool = new ObjectPool<Class<?>, String>(POOL_SIZE);
-    private static final Map<String, Type<?>> nameTypePool = new ObjectPool<String, Type<?>>(POOL_SIZE);
-    private static final Map<Class<?>, Type<?>> clsTypePool = new ObjectPool<Class<?>, Type<?>>(POOL_SIZE);
-    private static final Map<String, Class<?>> clsNamePool = new ObjectPool<String, Class<?>>(POOL_SIZE);
-    private static final Map<Class<?>, String> simpleClassNamePool = new ObjectPool<Class<?>, String>(POOL_SIZE);
-    private static final Map<Class<?>, String> nameClassPool = new ObjectPool<Class<?>, String>(POOL_SIZE);
-    private static final Map<Class<?>, String> canonicalClassNamePool = new ObjectPool<Class<?>, String>(POOL_SIZE);
-    private static final Map<Class<?>, Class<?>> enclosingClassPool = new ObjectPool<Class<?>, Class<?>>(POOL_SIZE);
+    private static final Map<Class<?>, Package> packagePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, String> packageNamePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<String, Type<?>> nameTypePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Type<?>> clsTypePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<String, Class<?>> clsNamePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, String> simpleClassNamePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, String> nameClassPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, String> canonicalClassNamePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Class<?>> enclosingClassPool = new ObjectPool<>(POOL_SIZE);
 
-    private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<Class<?>, Map<Class<?>[], Constructor<?>>>(
+    private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<>(
             POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<Class<?>, Map<String, Map<Class<?>[], Method>>>(
+    private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<>(
             POOL_SIZE);
 
     // ...
-    private static final Map<Class<?>, Boolean> entityClassPool = new ObjectPool<Class<?>, Boolean>(POOL_SIZE);
-    private static final Map<Class<?>, Boolean> dirtyMarkerClassPool = new ObjectPool<Class<?>, Boolean>(POOL_SIZE);
-    private static final Map<Class<?>, Boolean> dirtyMarkerEntityClassPool = new ObjectPool<Class<?>, Boolean>(POOL_SIZE);
+    private static final Map<Class<?>, Boolean> entityClassPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Boolean> dirtyMarkerClassPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Boolean> dirtyMarkerEntityClassPool = new ObjectPool<>(POOL_SIZE);
 
     private static final JSONParser jsonParser = ParserFactory.createJSONParser();
     private static final XMLParser abacusXMLParser = ParserFactory.isAbacusXMLAvailable() ? ParserFactory.createAbacusXMLParser() : null;
@@ -1594,7 +1594,7 @@ public final class N {
 
             if (constructor != null) {
                 if (constructorPool == null) {
-                    constructorPool = new ArrayHashMap<Class<?>[], Constructor<?>>(ConcurrentHashMap.class);
+                    constructorPool = new ArrayHashMap<>(ConcurrentHashMap.class);
                     classDeclaredConstructorPool.put(cls, constructorPool);
                 }
 
@@ -1638,7 +1638,7 @@ public final class N {
                 }
 
                 if (methodPool == null) {
-                    methodPool = new ArrayHashMap<Class<?>[], Method>(ConcurrentHashMap.class);
+                    methodPool = new ArrayHashMap<>(ConcurrentHashMap.class);
                     methodNamePool.put(methodName, methodPool);
                 }
 
@@ -1885,7 +1885,7 @@ public final class N {
 
             // for Double-Checked Locking is Broken. initialize it before
             // put it into map.
-            Map<String, Field> tempFieldMap = new ObjectPool<String, Field>(64);
+            Map<String, Field> tempFieldMap = new ObjectPool<>(64);
             tempFieldMap.putAll(propFieldMap);
             tempFieldMap.keySet();
             entityPropFieldPool.put(cls, tempFieldMap);
@@ -1895,7 +1895,7 @@ public final class N {
             entityDeclaredPropGetMethodList.put(cls, unmodifiableMethodMap);
 
             if (entityPropGetMethodPool.get(cls) == null) {
-                Map<String, Method> tmp = new ObjectPool<String, Method>(64);
+                Map<String, Method> tmp = new ObjectPool<>(64);
                 tmp.putAll(propGetMethodMap);
                 entityPropGetMethodPool.put(cls, tmp);
             } else {
@@ -1909,7 +1909,7 @@ public final class N {
             entityDeclaredPropSetMethodList.put(cls, unmodifiableMethodMap);
 
             if (entityPropSetMethodPool.get(cls) == null) {
-                Map<String, Method> tmp = new ObjectPool<String, Method>(64);
+                Map<String, Method> tmp = new ObjectPool<>(64);
                 tmp.putAll(propSetMethodMap);
                 entityPropSetMethodPool.put(cls, tmp);
             } else {
@@ -2222,7 +2222,7 @@ public final class N {
             List<Method> inlinePropGetMethodQueue = null;
 
             if (inlinePropGetMethodMap == null) {
-                inlinePropGetMethodMap = new ObjectPool<String, List<Method>>(N.initHashCapacity(N.getPropGetMethodList(cls).size()));
+                inlinePropGetMethodMap = new ObjectPool<>(N.initHashCapacity(N.getPropGetMethodList(cls).size()));
                 entityInlinePropGetMethodPool.put(cls, inlinePropGetMethodMap);
             } else {
                 inlinePropGetMethodQueue = inlinePropGetMethodMap.get(propName);
@@ -2312,7 +2312,7 @@ public final class N {
                 List<Method> inlinePropSetMethodQueue = null;
 
                 if (inlinePropSetMethodMap == null) {
-                    inlinePropSetMethodMap = new ObjectPool<String, List<Method>>(N.initHashCapacity(N.getPropGetMethodList(cls).size()));
+                    inlinePropSetMethodMap = new ObjectPool<>(N.initHashCapacity(N.getPropGetMethodList(cls).size()));
                     entityInlinePropSetMethodPool.put(cls, inlinePropSetMethodMap);
                 } else {
                     inlinePropSetMethodQueue = inlinePropSetMethodMap.get(propName);
@@ -2995,8 +2995,8 @@ public final class N {
         BiMap<E, String> enumMap = (BiMap<E, String>) enumMapPool.get(enumClass);
 
         if (enumMap == null) {
-            final EnumMap<E, String> keyMap = new EnumMap<E, String>(enumClass);
-            final Map<String, E> valueMap = new HashMap<String, E>();
+            final EnumMap<E, String> keyMap = new EnumMap<>(enumClass);
+            final Map<String, E> valueMap = new HashMap<>();
 
             for (final E e : enumClass.getEnumConstants()) {
                 keyMap.put(e, e.name());
@@ -3038,7 +3038,7 @@ public final class N {
             if (Modifier.isStatic(cls.getModifiers()) == false && (cls.isAnonymousClass() || cls.isMemberClass())) {
                 // http://stackoverflow.com/questions/2097982/is-it-possible-to-create-an-instance-of-nested-class-using-java-reflection
 
-                final List<Class<?>> toInstantiate = new ArrayList<Class<?>>();
+                final List<Class<?>> toInstantiate = new ArrayList<>();
                 Class<?> parent = cls.getEnclosingClass();
 
                 do {
@@ -3170,27 +3170,27 @@ public final class N {
     }
 
     public static <T> ArrayList<T> newArrayList() {
-        return new ArrayList<T>();
+        return new ArrayList<>();
     }
 
     public static <T> ArrayList<T> newArrayList(int initialCapacity) {
-        return new ArrayList<T>(initialCapacity);
+        return new ArrayList<>(initialCapacity);
     }
 
     public static <T> ArrayList<T> newArrayList(Collection<? extends T> c) {
-        return new ArrayList<T>(c);
+        return new ArrayList<>(c);
     }
 
     public static <T> LinkedList<T> newLinkedList() {
-        return new LinkedList<T>();
+        return new LinkedList<>();
     }
 
     public static <T> LinkedList<T> newLinkedList(Collection<? extends T> c) {
-        return new LinkedList<T>(c);
+        return new LinkedList<>(c);
     }
 
     public static <T> HashSet<T> newHashSet() {
-        return new HashSet<T>();
+        return new HashSet<>();
     }
 
     /**
@@ -3199,15 +3199,15 @@ public final class N {
      * @return
      */
     public static <T> HashSet<T> newHashSet(int initialCapacity) {
-        return new HashSet<T>(initHashCapacity(initialCapacity));
+        return new HashSet<>(initHashCapacity(initialCapacity));
     }
 
     public static <T> HashSet<T> newHashSet(Collection<? extends T> c) {
-        return new HashSet<T>(c);
+        return new HashSet<>(c);
     }
 
     public static <T> LinkedHashSet<T> newLinkedHashSet() {
-        return new LinkedHashSet<T>();
+        return new LinkedHashSet<>();
     }
 
     /**
@@ -3216,15 +3216,15 @@ public final class N {
      * @return
      */
     public static <T> LinkedHashSet<T> newLinkedHashSet(int initialCapacity) {
-        return new LinkedHashSet<T>(initHashCapacity(initialCapacity));
+        return new LinkedHashSet<>(initHashCapacity(initialCapacity));
     }
 
     public static <T> LinkedHashSet<T> newLinkedHashSet(Collection<? extends T> c) {
-        return new LinkedHashSet<T>(c);
+        return new LinkedHashSet<>(c);
     }
 
     public static <K, V> HashMap<K, V> newHashMap() {
-        return new HashMap<K, V>();
+        return new HashMap<>();
     }
 
     /**
@@ -3233,15 +3233,15 @@ public final class N {
      * @return
      */
     public static <K, V> HashMap<K, V> newHashMap(int initialCapacity) {
-        return new HashMap<K, V>(initHashCapacity(initialCapacity));
+        return new HashMap<>(initHashCapacity(initialCapacity));
     }
 
     public static <K, V> HashMap<K, V> newHashMap(Map<? extends K, ? extends V> m) {
-        return new HashMap<K, V>(m);
+        return new HashMap<>(m);
     }
 
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap() {
-        return new LinkedHashMap<K, V>();
+        return new LinkedHashMap<>();
     }
 
     /**
@@ -3250,15 +3250,15 @@ public final class N {
      * @return
      */
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(int initialCapacity) {
-        return new LinkedHashMap<K, V>(initHashCapacity(initialCapacity));
+        return new LinkedHashMap<>(initHashCapacity(initialCapacity));
     }
 
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(Map<? extends K, ? extends V> m) {
-        return new LinkedHashMap<K, V>(m);
+        return new LinkedHashMap<>(m);
     }
 
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
-        return new ConcurrentHashMap<K, V>();
+        return new ConcurrentHashMap<>();
     }
 
     /**
@@ -3267,23 +3267,23 @@ public final class N {
      * @return
      */
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity) {
-        return new ConcurrentHashMap<K, V>(initHashCapacity(initialCapacity));
+        return new ConcurrentHashMap<>(initHashCapacity(initialCapacity));
     }
 
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> m) {
-        return new ConcurrentHashMap<K, V>(m);
+        return new ConcurrentHashMap<>(m);
     }
 
     public static <K, E> Multimap<K, E, List<E>> newListMultimap() {
-        return new Multimap<K, E, List<E>>(new HashMap<K, List<E>>(), ArrayList.class);
+        return new Multimap<>(new HashMap<K, List<E>>(), ArrayList.class);
     }
 
     public static <K, E> Multimap<K, E, List<E>> newListMultimap(final int initialCapacity) {
-        return new Multimap<K, E, List<E>>(new HashMap<K, List<E>>(initialCapacity < 0 ? 9 : initialCapacity), ArrayList.class);
+        return new Multimap<>(new HashMap<K, List<E>>(initialCapacity < 0 ? 9 : initialCapacity), ArrayList.class);
     }
 
     public static <K, E> Multimap<K, E, List<E>> newListMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, List<E>> multiMap = new Multimap<K, E, List<E>>(new HashMap<K, List<E>>(), ArrayList.class);
+        final Multimap<K, E, List<E>> multiMap = new Multimap<>(new HashMap<K, List<E>>(), ArrayList.class);
 
         multiMap.putAll(m);
 
@@ -3291,15 +3291,15 @@ public final class N {
     }
 
     public static <K, E> Multimap<K, E, List<E>> newListLinkedMultimap() {
-        return new Multimap<K, E, List<E>>(new LinkedHashMap<K, List<E>>(), ArrayList.class);
+        return new Multimap<>(new LinkedHashMap<K, List<E>>(), ArrayList.class);
     }
 
     public static <K, E> Multimap<K, E, List<E>> newListLinkedMultimap(final int initialCapacity) {
-        return new Multimap<K, E, List<E>>(new LinkedHashMap<K, List<E>>(initialCapacity < 0 ? 9 : initialCapacity), ArrayList.class);
+        return new Multimap<>(new LinkedHashMap<K, List<E>>(initialCapacity < 0 ? 9 : initialCapacity), ArrayList.class);
     }
 
     public static <K, E> Multimap<K, E, List<E>> newListLinkedMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, List<E>> multiMap = new Multimap<K, E, List<E>>(new LinkedHashMap<K, List<E>>(), ArrayList.class);
+        final Multimap<K, E, List<E>> multiMap = new Multimap<>(new LinkedHashMap<K, List<E>>(), ArrayList.class);
 
         multiMap.putAll(m);
 
@@ -3307,11 +3307,11 @@ public final class N {
     }
 
     public static <K, E> Multimap<K, E, List<E>> newListSortedMultimap() {
-        return new Multimap<K, E, List<E>>(new TreeMap<K, List<E>>(), ArrayList.class);
+        return new Multimap<>(new TreeMap<K, List<E>>(), ArrayList.class);
     }
 
     public static <K, E> Multimap<K, E, List<E>> newListSortedMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, List<E>> multiMap = new Multimap<K, E, List<E>>(new TreeMap<K, List<E>>(), ArrayList.class);
+        final Multimap<K, E, List<E>> multiMap = new Multimap<>(new TreeMap<K, List<E>>(), ArrayList.class);
 
         multiMap.putAll(m);
 
@@ -3319,15 +3319,15 @@ public final class N {
     }
 
     public static <K, E> Multimap<K, E, Set<E>> newSetMultimap() {
-        return new Multimap<K, E, Set<E>>(new HashMap<K, Set<E>>(), HashSet.class);
+        return new Multimap<>(new HashMap<K, Set<E>>(), HashSet.class);
     }
 
     public static <K, E> Multimap<K, E, Set<E>> newSetMultimap(final int initialCapacity) {
-        return new Multimap<K, E, Set<E>>(new HashMap<K, Set<E>>(initialCapacity < 0 ? 9 : initialCapacity), HashSet.class);
+        return new Multimap<>(new HashMap<K, Set<E>>(initialCapacity < 0 ? 9 : initialCapacity), HashSet.class);
     }
 
     public static <K, E> Multimap<K, E, Set<E>> newSetMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, Set<E>> multiMap = new Multimap<K, E, Set<E>>(new HashMap<K, Set<E>>(), HashSet.class);
+        final Multimap<K, E, Set<E>> multiMap = new Multimap<>(new HashMap<K, Set<E>>(), HashSet.class);
 
         multiMap.putAll(m);
 
@@ -3335,15 +3335,15 @@ public final class N {
     }
 
     public static <K, E> Multimap<K, E, Set<E>> newSetLinkedMultimap() {
-        return new Multimap<K, E, Set<E>>(new LinkedHashMap<K, Set<E>>(), HashSet.class);
+        return new Multimap<>(new LinkedHashMap<K, Set<E>>(), HashSet.class);
     }
 
     public static <K, E> Multimap<K, E, Set<E>> newSetLinkedMultimap(final int initialCapacity) {
-        return new Multimap<K, E, Set<E>>(new LinkedHashMap<K, Set<E>>(initialCapacity < 0 ? 9 : initialCapacity), HashSet.class);
+        return new Multimap<>(new LinkedHashMap<K, Set<E>>(initialCapacity < 0 ? 9 : initialCapacity), HashSet.class);
     }
 
     public static <K, E> Multimap<K, E, Set<E>> newSetLinkedMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, Set<E>> multiMap = new Multimap<K, E, Set<E>>(new LinkedHashMap<K, Set<E>>(), HashSet.class);
+        final Multimap<K, E, Set<E>> multiMap = new Multimap<>(new LinkedHashMap<K, Set<E>>(), HashSet.class);
 
         multiMap.putAll(m);
 
@@ -3351,11 +3351,11 @@ public final class N {
     }
 
     public static <K, E> Multimap<K, E, Set<E>> newSetSortedMultimap() {
-        return new Multimap<K, E, Set<E>>(new TreeMap<K, Set<E>>(), HashSet.class);
+        return new Multimap<>(new TreeMap<K, Set<E>>(), HashSet.class);
     }
 
     public static <K, E> Multimap<K, E, Set<E>> newSetSortedMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, Set<E>> multiMap = new Multimap<K, E, Set<E>>(new TreeMap<K, Set<E>>(), HashSet.class);
+        final Multimap<K, E, Set<E>> multiMap = new Multimap<>(new TreeMap<K, Set<E>>(), HashSet.class);
 
         multiMap.putAll(m);
 
@@ -3630,7 +3630,7 @@ public final class N {
             return null;
         }
 
-        return new BiMap<K, V>(asImmutableMap(keyMap), asImmutableMap(valueMap));
+        return new BiMap<>(asImmutableMap(keyMap), asImmutableMap(valueMap));
     }
 
     /**
@@ -3849,7 +3849,7 @@ public final class N {
     }
 
     public static <K, E> Multimap<K, E, List<E>> asListMultimap(final Object... a) {
-        return newMultimap(new Multimap<K, E, List<E>>(new HashMap<K, List<E>>(initHashCapacity(a.length / 2)), ArrayList.class), a);
+        return newMultimap(new Multimap<>(new HashMap<K, List<E>>(initHashCapacity(a.length / 2)), ArrayList.class), a);
     }
 
     public static <K, V, k extends K, v extends V> Multimap<K, V, Set<V>> asSetMultimap(final k k1, final v v1) {
@@ -3875,7 +3875,7 @@ public final class N {
     }
 
     public static <K, E> Multimap<K, E, Set<E>> asSetMultimap(final Object... a) {
-        return newMultimap(new Multimap<K, E, Set<E>>(new HashMap<K, Set<E>>(initHashCapacity(a.length / 2)), HashSet.class), a);
+        return newMultimap(new Multimap<>(new HashMap<K, Set<E>>(initHashCapacity(a.length / 2)), HashSet.class), a);
     }
 
     // <===
@@ -3937,10 +3937,10 @@ public final class N {
      */
     public static <T> List<T> asList(final T... a) {
         if (a.length == 0) {
-            return new ArrayList<T>();
+            return new ArrayList<>();
         }
 
-        final List<T> list = new ArrayList<T>(a.length);
+        final List<T> list = new ArrayList<>(a.length);
 
         if (a.length < 9) {
             for (T e : a) {
@@ -3963,11 +3963,11 @@ public final class N {
      */
     public static <T> List<T> asList2(final T... a) {
         if (a.length == 0) {
-            return new ArrayList<T>();
+            return new ArrayList<>();
         }
 
         if (isListElementDataFieldSettable && listElementDataField != null && listSizeField != null) {
-            final List<T> list = new ArrayList<T>();
+            final List<T> list = new ArrayList<>();
 
             try {
                 listElementDataField.set(list, a);
@@ -3980,7 +3980,7 @@ public final class N {
             }
         }
 
-        final List<T> list = new ArrayList<T>(a.length);
+        final List<T> list = new ArrayList<>(a.length);
 
         if (a.length < 9) {
             for (T e : a) {
@@ -3995,10 +3995,10 @@ public final class N {
 
     public static <T> LinkedList<T> asLinkedList(final T... a) {
         if (a.length == 0) {
-            return new LinkedList<T>();
+            return new LinkedList<>();
         }
 
-        final LinkedList<T> list = new LinkedList<T>();
+        final LinkedList<T> list = new LinkedList<>();
 
         for (T e : a) {
             list.add(e);
@@ -4008,7 +4008,7 @@ public final class N {
     }
 
     public static <T> Set<T> asSet(final T... a) {
-        final Set<T> set = new HashSet<T>(initHashCapacity(a.length));
+        final Set<T> set = new HashSet<>(initHashCapacity(a.length));
 
         for (T e : a) {
             set.add(e);
@@ -4018,7 +4018,7 @@ public final class N {
     }
 
     public static <T> LinkedHashSet<T> asLinkedHashSet(final T... a) {
-        final LinkedHashSet<T> set = new LinkedHashSet<T>(initHashCapacity(a.length));
+        final LinkedHashSet<T> set = new LinkedHashSet<>(initHashCapacity(a.length));
 
         for (T e : a) {
             set.add(e);
@@ -4028,7 +4028,7 @@ public final class N {
     }
 
     public static <T> SortedSet<T> asSortedSet(final T... a) {
-        final SortedSet<T> set = new TreeSet<T>();
+        final SortedSet<T> set = new TreeSet<>();
 
         for (T e : a) {
             set.add(e);
@@ -4038,7 +4038,7 @@ public final class N {
     }
 
     public static <T> Queue<T> asQueue(final T... a) {
-        final Queue<T> queue = new ArrayDeque<T>(a.length);
+        final Queue<T> queue = new ArrayDeque<>(a.length);
 
         for (T e : a) {
             queue.add(e);
@@ -4048,7 +4048,7 @@ public final class N {
     }
 
     public static <T> ArrayBlockingQueue<T> asArrayBlockingQueue(final T... a) {
-        final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<T>(a.length);
+        final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(a.length);
 
         for (T e : a) {
             queue.add(e);
@@ -4058,7 +4058,7 @@ public final class N {
     }
 
     public static <T> LinkedBlockingQueue<T> asLinkedBlockingQueue(final T... a) {
-        final LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<T>(a.length);
+        final LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>(a.length);
 
         for (T e : a) {
             queue.add(e);
@@ -4068,7 +4068,7 @@ public final class N {
     }
 
     public static <T> ConcurrentLinkedQueue<T> asConcurrentLinkedQueue(final T... a) {
-        final ConcurrentLinkedQueue<T> queue = new ConcurrentLinkedQueue<T>();
+        final ConcurrentLinkedQueue<T> queue = new ConcurrentLinkedQueue<>();
 
         for (T e : a) {
             queue.add(e);
@@ -4078,7 +4078,7 @@ public final class N {
     }
 
     public static <T extends Delayed> DelayQueue<T> asDelayQueue(final T... a) {
-        final DelayQueue<T> queue = new DelayQueue<T>();
+        final DelayQueue<T> queue = new DelayQueue<>();
 
         for (T e : a) {
             queue.add(e);
@@ -4088,7 +4088,7 @@ public final class N {
     }
 
     public static <T> PriorityQueue<T> asPriorityQueue(final T... a) {
-        final PriorityQueue<T> queue = new PriorityQueue<T>(a.length);
+        final PriorityQueue<T> queue = new PriorityQueue<>(a.length);
 
         for (T e : a) {
             queue.add(e);
@@ -4098,7 +4098,7 @@ public final class N {
     }
 
     public static <T> Deque<T> asDeque(final T... a) {
-        final Deque<T> deque = new ArrayDeque<T>(a.length);
+        final Deque<T> deque = new ArrayDeque<>(a.length);
 
         for (T e : a) {
             deque.add(e);
@@ -4108,7 +4108,7 @@ public final class N {
     }
 
     public static <T> LinkedBlockingDeque<T> asLinkedBlockingDeque(final T... a) {
-        final LinkedBlockingDeque<T> deque = new LinkedBlockingDeque<T>(a.length);
+        final LinkedBlockingDeque<T> deque = new LinkedBlockingDeque<>(a.length);
 
         for (T e : a) {
             deque.add(e);
@@ -4118,7 +4118,7 @@ public final class N {
     }
 
     public static <T> ConcurrentLinkedDeque<T> asConcurrentLinkedDeque(final T... a) {
-        final ConcurrentLinkedDeque<T> deque = new ConcurrentLinkedDeque<T>();
+        final ConcurrentLinkedDeque<T> deque = new ConcurrentLinkedDeque<>();
 
         for (T e : a) {
             deque.add(e);
@@ -4128,7 +4128,7 @@ public final class N {
     }
 
     public static <T> Multiset<T> asMultiset(final T... a) {
-        final Multiset<T> multiset = new Multiset<T>(new HashMap<T, MutableInt>(initHashCapacity(a.length)));
+        final Multiset<T> multiset = new Multiset<>(new HashMap<T, MutableInt>(initHashCapacity(a.length)));
 
         for (T e : a) {
             multiset.add(e);
@@ -4139,27 +4139,27 @@ public final class N {
 
     // ===> since it should be rare case to create Multimap by array. the below methods are hidden from public.
     static <K, E> Multimap<K, E, List<E>> asListLinkedMultimap(final Object... a) {
-        return newMultimap(new Multimap<K, E, List<E>>(new LinkedHashMap<K, List<E>>(initHashCapacity(a.length / 2)), ArrayList.class), a);
+        return newMultimap(new Multimap<>(new LinkedHashMap<K, List<E>>(initHashCapacity(a.length / 2)), ArrayList.class), a);
     }
 
     static <K, E> Multimap<K, E, Set<E>> asSetLinkedMultimap(final Object... a) {
-        return newMultimap(new Multimap<K, E, Set<E>>(new LinkedHashMap<K, Set<E>>(initHashCapacity(a.length / 2)), HashSet.class), a);
+        return newMultimap(new Multimap<>(new LinkedHashMap<K, Set<E>>(initHashCapacity(a.length / 2)), HashSet.class), a);
     }
 
     static <K, E> Multimap<K, E, Queue<E>> asQueueLinkedMultimap(final Object... a) {
-        return newMultimap(new Multimap<K, E, Queue<E>>(new LinkedHashMap<K, Queue<E>>(initHashCapacity(a.length / 2)), ArrayDeque.class), a);
+        return newMultimap(new Multimap<>(new LinkedHashMap<K, Queue<E>>(initHashCapacity(a.length / 2)), ArrayDeque.class), a);
     }
 
     static <K, E> Multimap<K, E, List<E>> asListSortedMultimap(final Object... a) {
-        return newMultimap(new Multimap<K, E, List<E>>(new TreeMap<K, List<E>>(), ArrayList.class), a);
+        return newMultimap(new Multimap<>(new TreeMap<K, List<E>>(), ArrayList.class), a);
     }
 
     static <K, E> Multimap<K, E, Set<E>> asSetSortedMultimap(final Object... a) {
-        return newMultimap(new Multimap<K, E, Set<E>>(new TreeMap<K, Set<E>>(), HashSet.class), a);
+        return newMultimap(new Multimap<>(new TreeMap<K, Set<E>>(), HashSet.class), a);
     }
 
     static <K, E> Multimap<K, E, Queue<E>> asQueueSortedMultimap(final Object... a) {
-        return newMultimap(new Multimap<K, E, Queue<E>>(new TreeMap<K, Queue<E>>(), ArrayDeque.class), a);
+        return newMultimap(new Multimap<>(new TreeMap<K, Queue<E>>(), ArrayDeque.class), a);
     }
 
     // <===
@@ -17999,6 +17999,186 @@ public final class N {
         return cp;
     }
 
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static boolean[][][] clone(final boolean[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final boolean[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static char[][][] clone(final char[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final char[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static byte[][][] clone(final byte[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final byte[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static short[][][] clone(final short[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final short[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static int[][][] clone(final int[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final int[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static long[][][] clone(final long[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final long[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static float[][][] clone(final float[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final float[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static double[][][] clone(final double[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final double[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
+    /**
+     * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
+     * 
+     * @param original
+     * @return
+     */
+    public static <T> T[][][] clone(final T[][][] original) {
+        if (original == null) {
+            return null;
+        }
+
+        final T[][][] cp = original.clone();
+
+        for (int i = 0, len = cp.length; i < len; i++) {
+            cp[i] = clone(original[i]);
+        }
+
+        return cp;
+    }
+
     public static void sort(final boolean[] a) {
         Array.sort(a);
     }
@@ -22726,7 +22906,7 @@ public final class N {
             }
         };
 
-        final Queue<Pair0<Short, Integer>> heap = new PriorityQueue<Pair0<Short, Integer>>(n, pairCmp);
+        final Queue<Pair0<Short, Integer>> heap = new PriorityQueue<>(n, pairCmp);
         Pair0<Short, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -22793,7 +22973,7 @@ public final class N {
             }
         };
 
-        final Queue<Pair0<Integer, Integer>> heap = new PriorityQueue<Pair0<Integer, Integer>>(n, pairCmp);
+        final Queue<Pair0<Integer, Integer>> heap = new PriorityQueue<>(n, pairCmp);
         Pair0<Integer, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -22860,7 +23040,7 @@ public final class N {
             }
         };
 
-        final Queue<Pair0<Long, Integer>> heap = new PriorityQueue<Pair0<Long, Integer>>(n, pairCmp);
+        final Queue<Pair0<Long, Integer>> heap = new PriorityQueue<>(n, pairCmp);
         Pair0<Long, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -22927,7 +23107,7 @@ public final class N {
             }
         };
 
-        final Queue<Pair0<Float, Integer>> heap = new PriorityQueue<Pair0<Float, Integer>>(n, pairCmp);
+        final Queue<Pair0<Float, Integer>> heap = new PriorityQueue<>(n, pairCmp);
         Pair0<Float, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -22994,7 +23174,7 @@ public final class N {
             }
         };
 
-        final Queue<Pair0<Double, Integer>> heap = new PriorityQueue<Pair0<Double, Integer>>(n, pairCmp);
+        final Queue<Pair0<Double, Integer>> heap = new PriorityQueue<>(n, pairCmp);
         Pair0<Double, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -23062,7 +23242,7 @@ public final class N {
             }
         };
 
-        final Queue<Pair0<T, Integer>> heap = new PriorityQueue<Pair0<T, Integer>>(n, pairCmp);
+        final Queue<Pair0<T, Integer>> heap = new PriorityQueue<>(n, pairCmp);
         Pair0<T, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -23115,7 +23295,7 @@ public final class N {
         }
 
         if (n >= toIndex - fromIndex) {
-            final List<T> res = new ArrayList<T>(toIndex - fromIndex);
+            final List<T> res = new ArrayList<>(toIndex - fromIndex);
             final Iterator<? extends T> iter = c.iterator();
             T e = null;
 
@@ -23144,7 +23324,7 @@ public final class N {
             }
         };
 
-        final Queue<Pair0<T, Integer>> heap = new PriorityQueue<Pair0<T, Integer>>(n, pairCmp);
+        final Queue<Pair0<T, Integer>> heap = new PriorityQueue<>(n, pairCmp);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -23199,7 +23379,7 @@ public final class N {
             }
         });
 
-        final List<T> res = new ArrayList<T>(arrayOfPair0.length);
+        final List<T> res = new ArrayList<>(arrayOfPair0.length);
 
         for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
             res.add(arrayOfPair0[i].left);
@@ -23644,11 +23824,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<boolean[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<boolean[]> res = new ArrayList<boolean[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<boolean[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23675,11 +23855,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<boolean[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<boolean[]> res = new ArrayList<boolean[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<boolean[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23702,11 +23882,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<char[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<char[]> res = new ArrayList<char[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<char[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23733,11 +23913,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<char[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<char[]> res = new ArrayList<char[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<char[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23760,11 +23940,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<byte[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<byte[]> res = new ArrayList<byte[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<byte[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23791,11 +23971,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<byte[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<byte[]> res = new ArrayList<byte[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<byte[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23818,11 +23998,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<short[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<short[]> res = new ArrayList<short[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<short[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23849,11 +24029,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<short[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<short[]> res = new ArrayList<short[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<short[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23876,11 +24056,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<int[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<int[]> res = new ArrayList<int[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<int[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23907,11 +24087,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<int[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<int[]> res = new ArrayList<int[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<int[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23934,11 +24114,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<long[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<long[]> res = new ArrayList<long[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<long[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23965,11 +24145,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<long[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<long[]> res = new ArrayList<long[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<long[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -23992,11 +24172,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<float[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<float[]> res = new ArrayList<float[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<float[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -24023,11 +24203,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<float[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<float[]> res = new ArrayList<float[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<float[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -24050,11 +24230,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<double[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<double[]> res = new ArrayList<double[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<double[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -24081,11 +24261,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<double[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<double[]> res = new ArrayList<double[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<double[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -24108,11 +24288,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<T[]>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<T[]> res = new ArrayList<T[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<T[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -24139,11 +24319,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<T[]>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<T[]> res = new ArrayList<T[]>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<T[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -24794,9 +24974,9 @@ public final class N {
      */
     public static <T> List<T> xor(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<T>(b);
+            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<>(b);
         } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<T>(a);
+            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<>(a);
         }
 
         //        final List<T> result = except(a, b);
@@ -32802,7 +32982,7 @@ public final class N {
     }
 
     public static <E> Set<Set<E>> powerSet(Set<E> set) {
-        return new PowerSet<E>(set);
+        return new PowerSet<>(set);
     }
 
     private static final class PowerSet<E> extends AbstractSet<Set<E>> {
@@ -32840,7 +33020,7 @@ public final class N {
                         throw new NoSuchElementException();
                     }
 
-                    return new SubSet<E>(inputSet, position++);
+                    return new SubSet<>(inputSet, position++);
                 }
             };
         }

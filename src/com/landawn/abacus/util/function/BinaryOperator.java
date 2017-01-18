@@ -45,4 +45,8 @@ public interface BinaryOperator<T> extends BiFunction<T, T, T>, java.util.functi
 
         return (a, b) -> comparator.compare(a, b) >= 0 ? a : b;
     }
+
+    public static <T> BinaryOperator<T> throwingMerger() {
+        return THROWING_MERGER;
+    }
 }

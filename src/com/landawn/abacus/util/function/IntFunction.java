@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,10 +23,25 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 
+import com.landawn.abacus.util.BooleanList;
+import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ShortList;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -111,6 +127,70 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
         }
     };
 
+    public static final IntFunction<BooleanList> BOOLEAN_LIST_FACTORY = new IntFunction<BooleanList>() {
+        @Override
+        public BooleanList apply(int value) {
+            return new BooleanList(value);
+        }
+    };
+
+    public static final IntFunction<CharList> CHAR_LIST_FACTORY = new IntFunction<CharList>() {
+        @Override
+        public CharList apply(int value) {
+            return new CharList(value);
+        }
+    };
+
+    public static final IntFunction<ByteList> BYTE_LIST_FACTORY = new IntFunction<ByteList>() {
+        @Override
+        public ByteList apply(int value) {
+            return new ByteList(value);
+        }
+    };
+
+    public static final IntFunction<ShortList> SHORT_LIST_FACTORY = new IntFunction<ShortList>() {
+        @Override
+        public ShortList apply(int value) {
+            return new ShortList(value);
+        }
+    };
+
+    public static final IntFunction<IntList> INT_LIST_FACTORY = new IntFunction<IntList>() {
+        @Override
+        public IntList apply(int value) {
+            return new IntList(value);
+        }
+    };
+
+    public static final IntFunction<LongList> LONG_LIST_FACTORY = new IntFunction<LongList>() {
+        @Override
+        public LongList apply(int value) {
+            return new LongList(value);
+        }
+    };
+
+    public static final IntFunction<FloatList> FLOAT_LIST_FACTORY = new IntFunction<FloatList>() {
+        @Override
+        public FloatList apply(int value) {
+            return new FloatList(value);
+        }
+    };
+
+    public static final IntFunction<DoubleList> DOUBLE_LIST_FACTORY = new IntFunction<DoubleList>() {
+        @Override
+        public DoubleList apply(int value) {
+            return new DoubleList(value);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<ObjectList> OBJECT_LIST_FACTORY = new IntFunction<ObjectList>() {
+        @Override
+        public ObjectList apply(int value) {
+            return new ObjectList(value);
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     public static final IntFunction<? super List> LIST_FACTORY = new IntFunction<List>() {
         @Override
@@ -159,6 +239,62 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
         }
     };
 
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<? super ConcurrentHashMap> CONCURRENT_HASH_MAP_FACTORY = new IntFunction<ConcurrentHashMap>() {
+        @Override
+        public ConcurrentHashMap apply(int len) {
+            return new ConcurrentHashMap(N.initHashCapacity(len));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<? super Queue> QUEUE_FACTORY = new IntFunction<Queue>() {
+        @Override
+        public Queue apply(int len) {
+            return new LinkedList();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<? super ArrayDeque> ARRAY_DEQUE_FACTORY = new IntFunction<ArrayDeque>() {
+        @Override
+        public ArrayDeque apply(int len) {
+            return new ArrayDeque(len);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<? super ArrayBlockingQueue> ARRAY_BLOCKING_QUEUE_FACTORY = new IntFunction<ArrayBlockingQueue>() {
+        @Override
+        public ArrayBlockingQueue apply(int len) {
+            return new ArrayBlockingQueue(len);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<? super LinkedBlockingQueue> LINKED_BLOCKING_QUEUE_FACTORY = new IntFunction<LinkedBlockingQueue>() {
+        @Override
+        public LinkedBlockingQueue apply(int len) {
+            return new LinkedBlockingQueue(len);
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<? super ConcurrentLinkedQueue> CONCURRENT_LINKED_QUEUE_FACTORY = new IntFunction<ConcurrentLinkedQueue>() {
+        @Override
+        public ConcurrentLinkedQueue apply(int len) {
+            return new ConcurrentLinkedQueue();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<? super PriorityQueue> PRIORITY_QUEUE_FACTORY = new IntFunction<PriorityQueue>() {
+        @Override
+        public PriorityQueue apply(int len) {
+            return new PriorityQueue(len);
+        }
+    };
+
     @Override
     R apply(int value);
 
@@ -173,32 +309,72 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     }
 
     @SuppressWarnings("rawtypes")
-    static <T> IntFunction<List<T>> ofListFactory() {
+    static <T> IntFunction<ObjectList<T>> objectListFactory() {
+        return (IntFunction) OBJECT_LIST_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> IntFunction<List<T>> listFactory() {
         return (IntFunction) LIST_FACTORY;
     }
 
     @SuppressWarnings("rawtypes")
-    static <T> IntFunction<LinkedList<T>> ofLinkedListFactory() {
+    static <T> IntFunction<LinkedList<T>> linkedListFactory() {
         return (IntFunction) LINKED_LIST_FACTORY;
     }
 
     @SuppressWarnings("rawtypes")
-    static <T> IntFunction<Set<T>> ofSetFactory() {
+    static <T> IntFunction<Set<T>> setFactory() {
         return (IntFunction) SET_FACTORY;
     }
 
     @SuppressWarnings("rawtypes")
-    static <T> IntFunction<LinkedHashSet<T>> ofLinkedHashSetFactory() {
+    static <T> IntFunction<LinkedHashSet<T>> linkedHashSetFactory() {
         return (IntFunction) LINKED_HASH_SET_FACTORY;
     }
 
     @SuppressWarnings("rawtypes")
-    static <K, V> IntFunction<Map<K, V>> ofMapFactory() {
+    static <K, V> IntFunction<Map<K, V>> mapFactory() {
         return (IntFunction) MAP_FACTORY;
     }
 
     @SuppressWarnings("rawtypes")
-    static <K, V> IntFunction<LinkedHashMap<K, V>> ofLinkedHashMapFactory() {
+    static <K, V> IntFunction<LinkedHashMap<K, V>> linkedHashMapFactory() {
         return (IntFunction) LINKED_HASH_MAP_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <K, V> IntFunction<ConcurrentHashMap<K, V>> concurrentHashMapFactory() {
+        return (IntFunction) CONCURRENT_HASH_MAP_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> IntFunction<Queue<T>> queueFactory() {
+        return (IntFunction) QUEUE_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> IntFunction<ArrayDeque<T>> arrayDequeFactory() {
+        return (IntFunction) ARRAY_DEQUE_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> IntFunction<ArrayBlockingQueue<T>> arrayBlockingQueueFactory() {
+        return (IntFunction) ARRAY_BLOCKING_QUEUE_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> IntFunction<LinkedBlockingQueue<T>> linkedBlockingQueueFactory() {
+        return (IntFunction) LINKED_BLOCKING_QUEUE_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> IntFunction<ConcurrentLinkedQueue<T>> concurrentLinkedQueueFactory() {
+        return (IntFunction) CONCURRENT_LINKED_QUEUE_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> IntFunction<PriorityQueue> priorityQueueFactory() {
+        return (IntFunction) PRIORITY_QUEUE_FACTORY;
     }
 }

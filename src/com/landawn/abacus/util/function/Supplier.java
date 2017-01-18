@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,9 +23,23 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
+import com.landawn.abacus.util.BooleanList;
+import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ShortList;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -119,6 +134,70 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
         }
     };
 
+    public static final Supplier<BooleanList> BOOLEAN_LIST_FACTORY = new Supplier<BooleanList>() {
+        @Override
+        public BooleanList get() {
+            return new BooleanList();
+        }
+    };
+
+    public static final Supplier<CharList> CHAR_LIST_FACTORY = new Supplier<CharList>() {
+        @Override
+        public CharList get() {
+            return new CharList();
+        }
+    };
+
+    public static final Supplier<ByteList> BYTE_LIST_FACTORY = new Supplier<ByteList>() {
+        @Override
+        public ByteList get() {
+            return new ByteList();
+        }
+    };
+
+    public static final Supplier<ShortList> SHORT_LIST_FACTORY = new Supplier<ShortList>() {
+        @Override
+        public ShortList get() {
+            return new ShortList();
+        }
+    };
+
+    public static final Supplier<IntList> INT_LIST_FACTORY = new Supplier<IntList>() {
+        @Override
+        public IntList get() {
+            return new IntList();
+        }
+    };
+
+    public static final Supplier<LongList> LONG_LIST_FACTORY = new Supplier<LongList>() {
+        @Override
+        public LongList get() {
+            return new LongList();
+        }
+    };
+
+    public static final Supplier<FloatList> FLOAT_LIST_FACTORY = new Supplier<FloatList>() {
+        @Override
+        public FloatList get() {
+            return new FloatList();
+        }
+    };
+
+    public static final Supplier<DoubleList> DOUBLE_LIST_FACTORY = new Supplier<DoubleList>() {
+        @Override
+        public DoubleList get() {
+            return new DoubleList();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<ObjectList> OBJECT_LIST = new Supplier<ObjectList>() {
+        @Override
+        public ObjectList get() {
+            return new ObjectList();
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     public static final Supplier<? super List> LIST = new Supplier<List>() {
         @Override
@@ -167,6 +246,54 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
         }
     };
 
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<? super ConcurrentHashMap> CONCURRENT_HASH_MAP = new Supplier<ConcurrentHashMap>() {
+        @Override
+        public ConcurrentHashMap get() {
+            return new ConcurrentHashMap();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<? super Queue> QUEUE = new Supplier<Queue>() {
+        @Override
+        public Queue get() {
+            return new LinkedList();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<? super ArrayDeque> ARRAY_DEQUE = new Supplier<ArrayDeque>() {
+        @Override
+        public ArrayDeque get() {
+            return new ArrayDeque();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<? super LinkedBlockingQueue> LINKED_BLOCKING_QUEUE = new Supplier<LinkedBlockingQueue>() {
+        @Override
+        public LinkedBlockingQueue get() {
+            return new LinkedBlockingQueue();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<? super ConcurrentLinkedQueue> CONCURRENT_LINKED_QUEUE = new Supplier<ConcurrentLinkedQueue>() {
+        @Override
+        public ConcurrentLinkedQueue get() {
+            return new ConcurrentLinkedQueue();
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    public static final Supplier<? super PriorityQueue> PRIORITY_QUEUE = new Supplier<PriorityQueue>() {
+        @Override
+        public PriorityQueue get() {
+            return new PriorityQueue();
+        }
+    };
+
     public static final Supplier<String> UUID = new Supplier<String>() {
         @Override
         public String get() {
@@ -183,6 +310,11 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 
     @Override
     T get();
+
+    @SuppressWarnings("rawtypes")
+    static <T> Supplier<ObjectList<T>> ofObjectList() {
+        return (Supplier) OBJECT_LIST;
+    }
 
     @SuppressWarnings("rawtypes")
     static <T> Supplier<List<T>> ofList() {
@@ -212,5 +344,35 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     @SuppressWarnings("rawtypes")
     static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
         return (Supplier) LINKED_HASH_MAP;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
+        return (Supplier) CONCURRENT_HASH_MAP;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> Supplier<Queue<T>> ofQueue() {
+        return (Supplier) QUEUE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> Supplier<ArrayDeque<T>> ofArrayDeque() {
+        return (Supplier) ARRAY_DEQUE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> Supplier<LinkedBlockingQueue<T>> ofLinkedBlockingQueue() {
+        return (Supplier) LINKED_BLOCKING_QUEUE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> Supplier<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue() {
+        return (Supplier) CONCURRENT_LINKED_QUEUE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T> Supplier<PriorityQueue> ofPriorityQueue() {
+        return (Supplier) PRIORITY_QUEUE;
     }
 }

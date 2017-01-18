@@ -866,7 +866,7 @@ public final class JdbcUtil {
         return extractData(rs, offset, count, null, closeResultSet);
     }
 
-    public static DataSet extractData(final ResultSet rs, int offset, int count, final Predicate<ResultSet> filter, final boolean closeResultSet) {
+    public static DataSet extractData(final ResultSet rs, int offset, int count, final Predicate<? super Object[]> filter, final boolean closeResultSet) {
         try {
             // TODO [performance improvement]. it will improve performance a lot if MetaData is cached.
             final ResultSetMetaData metaData = rs.getMetaData();
@@ -883,10 +883,16 @@ public final class JdbcUtil {
 
             }
 
+            final Object[] row = new Object[columnCount];
+
             while (count > 0 && rs.next()) {
-                if (filter == null || filter.test(rs)) {
-                    for (int i = 0; i < columnCount;) {
-                        columnList.get(i).add(rs.getObject(++i));
+                for (int i = 0; i < columnCount;) {
+                    row[i] = rs.getObject(++i);
+                }
+
+                if (filter == null || filter.test(row)) {
+                    for (int i = 0; i < columnCount; i++) {
+                        columnList.get(i).add(row[i]);
                     }
 
                     count--;
@@ -2245,7 +2251,7 @@ public final class JdbcUtil {
                 final Iterator<Object[]> iteratorII = stream.limit(count).iterator();
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
                 final AtomicInteger activeThreadNum = new AtomicInteger();
-                final Holder<Throwable> errorHolder = new Holder<Throwable>();
+                final Holder<Throwable> errorHolder = new Holder<>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();

@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.util.Builder;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -56,6 +56,10 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public interface DataSet extends Iterable<Object[]> {
+
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<ObjectList<Object>> OBJECT_LIST_FACTORY = (IntFunction) IntFunction.OBJECT_LIST_FACTORY;
+
     @SuppressWarnings("rawtypes")
     public static final IntFunction<List<Object>> LIST_FACTORY = (IntFunction) IntFunction.LIST_FACTORY;
 
@@ -3640,7 +3644,7 @@ public interface DataSet extends Iterable<Object[]> {
      */
     <T> __<T> __(IntFunction<? extends T> rowSupplier);
 
-    Builder<DataSet> __(Consumer<DataSet> func);
+    // Builder<DataSet> __(Consumer<DataSet> func);
 
     // <E> __<List<E>> _2();
 
@@ -4023,6 +4027,5 @@ public interface DataSet extends Iterable<Object[]> {
          * @return
          */
         <E> Stream<E> stream(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex);
-
     }
 }
