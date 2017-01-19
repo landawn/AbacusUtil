@@ -823,10 +823,8 @@ public final class N {
     private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropSetMethodList = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, Map<String, Method>> entityPropGetMethodPool = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, Map<String, Method>> entityPropSetMethodPool = new ObjectPool<>(POOL_SIZE);
-    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropGetMethodPool = new ObjectPool<>(
-            POOL_SIZE);
-    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropSetMethodPool = new ObjectPool<>(
-            POOL_SIZE);
+    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropGetMethodPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropSetMethodPool = new ObjectPool<>(POOL_SIZE);
 
     // ...
     private static final Map<String, String> formalizedPropNamePool = new ObjectPool<>(POOL_SIZE * 2);
@@ -1033,12 +1031,9 @@ public final class N {
     }
 
     // ...
-    private static final Map<Class<? extends Enum<?>>, List<? extends Enum<?>>> enumListPool = new ObjectPool<>(
-            POOL_SIZE);
-    private static final Map<Class<? extends Enum<?>>, Set<? extends Enum<?>>> enumSetPool = new ObjectPool<>(
-            POOL_SIZE);
-    private static final Map<Class<? extends Enum<?>>, BiMap<? extends Enum<?>, String>> enumMapPool = new ObjectPool<>(
-            POOL_SIZE);
+    private static final Map<Class<? extends Enum<?>>, List<? extends Enum<?>>> enumListPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<? extends Enum<?>>, Set<? extends Enum<?>>> enumSetPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<? extends Enum<?>>, BiMap<? extends Enum<?>, String>> enumMapPool = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, Package> packagePool = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, String> packageNamePool = new ObjectPool<>(POOL_SIZE);
     private static final Map<String, Type<?>> nameTypePool = new ObjectPool<>(POOL_SIZE);
@@ -1049,10 +1044,8 @@ public final class N {
     private static final Map<Class<?>, String> canonicalClassNamePool = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, Class<?>> enclosingClassPool = new ObjectPool<>(POOL_SIZE);
 
-    private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<>(
-            POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<>(
-            POOL_SIZE);
+    private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<>(POOL_SIZE);
 
     // ...
     private static final Map<Class<?>, Boolean> entityClassPool = new ObjectPool<>(POOL_SIZE);
@@ -10448,14 +10441,6 @@ public final class N {
         return typeOf(cls).isPrimitiveArray();
     }
 
-    public static Class<?> wrap(final Class<?> cls) {
-        return N.isPrimitive(cls) ? Array.box(cls) : cls;
-    }
-
-    public static Class<?> unwrap(final Class<?> cls) {
-        return N.isPrimitiveWapper(cls) ? Array.unbox(cls) : cls;
-    }
-
     public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
         if (c == null) {
             return N.newArray(arrayClass.getComponentType(), 0);
@@ -13841,6 +13826,78 @@ public final class N {
     public static void checkState(boolean expression, String errorMessage) {
         if (!expression) {
             throw new IllegalStateException(errorMessage);
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, int p) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, int p1, int p2) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, int p1, int p2, int p3) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, double p) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, double p1, double p2) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, double p1, double p2, double p3) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p1, p2, p3));
         }
     }
 
