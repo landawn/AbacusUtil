@@ -325,19 +325,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream except(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return newStream(this.sequential().filter(new DoublePredicate() {
-            @Override
-            public boolean test(double value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).doubleIterator(), sorted);
-    }
-
-    @Override
-    public DoubleStream intersect(final Collection<?> c) {
+    public DoubleStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new DoublePredicate() {
@@ -349,7 +337,19 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream xor(final Collection<Double> c) {
+    public DoubleStream difference(final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return newStream(this.sequential().filter(new DoublePredicate() {
+            @Override
+            public boolean test(double value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).doubleIterator(), sorted);
+    }
+
+    @Override
+    public DoubleStream symmetricDifference(final Collection<Double> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new DoublePredicate() {

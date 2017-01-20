@@ -17,6 +17,8 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.FloatBiFunction;
+import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.FloatStream;
@@ -109,6 +111,10 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
 
             return new FloatMatrix(c);
         }
+    }
+
+    public float[][] array() {
+        return a;
     }
 
     public float get(final int i, final int j) {
@@ -645,7 +651,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             }
         }
 
-        return new Matrix<Float>(c);
+        return new Matrix<>(c);
     }
 
     public DoubleMatrix toDoubleMatrix() {
@@ -657,7 +663,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
     public FloatStream diagonal() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return FloatStream.empty();
@@ -698,7 +704,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
     public FloatStream diagonal2() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return FloatStream.empty();
@@ -732,6 +738,97 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
                 return toIndex - cursor;
             }
         });
+    }
+
+    public FloatMatrix zipWith(final FloatMatrix matrixB, final FloatBiFunction<Float> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final float[][] result = new float[n][m];
+        final float[][] b = matrixB.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new FloatMatrix(result);
+    }
+
+    public FloatMatrix zipWith(final FloatMatrix matrixB, final FloatMatrix matrixC, final FloatTriFunction<Float> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final float[][] result = new float[n][m];
+        final float[][] b = matrixB.a;
+        final float[][] c = matrixC.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new FloatMatrix(result);
     }
 
     /**

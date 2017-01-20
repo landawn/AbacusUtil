@@ -50,16 +50,16 @@ public final class Profiler {
         // singleton
     }
 
-    public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final Runnable command) {
+    public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final Try.Runnable command) {
         return run(threadNum, loopNum, roundNum, "run", command);
     }
 
-    public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final String label, final Runnable command) {
+    public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final String label, final Try.Runnable command) {
         return run(threadNum, 0, loopNum, 0, roundNum, label, command);
     }
 
     public static MultiLoopsStatistics run(final int threadNum, final long threadDelay, final int loopNum, final long loopDelay, final int roundNum,
-            final String label, final Runnable command) {
+            final String label, final Try.Runnable command) {
         return run(command, label, getMethod(command, "run"), null, null, null, null, null, threadNum, threadDelay, loopNum, loopDelay, roundNum);
     }
 
@@ -282,7 +282,7 @@ public final class Profiler {
     private static List<MethodStatistics> runLoop(final Object instance, final String methodName, final Method method, final Object arg,
             final Method setUpForMethod, final Method tearDownForMethod, final PrintStream ps) {
 
-        final List<MethodStatistics> methodStatisticsList = new ArrayList<MethodStatistics>();
+        final List<MethodStatistics> methodStatisticsList = new ArrayList<>();
 
         if (setUpForMethod != null) {
             try {
@@ -568,7 +568,7 @@ public final class Profiler {
 
         @Override
         public List<String> getMethodNameList() {
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
 
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
@@ -583,7 +583,7 @@ public final class Profiler {
 
         public List<MethodStatistics> getMethodStatisticsList() {
             if (methodStatisticsList == null) {
-                methodStatisticsList = new ArrayList<MethodStatistics>();
+                methodStatisticsList = new ArrayList<>();
             }
 
             return methodStatisticsList;
@@ -738,7 +738,7 @@ public final class Profiler {
 
         @Override
         public List<MethodStatistics> getFailedMethodStatisticsList(final String methodName) {
-            List<MethodStatistics> result = new ArrayList<MethodStatistics>();
+            List<MethodStatistics> result = new ArrayList<>();
 
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
@@ -753,7 +753,7 @@ public final class Profiler {
 
         @Override
         public List<MethodStatistics> getAllFailedMethodStatisticsList() {
-            List<MethodStatistics> result = new ArrayList<MethodStatistics>();
+            List<MethodStatistics> result = new ArrayList<>();
 
             if (methodStatisticsList != null) {
                 for (MethodStatistics methodStatistics : methodStatisticsList) {
@@ -794,7 +794,7 @@ public final class Profiler {
             List<String> result = null;
 
             if (loopStatisticsList == null) {
-                result = new ArrayList<String>();
+                result = new ArrayList<>();
             } else {
                 result = (loopStatisticsList.get(0)).getMethodNameList();
             }
@@ -804,7 +804,7 @@ public final class Profiler {
 
         public List<LoopStatistics> getLoopStatisticsList() {
             if (loopStatisticsList == null) {
-                loopStatisticsList = new ArrayList<LoopStatistics>();
+                loopStatisticsList = new ArrayList<>();
             }
 
             return loopStatisticsList;
@@ -958,7 +958,7 @@ public final class Profiler {
 
         @Override
         public List<MethodStatistics> getFailedMethodStatisticsList(final String methodName) {
-            List<MethodStatistics> result = new ArrayList<MethodStatistics>();
+            List<MethodStatistics> result = new ArrayList<>();
 
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
@@ -971,7 +971,7 @@ public final class Profiler {
 
         @Override
         public List<MethodStatistics> getAllFailedMethodStatisticsList() {
-            List<MethodStatistics> result = new ArrayList<MethodStatistics>();
+            List<MethodStatistics> result = new ArrayList<>();
 
             if (loopStatisticsList != null) {
                 for (LoopStatistics loopStatistics : loopStatisticsList) {
@@ -1051,29 +1051,20 @@ public final class Profiler {
 
                 final int minLen = 12;
                 writer.println(
-                        N.padEnd(methodName + ",  ", maxMethodNameLength)
-                                + N.padEnd(
-                                        elapsedTimeFormat.format(avgTime)
-                                                + ",  ",
+                        N.padEnd(
+                                methodName
+                                        + ",  ",
+                                maxMethodNameLength)
+                                + N.padEnd(elapsedTimeFormat.format(avgTime) + ",  ",
                                         minLen)
                                 + N.padEnd(
                                         elapsedTimeFormat.format(minTime)
                                                 + ",  ",
                                         minLen)
-                                + N.padEnd(elapsedTimeFormat.format(maxTime) + ",  ", minLen) + N
-                                        .padEnd(elapsedTimeFormat.format(methodStatisticsList.get((int) (size * 0.0001)).getElapsedTimeInMillis()) + ",  ",
-                                                minLen)
-                                + N.padEnd(
-                                        elapsedTimeFormat
-                                                .format(methodStatisticsList.get((int) (size * 0.001))
-                                                        .getElapsedTimeInMillis())
-                                                + ",  ",
-                                        minLen)
-                                + N.padEnd(
-                                        elapsedTimeFormat
-                                                .format(methodStatisticsList.get((int) (size * 0.01))
-                                                        .getElapsedTimeInMillis())
-                                                + ",  ",
+                                + N.padEnd(elapsedTimeFormat.format(maxTime) + ",  ", minLen)
+                                + N.padEnd(elapsedTimeFormat.format(methodStatisticsList.get((int) (size * 0.0001)).getElapsedTimeInMillis()) + ",  ", minLen)
+                                + N.padEnd(elapsedTimeFormat.format(methodStatisticsList.get((int) (size * 0.001)).getElapsedTimeInMillis()) + ",  ", minLen)
+                                + N.padEnd(elapsedTimeFormat.format(methodStatisticsList.get((int) (size * 0.01)).getElapsedTimeInMillis()) + ",  ",
                                         minLen)
                                 + N.padEnd(
                                         elapsedTimeFormat
@@ -1313,7 +1304,7 @@ public final class Profiler {
             List<MethodStatistics> failedMethodList = getAllFailedMethodStatisticsList();
 
             if (failedMethodList.size() > 0) {
-                List<String> failedMethodNameList = new ArrayList<String>();
+                List<String> failedMethodNameList = new ArrayList<>();
 
                 for (MethodStatistics ms : failedMethodList) {
                     failedMethodNameList.add(ms.getMethodName());

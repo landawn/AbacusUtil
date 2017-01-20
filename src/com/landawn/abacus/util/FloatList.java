@@ -601,29 +601,9 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
      * 
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#intersection(IntList)
      */
-    public FloatList except(FloatList b) {
-        final Multiset<Float> bOccurrences = b.toMultiset();
-
-        final FloatList c = new FloatList(N.min(size(), N.max(9, size() - b.size())));
-
-        for (int i = 0, len = size(); i < len; i++) {
-            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
-                c.add(elementData[i]);
-            }
-        }
-
-        return c;
-    }
-
-    /**
-     * 
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public FloatList intersect(FloatList b) {
+    public FloatList intersection(FloatList b) {
         final Multiset<Float> bOccurrences = b.toMultiset();
 
         final FloatList c = new FloatList(N.min(9, size(), b.size()));
@@ -640,10 +620,30 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     /**
      * 
      * @param b
-     * @return this.except(b).addAll(b.except(this))
-     * @see IntList#xor(IntList)
+     * @return
+     * @see IntList#difference(IntList)
      */
-    public FloatList xor(FloatList b) {
+    public FloatList difference(FloatList b) {
+        final Multiset<Float> bOccurrences = b.toMultiset();
+
+        final FloatList c = new FloatList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.difference(b).addAll(b.difference(this))
+     * @see IntList#symmetricDifference(IntList)
+     */
+    public FloatList symmetricDifference(FloatList b) {
         final Multiset<Float> bOccurrences = b.toMultiset();
 
         final FloatList c = new FloatList(N.max(9, Math.abs(size() - b.size())));

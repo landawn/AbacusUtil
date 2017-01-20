@@ -19,7 +19,17 @@
 
 9, Add row(rowIndex)/col(columnIndex) methods to Matrix/IntMatrix/LongMatrix/DoubleMatrix.
 
-10, Improvements and bug fix.
+10, Remove split(supplier...) from Splitter and MapSplitter due to bug: https://bugs.eclipse.org/bugs/show_bug.cgi?id=510528
+
+11, Add N.clone(int[][][] a) to N
+
+12, Change Profiler.run(..., Runnable cmd) to Profiler.run(..., Try.Runnable cmd)
+
+13, Rename intersect/except/xor to intersection/difference/symmetricDifference to keep consistent with other frameworks.
+
+14, add zipWith to Matrix/IntMatrix/LongMatrix/DoubleMatrix...
+
+15, Improvements and bug fix.
 
 
 ========Changes in 0.9.42=========================================================================

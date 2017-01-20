@@ -63,10 +63,6 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
         this.count = this.m * this.n * 1L;
     }
 
-    public A[] array() {
-        return a;
-    }
-
     public long count() {
         return count;
     }
@@ -138,6 +134,10 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
     }
 
     public abstract X reshape(int n, int m);
+
+    public boolean isSameShape(X x) {
+        return this.n == x.n && this.m == x.m;
+    }
 
     public abstract PL flatten();
 
@@ -217,5 +217,9 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
 
     boolean isParallelable(final int bm) {
         return isParallelStreamSupported && count * bm > 8192;
+    }
+
+    void checkSameShape(X x) {
+        N.checkArgument(this.isSameShape(x), "Must be same shape");
     }
 }

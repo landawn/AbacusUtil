@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.ToBooleanFunction;
@@ -27,6 +28,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.ImmutableIterator;
 import com.landawn.abacus.util.stream.IntStream;
@@ -49,13 +51,13 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
     }
 
     public static <T> Matrix<T> of(final T[]... a) {
-        return new Matrix<T>(a);
+        return new Matrix<>(a);
     }
 
     public static <T> Matrix<T> repeat(final T val, final int len) {
         final T[][] c = N.newArray(N.newArray(val.getClass(), 0).getClass(), 1);
         c[0] = Array.repeat(val, len);
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     public static <T> Matrix<T> diagonal(final T[] leftUp2RightLowDiagonal) {
@@ -80,13 +82,13 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
 
         if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
             if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
-                return new Matrix<T>(c);
+                return new Matrix<>(c);
             } else {
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
                     c[i][j] = rightUp2LeftLowDiagonal[i];
                 }
 
-                return new Matrix<T>(c);
+                return new Matrix<>(c);
             }
         } else {
             for (int i = 0; i < len; i++) {
@@ -99,8 +101,12 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
                 }
             }
 
-            return new Matrix<T>(c);
+            return new Matrix<>(c);
         }
+    }
+
+    public T[][] array() {
+        return a;
     }
 
     public T get(final int i, final int j) {
@@ -221,6 +227,10 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
     //    public ObjectList<T> column(final int j) {
     //        return ObjectList.of(column2(j));
     //    }
+
+    public Matrix<T> map(final Function<? super T, T> func) {
+        return map(this.componentType, func);
+    }
 
     public <R> Matrix<R> map(final Class<R> cls, final Function<? super T, R> func) {
         final R[][] c = N.newArray(N.newArray(cls, 0).getClass(), n);
@@ -612,7 +622,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
             c[i] = a[i].clone();
         }
 
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     @Override
@@ -625,7 +635,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
             c[i - fromRowIndex] = a[i].clone();
         }
 
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     @Override
@@ -639,7 +649,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
             c[i - fromRowIndex] = N.copyOfRange(a[i], fromColumnIndex, toColumnIndex);
         }
 
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     @Override
@@ -664,7 +674,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
             }
         }
 
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     @Override
@@ -676,7 +686,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
             N.reverse(c[i]);
         }
 
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     @Override
@@ -701,7 +711,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
             }
         }
 
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     @Override
@@ -725,7 +735,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
                 }
             }
         }
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     @Override
@@ -737,7 +747,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         }
 
         if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
-            return new Matrix<T>(c);
+            return new Matrix<>(c);
         }
 
         if (a.length == 1) {
@@ -756,7 +766,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
             }
         }
 
-        return new Matrix<T>(c);
+        return new Matrix<>(c);
     }
 
     @Override
@@ -775,7 +785,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
     public Stream<T> diagonal() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -816,7 +826,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
     public Stream<T> diagonal2() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -850,6 +860,116 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
                 return toIndex - cursor;
             }
         });
+    }
+
+    public <B> Matrix<T> zipWith(final Matrix<B> matrixB, final BiFunction<? super T, ? super B, T> zipFunction) {
+        return zipWith(componentType, matrixB, zipFunction);
+    }
+
+    public <B, R> Matrix<R> zipWith(final Class<R> cls, final Matrix<B> matrixB, final BiFunction<? super T, ? super B, R> zipFunction) {
+        N.checkArgument(n == matrixB.n && m == matrixB.m, "Can't zip two matrices which have different shape.");
+
+        final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), n);
+
+        for (int i = 0; i < n; i++) {
+            result[i] = N.newArray(cls, m);
+        }
+
+        final B[][] b = matrixB.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new Matrix<>(result);
+    }
+
+    public <B, C> Matrix<T> zipWith(final Matrix<B> matrixB, final Matrix<C> matrixC, final TriFunction<? super T, ? super B, ? super C, T> zipFunction) {
+        return zipWith(componentType, matrixB, matrixC, zipFunction);
+    }
+
+    public <B, C, R> Matrix<R> zipWith(final Class<R> cls, final Matrix<B> matrixB, final Matrix<C> matrixC,
+            final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
+        N.checkArgument(n == matrixB.n && m == matrixB.m, "Can't zip two matrices which have different shape.");
+
+        final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), n);
+
+        for (int i = 0; i < n; i++) {
+            result[i] = N.newArray(cls, m);
+        }
+
+        final B[][] b = matrixB.a;
+        final C[][] c = matrixC.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new Matrix<>(result);
     }
 
     /**

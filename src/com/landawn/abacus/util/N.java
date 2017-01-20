@@ -24508,16 +24508,187 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#intersection(IntList)
      */
-    public static boolean[] except(final boolean[] a, final boolean[] b) {
+    public static boolean[] intersection(final boolean[] a, final boolean[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? a : N.EMPTY_BOOLEAN_ARRAY;
+        }
+    
+        return BooleanList.of(a).intersection(BooleanList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static char[] intersection(final char[] a, final char[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+    
+        return CharList.of(a).intersection(CharList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static byte[] intersection(final byte[] a, final byte[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+    
+        return ByteList.of(a).intersection(ByteList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static short[] intersection(final short[] a, final short[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_SHORT_ARRAY;
+        }
+    
+        return ShortList.of(a).intersection(ShortList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * Returns a new array with all the elements in <code>b</code> removed by occurrences.
+     * 
+     * <pre>
+     * int[] a = {0, 1, 2, 2, 3};
+     * int[] b = {2, 5, 1};
+     * int[] c = retainAll(a, b); // The elements c in a will b: [1, 2, 2].
+     * 
+     * int[] a = {0, 1, 2, 2, 3};
+     * int[] b = {2, 5, 1};
+     * int[] c = intersection(a, b); // The elements c in a will b: [1, 2].
+     * </pre>
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static int[] intersection(final int[] a, final int[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_INT_ARRAY;
+        }
+    
+        return IntList.of(a).intersection(IntList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static long[] intersection(final long[] a, final long[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_LONG_ARRAY;
+        }
+    
+        return LongList.of(a).intersection(LongList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static float[] intersection(final float[] a, final float[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+    
+        return FloatList.of(a).intersection(FloatList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static double[] intersection(final double[] a, final double[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+    
+        return DoubleList.of(a).intersection(DoubleList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static <T> T[] intersection(final T[] a, final Object[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return N.isNullOrEmpty(a) ? a : (T[]) N.newArray(a.getClass().getComponentType(), 0);
+        }
+    
+        return (T[]) ObjectList.of(a).intersection(ObjectList.of(b)).trimToSize().array();
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#intersection(IntList)
+     */
+    public static <T> List<T> intersection(final Collection<? extends T> a, final Collection<?> b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return new ArrayList<>();
+        }
+    
+        final Multiset<Object> bOccurrences = Multiset.from(b);
+    
+        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
+    
+        for (T e : a) {
+            if (bOccurrences.getAndRemove(e) > 0) {
+                result.add(e);
+            }
+        }
+    
+        return result;
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @return
+     * @see IntList#difference(IntList)
+     */
+    public static boolean[] difference(final boolean[] a, final boolean[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_BOOLEAN_ARRAY;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return BooleanList.of(a).except(BooleanList.of(b)).trimToSize().array();
+        return BooleanList.of(a).difference(BooleanList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24525,16 +24696,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static char[] except(final char[] a, final char[] b) {
+    public static char[] difference(final char[] a, final char[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_CHAR_ARRAY;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return CharList.of(a).except(CharList.of(b)).trimToSize().array();
+        return CharList.of(a).difference(CharList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24542,16 +24713,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static byte[] except(final byte[] a, final byte[] b) {
+    public static byte[] difference(final byte[] a, final byte[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_BYTE_ARRAY;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return ByteList.of(a).except(ByteList.of(b)).trimToSize().array();
+        return ByteList.of(a).difference(ByteList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24559,16 +24730,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static short[] except(final short[] a, final short[] b) {
+    public static short[] difference(final short[] a, final short[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_SHORT_ARRAY;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return ShortList.of(a).except(ShortList.of(b)).trimToSize().array();
+        return ShortList.of(a).difference(ShortList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24581,22 +24752,22 @@ public final class N {
      * 
      * int[] a = {0, 1, 2, 2, 3};
      * int[] b = {2, 5, 1};
-     * int[] c = except(a, b); // The elements c in a will b: [0, 2, 3].
+     * int[] c = difference(a, b); // The elements c in a will b: [0, 2, 3].
      * </pre>
      * 
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static int[] except(final int[] a, final int[] b) {
+    public static int[] difference(final int[] a, final int[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_INT_ARRAY;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return IntList.of(a).except(IntList.of(b)).trimToSize().array();
+        return IntList.of(a).difference(IntList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24604,16 +24775,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static long[] except(final long[] a, final long[] b) {
+    public static long[] difference(final long[] a, final long[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_LONG_ARRAY;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return LongList.of(a).except(LongList.of(b)).trimToSize().array();
+        return LongList.of(a).difference(LongList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24621,16 +24792,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static float[] except(final float[] a, final float[] b) {
+    public static float[] difference(final float[] a, final float[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_FLOAT_ARRAY;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return FloatList.of(a).except(FloatList.of(b)).trimToSize().array();
+        return FloatList.of(a).difference(FloatList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24638,16 +24809,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static double[] except(final double[] a, final double[] b) {
+    public static double[] difference(final double[] a, final double[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_DOUBLE_ARRAY;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return DoubleList.of(a).except(DoubleList.of(b)).trimToSize().array();
+        return DoubleList.of(a).difference(DoubleList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24655,16 +24826,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static <T> T[] except(final T[] a, final Object[] b) {
+    public static <T> T[] difference(final T[] a, final Object[] b) {
         if (N.isNullOrEmpty(a)) {
             return a;
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return (T[]) ObjectList.of(a).except(ObjectList.of(b)).trimToSize().array();
+        return (T[]) ObjectList.of(a).difference(ObjectList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24672,9 +24843,9 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#difference(IntList)
      */
-    public static <T> List<T> except(final Collection<? extends T> a, final Collection<?> b) {
+    public static <T> List<T> difference(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -24697,187 +24868,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#intersect(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static boolean[] intersect(final boolean[] a, final boolean[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? a : N.EMPTY_BOOLEAN_ARRAY;
-        }
-
-        return BooleanList.of(a).intersect(BooleanList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static char[] intersect(final char[] a, final char[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_CHAR_ARRAY;
-        }
-
-        return CharList.of(a).intersect(CharList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static byte[] intersect(final byte[] a, final byte[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_BYTE_ARRAY;
-        }
-
-        return ByteList.of(a).intersect(ByteList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static short[] intersect(final short[] a, final short[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_SHORT_ARRAY;
-        }
-
-        return ShortList.of(a).intersect(ShortList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * Returns a new array with all the elements in <code>b</code> removed by occurrences.
-     * 
-     * <pre>
-     * int[] a = {0, 1, 2, 2, 3};
-     * int[] b = {2, 5, 1};
-     * int[] c = retainAll(a, b); // The elements c in a will b: [1, 2, 2].
-     * 
-     * int[] a = {0, 1, 2, 2, 3};
-     * int[] b = {2, 5, 1};
-     * int[] c = intersect(a, b); // The elements c in a will b: [1, 2].
-     * </pre>
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static int[] intersect(final int[] a, final int[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_INT_ARRAY;
-        }
-
-        return IntList.of(a).intersect(IntList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static long[] intersect(final long[] a, final long[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_LONG_ARRAY;
-        }
-
-        return LongList.of(a).intersect(LongList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static float[] intersect(final float[] a, final float[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_FLOAT_ARRAY;
-        }
-
-        return FloatList.of(a).intersect(FloatList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static double[] intersect(final double[] a, final double[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.EMPTY_DOUBLE_ARRAY;
-        }
-
-        return DoubleList.of(a).intersect(DoubleList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static <T> T[] intersect(final T[] a, final Object[] b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? a : (T[]) N.newArray(a.getClass().getComponentType(), 0);
-        }
-
-        return (T[]) ObjectList.of(a).intersect(ObjectList.of(b)).trimToSize().array();
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public static <T> List<T> intersect(final Collection<? extends T> a, final Collection<?> b) {
-        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return new ArrayList<>();
-        }
-
-        final Multiset<Object> bOccurrences = Multiset.from(b);
-
-        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
-
-        for (T e : a) {
-            if (bOccurrences.getAndRemove(e) > 0) {
-                result.add(e);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * 
-     * @param a
-     * @param b
-     * @return
-     * @see IntList#xor(IntList)
-     */
-    public static boolean[] xor(final boolean[] a, final boolean[] b) {
+    public static boolean[] symmetricDifference(final boolean[] a, final boolean[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_BOOLEAN_ARRAY : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return BooleanList.of(a).xor(BooleanList.of(b)).trimToSize().array();
+        return BooleanList.of(a).symmetricDifference(BooleanList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24885,16 +24885,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static char[] xor(final char[] a, final char[] b) {
+    public static char[] symmetricDifference(final char[] a, final char[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_CHAR_ARRAY : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return CharList.of(a).xor(CharList.of(b)).trimToSize().array();
+        return CharList.of(a).symmetricDifference(CharList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24902,16 +24902,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static byte[] xor(final byte[] a, final byte[] b) {
+    public static byte[] symmetricDifference(final byte[] a, final byte[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_BYTE_ARRAY : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return ByteList.of(a).xor(ByteList.of(b)).trimToSize().array();
+        return ByteList.of(a).symmetricDifference(ByteList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24919,39 +24919,39 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static short[] xor(final short[] a, final short[] b) {
+    public static short[] symmetricDifference(final short[] a, final short[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_SHORT_ARRAY : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return ShortList.of(a).xor(ShortList.of(b)).trimToSize().array();
+        return ShortList.of(a).symmetricDifference(ShortList.of(b)).trimToSize().array();
     }
 
     /**
      * <pre>
      * int[] a = {0, 1, 2, 2, 3};
      * int[] b = {2, 5, 1};
-     * int[] c = xor(a, b); // The elements c in a will b: [0, 2, 3, 5].
+     * int[] c = symmetricDifference(a, b); // The elements c in a will b: [0, 2, 3, 5].
      * </pre>
      * 
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
-     * @see N#except(int[], int[])
+     * @see IntList#symmetricDifference(IntList)
+     * @see N#difference(int[], int[])
      */
-    public static int[] xor(final int[] a, final int[] b) {
+    public static int[] symmetricDifference(final int[] a, final int[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_INT_ARRAY : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return IntList.of(a).xor(IntList.of(b)).trimToSize().array();
+        return IntList.of(a).symmetricDifference(IntList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24959,16 +24959,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static long[] xor(final long[] a, final long[] b) {
+    public static long[] symmetricDifference(final long[] a, final long[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_LONG_ARRAY : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return LongList.of(a).xor(LongList.of(b)).trimToSize().array();
+        return LongList.of(a).symmetricDifference(LongList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24976,16 +24976,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static float[] xor(final float[] a, final float[] b) {
+    public static float[] symmetricDifference(final float[] a, final float[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_FLOAT_ARRAY : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return FloatList.of(a).xor(FloatList.of(b)).trimToSize().array();
+        return FloatList.of(a).symmetricDifference(FloatList.of(b)).trimToSize().array();
     }
 
     /**
@@ -24993,16 +24993,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static double[] xor(final double[] a, final double[] b) {
+    public static double[] symmetricDifference(final double[] a, final double[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_DOUBLE_ARRAY : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return DoubleList.of(a).xor(DoubleList.of(b)).trimToSize().array();
+        return DoubleList.of(a).symmetricDifference(DoubleList.of(b)).trimToSize().array();
     }
 
     /**
@@ -25010,16 +25010,16 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static <T> T[] xor(final T[] a, final T[] b) {
+    public static <T> T[] symmetricDifference(final T[] a, final T[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? a : b.clone();
         } else if (N.isNullOrEmpty(b)) {
             return a.clone();
         }
 
-        return (T[]) ObjectList.of(a).xor(ObjectList.of(b)).trimToSize().array();
+        return (T[]) ObjectList.of(a).symmetricDifference(ObjectList.of(b)).trimToSize().array();
     }
 
     /**
@@ -25027,18 +25027,18 @@ public final class N {
      * @param a
      * @param b
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    public static <T> List<T> xor(final Collection<? extends T> a, final Collection<? extends T> b) {
+    public static <T> List<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<>(b);
         } else if (N.isNullOrEmpty(b)) {
             return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<>(a);
         }
 
-        //        final List<T> result = except(a, b);
+        //        final List<T> result = difference(a, b);
         //
-        //        result.addAll(except(b, a));
+        //        result.addAll(difference(b, a));
         //
         //        return result;
 

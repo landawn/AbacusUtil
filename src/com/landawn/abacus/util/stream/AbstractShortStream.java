@@ -261,19 +261,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream except(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return newStream(this.sequential().filter(new ShortPredicate() {
-            @Override
-            public boolean test(short value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).shortIterator(), sorted);
-    }
-
-    @Override
-    public ShortStream intersect(final Collection<?> c) {
+    public ShortStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new ShortPredicate() {
@@ -285,7 +273,19 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream xor(final Collection<Short> c) {
+    public ShortStream difference(final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return newStream(this.sequential().filter(new ShortPredicate() {
+            @Override
+            public boolean test(short value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).shortIterator(), sorted);
+    }
+
+    @Override
+    public ShortStream symmetricDifference(final Collection<Short> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new ShortPredicate() {

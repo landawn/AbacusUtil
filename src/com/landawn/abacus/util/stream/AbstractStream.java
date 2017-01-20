@@ -578,7 +578,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return split0(size).map(new Function<ObjectList<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(ObjectList<T> t) {
-                return new ArrayStream<T>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+                return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
             }
         });
     }
@@ -588,7 +588,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return split0(identity, predicate, identityUpdate).map(new Function<ObjectList<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(ObjectList<T> t) {
-                return new ArrayStream<T>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+                return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
             }
         });
     }
@@ -598,7 +598,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return sliding0(windowSize, increment).map(new Function<ObjectList<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(ObjectList<T> t) {
-                return new ArrayStream<T>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+                return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
             }
         });
     }
@@ -958,8 +958,8 @@ abstract class AbstractStream<T> extends Stream<T> {
             list.add(iter.next());
         }
 
-        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.array(), 0, list.size(), null, sorted, cmp),
-                new IteratorStream<T>(iter, null, sorted, cmp) };
+        final Stream<T>[] a = new Stream[] { new ArrayStream<>((T[]) list.array(), 0, list.size(), null, sorted, cmp),
+                new IteratorStream<>(iter, null, sorted, cmp) };
 
         return newStream(a, false, null);
     }
@@ -985,11 +985,11 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
         }
 
-        final Stream<T>[] a = new Stream[] { new ArrayStream<T>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<T>(iter, null, sorted, cmp) };
+        final Stream<T>[] a = new Stream[] { new ArrayStream<>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<>(iter, null, sorted, cmp) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorStream<T>(a[1].prepend(s).iterator(), null, sorted, cmp);
+                a[1] = new IteratorStream<>(a[1].prepend(s).iterator(), null, sorted, cmp);
             } else {
                 a[1] = a[1].prepend(s);
             }
@@ -1004,31 +1004,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> except(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return newStream(this.sequential().filter(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).iterator(), sorted, cmp);
-    }
-
-    @Override
-    public Stream<T> except(final Function<? super T, ?> mapper, final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return newStream(this.sequential().filter(new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return multiset.getAndRemove(mapper.apply(value)) < 1;
-            }
-        }).iterator(), sorted, cmp);
-    }
-
-    @Override
-    public Stream<T> intersect(final Collection<?> c) {
+    public Stream<T> intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new Predicate<T>() {
@@ -1040,7 +1016,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> intersect(final Function<? super T, ?> mapper, final Collection<?> c) {
+    public Stream<T> intersection(final Function<? super T, ?> mapper, final Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new Predicate<T>() {
@@ -1052,7 +1028,31 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> xor(final Collection<T> c) {
+    public Stream<T> difference(final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return newStream(this.sequential().filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).iterator(), sorted, cmp);
+    }
+
+    @Override
+    public Stream<T> difference(final Function<? super T, ?> mapper, final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return newStream(this.sequential().filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return multiset.getAndRemove(mapper.apply(value)) < 1;
+            }
+        }).iterator(), sorted, cmp);
+    }
+
+    @Override
+    public Stream<T> symmetricDifference(final Collection<T> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new Predicate<T>() {

@@ -61,7 +61,7 @@ public final class Reflection<T> {
     Reflection(Class<T> cls, T target) {
         this.cls = cls;
         this.target = target;
-        this.reflectASM = isReflectASMAvailable ? new ReflectASM<T>(cls, target) : null;
+        this.reflectASM = isReflectASMAvailable ? new ReflectASM<>(cls, target) : null;
     }
 
     public static <T> Reflection<T> on(String clsName) {
@@ -69,15 +69,15 @@ public final class Reflection<T> {
     }
 
     public static <T> Reflection<T> on(Class<T> cls) {
-        return new Reflection<T>(cls, null);
+        return new Reflection<>(cls, null);
     }
 
     public static <T> Reflection<T> on(T target) {
-        return new Reflection<T>((Class<T>) target.getClass(), target);
+        return new Reflection<>((Class<T>) target.getClass(), target);
     }
 
     public Reflection<T> _new() {
-        return new Reflection<T>(cls, N.newInstance(cls));
+        return new Reflection<>(cls, N.newInstance(cls));
     }
 
     public Reflection<T> _new(Object... args) {
@@ -91,7 +91,7 @@ public final class Reflection<T> {
             constructor.setAccessible(true);
         }
 
-        return new Reflection<T>(cls, N.invokeConstructor(constructor, args));
+        return new Reflection<>(cls, N.invokeConstructor(constructor, args));
     }
 
     public T instance() {
@@ -202,7 +202,7 @@ public final class Reflection<T> {
 
                     if (paramTypes != null && paramTypes.length == argTypes.length) {
                         for (int i = 0, len = paramTypes.length; i < len; i++) {
-                            if (argTypes[i] == null || paramTypes[i].isAssignableFrom(argTypes[i])) {
+                            if (argTypes[i] == null || paramTypes[i].isAssignableFrom(argTypes[i]) || wrap(paramTypes[i]).isAssignableFrom(wrap(argTypes[i]))) {
                                 if (i == len - 1) {
                                     result = constructor;
                                 }
@@ -253,7 +253,7 @@ public final class Reflection<T> {
 
                     if (method.getName().equals(methodName) && (paramTypes != null && paramTypes.length == argTypes.length)) {
                         for (int i = 0, len = paramTypes.length; i < len; i++) {
-                            if (argTypes[i] == null || paramTypes[i].isAssignableFrom(argTypes[i])) {
+                            if (argTypes[i] == null || paramTypes[i].isAssignableFrom(argTypes[i]) || wrap(paramTypes[i]).isAssignableFrom(wrap(argTypes[i]))) {
                                 if (i == len - 1) {
                                     result = method;
                                 }
@@ -289,5 +289,9 @@ public final class Reflection<T> {
         }
 
         return result;
+    }
+
+    private Class<?> wrap(final Class<?> cls) {
+        return N.isPrimitive(cls) ? Array.box(cls) : cls;
     }
 }

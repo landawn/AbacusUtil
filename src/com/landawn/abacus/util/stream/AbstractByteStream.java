@@ -260,19 +260,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream except(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return newStream(this.sequential().filter(new BytePredicate() {
-            @Override
-            public boolean test(byte value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).byteIterator(), sorted);
-    }
-
-    @Override
-    public ByteStream intersect(final Collection<?> c) {
+    public ByteStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new BytePredicate() {
@@ -284,7 +272,19 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream xor(final Collection<Byte> c) {
+    public ByteStream difference(final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return newStream(this.sequential().filter(new BytePredicate() {
+            @Override
+            public boolean test(byte value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).byteIterator(), sorted);
+    }
+
+    @Override
+    public ByteStream symmetricDifference(final Collection<Byte> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new BytePredicate() {

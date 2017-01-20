@@ -725,36 +725,6 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     /**
-     * Returns a new list with all the elements in <code>b</code> removed by occurrences.
-     * 
-     * <pre>
-     * IntList a = IntList.of(0, 1, 2, 2, 3);
-     * IntList b = IntList.of(2, 5, 1);
-     * a.removeAll(b); // The elements remained in a will be: [0, 3].
-     * 
-     * IntList a = IntList.of(0, 1, 2, 2, 3);
-     * IntList b = IntList.of(2, 5, 1);
-     * IntList c = a.except(b); // The elements c in a will be: [0, 2, 3].
-     * </pre>
-     * 
-     * @param b
-     * @return
-     */
-    public IntList except(IntList b) {
-        final Multiset<Integer> bOccurrences = b.toMultiset();
-
-        final IntList c = new IntList(N.min(size(), N.max(9, size() - b.size())));
-
-        for (int i = 0, len = size(); i < len; i++) {
-            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
-                c.add(elementData[i]);
-            }
-        }
-
-        return c;
-    }
-
-    /**
      * Returns a new list with all the elements occurred in both <code>a</code> and <code>b</code> by occurrences.
      * 
      * <pre>
@@ -764,13 +734,13 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * 
      * IntList a = IntList.of(0, 1, 2, 2, 3);
      * IntList b = IntList.of(2, 5, 1);
-     * IntList c = a.intersect(b); // The elements c in a will be: [1, 2].
+     * IntList c = a.intersection(b); // The elements c in a will be: [1, 2].
      * </pre>
      * 
      * @param b
      * @return
      */
-    public IntList intersect(IntList b) {
+    public IntList intersection(IntList b) {
         final Multiset<Integer> bOccurrences = b.toMultiset();
 
         final IntList c = new IntList(N.min(9, size(), b.size()));
@@ -785,20 +755,50 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     /**
+     * Returns a new list with all the elements in <code>b</code> removed by occurrences.
+     * 
      * <pre>
      * IntList a = IntList.of(0, 1, 2, 2, 3);
      * IntList b = IntList.of(2, 5, 1);
-     * IntList c = a.xor(b); // The elements c in a will be: [0, 2, 3, 5].
+     * a.removeAll(b); // The elements remained in a will be: [0, 3].
+     * 
+     * IntList a = IntList.of(0, 1, 2, 2, 3);
+     * IntList b = IntList.of(2, 5, 1);
+     * IntList c = a.difference(b); // The elements c in a will be: [0, 2, 3].
      * </pre>
      * 
      * @param b
-     * @return this.except(b).addAll(b.except(this))
-     * @see IntList#except(IntList)
+     * @return
      */
-    public IntList xor(IntList b) {
-        //        final IntList result = this.except(b);
+    public IntList difference(IntList b) {
+        final Multiset<Integer> bOccurrences = b.toMultiset();
+
+        final IntList c = new IntList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * <pre>
+     * IntList a = IntList.of(0, 1, 2, 2, 3);
+     * IntList b = IntList.of(2, 5, 1);
+     * IntList c = a.symmetricDifference(b); // The elements c in a will be: [0, 2, 3, 5].
+     * </pre>
+     * 
+     * @param b
+     * @return this.difference(b).addAll(b.difference(this))
+     * @see IntList#difference(IntList)
+     */
+    public IntList symmetricDifference(IntList b) {
+        //        final IntList result = this.difference(b);
         //
-        //        result.addAll(b.except(this));
+        //        result.addAll(b.difference(this));
         //
         //        return result;
 

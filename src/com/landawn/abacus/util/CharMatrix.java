@@ -17,6 +17,8 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.CharBiFunction;
+import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.CharStream;
@@ -109,6 +111,10 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
 
             return new CharMatrix(c);
         }
+    }
+
+    public char[][] array() {
+        return a;
     }
 
     public char get(final int i, final int j) {
@@ -645,7 +651,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             }
         }
 
-        return new Matrix<Character>(c);
+        return new Matrix<>(c);
     }
 
     public IntMatrix toIntMatrix() {
@@ -717,7 +723,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
     public CharStream diagonal() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return CharStream.empty();
@@ -758,7 +764,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
     public CharStream diagonal2() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return CharStream.empty();
@@ -792,6 +798,97 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
                 return toIndex - cursor;
             }
         });
+    }
+
+    public CharMatrix zipWith(final CharMatrix matrixB, final CharBiFunction<Character> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final char[][] result = new char[n][m];
+        final char[][] b = matrixB.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new CharMatrix(result);
+    }
+
+    public CharMatrix zipWith(final CharMatrix matrixB, final CharMatrix matrixC, final CharTriFunction<Character> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final char[][] result = new char[n][m];
+        final char[][] b = matrixB.a;
+        final char[][] c = matrixC.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new CharMatrix(result);
     }
 
     /**

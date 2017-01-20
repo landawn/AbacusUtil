@@ -526,9 +526,29 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * 
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#intersection(IntList)
      */
-    public BooleanList except(BooleanList b) {
+    public BooleanList intersection(BooleanList b) {
+        final Multiset<Boolean> bOccurrences = b.toMultiset();
+    
+        final BooleanList c = new BooleanList(N.min(9, size(), b.size()));
+    
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+    
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#difference(IntList)
+     */
+    public BooleanList difference(BooleanList b) {
         final Multiset<Boolean> bOccurrences = b.toMultiset();
 
         final BooleanList c = new BooleanList(N.min(size(), N.max(9, size() - b.size())));
@@ -545,33 +565,13 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     /**
      * 
      * @param b
-     * @return
-     * @see IntList#intersect(IntList)
+     * @return this.difference(b).addAll(b.difference(this))
+     * @see IntList#symmetricDifference(IntList)
      */
-    public BooleanList intersect(BooleanList b) {
-        final Multiset<Boolean> bOccurrences = b.toMultiset();
-
-        final BooleanList c = new BooleanList(N.min(9, size(), b.size()));
-
-        for (int i = 0, len = size(); i < len; i++) {
-            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
-                c.add(elementData[i]);
-            }
-        }
-
-        return c;
-    }
-
-    /**
-     * 
-     * @param b
-     * @return this.except(b).addAll(b.except(this))
-     * @see IntList#xor(IntList)
-     */
-    public BooleanList xor(BooleanList b) {
-        //        final BooleanList result = this.except(b);
+    public BooleanList symmetricDifference(BooleanList b) {
+        //        final BooleanList result = this.difference(b);
         //
-        //        result.addAll(b.except(this));
+        //        result.addAll(b.difference(this));
         //
         //        return result;
 

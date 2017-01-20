@@ -587,9 +587,29 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
      * 
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#intersection(IntList)
      */
-    public DoubleList except(DoubleList b) {
+    public DoubleList intersection(DoubleList b) {
+        final Multiset<Double> bOccurrences = b.toMultiset();
+    
+        final DoubleList c = new DoubleList(N.min(9, size(), b.size()));
+    
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
+                c.add(elementData[i]);
+            }
+        }
+    
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntList#difference(IntList)
+     */
+    public DoubleList difference(DoubleList b) {
         final Multiset<Double> bOccurrences = b.toMultiset();
 
         final DoubleList c = new DoubleList(N.min(size(), N.max(9, size() - b.size())));
@@ -606,30 +626,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     /**
      * 
      * @param b
-     * @return
-     * @see IntList#intersect(IntList)
+     * @return this.difference(b).addAll(b.difference(this))
+     * @see IntList#symmetricDifference(IntList)
      */
-    public DoubleList intersect(DoubleList b) {
-        final Multiset<Double> bOccurrences = b.toMultiset();
-
-        final DoubleList c = new DoubleList(N.min(9, size(), b.size()));
-
-        for (int i = 0, len = size(); i < len; i++) {
-            if (bOccurrences.getAndRemove(elementData[i]) > 0) {
-                c.add(elementData[i]);
-            }
-        }
-
-        return c;
-    }
-
-    /**
-     * 
-     * @param b
-     * @return this.except(b).addAll(b.except(this))
-     * @see IntList#xor(IntList)
-     */
-    public DoubleList xor(DoubleList b) {
+    public DoubleList symmetricDifference(DoubleList b) {
         final Multiset<Double> bOccurrences = b.toMultiset();
 
         final DoubleList c = new DoubleList(N.max(9, Math.abs(size() - b.size())));

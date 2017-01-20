@@ -609,29 +609,9 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * 
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#intersection(IntList)
      */
-    public CharList except(CharList b) {
-        final Multiset<Character> bOccurrences = b.toMultiset();
-
-        final CharList c = new CharList(N.min(size(), N.max(9, size() - b.size())));
-
-        for (int i = 0, len = size(); i < len; i++) {
-            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
-                c.add(elementData[i]);
-            }
-        }
-
-        return c;
-    }
-
-    /**
-     * 
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public CharList intersect(CharList b) {
+    public CharList intersection(CharList b) {
         final Multiset<Character> bOccurrences = b.toMultiset();
 
         final CharList c = new CharList(N.min(9, size(), b.size()));
@@ -648,10 +628,30 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     /**
      * 
      * @param b
-     * @return this.except(b).addAll(b.except(this))
-     * @see IntList#xor(IntList)
+     * @return
+     * @see IntList#difference(IntList)
      */
-    public CharList xor(CharList b) {
+    public CharList difference(CharList b) {
+        final Multiset<Character> bOccurrences = b.toMultiset();
+
+        final CharList c = new CharList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.difference(b).addAll(b.difference(this))
+     * @see IntList#symmetricDifference(IntList)
+     */
+    public CharList symmetricDifference(CharList b) {
         final Multiset<Character> bOccurrences = b.toMultiset();
 
         final CharList c = new CharList(N.max(9, Math.abs(size() - b.size())));

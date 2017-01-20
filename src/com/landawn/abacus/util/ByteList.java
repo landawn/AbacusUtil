@@ -579,29 +579,9 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      * 
      * @param b
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#intersection(IntList)
      */
-    public ByteList except(ByteList b) {
-        final Multiset<Byte> bOccurrences = b.toMultiset();
-
-        final ByteList c = new ByteList(N.min(size(), N.max(9, size() - b.size())));
-
-        for (int i = 0, len = size(); i < len; i++) {
-            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
-                c.add(elementData[i]);
-            }
-        }
-
-        return c;
-    }
-
-    /**
-     * 
-     * @param b
-     * @return
-     * @see IntList#intersect(IntList)
-     */
-    public ByteList intersect(ByteList b) {
+    public ByteList intersection(ByteList b) {
         final Multiset<Byte> bOccurrences = b.toMultiset();
 
         final ByteList c = new ByteList(N.min(9, size(), b.size()));
@@ -618,13 +598,33 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     /**
      * 
      * @param b
-     * @return this.except(b).addAll(b.except(this))
-     * @see IntList#xor(IntList)
+     * @return
+     * @see IntList#difference(IntList)
      */
-    public ByteList xor(ByteList b) {
-        //        final ByteList result = this.except(b);
+    public ByteList difference(ByteList b) {
+        final Multiset<Byte> bOccurrences = b.toMultiset();
+
+        final ByteList c = new ByteList(N.min(size(), N.max(9, size() - b.size())));
+
+        for (int i = 0, len = size(); i < len; i++) {
+            if (bOccurrences.getAndRemove(elementData[i]) < 1) {
+                c.add(elementData[i]);
+            }
+        }
+
+        return c;
+    }
+
+    /**
+     * 
+     * @param b
+     * @return this.difference(b).addAll(b.difference(this))
+     * @see IntList#symmetricDifference(IntList)
+     */
+    public ByteList symmetricDifference(ByteList b) {
+        //        final ByteList result = this.difference(b);
         //
-        //        result.addAll(b.except(this));
+        //        result.addAll(b.difference(this));
         //
         //        return result; 
 

@@ -18,6 +18,8 @@ import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.IntConsumer;
+import com.landawn.abacus.util.function.LongBiFunction;
+import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.stream.ImmutableIterator;
 import com.landawn.abacus.util.stream.ImmutableLongIterator;
@@ -125,6 +127,10 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
 
             return new LongMatrix(c);
         }
+    }
+
+    public long[][] array() {
+        return a;
     }
 
     public long get(final int i, final int j) {
@@ -661,7 +667,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
             }
         }
 
-        return new Matrix<Long>(c);
+        return new Matrix<>(c);
     }
 
     public FloatMatrix toFloatMatrix() {
@@ -693,7 +699,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
     public LongStream diagonal() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return LongStream.empty();
@@ -734,7 +740,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
     public LongStream diagonal2() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return LongStream.empty();
@@ -768,6 +774,97 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
                 return toIndex - cursor;
             }
         });
+    }
+
+    public LongMatrix zipWith(final LongMatrix matrixB, final LongBiFunction<Long> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final long[][] result = new long[n][m];
+        final long[][] b = matrixB.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new LongMatrix(result);
+    }
+
+    public LongMatrix zipWith(final LongMatrix matrixB, final LongMatrix matrixC, final LongTriFunction<Long> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final long[][] result = new long[n][m];
+        final long[][] b = matrixB.a;
+        final long[][] c = matrixC.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new LongMatrix(result);
     }
 
     /**

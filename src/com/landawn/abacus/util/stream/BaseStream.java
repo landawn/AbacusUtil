@@ -272,23 +272,23 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     /**
      * @param c
      * @return
-     * @see IntList#except(IntList)
+     * @see IntList#intersection(IntList)
      */
-    S except(Collection<?> c);
+    S intersection(Collection<?> c);
 
     /**
      * @param c
      * @return
-     * @see IntList#intersect(IntList)
+     * @see IntList#difference(IntList)
      */
-    S intersect(Collection<?> c);
+    S difference(Collection<?> c);
 
     /**
      * @param c
      * @return
-     * @see IntList#xor(IntList)
+     * @see IntList#symmetricDifference(IntList)
      */
-    S xor(Collection<T> c);
+    S symmetricDifference(Collection<T> c);
 
     /**
      * 
@@ -792,7 +792,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * Here are the methods which are executed sequentially even in parallel Streams.  
      * <br></br>
      * <i>split/splitAt/splitBy/sliding, distinct, toArray, toObjectList, toList, toSet, toMultiset, toLongMultiset, kthLargest, 
-     * count, except(Collection c), intersect(Collection c), forEach(identity, accumulator, predicate)</i>
+     * count, difference(Collection c), intersection(Collection c), forEach(identity, accumulator, predicate)</i>
      * 
      * @param maxThreadNum Default value is the number of cpu-cores. Steps/operations will be executed sequentially if <code>maxThreadNum</code> is 1.
      * @param splitor The target array is split by ranges for multiple threads if splitor is <code>splitor.ARRAY</code> and target stream composed by array. It looks like:

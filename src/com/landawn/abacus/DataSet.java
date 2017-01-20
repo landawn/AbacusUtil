@@ -3207,26 +3207,26 @@ public interface DataSet extends Iterable<Object[]> {
      *
      * @param dataSet
      * @return a new DataSet
-     * @see com.landawn.abacus.util.IntList#intersect(com.landawn.abacus.util.IntList)
+     * @see com.landawn.abacus.util.IntList#intersection(com.landawn.abacus.util.IntList)
      */
-    DataSet intersect(DataSet dataSet);
+    DataSet intersection(DataSet dataSet);
 
     /**
      * Returns a new <code>DataSet</code>.
      *
      * @param dataSet
      * @return a new DataSet
-     * @see com.landawn.abacus.util.IntList#except(com.landawn.abacus.util.IntList)
+     * @see com.landawn.abacus.util.IntList#difference(com.landawn.abacus.util.IntList)
      */
-    DataSet except(DataSet dataSet);
+    DataSet difference(DataSet dataSet);
 
     /**
      * 
      * @param dataSet
      * @return
-     * @see com.landawn.abacus.util.IntList#xor(com.landawn.abacus.util.IntList)
+     * @see com.landawn.abacus.util.IntList#symmetricDifference(com.landawn.abacus.util.IntList)
      */
-    DataSet xor(DataSet dataSet);
+    DataSet symmetricDifference(DataSet dataSet);
 
     /**
      * 

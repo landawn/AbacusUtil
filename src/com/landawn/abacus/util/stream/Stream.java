@@ -1253,24 +1253,24 @@ public abstract class Stream<T>
     public abstract Stream<T> skipNull();
 
     /**
-     * Except with the specified Collection by the values mapped by <code>mapper</code>
-     * 
-     * @param mapper
-     * @param c
-     * @return
-     * @see IntList#except(IntList)
-     */
-    public abstract Stream<T> except(Function<? super T, ?> mapper, Collection<?> c);
-
-    /**
      * Intersect with the specified Collection by the values mapped by <code>mapper</code>
      * 
      * @param mapper
      * @param c
      * @return
-     * @see IntList#intersect(IntList)
+     * @see IntList#intersection(IntList)
      */
-    public abstract Stream<T> intersect(Function<? super T, ?> mapper, Collection<?> c);
+    public abstract Stream<T> intersection(Function<? super T, ?> mapper, Collection<?> c);
+
+    /**
+     * Except with the specified Collection by the values mapped by <code>mapper</code>
+     * 
+     * @param mapper
+     * @param c
+     * @return
+     * @see IntList#difference(IntList)
+     */
+    public abstract Stream<T> difference(Function<? super T, ?> mapper, Collection<?> c);
 
     /**
      * Returns a reusable stream which can be repeatedly used.
@@ -1355,7 +1355,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> of(final T[] a, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? (Stream<T>) empty() : new ArrayStream<T>(a, startIndex, endIndex);
+        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? (Stream<T>) empty() : new ArrayStream<>(a, startIndex, endIndex);
     }
 
     /**
@@ -1433,7 +1433,7 @@ public abstract class Stream<T>
         if (iterator instanceof RowIterator) {
             final RowIterator rowIterator = ((RowIterator) iterator);
 
-            return new IteratorStream<T>(new ImmutableIterator<T>() {
+            return new IteratorStream<>(new ImmutableIterator<T>() {
                 @Override
                 public boolean hasNext() {
                     return iterator.hasNext();
@@ -1452,7 +1452,7 @@ public abstract class Stream<T>
                 }
             });
         } else {
-            return new IteratorStream<T>(iterator);
+            return new IteratorStream<>(iterator);
         }
     }
 
@@ -1733,7 +1733,7 @@ public abstract class Stream<T>
             return empty();
         }
 
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private long cnt = 0;
 
             @Override
@@ -2371,7 +2371,7 @@ public abstract class Stream<T>
         }
 
         final AtomicInteger threadCounter = new AtomicInteger(c.size());
-        final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<T>(queueSize);
+        final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(queueSize);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
@@ -2483,7 +2483,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final CharIterator a, final CharIterator b, final CharBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -2505,7 +2505,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final CharIterator a, final CharIterator b, final CharIterator c, final CharTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -2563,7 +2563,7 @@ public abstract class Stream<T>
             iterList.add(e.charIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (CharIterator e : iterList) {
@@ -2636,7 +2636,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final CharIterator a, final CharIterator b, final char valueForNoneA, final char valueForNoneB,
             final CharBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -2668,7 +2668,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final CharIterator a, final CharIterator b, final CharIterator c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final CharTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -2748,7 +2748,7 @@ public abstract class Stream<T>
             iterList.add(e.charIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (CharIterator e : iterList) {
@@ -2818,7 +2818,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final ByteIterator a, final ByteIterator b, final ByteBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -2840,7 +2840,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -2898,7 +2898,7 @@ public abstract class Stream<T>
             iterList.add(e.byteIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (ByteIterator e : iterList) {
@@ -2971,7 +2971,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final ByteIterator a, final ByteIterator b, final byte valueForNoneA, final byte valueForNoneB,
             final ByteBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -3003,7 +3003,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final ByteTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -3083,7 +3083,7 @@ public abstract class Stream<T>
             iterList.add(e.byteIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (ByteIterator e : iterList) {
@@ -3153,7 +3153,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final ShortIterator a, final ShortIterator b, final ShortBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -3175,7 +3175,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final ShortTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -3233,7 +3233,7 @@ public abstract class Stream<T>
             iterList.add(e.shortIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (ShortIterator e : iterList) {
@@ -3307,7 +3307,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final ShortIterator a, final ShortIterator b, final short valueForNoneA, final short valueForNoneB,
             final ShortBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -3339,7 +3339,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final ShortTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -3419,7 +3419,7 @@ public abstract class Stream<T>
             iterList.add(e.shortIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (ShortIterator e : iterList) {
@@ -3489,7 +3489,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final IntIterator a, final IntIterator b, final IntBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -3511,7 +3511,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final IntIterator a, final IntIterator b, final IntIterator c, final IntTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -3569,7 +3569,7 @@ public abstract class Stream<T>
             iterList.add(e.intIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (IntIterator e : iterList) {
@@ -3642,7 +3642,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final IntIterator a, final IntIterator b, final int valueForNoneA, final int valueForNoneB,
             final IntBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -3674,7 +3674,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final IntIterator a, final IntIterator b, final IntIterator c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final IntTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -3754,7 +3754,7 @@ public abstract class Stream<T>
             iterList.add(e.intIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (IntIterator e : iterList) {
@@ -3824,7 +3824,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final LongIterator a, final LongIterator b, final LongBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -3846,7 +3846,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final LongIterator a, final LongIterator b, final LongIterator c, final LongTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -3904,7 +3904,7 @@ public abstract class Stream<T>
             iterList.add(e.longIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (LongIterator e : iterList) {
@@ -3977,7 +3977,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final LongIterator a, final LongIterator b, final long valueForNoneA, final long valueForNoneB,
             final LongBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -4009,7 +4009,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final LongIterator a, final LongIterator b, final LongIterator c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final LongTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -4089,7 +4089,7 @@ public abstract class Stream<T>
             iterList.add(e.longIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (LongIterator e : iterList) {
@@ -4159,7 +4159,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final FloatIterator a, final FloatIterator b, final FloatBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -4181,7 +4181,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final FloatTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -4239,7 +4239,7 @@ public abstract class Stream<T>
             iterList.add(e.floatIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (FloatIterator e : iterList) {
@@ -4313,7 +4313,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final FloatIterator a, final FloatIterator b, final float valueForNoneA, final float valueForNoneB,
             final FloatBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -4345,7 +4345,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final FloatTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -4425,7 +4425,7 @@ public abstract class Stream<T>
             iterList.add(e.floatIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (FloatIterator e : iterList) {
@@ -4495,7 +4495,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final DoubleIterator a, final DoubleIterator b, final DoubleBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -4517,7 +4517,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <R> Stream<R> zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -4575,7 +4575,7 @@ public abstract class Stream<T>
             iterList.add(e.doubleIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (DoubleIterator e : iterList) {
@@ -4649,7 +4649,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final DoubleIterator a, final DoubleIterator b, final double valueForNoneA, final double valueForNoneB,
             final DoubleBiFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -4681,7 +4681,7 @@ public abstract class Stream<T>
      */
     public static <R> Stream<R> zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final DoubleTriFunction<R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -4761,7 +4761,7 @@ public abstract class Stream<T>
             iterList.add(e.doubleIterator());
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (DoubleIterator e : iterList) {
@@ -4857,7 +4857,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <A, B, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -4880,7 +4880,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -4948,7 +4948,7 @@ public abstract class Stream<T>
 
         final int len = c.size();
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (Iterator<? extends T> e : c) {
@@ -5055,7 +5055,7 @@ public abstract class Stream<T>
      */
     public static <A, B, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -5087,7 +5087,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -5189,7 +5189,7 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 for (Iterator<? extends T> e : c) {
@@ -6519,7 +6519,7 @@ public abstract class Stream<T>
             return of(a);
         }
 
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -6602,7 +6602,7 @@ public abstract class Stream<T>
             return of(a);
         }
 
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private T nextA = null;
             private T nextB = null;
             private boolean hasNextA = false;

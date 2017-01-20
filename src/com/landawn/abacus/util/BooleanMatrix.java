@@ -17,6 +17,8 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.BooleanBiFunction;
+import com.landawn.abacus.util.function.BooleanTriFunction;
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.ImmutableIterator;
@@ -91,6 +93,10 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
 
             return new BooleanMatrix(c);
         }
+    }
+
+    public boolean[][] array() {
+        return a;
     }
 
     public boolean get(final int i, final int j) {
@@ -398,7 +404,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             }
         }
 
-        return new Matrix<Boolean>(c);
+        return new Matrix<>(c);
     }
 
     /**
@@ -406,7 +412,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
     public Stream<Boolean> diagonal() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -447,7 +453,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
     public Stream<Boolean> diagonal2() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -481,6 +487,97 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
                 return toIndex - cursor;
             }
         });
+    }
+
+    public BooleanMatrix zipWith(final BooleanMatrix matrixB, final BooleanBiFunction<Boolean> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final boolean[][] result = new boolean[n][m];
+        final boolean[][] b = matrixB.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new BooleanMatrix(result);
+    }
+
+    public BooleanMatrix zipWith(final BooleanMatrix matrixB, final BooleanMatrix matrixC, final BooleanTriFunction<Boolean> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final boolean[][] result = new boolean[n][m];
+        final boolean[][] b = matrixB.a;
+        final boolean[][] c = matrixC.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new BooleanMatrix(result);
     }
 
     /**

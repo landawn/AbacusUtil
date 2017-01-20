@@ -17,6 +17,8 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.ByteBiFunction;
+import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.ByteStream;
@@ -109,6 +111,10 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
 
             return new ByteMatrix(c);
         }
+    }
+
+    public byte[][] array() {
+        return a;
     }
 
     public byte get(final int i, final int j) {
@@ -645,7 +651,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             }
         }
 
-        return new Matrix<Byte>(c);
+        return new Matrix<>(c);
     }
 
     public IntMatrix toIntMatrix() {
@@ -717,7 +723,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
     public ByteStream diagonal() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return ByteStream.empty();
@@ -758,7 +764,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
     public ByteStream diagonal2() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals");
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
             return ByteStream.empty();
@@ -792,6 +798,97 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
                 return toIndex - cursor;
             }
         });
+    }
+
+    public ByteMatrix zipWith(final ByteMatrix matrixB, final ByteBiFunction<Byte> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final byte[][] result = new byte[n][m];
+        final byte[][] b = matrixB.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new ByteMatrix(result);
+    }
+
+    public ByteMatrix zipWith(final ByteMatrix matrixB, final ByteMatrix matrixC, final ByteTriFunction<Byte> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final byte[][] result = new byte[n][m];
+        final byte[][] b = matrixB.a;
+        final byte[][] c = matrixC.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new ByteMatrix(result);
     }
 
     /**

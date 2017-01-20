@@ -261,19 +261,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream except(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
-
-        return newStream(this.sequential().filter(new CharPredicate() {
-            @Override
-            public boolean test(char value) {
-                return multiset.getAndRemove(value) < 1;
-            }
-        }).charIterator(), sorted);
-    }
-
-    @Override
-    public CharStream intersect(final Collection<?> c) {
+    public CharStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new CharPredicate() {
@@ -285,7 +273,19 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream xor(final Collection<Character> c) {
+    public CharStream difference(final Collection<?> c) {
+        final Multiset<?> multiset = Multiset.of(c);
+
+        return newStream(this.sequential().filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                return multiset.getAndRemove(value) < 1;
+            }
+        }).charIterator(), sorted);
+    }
+
+    @Override
+    public CharStream symmetricDifference(final Collection<Character> c) {
         final Multiset<?> multiset = Multiset.of(c);
 
         return newStream(this.sequential().filter(new CharPredicate() {
