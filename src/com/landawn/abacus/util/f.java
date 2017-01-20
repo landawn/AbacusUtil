@@ -66,6 +66,11 @@ public final class f {
 
     private static final String ARRAY_PRINT_SEPERATOR = N.repeat('-', 80);
 
+    private static final char CHAR_0 = (char) 0;
+    private static final byte BYTE_0 = (byte) 0;
+    private static final byte BYTE_1 = (byte) 1;
+    private static final short SHORT_0 = (short) 0;
+
     private f() {
         // singleton.
     }
@@ -2582,7 +2587,7 @@ public final class f {
     }
 
     public static CharMatrix matrix(final char[][] a, final int n, final int m) {
-        return matrix(a, n, m, (char) 0);
+        return matrix(a, n, m, CHAR_0);
     }
 
     public static CharMatrix matrix(final char[][] a, final int n, final int m, final char valueForDefault) {
@@ -2595,13 +2600,13 @@ public final class f {
             if (i >= lenA || N.isNullOrEmpty(a[i])) {
                 c[i] = new char[m];
 
-                if (m > 0 && valueForDefault != (char) 0) {
+                if (m > 0 && valueForDefault != CHAR_0) {
                     N.fill(c[i], valueForDefault);
                 }
             } else {
                 c[i] = N.copyOf(a[i], m);
 
-                if (a[i].length < m && valueForDefault != (char) 0) {
+                if (a[i].length < m && valueForDefault != CHAR_0) {
                     N.fill(c[i], a[i].length, m, valueForDefault);
                 }
             }
@@ -3300,7 +3305,7 @@ public final class f {
     }
 
     public static ByteMatrix matrix(final byte[][] a, final int n, final int m) {
-        return matrix(a, n, m, (byte) 0);
+        return matrix(a, n, m, BYTE_0);
     }
 
     public static ByteMatrix matrix(final byte[][] a, final int n, final int m, final byte valueForDefault) {
@@ -3313,13 +3318,13 @@ public final class f {
             if (i >= lenA || N.isNullOrEmpty(a[i])) {
                 c[i] = new byte[m];
 
-                if (m > 0 && valueForDefault != (byte) 0) {
+                if (m > 0 && valueForDefault != BYTE_0) {
                     N.fill(c[i], valueForDefault);
                 }
             } else {
                 c[i] = N.copyOf(a[i], m);
 
-                if (a[i].length < m && valueForDefault != (byte) 0) {
+                if (a[i].length < m && valueForDefault != BYTE_0) {
                     N.fill(c[i], a[i].length, m, valueForDefault);
                 }
             }
@@ -4020,7 +4025,7 @@ public final class f {
     }
 
     public static ShortMatrix matrix(final short[][] a, final int n, final int m) {
-        return matrix(a, n, m, (short) 0);
+        return matrix(a, n, m, SHORT_0);
     }
 
     public static ShortMatrix matrix(final short[][] a, final int n, final int m, final short valueForDefault) {
@@ -4033,13 +4038,13 @@ public final class f {
             if (i >= lenA || N.isNullOrEmpty(a[i])) {
                 c[i] = new short[m];
 
-                if (m > 0 && valueForDefault != (short) 0) {
+                if (m > 0 && valueForDefault != SHORT_0) {
                     N.fill(c[i], valueForDefault);
                 }
             } else {
                 c[i] = N.copyOf(a[i], m);
 
-                if (a[i].length < m && valueForDefault != (short) 0) {
+                if (a[i].length < m && valueForDefault != SHORT_0) {
                     N.fill(c[i], a[i].length, m, valueForDefault);
                 }
             }
@@ -7093,6 +7098,186 @@ public final class f {
         return maxLen;
     }
 
+    public static boolean[] toBoolean(final byte[] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final boolean[] result = new boolean[len];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = a[i] > 0;
+        }
+
+        return result;
+    }
+
+    public static boolean[][] toBoolean(final byte[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final boolean[][] result = new boolean[len][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toBoolean(a[i]);
+        }
+
+        return result;
+    }
+
+    public static boolean[][][] toBoolean(final byte[][][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final boolean[][][] result = new boolean[len][][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toBoolean(a[i]);
+        }
+
+        return result;
+    }
+
+    public static boolean[] toBoolean(final int[] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final boolean[] result = new boolean[len];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = a[i] > 0;
+        }
+
+        return result;
+    }
+
+    public static boolean[][] toBoolean(final int[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final boolean[][] result = new boolean[len][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toBoolean(a[i]);
+        }
+
+        return result;
+    }
+
+    public static boolean[][][] toBoolean(final int[][][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final boolean[][][] result = new boolean[len][][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toBoolean(a[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] toByte(final boolean[] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final byte[] result = new byte[len];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = a[i] ? BYTE_1 : BYTE_0;
+        }
+
+        return result;
+    }
+
+    public static byte[][] toByte(final boolean[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toByte(a[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] toByte(final boolean[][][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final byte[][][] result = new byte[len][][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toByte(a[i]);
+        }
+
+        return result;
+    }
+
+    public static int[] toInt(final boolean[] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final int[] result = new int[len];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = a[i] ? 1 : 0;
+        }
+
+        return result;
+    }
+
+    public static int[][] toInt(final boolean[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final int[][] result = new int[len][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toInt(a[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] toInt(final boolean[][][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final int[][][] result = new int[len][][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toInt(a[i]);
+        }
+
+        return result;
+    }
+
     public static int[] toInt(final char[] a) {
         if (a == null) {
             return null;
@@ -7223,6 +7408,51 @@ public final class f {
 
         for (int i = 0; i < len; i++) {
             result[i] = toInt(a[i]);
+        }
+
+        return result;
+    }
+
+    public static long[] toLong(final boolean[] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final long[] result = new long[len];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = a[i] ? 1 : 0;
+        }
+
+        return result;
+    }
+
+    public static long[][] toLong(final boolean[][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final long[][] result = new long[len][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toLong(a[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] toLong(final boolean[][][] a) {
+        if (a == null) {
+            return null;
+        }
+
+        final int len = len(a);
+        final long[][][] result = new long[len][][];
+
+        for (int i = 0; i < len; i++) {
+            result[i] = toLong(a[i]);
         }
 
         return result;

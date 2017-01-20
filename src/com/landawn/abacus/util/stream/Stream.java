@@ -1446,7 +1446,7 @@ public abstract class Stream<T>
 
                 @Override
                 public void skip(long n) {
-                    if (n-- > 0 && rowIterator.hasNext()) {
+                    while (n-- > 0 && rowIterator.hasNext()) {
                         rowIterator.moveToNext();
                     }
                 }

@@ -373,7 +373,7 @@ public final class Splitter {
                     strEntry = N.split(str, keyValueDelimiter, 2, trim);
 
                     if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + strEntry);
+                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
                     }
 
                     result.put(strEntry[0], strEntry[1]);
@@ -419,7 +419,7 @@ public final class Splitter {
                     strEntry = N.split(str, keyValueDelimiter, 2, trim);
 
                     if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + strEntry);
+                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
                     }
 
                     result.put(keyType.valueOf(strEntry[0]), valueType.valueOf(strEntry[1]));
@@ -466,7 +466,7 @@ public final class Splitter {
                     strEntry = N.split(str, keyValueDelimiter, 2, trim);
 
                     if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + strEntry);
+                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
                     }
 
                     result.put(strEntry[0], strEntry[1]);
@@ -513,7 +513,7 @@ public final class Splitter {
                     strEntry = N.split(str, keyValueDelimiter, 2, trim);
 
                     if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + strEntry);
+                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
                     }
 
                     result.put(keyType.valueOf(strEntry[0]), valueType.valueOf(strEntry[1]));

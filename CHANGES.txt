@@ -1,4 +1,3 @@
-
 ========Changes in 0.9.43=========================================================================
 
 1, Add findFirstIndex/findLastIndex to ObjectList/IntList/LongList/DoubleList/...

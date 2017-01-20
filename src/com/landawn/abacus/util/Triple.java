@@ -44,24 +44,24 @@ public final class Triple<L, M, R> {
     }
 
     public static <L, M, R> Triple<L, M, R> of(final L l, final M m, final R r) {
-        return new Triple<L, M, R>(l, m, r);
+        return new Triple<>(l, m, r);
     }
 
     public static <T> Triple<T, T, T> from(T[] a) {
         if (N.isNullOrEmpty(a)) {
-            return new Triple<T, T, T>(null, null, null);
+            return new Triple<>(null, null, null);
         } else if (a.length == 1) {
-            return new Triple<T, T, T>(a[0], null, null);
+            return new Triple<>(a[0], null, null);
         } else if (a.length == 2) {
-            return new Triple<T, T, T>(a[0], a[1], null);
+            return new Triple<>(a[0], a[1], null);
         } else {
-            return new Triple<T, T, T>(a[0], a[1], a[2]);
+            return new Triple<>(a[0], a[1], a[2]);
         }
     }
 
     public static <T> Triple<T, T, T> from(Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
-            return new Triple<T, T, T>(null, null, null);
+            return new Triple<>(null, null, null);
         } else if (c.size() == 1) {
             return new Triple<T, T, T>(c.iterator().next(), null, null);
         } else if (c.size() == 2) {
@@ -189,24 +189,24 @@ public final class Triple<L, M, R> {
         }
 
         public static <L, M, R> Triple0<L, M, R> of(final L l, final M m, final R r) {
-            return new Triple0<L, M, R>(l, m, r);
+            return new Triple0<>(l, m, r);
         }
 
         public static <T> Triple0<T, T, T> from(T[] a) {
             if (N.isNullOrEmpty(a)) {
-                return new Triple0<T, T, T>(null, null, null);
+                return new Triple0<>(null, null, null);
             } else if (a.length == 1) {
-                return new Triple0<T, T, T>(a[0], null, null);
+                return new Triple0<>(a[0], null, null);
             } else if (a.length == 2) {
-                return new Triple0<T, T, T>(a[0], a[1], null);
+                return new Triple0<>(a[0], a[1], null);
             } else {
-                return new Triple0<T, T, T>(a[0], a[1], a[2]);
+                return new Triple0<>(a[0], a[1], a[2]);
             }
         }
 
         public static <T> Triple0<T, T, T> from(Collection<? extends T> c) {
             if (N.isNullOrEmpty(c)) {
-                return new Triple0<T, T, T>(null, null, null);
+                return new Triple0<>(null, null, null);
             } else if (c.size() == 1) {
                 return new Triple0<T, T, T>(c.iterator().next(), null, null);
             } else if (c.size() == 2) {
@@ -250,7 +250,7 @@ public final class Triple<L, M, R> {
                 return true;
             }
 
-            if (obj instanceof Triple) {
+            if (obj instanceof Triple0) {
                 final Triple0<L, M, R> other = (Triple0<L, M, R>) obj;
 
                 return N.equals(left, other.left) && N.equals(middle, other.middle) && N.equals(right, other.right);
