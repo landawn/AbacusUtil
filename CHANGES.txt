@@ -1,3 +1,9 @@
+========Changes in 0.9.44=========================================================================
+1, Add method: add/subtract/multipliedBy/dividedBy to f.
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.43=========================================================================
 
 1, Add findFirstIndex/findLastIndex to ObjectList/IntList/LongList/DoubleList/...

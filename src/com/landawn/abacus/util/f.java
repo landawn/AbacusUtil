@@ -75,7 +75,7 @@ public final class f {
         // singleton.
     }
 
-    public static <T> void replaceAll(final T[] a, final UnaryOperator<T> operator) {
+    public static <T> void replaceAll2(final T[] a, final UnaryOperator<T> operator) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -85,27 +85,27 @@ public final class f {
         }
     }
 
-    public static <T> void replaceAll(final T[][] a, final UnaryOperator<T> operator) {
+    public static <T> void replaceAll2(final T[][] a, final UnaryOperator<T> operator) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
         for (int i = 0, n = a.length; i < n; i++) {
-            replaceAll(a[i], operator);
+            replaceAll2(a[i], operator);
         }
     }
 
-    public static <T> void replaceAll(final T[][][] a, final UnaryOperator<T> operator) {
+    public static <T> void replaceAll2(final T[][][] a, final UnaryOperator<T> operator) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
         for (int i = 0, n = a.length; i < n; i++) {
-            replaceAll(a[i], operator);
+            replaceAll2(a[i], operator);
         }
     }
 
-    public static <T> T[] flatten(final T[][] a) {
+    public static <T> T[] flatten2(final T[][] a) {
         //        if (N.isNullOrEmpty(a)) {
         //            return N.EMPTY_BOOLEAN_ARRAY;
         //        }
@@ -132,7 +132,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[] flatten(final T[][][] a) {
+    public static <T> T[] flatten2(final T[][][] a) {
         //        if (N.isNullOrEmpty(a)) {
         //            return N.EMPTY_BOOLEAN_ARRAY;
         //        }
@@ -175,7 +175,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][] reshape(final T[] a, final int m) {
+    public static <T> T[][] reshape2(final T[] a, final int m) {
         N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
 
         //        if (N.isNullOrEmpty(a)) {
@@ -193,7 +193,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][][] reshape(final T[] a, final int m, final int l) {
+    public static <T> T[][][] reshape2(final T[] a, final int m, final int l) {
         N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         //        if (N.isNullOrEmpty(a)) {
@@ -215,7 +215,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[] map(final T[] a, final Function<? super T, T> func) {
+    public static <T> T[] map2(final T[] a, final Function<? super T, T> func) {
         if (a == null) {
             return null;
         }
@@ -238,7 +238,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][] map(final T[][] a, final Function<? super T, T> func) {
+    public static <T> T[][] map2(final T[][] a, final Function<? super T, T> func) {
         if (a == null) {
             return null;
         }
@@ -261,7 +261,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][][] map(final T[][][] a, final Function<? super T, T> func) {
+    public static <T> T[][][] map2(final T[][][] a, final Function<? super T, T> func) {
         if (a == null) {
             return null;
         }
@@ -1004,7 +1004,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B> A[] zip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, A> zipFunction) {
+    public static <A, B> A[] zip2(final A[] a, final B[] b, final BiFunction<? super A, ? super B, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType(), a, b, zipFunction);
     }
 
@@ -1021,7 +1021,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B> A[] zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B> A[] zip2(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
@@ -1064,7 +1064,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C> A[] zip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
+    public static <A, B, C> A[] zip2(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType(), a, b, c, zipFunction);
     }
 
@@ -1083,7 +1083,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C> A[] zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    public static <A, B, C> A[] zip2(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
@@ -1118,7 +1118,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B> A[][] zip(final A[][] a, final B[][] b, final BiFunction<? super A, ? super B, A> zipFunction) {
+    public static <A, B> A[][] zip2(final A[][] a, final B[][] b, final BiFunction<? super A, ? super B, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, zipFunction);
     }
 
@@ -1135,7 +1135,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B> A[][] zip(final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B> A[][] zip2(final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
@@ -1175,7 +1175,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C> A[][] zip(final A[][] a, final B[][] b, final C[][] c, final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
+    public static <A, B, C> A[][] zip2(final A[][] a, final B[][] b, final C[][] c, final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, c, zipFunction);
     }
 
@@ -1194,7 +1194,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C> A[][] zip(final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    public static <A, B, C> A[][] zip2(final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
@@ -1227,7 +1227,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B> A[][][] zip(final A[][][] a, final B[][][] b, final BiFunction<? super A, ? super B, A> zipFunction) {
+    public static <A, B> A[][][] zip2(final A[][][] a, final B[][][] b, final BiFunction<? super A, ? super B, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, zipFunction);
     }
 
@@ -1244,7 +1244,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B> A[][][] zip(final A[][][] a, final B[][][] b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B> A[][][] zip2(final A[][][] a, final B[][][] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
@@ -1273,7 +1273,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C> A[][][] zip(final A[][][] a, final B[][][] b, final C[][][] c, final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
+    public static <A, B, C> A[][][] zip2(final A[][][] a, final B[][][] b, final C[][][] c, final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, c, zipFunction);
     }
 
@@ -1292,7 +1292,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C> A[][][] zip(final A[][][] a, final B[][][] b, final C[][][] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    public static <A, B, C> A[][][] zip2(final A[][][] a, final B[][][] b, final C[][][] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super A, ? super B, ? super C, A> zipFunction) {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 zipFunction);
@@ -3044,6 +3044,1256 @@ public final class f {
         return c;
     }
 
+    public static byte[] add(final byte[] a, final byte[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] + b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] add(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static byte[] add(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (byte) (a[i] + b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (byte) (valueForNoneA + b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (byte) (a[i] + valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (byte) (valueForNoneA + valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[] add(final byte[] a, final byte[] b, final byte[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] + b[i] + c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] add(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB, final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static byte[] add(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (byte) (a[i] + b[i] + c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (byte) ((i < lenA ? a[i] : valueForNoneA) + (i < lenB ? b[i] : valueForNoneB) + (i < lenC ? c[i] : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] add(final byte[][] a, final byte[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][] add(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static byte[][] add(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = add(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = add(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = add(rowLen, (byte[]) null, (byte[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] add(final byte[][] a, final byte[][] b, final byte[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][] add(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static byte[][] add(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
+            final byte valueForNoneB, final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = add(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] add(final byte[][][] a, final byte[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] add(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = add(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = add(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = add(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] add(final byte[][][] a, final byte[][][] b, final byte[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] add(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = add(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = add(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static byte[] subtract(final byte[] a, final byte[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] - b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] subtract(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static byte[] subtract(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (byte) (a[i] - b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (byte) (valueForNoneA - b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (byte) (a[i] - valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (byte) (valueForNoneA - valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[] subtract(final byte[] a, final byte[] b, final byte[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] - b[i] - c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] subtract(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static byte[] subtract(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (byte) (a[i] - b[i] - c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (byte) ((i < lenA ? a[i] : valueForNoneA) - (i < lenB ? b[i] : valueForNoneB) - (i < lenC ? c[i] : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] subtract(final byte[][] a, final byte[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][] subtract(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static byte[][] subtract(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = subtract(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = subtract(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = subtract(rowLen, (byte[]) null, (byte[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] subtract(final byte[][] a, final byte[][] b, final byte[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][] subtract(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static byte[][] subtract(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
+            final byte valueForNoneB, final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = subtract(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] subtract(final byte[][][] a, final byte[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] subtract(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = subtract(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = subtract(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = subtract(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] subtract(final byte[][][] a, final byte[][][] b, final byte[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] subtract(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = subtract(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = subtract(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static byte[] multipliedBy(final byte[] a, final byte[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] * b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] multipliedBy(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static byte[] multipliedBy(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (byte) (a[i] * b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (byte) (valueForNoneA * b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (byte) (a[i] * valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (byte) (valueForNoneA * valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[] multipliedBy(final byte[] a, final byte[] b, final byte[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] * b[i] * c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] multipliedBy(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static byte[] multipliedBy(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (byte) (a[i] * b[i] * c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (byte) ((i < lenA ? a[i] : valueForNoneA) * (i < lenB ? b[i] : valueForNoneB) * (i < lenC ? c[i] : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] multipliedBy(final byte[][] a, final byte[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][] multipliedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static byte[][] multipliedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA,
+            final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = multipliedBy(rowLen, (byte[]) null, (byte[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] multipliedBy(final byte[][] a, final byte[][] b, final byte[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][] multipliedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static byte[][] multipliedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
+            final byte valueForNoneB, final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = multipliedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] multipliedBy(final byte[][][] a, final byte[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] multipliedBy(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = multipliedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = multipliedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] multipliedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] multipliedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = multipliedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static byte[] dividedBy(final byte[] a, final byte[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] / b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] dividedBy(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static byte[] dividedBy(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (byte) (a[i] / b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (byte) (valueForNoneA / b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (byte) (a[i] / valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (byte) (valueForNoneA / valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[] dividedBy(final byte[] a, final byte[] b, final byte[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] / b[i] / c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[] dividedBy(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static byte[] dividedBy(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (byte) (a[i] / b[i] / c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (byte) ((i < lenA ? a[i] : valueForNoneA) / (i < lenB ? b[i] : valueForNoneB) / (i < lenC ? c[i] : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] dividedBy(final byte[][] a, final byte[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (byte[]) null, (byte[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
+            final byte valueForNoneB, final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static byte[] dividedBy(final byte[] a, final byte[] b, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] / (b[i] == 0 ? defaultValueForZero : b[i]));
+        }
+
+        return result;
+    }
+
+    public static byte[] dividedBy(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static byte[] dividedBy(final int len, final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB,
+            final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (byte) (a[i] / (b[i] == 0 ? defaultValueForZero : b[i]));
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (byte) (valueForNoneA / (b[i] == 0 ? defaultValueForZero : b[i]));
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (byte) (a[i] / valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (byte) (valueForNoneA / valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[] dividedBy(final byte[] a, final byte[] b, final byte[] c, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (byte) (a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]));
+        }
+
+        return result;
+    }
+
+    public static byte[] dividedBy(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB, final byte valueForNoneC,
+            final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+    }
+
+    private static byte[] dividedBy(final int len, final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[] result = new byte[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (byte) (a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]));
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (byte) ((i < lenA ? a[i] : valueForNoneA) / (i < lenB ? (b[i] == 0 ? defaultValueForZero : b[i]) : valueForNoneB)
+                        / (i < lenC ? (c[i] == 0 ? defaultValueForZero : c[i]) : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB, final byte defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte valueForNoneA, final byte valueForNoneB,
+            final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (byte[]) null, (byte[]) null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static byte[][] dividedBy(final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC, final byte defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                defaultValueForZero);
+    }
+
+    private static byte[][] dividedBy(final int len, final int rowLen, final byte[][] a, final byte[][] b, final byte[][] c, final byte valueForNoneA,
+            final byte valueForNoneB, final byte valueForNoneC, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][] result = new byte[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte valueForNoneA, final byte valueForNoneB,
+            final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] dividedBy(final byte[][][] a, final byte[][][] b, final byte[][][] c, final byte valueForNoneA, final byte valueForNoneB,
+            final byte valueForNoneC, final byte defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final byte[][][] result = new byte[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC,
+                    defaultValueForZero);
+        }
+
+        return result;
+    }
+
     public static byte[] zip(final byte[] a, final byte[] b, final ByteBiFunction<Byte> zipFunction) {
         final int lenA = len(a);
         final int lenB = len(b);
@@ -3760,6 +5010,1260 @@ public final class f {
         }
 
         return c;
+    }
+
+    public static short[] add(final short[] a, final short[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] + b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] add(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static short[] add(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (short) (a[i] + b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (short) (valueForNoneA + b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (short) (a[i] + valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (short) (valueForNoneA + valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[] add(final short[] a, final short[] b, final short[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] + b[i] + c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] add(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static short[] add(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (short) (a[i] + b[i] + c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (short) ((i < lenA ? a[i] : valueForNoneA) + (i < lenB ? b[i] : valueForNoneB) + (i < lenC ? c[i] : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] add(final short[][] a, final short[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][] add(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
+        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static short[][] add(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = add(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = add(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = add(rowLen, (short[]) null, (short[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] add(final short[][] a, final short[][] b, final short[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][] add(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static short[][] add(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
+            final short valueForNoneB, final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = add(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] add(final short[][][] a, final short[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] add(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = add(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = add(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = add(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] add(final short[][][] a, final short[][][] b, final short[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] add(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = add(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = add(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static short[] subtract(final short[] a, final short[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] - b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] subtract(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static short[] subtract(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (short) (a[i] - b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (short) (valueForNoneA - b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (short) (a[i] - valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (short) (valueForNoneA - valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[] subtract(final short[] a, final short[] b, final short[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] - b[i] - c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] subtract(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static short[] subtract(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (short) (a[i] - b[i] - c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (short) ((i < lenA ? a[i] : valueForNoneA) - (i < lenB ? b[i] : valueForNoneB) - (i < lenC ? c[i] : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] subtract(final short[][] a, final short[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][] subtract(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
+        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static short[][] subtract(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
+            final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = subtract(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = subtract(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = subtract(rowLen, (short[]) null, (short[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] subtract(final short[][] a, final short[][] b, final short[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][] subtract(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static short[][] subtract(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
+            final short valueForNoneB, final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = subtract(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] subtract(final short[][][] a, final short[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] subtract(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = subtract(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = subtract(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = subtract(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] subtract(final short[][][] a, final short[][][] b, final short[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] subtract(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = subtract(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = subtract(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static short[] multipliedBy(final short[] a, final short[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] * b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] multipliedBy(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static short[] multipliedBy(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (short) (a[i] * b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (short) (valueForNoneA * b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (short) (a[i] * valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (short) (valueForNoneA * valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[] multipliedBy(final short[] a, final short[] b, final short[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] * b[i] * c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] multipliedBy(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static short[] multipliedBy(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (short) (a[i] * b[i] * c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (short) ((i < lenA ? a[i] : valueForNoneA) * (i < lenB ? b[i] : valueForNoneB) * (i < lenC ? c[i] : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] multipliedBy(final short[][] a, final short[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][] multipliedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
+        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static short[][] multipliedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
+            final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = multipliedBy(rowLen, (short[]) null, (short[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] multipliedBy(final short[][] a, final short[][] b, final short[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][] multipliedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static short[][] multipliedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
+            final short valueForNoneB, final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = multipliedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] multipliedBy(final short[][][] a, final short[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] multipliedBy(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = multipliedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = multipliedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] multipliedBy(final short[][][] a, final short[][][] b, final short[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] multipliedBy(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = multipliedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static short[] dividedBy(final short[] a, final short[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] / b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] dividedBy(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static short[] dividedBy(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (short) (a[i] / b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (short) (valueForNoneA / b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (short) (a[i] / valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (short) (valueForNoneA / valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[] dividedBy(final short[] a, final short[] b, final short[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] / b[i] / c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[] dividedBy(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static short[] dividedBy(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (short) (a[i] / b[i] / c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (short) ((i < lenA ? a[i] : valueForNoneA) / (i < lenB ? b[i] : valueForNoneB) / (i < lenC ? c[i] : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] dividedBy(final short[][] a, final short[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][] dividedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
+            final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (short[]) null, (short[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
+            final short valueForNoneB, final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] dividedBy(final short[][][] a, final short[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static short[] dividedBy(final short[] a, final short[] b, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] / (b[i] == 0 ? defaultValueForZero : b[i]));
+        }
+
+        return result;
+    }
+
+    public static short[] dividedBy(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static short[] dividedBy(final int len, final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB,
+            final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = (short) (a[i] / (b[i] == 0 ? defaultValueForZero : b[i]));
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = (short) (valueForNoneA / (b[i] == 0 ? defaultValueForZero : b[i]));
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = (short) (a[i] / valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = (short) (valueForNoneA / valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[] dividedBy(final short[] a, final short[] b, final short[] c, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = (short) (a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]));
+        }
+
+        return result;
+    }
+
+    public static short[] dividedBy(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+    }
+
+    private static short[] dividedBy(final int len, final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[] result = new short[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = (short) (a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]));
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (short) ((i < lenA ? a[i] : valueForNoneA) / (i < lenB ? (b[i] == 0 ? defaultValueForZero : b[i]) : valueForNoneB)
+                        / (i < lenC ? (c[i] == 0 ? defaultValueForZero : c[i]) : valueForNoneC));
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] dividedBy(final short[][] a, final short[][] b, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static short[][] dividedBy(final short[][] a, final short[][] b, final short valueForNoneA, final short valueForNoneB,
+            final short defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short valueForNoneA,
+            final short valueForNoneB, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (short[]) null, (short[]) null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static short[][] dividedBy(final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC, final short defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                defaultValueForZero);
+    }
+
+    private static short[][] dividedBy(final int len, final int rowLen, final short[][] a, final short[][] b, final short[][] c, final short valueForNoneA,
+            final short valueForNoneB, final short valueForNoneC, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][] result = new short[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short valueForNoneA, final short valueForNoneB,
+            final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final short[][][] result = new short[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short[][][] c, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static short[][][] dividedBy(final short[][][] a, final short[][][] b, final short[][][] c, final short valueForNoneA, final short valueForNoneB,
+            final short valueForNoneC, final short defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final short[][][] result = new short[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC,
+                    defaultValueForZero);
+        }
+
+        return result;
     }
 
     public static short[] zip(final short[] a, final short[] b, final ShortBiFunction<Short> zipFunction) {
@@ -4482,6 +6986,1250 @@ public final class f {
         return c;
     }
 
+    public static int[] add(final int[] a, final int[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] + b[i];
+        }
+
+        return result;
+    }
+
+    public static int[] add(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static int[] add(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] + b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA + b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] + valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA + valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static int[] add(final int[] a, final int[] b, final int[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] + b[i] + c[i];
+        }
+
+        return result;
+    }
+
+    public static int[] add(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static int[] add(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] + b[i] + c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) + (i < lenB ? b[i] : valueForNoneB) + (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] add(final int[][] a, final int[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][] add(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
+        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static int[][] add(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = add(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = add(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = add(rowLen, (int[]) null, (int[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] add(final int[][] a, final int[][] b, final int[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][] add(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
+        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static int[][] add(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
+            final int valueForNoneB, final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = add(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] add(final int[][][] a, final int[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] add(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = add(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = add(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = add(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] add(final int[][][] a, final int[][][] b, final int[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] add(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = add(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = add(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static int[] subtract(final int[] a, final int[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] - b[i];
+        }
+
+        return result;
+    }
+
+    public static int[] subtract(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static int[] subtract(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] - b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA - b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] - valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA - valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static int[] subtract(final int[] a, final int[] b, final int[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] - b[i] - c[i];
+        }
+
+        return result;
+    }
+
+    public static int[] subtract(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static int[] subtract(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] - b[i] - c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) - (i < lenB ? b[i] : valueForNoneB) - (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] subtract(final int[][] a, final int[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][] subtract(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
+        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static int[][] subtract(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = subtract(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = subtract(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = subtract(rowLen, (int[]) null, (int[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] subtract(final int[][] a, final int[][] b, final int[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][] subtract(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static int[][] subtract(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
+            final int valueForNoneB, final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = subtract(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] subtract(final int[][][] a, final int[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] subtract(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = subtract(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = subtract(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = subtract(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] subtract(final int[][][] a, final int[][][] b, final int[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] subtract(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = subtract(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = subtract(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static int[] multipliedBy(final int[] a, final int[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] * b[i];
+        }
+
+        return result;
+    }
+
+    public static int[] multipliedBy(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static int[] multipliedBy(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] * b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA * b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] * valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA * valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static int[] multipliedBy(final int[] a, final int[] b, final int[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] * b[i] * c[i];
+        }
+
+        return result;
+    }
+
+    public static int[] multipliedBy(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static int[] multipliedBy(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] * b[i] * c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) * (i < lenB ? b[i] : valueForNoneB) * (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] multipliedBy(final int[][] a, final int[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][] multipliedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
+        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static int[][] multipliedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = multipliedBy(rowLen, (int[]) null, (int[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] multipliedBy(final int[][] a, final int[][] b, final int[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][] multipliedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static int[][] multipliedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
+            final int valueForNoneB, final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = multipliedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] multipliedBy(final int[][][] a, final int[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] multipliedBy(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = multipliedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = multipliedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] multipliedBy(final int[][][] a, final int[][][] b, final int[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] multipliedBy(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = multipliedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static int[] dividedBy(final int[] a, final int[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / b[i];
+        }
+
+        return result;
+    }
+
+    public static int[] dividedBy(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static int[] dividedBy(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] / b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA / b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] / valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA / valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static int[] dividedBy(final int[] a, final int[] b, final int[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / b[i] / c[i];
+        }
+
+        return result;
+    }
+
+    public static int[] dividedBy(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static int[] dividedBy(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] / b[i] / c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) / (i < lenB ? b[i] : valueForNoneB) / (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] dividedBy(final int[][] a, final int[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][] dividedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (int[]) null, (int[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
+            final int valueForNoneB, final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] dividedBy(final int[][][] a, final int[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static int[] dividedBy(final int[] a, final int[] b, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]);
+        }
+
+        return result;
+    }
+
+    public static int[] dividedBy(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static int[] dividedBy(final int len, final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB,
+            final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA / (b[i] == 0 ? defaultValueForZero : b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] / valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA / valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static int[] dividedBy(final int[] a, final int[] b, final int[] c, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]);
+        }
+
+        return result;
+    }
+
+    public static int[] dividedBy(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC,
+            final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+    }
+
+    private static int[] dividedBy(final int len, final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[] result = new int[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) / (i < lenB ? (b[i] == 0 ? defaultValueForZero : b[i]) : valueForNoneB)
+                        / (i < lenC ? (c[i] == 0 ? defaultValueForZero : c[i]) : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] dividedBy(final int[][] a, final int[][] b, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static int[][] dividedBy(final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB, final int defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int valueForNoneA, final int valueForNoneB,
+            final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (int[]) null, (int[]) null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static int[][] dividedBy(final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC, final int defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                defaultValueForZero);
+    }
+
+    private static int[][] dividedBy(final int len, final int rowLen, final int[][] a, final int[][] b, final int[][] c, final int valueForNoneA,
+            final int valueForNoneB, final int valueForNoneC, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][] result = new int[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int valueForNoneA, final int valueForNoneB, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final int[][][] result = new int[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int[][][] c, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static int[][][] dividedBy(final int[][][] a, final int[][][] b, final int[][][] c, final int valueForNoneA, final int valueForNoneB,
+            final int valueForNoneC, final int defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final int[][][] result = new int[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC,
+                    defaultValueForZero);
+        }
+
+        return result;
+    }
+
     public static int[] zip(final int[] a, final int[] b, final IntBiFunction<Integer> zipFunction) {
         final int lenA = len(a);
         final int lenB = len(b);
@@ -5198,6 +8946,1256 @@ public final class f {
         }
 
         return c;
+    }
+
+    public static long[] add(final long[] a, final long[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] + b[i];
+        }
+
+        return result;
+    }
+
+    public static long[] add(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static long[] add(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] + b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA + b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] + valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA + valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static long[] add(final long[] a, final long[] b, final long[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] + b[i] + c[i];
+        }
+
+        return result;
+    }
+
+    public static long[] add(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB, final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static long[] add(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] + b[i] + c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) + (i < lenB ? b[i] : valueForNoneB) + (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] add(final long[][] a, final long[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][] add(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
+        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static long[][] add(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = add(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = add(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = add(rowLen, (long[]) null, (long[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] add(final long[][] a, final long[][] b, final long[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][] add(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static long[][] add(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
+            final long valueForNoneB, final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = add(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] add(final long[][][] a, final long[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] add(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = add(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = add(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = add(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] add(final long[][][] a, final long[][][] b, final long[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] add(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = add(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = add(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static long[] subtract(final long[] a, final long[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] - b[i];
+        }
+
+        return result;
+    }
+
+    public static long[] subtract(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static long[] subtract(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] - b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA - b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] - valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA - valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static long[] subtract(final long[] a, final long[] b, final long[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] - b[i] - c[i];
+        }
+
+        return result;
+    }
+
+    public static long[] subtract(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static long[] subtract(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] - b[i] - c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) - (i < lenB ? b[i] : valueForNoneB) - (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] subtract(final long[][] a, final long[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][] subtract(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
+        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static long[][] subtract(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = subtract(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = subtract(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = subtract(rowLen, (long[]) null, (long[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] subtract(final long[][] a, final long[][] b, final long[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][] subtract(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static long[][] subtract(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
+            final long valueForNoneB, final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = subtract(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] subtract(final long[][][] a, final long[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] subtract(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = subtract(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = subtract(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = subtract(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] subtract(final long[][][] a, final long[][][] b, final long[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] subtract(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = subtract(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = subtract(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static long[] multipliedBy(final long[] a, final long[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] * b[i];
+        }
+
+        return result;
+    }
+
+    public static long[] multipliedBy(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static long[] multipliedBy(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] * b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA * b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] * valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA * valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static long[] multipliedBy(final long[] a, final long[] b, final long[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] * b[i] * c[i];
+        }
+
+        return result;
+    }
+
+    public static long[] multipliedBy(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static long[] multipliedBy(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] * b[i] * c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) * (i < lenB ? b[i] : valueForNoneB) * (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] multipliedBy(final long[][] a, final long[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][] multipliedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
+        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static long[][] multipliedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA,
+            final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = multipliedBy(rowLen, (long[]) null, (long[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] multipliedBy(final long[][] a, final long[][] b, final long[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][] multipliedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static long[][] multipliedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
+            final long valueForNoneB, final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = multipliedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] multipliedBy(final long[][][] a, final long[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] multipliedBy(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = multipliedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = multipliedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] multipliedBy(final long[][][] a, final long[][][] b, final long[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] multipliedBy(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = multipliedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static long[] dividedBy(final long[] a, final long[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / b[i];
+        }
+
+        return result;
+    }
+
+    public static long[] dividedBy(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static long[] dividedBy(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] / b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA / b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] / valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA / valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static long[] dividedBy(final long[] a, final long[] b, final long[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / b[i] / c[i];
+        }
+
+        return result;
+    }
+
+    public static long[] dividedBy(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static long[] dividedBy(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] / b[i] / c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) / (i < lenB ? b[i] : valueForNoneB) / (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] dividedBy(final long[][] a, final long[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][] dividedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (long[]) null, (long[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
+            final long valueForNoneB, final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] dividedBy(final long[][][] a, final long[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static long[] dividedBy(final long[] a, final long[] b, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]);
+        }
+
+        return result;
+    }
+
+    public static long[] dividedBy(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static long[] dividedBy(final int len, final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB,
+            final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA / (b[i] == 0 ? defaultValueForZero : b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] / valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA / valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static long[] dividedBy(final long[] a, final long[] b, final long[] c, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]);
+        }
+
+        return result;
+    }
+
+    public static long[] dividedBy(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB, final long valueForNoneC,
+            final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+    }
+
+    private static long[] dividedBy(final int len, final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[] result = new long[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) / (i < lenB ? (b[i] == 0 ? defaultValueForZero : b[i]) : valueForNoneB)
+                        / (i < lenC ? (c[i] == 0 ? defaultValueForZero : c[i]) : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] dividedBy(final long[][] a, final long[][] b, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static long[][] dividedBy(final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB, final long defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long valueForNoneA, final long valueForNoneB,
+            final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (long[]) null, (long[]) null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static long[][] dividedBy(final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC, final long defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                defaultValueForZero);
+    }
+
+    private static long[][] dividedBy(final int len, final int rowLen, final long[][] a, final long[][] b, final long[][] c, final long valueForNoneA,
+            final long valueForNoneB, final long valueForNoneC, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][] result = new long[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long valueForNoneA, final long valueForNoneB,
+            final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final long[][][] result = new long[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long[][][] c, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static long[][][] dividedBy(final long[][][] a, final long[][][] b, final long[][][] c, final long valueForNoneA, final long valueForNoneB,
+            final long valueForNoneC, final long defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final long[][][] result = new long[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC,
+                    defaultValueForZero);
+        }
+
+        return result;
     }
 
     public static long[] zip(final long[] a, final long[] b, final LongBiFunction<Long> zipFunction) {
@@ -5918,6 +10916,1260 @@ public final class f {
         return c;
     }
 
+    public static float[] add(final float[] a, final float[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] + b[i];
+        }
+
+        return result;
+    }
+
+    public static float[] add(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static float[] add(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] + b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA + b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] + valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA + valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static float[] add(final float[] a, final float[] b, final float[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] + b[i] + c[i];
+        }
+
+        return result;
+    }
+
+    public static float[] add(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static float[] add(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] + b[i] + c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) + (i < lenB ? b[i] : valueForNoneB) + (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] add(final float[][] a, final float[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][] add(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
+        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static float[][] add(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = add(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = add(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = add(rowLen, (float[]) null, (float[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] add(final float[][] a, final float[][] b, final float[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][] add(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static float[][] add(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
+            final float valueForNoneB, final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = add(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] add(final float[][][] a, final float[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][][] add(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = add(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = add(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = add(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] add(final float[][][] a, final float[][][] b, final float[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][][] add(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = add(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = add(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static float[] subtract(final float[] a, final float[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] - b[i];
+        }
+
+        return result;
+    }
+
+    public static float[] subtract(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static float[] subtract(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] - b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA - b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] - valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA - valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static float[] subtract(final float[] a, final float[] b, final float[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] - b[i] - c[i];
+        }
+
+        return result;
+    }
+
+    public static float[] subtract(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static float[] subtract(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] - b[i] - c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) - (i < lenB ? b[i] : valueForNoneB) - (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] subtract(final float[][] a, final float[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][] subtract(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
+        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static float[][] subtract(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
+            final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = subtract(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = subtract(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = subtract(rowLen, (float[]) null, (float[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] subtract(final float[][] a, final float[][] b, final float[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][] subtract(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static float[][] subtract(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
+            final float valueForNoneB, final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = subtract(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] subtract(final float[][][] a, final float[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][][] subtract(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = subtract(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = subtract(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = subtract(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] subtract(final float[][][] a, final float[][][] b, final float[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][][] subtract(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = subtract(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = subtract(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static float[] multipliedBy(final float[] a, final float[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] * b[i];
+        }
+
+        return result;
+    }
+
+    public static float[] multipliedBy(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static float[] multipliedBy(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] * b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA * b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] * valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA * valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static float[] multipliedBy(final float[] a, final float[] b, final float[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] * b[i] * c[i];
+        }
+
+        return result;
+    }
+
+    public static float[] multipliedBy(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static float[] multipliedBy(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] * b[i] * c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) * (i < lenB ? b[i] : valueForNoneB) * (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] multipliedBy(final float[][] a, final float[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][] multipliedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
+        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static float[][] multipliedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
+            final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = multipliedBy(rowLen, (float[]) null, (float[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] multipliedBy(final float[][] a, final float[][] b, final float[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][] multipliedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static float[][] multipliedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
+            final float valueForNoneB, final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = multipliedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] multipliedBy(final float[][][] a, final float[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][][] multipliedBy(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = multipliedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = multipliedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] multipliedBy(final float[][][] a, final float[][][] b, final float[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][][] multipliedBy(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = multipliedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static float[] dividedBy(final float[] a, final float[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / b[i];
+        }
+
+        return result;
+    }
+
+    public static float[] dividedBy(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static float[] dividedBy(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] / b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA / b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] / valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA / valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static float[] dividedBy(final float[] a, final float[] b, final float[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / b[i] / c[i];
+        }
+
+        return result;
+    }
+
+    public static float[] dividedBy(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static float[] dividedBy(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] / b[i] / c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) / (i < lenB ? b[i] : valueForNoneB) / (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] dividedBy(final float[][] a, final float[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][] dividedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
+            final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (float[]) null, (float[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
+            final float valueForNoneB, final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] dividedBy(final float[][][] a, final float[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static float[] dividedBy(final float[] a, final float[] b, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]);
+        }
+
+        return result;
+    }
+
+    public static float[] dividedBy(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static float[] dividedBy(final int len, final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB,
+            final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA / (b[i] == 0 ? defaultValueForZero : b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] / valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA / valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static float[] dividedBy(final float[] a, final float[] b, final float[] c, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]);
+        }
+
+        return result;
+    }
+
+    public static float[] dividedBy(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+    }
+
+    private static float[] dividedBy(final int len, final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[] result = new float[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) / (i < lenB ? (b[i] == 0 ? defaultValueForZero : b[i]) : valueForNoneB)
+                        / (i < lenC ? (c[i] == 0 ? defaultValueForZero : c[i]) : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] dividedBy(final float[][] a, final float[][] b, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static float[][] dividedBy(final float[][] a, final float[][] b, final float valueForNoneA, final float valueForNoneB,
+            final float defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float valueForNoneA,
+            final float valueForNoneB, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (float[]) null, (float[]) null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static float[][] dividedBy(final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC, final float defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                defaultValueForZero);
+    }
+
+    private static float[][] dividedBy(final int len, final int rowLen, final float[][] a, final float[][] b, final float[][] c, final float valueForNoneA,
+            final float valueForNoneB, final float valueForNoneC, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][] result = new float[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float valueForNoneA, final float valueForNoneB,
+            final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final float[][][] result = new float[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float[][][] c, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static float[][][] dividedBy(final float[][][] a, final float[][][] b, final float[][][] c, final float valueForNoneA, final float valueForNoneB,
+            final float valueForNoneC, final float defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final float[][][] result = new float[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC,
+                    defaultValueForZero);
+        }
+
+        return result;
+    }
+
     public static float[] zip(final float[] a, final float[] b, final FloatBiFunction<Float> zipFunction) {
         final int lenA = len(a);
         final int lenB = len(b);
@@ -6636,6 +12888,1262 @@ public final class f {
         }
 
         return c;
+    }
+
+    public static double[] add(final double[] a, final double[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] + b[i];
+        }
+
+        return result;
+    }
+
+    public static double[] add(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return add(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static double[] add(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] + b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA + b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] + valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA + valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static double[] add(final double[] a, final double[] b, final double[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] + b[i] + c[i];
+        }
+
+        return result;
+    }
+
+    public static double[] add(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return add(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static double[] add(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] + b[i] + c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) + (i < lenB ? b[i] : valueForNoneB) + (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] add(final double[][] a, final double[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][] add(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
+        return add(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static double[][] add(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
+            final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = add(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = add(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = add(rowLen, (double[]) null, (double[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] add(final double[][] a, final double[][] b, final double[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][] add(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        return add(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static double[][] add(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = add(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = add(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] add(final double[][][] a, final double[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][][] add(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = add(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = add(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = add(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] add(final double[][][] a, final double[][][] b, final double[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = add(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][][] add(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = add(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = add(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static double[] subtract(final double[] a, final double[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] - b[i];
+        }
+
+        return result;
+    }
+
+    public static double[] subtract(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return subtract(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static double[] subtract(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] - b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA - b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] - valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA - valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static double[] subtract(final double[] a, final double[] b, final double[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] - b[i] - c[i];
+        }
+
+        return result;
+    }
+
+    public static double[] subtract(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return subtract(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static double[] subtract(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] - b[i] - c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) - (i < lenB ? b[i] : valueForNoneB) - (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] subtract(final double[][] a, final double[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][] subtract(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
+        return subtract(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static double[][] subtract(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
+            final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = subtract(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = subtract(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = subtract(rowLen, (double[]) null, (double[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] subtract(final double[][] a, final double[][] b, final double[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][] subtract(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        return subtract(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static double[][] subtract(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = subtract(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = subtract(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] subtract(final double[][][] a, final double[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][][] subtract(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = subtract(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = subtract(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = subtract(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] subtract(final double[][][] a, final double[][][] b, final double[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = subtract(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][][] subtract(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = subtract(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = subtract(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static double[] multipliedBy(final double[] a, final double[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] * b[i];
+        }
+
+        return result;
+    }
+
+    public static double[] multipliedBy(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return multipliedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static double[] multipliedBy(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] * b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA * b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] * valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA * valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static double[] multipliedBy(final double[] a, final double[] b, final double[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] * b[i] * c[i];
+        }
+
+        return result;
+    }
+
+    public static double[] multipliedBy(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return multipliedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static double[] multipliedBy(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] * b[i] * c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) * (i < lenB ? b[i] : valueForNoneB) * (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] multipliedBy(final double[][] a, final double[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][] multipliedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
+        return multipliedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static double[][] multipliedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
+            final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = multipliedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = multipliedBy(rowLen, (double[]) null, (double[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] multipliedBy(final double[][] a, final double[][] b, final double[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][] multipliedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        return multipliedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static double[][] multipliedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c,
+            final double valueForNoneA, final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = multipliedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = multipliedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] multipliedBy(final double[][][] a, final double[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][][] multipliedBy(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = multipliedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = multipliedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] multipliedBy(final double[][][] a, final double[][][] b, final double[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][][] multipliedBy(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = multipliedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = multipliedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static double[] dividedBy(final double[] a, final double[] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / b[i];
+        }
+
+        return result;
+    }
+
+    public static double[] dividedBy(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static double[] dividedBy(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] / b[i];
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA / b[i];
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] / valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA / valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static double[] dividedBy(final double[] a, final double[] b, final double[] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / b[i] / c[i];
+        }
+
+        return result;
+    }
+
+    public static double[] dividedBy(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static double[] dividedBy(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] / b[i] / c[i];
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) / (i < lenB ? b[i] : valueForNoneB) / (i < lenC ? c[i] : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] dividedBy(final double[][] a, final double[][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][] dividedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB);
+    }
+
+    private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
+            final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (double[]) null, (double[]) null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC);
+    }
+
+    private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] dividedBy(final double[][][] a, final double[][][] b) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double[][][] c) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC);
+        }
+
+        return result;
+    }
+
+    public static double[] dividedBy(final double[] a, final double[] b, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[N.min(lenA, lenB)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]);
+        }
+
+        return result;
+    }
+
+    public static double[] dividedBy(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
+            final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        return dividedBy(N.max(lenA, lenB), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static double[] dividedBy(final int len, final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
+            final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = valueForNoneA / (b[i] == 0 ? defaultValueForZero : b[i]);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = a[i] / valueForNoneB;
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = valueForNoneA / valueForNoneB;
+            }
+        }
+
+        return result;
+    }
+
+    public static double[] dividedBy(final double[] a, final double[] b, final double[] c, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[N.min(lenA, lenB, lenC)];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]);
+        }
+
+        return result;
+    }
+
+    public static double[] dividedBy(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        return dividedBy(N.max(lenA, lenB, lenC), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+    }
+
+    private static double[] dividedBy(final int len, final double[] a, final double[] b, final double[] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[] result = new double[len];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = a[i] / (b[i] == 0 ? defaultValueForZero : b[i]) / (c[i] == 0 ? defaultValueForZero : c[i]);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = (i < lenA ? a[i] : valueForNoneA) / (i < lenB ? (b[i] == 0 ? defaultValueForZero : b[i]) : valueForNoneB)
+                        / (i < lenC ? (c[i] == 0 ? defaultValueForZero : c[i]) : valueForNoneC);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] dividedBy(final double[][] a, final double[][] b, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[N.min(lenA, lenB)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static double[][] dividedBy(final double[][] a, final double[][] b, final double valueForNoneA, final double valueForNoneB,
+            final double defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b)), N.max(maxLen(a), maxLen(b)), a, b, valueForNoneA, valueForNoneB, defaultValueForZero);
+    }
+
+    private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double valueForNoneA,
+            final double valueForNoneB, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB && lenA < len) {
+            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA && lenB < len) {
+            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                result[i] = dividedBy(rowLen, a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        if (N.max(lenA, lenB) < len) {
+            for (int i = N.max(lenA, lenB); i < len; i++) {
+                result[i] = dividedBy(rowLen, (double[]) null, (double[]) null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[N.min(lenA, lenB, lenC)][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static double[][] dividedBy(final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA, final double valueForNoneB,
+            final double valueForNoneC, final double defaultValueForZero) {
+        return dividedBy(N.max(len(a), len(b), len(c)), N.max(maxLen(a), maxLen(b), maxLen(c)), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                defaultValueForZero);
+    }
+
+    private static double[][] dividedBy(final int len, final int rowLen, final double[][] a, final double[][] b, final double[][] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][] result = new double[len][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+            result[i] = dividedBy(rowLen, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        if (N.min(lenA, lenB, lenC) < len) {
+            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                result[i] = dividedBy(rowLen, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                        valueForNoneC, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.min(lenA, lenB)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double valueForNoneA, final double valueForNoneB,
+            final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+
+        final double[][][] result = new double[N.max(lenA, lenB)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+        }
+
+        if (lenA < lenB) {
+            for (int i = lenA; i < lenB; i++) {
+                result[i] = dividedBy(null, b[i], valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        } else if (lenB < lenA) {
+            for (int i = lenB; i < lenA; i++) {
+                result[i] = dividedBy(a[i], null, valueForNoneA, valueForNoneB, defaultValueForZero);
+            }
+        }
+
+        return result;
+    }
+
+    public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double[][][] c, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.min(lenA, lenB, lenC)][][];
+
+        for (int i = 0, len = result.length; i < len; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], defaultValueForZero);
+        }
+
+        return result;
+    }
+
+    public static double[][][] dividedBy(final double[][][] a, final double[][][] b, final double[][][] c, final double valueForNoneA,
+            final double valueForNoneB, final double valueForNoneC, final double defaultValueForZero) {
+        final int lenA = len(a);
+        final int lenB = len(b);
+        final int lenC = len(c);
+
+        final double[][][] result = new double[N.max(lenA, lenB, lenC)][][];
+
+        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+            result[i] = dividedBy(a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, defaultValueForZero);
+        }
+
+        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+            result[i] = dividedBy(i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC,
+                    defaultValueForZero);
+        }
+
+        return result;
     }
 
     public static double[] zip(final double[] a, final double[] b, final DoubleBiFunction<Double> zipFunction) {
