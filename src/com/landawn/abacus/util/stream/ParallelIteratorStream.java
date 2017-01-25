@@ -2202,7 +2202,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
         }
 
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return filter(new Predicate<T>() {
             @Override
@@ -2222,7 +2222,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
         }
 
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return filter(new Predicate<T>() {
             @Override

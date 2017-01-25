@@ -1005,7 +1005,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> intersection(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
@@ -1017,7 +1017,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> intersection(final Function<? super T, ?> mapper, final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
@@ -1029,7 +1029,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> difference(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
@@ -1041,7 +1041,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> difference(final Function<? super T, ?> mapper, final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
@@ -1053,7 +1053,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> symmetricDifference(final Collection<T> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new Predicate<T>() {
             @Override

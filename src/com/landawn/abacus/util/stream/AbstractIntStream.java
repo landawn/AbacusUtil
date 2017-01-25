@@ -262,7 +262,7 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream intersection(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new IntPredicate() {
             @Override
@@ -274,7 +274,7 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream difference(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new IntPredicate() {
             @Override
@@ -286,7 +286,7 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream symmetricDifference(final Collection<Integer> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new IntPredicate() {
             @Override

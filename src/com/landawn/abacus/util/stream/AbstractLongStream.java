@@ -261,7 +261,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream intersection(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new LongPredicate() {
             @Override
@@ -273,7 +273,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream difference(final Collection<?> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new LongPredicate() {
             @Override
@@ -285,7 +285,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream symmetricDifference(final Collection<Long> c) {
-        final Multiset<?> multiset = Multiset.of(c);
+        final Multiset<?> multiset = Multiset.from(c);
 
         return newStream(this.sequential().filter(new LongPredicate() {
             @Override
