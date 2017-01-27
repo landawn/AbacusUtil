@@ -1115,14 +1115,30 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     public IntList filter(final int fromIndex, final int toIndex, IntPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public IntList filter(final int fromIndex, final int toIndex, IntPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
+    }
+
+    public <T> ObjectList<T> mapToObj(final IntFunction<? extends T> mapper) {
+        return mapToObj(0, size, mapper);
+    }
+
+    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final IntFunction<? extends T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1391,6 +1407,28 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
 
         return multiset;
     }
+
+    //    public Seq<Integer> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<Integer> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<Integer> toSeq(final IntFunction<Collection<Integer>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<Integer> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Integer>> supplier) {
+    //        final Collection<Integer> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
 
     public IntStream stream() {
         return IntStream.of(elementData, 0, size());

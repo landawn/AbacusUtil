@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.ByteConsumer;
+import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.IndexedByteConsumer;
@@ -923,14 +924,30 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     public ByteList filter(final int fromIndex, final int toIndex, BytePredicate filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public ByteList filter(final int fromIndex, final int toIndex, BytePredicate filter, final int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
+    }
+
+    public <T> ObjectList<T> mapToObj(final ByteFunction<? extends T> mapper) {
+        return mapToObj(0, size, mapper);
+    }
+
+    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final ByteFunction<? extends T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1171,6 +1188,28 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
         return multiset;
     }
+
+    //    public Seq<Byte> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<Byte> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<Byte> toSeq(final IntFunction<Collection<Byte>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<Byte> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Byte>> supplier) {
+    //        final Collection<Byte> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
 
     public ByteStream stream() {
         return ByteStream.of(elementData, 0, size());

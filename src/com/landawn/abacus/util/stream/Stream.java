@@ -670,7 +670,7 @@ public abstract class Stream<T>
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public abstract <U> U forEach(final U seed, BiFunction<U, ? super T, U> accumulator, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> U forEach(final U seed, BiFunction<? super T, U, U> accumulator, final BiPredicate<? super T, ? super U> predicate);
 
     public abstract <U> OptionalNullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate);
 

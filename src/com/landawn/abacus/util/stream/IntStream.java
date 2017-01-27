@@ -710,28 +710,157 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         return iterator == null ? empty() : new IteratorIntStream(iterator);
     }
 
-    public static IntStream from(final byte... a) {
-        return N.isNullOrEmpty(a) ? empty() : ArrayByteStream.of(a).asIntStream();
+    public static IntStream from(final char... a) {
+        return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);
     }
 
-    public static IntStream from(final byte[] a, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : ArrayByteStream.of(a, startIndex, endIndex).asIntStream();
+    public static IntStream from(final char[] a, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return empty();
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public int[] toArray() {
+                final int[] result = new int[toIndex - cursor];
+
+                for (int i = cursor; i < toIndex; i++) {
+                    result[i - cursor] = a[i];
+                }
+
+                return result;
+            }
+        });
+    }
+
+    public static IntStream from(final byte... a) {
+        return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);
+    }
+
+    public static IntStream from(final byte[] a, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return empty();
+        }
+
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public int[] toArray() {
+                final int[] result = new int[toIndex - cursor];
+
+                for (int i = cursor; i < toIndex; i++) {
+                    result[i - cursor] = a[i];
+                }
+
+                return result;
+            }
+        });
     }
 
     public static IntStream from(final short... a) {
-        return N.isNullOrEmpty(a) ? empty() : ArrayShortStream.of(a).asIntStream();
+        return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);
     }
 
-    public static IntStream from(final short[] a, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : ArrayShortStream.of(a, startIndex, endIndex).asIntStream();
-    }
+    public static IntStream from(final short[] a, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-    public static IntStream from(final char... a) {
-        return N.isNullOrEmpty(a) ? empty() : ArrayCharStream.of(a).asIntStream();
-    }
+        if (fromIndex == toIndex) {
+            return empty();
+        }
 
-    public static IntStream from(final char[] a, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : ArrayCharStream.of(a, startIndex, endIndex).asIntStream();
+        return new IteratorIntStream(new ImmutableIntIterator() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public int[] toArray() {
+                final int[] result = new int[toIndex - cursor];
+
+                for (int i = cursor; i < toIndex; i++) {
+                    result[i - cursor] = a[i];
+                }
+
+                return result;
+            }
+        });
     }
 
     public static IntStream range(final int startInclusive, final int endExclusive) {

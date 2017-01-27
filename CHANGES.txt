@@ -1,7 +1,17 @@
 ========Changes in 0.9.44=========================================================================
 1, Add method: add/subtract/multipliedBy/dividedBy to f.
 
-3, Improvements and bug fix.
+2, Remove CharStream/ByteStream/ShortStream/FloatStream/... from library abacus-android-*.jar to reduce the API size.
+
+3, Add map/mapToBoolean/mapToChar/mapToByte/.../mapToDouble to N to support more functional programming even without stream API on Android.
+
+4, Add sumInt/sumLong/sumDouble/averageInt/averageLong/averageDouble to N to support more functional programming even without stream API on Android.
+
+5, Refactoring N.filter(...) to support more functional programming even without stream API.
+
+6, Add Seq for Collection.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.43=========================================================================

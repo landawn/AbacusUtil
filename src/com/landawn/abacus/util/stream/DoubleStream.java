@@ -694,6 +694,57 @@ public abstract class DoubleStream
         return iterator == null ? empty() : new IteratorDoubleStream(iterator);
     }
 
+    public static DoubleStream from(final float... a) {
+        return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);
+    }
+
+    public static DoubleStream from(final float[] a, final int fromIndex, final int toIndex) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return empty();
+        }
+
+        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public double next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public double[] toArray() {
+                final double[] result = new double[toIndex - cursor];
+
+                for (int i = cursor; i < toIndex; i++) {
+                    result[i - cursor] = a[i];
+                }
+
+                return result;
+            }
+        });
+    }
+
     public static DoubleStream repeat(final double element, final long n) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be negative: " + n);

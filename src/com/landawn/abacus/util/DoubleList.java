@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.DoubleConsumer;
+import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.IndexedDoubleConsumer;
@@ -591,15 +592,15 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
      */
     public DoubleList intersection(DoubleList b) {
         final Multiset<Double> bOccurrences = b.toMultiset();
-    
+
         final DoubleList c = new DoubleList(N.min(9, size(), b.size()));
-    
+
         for (int i = 0, len = size(); i < len; i++) {
             if (bOccurrences.getAndRemove(elementData[i]) > 0) {
                 c.add(elementData[i]);
             }
         }
-    
+
         return c;
     }
 
@@ -925,14 +926,30 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     public DoubleList filter(final int fromIndex, final int toIndex, DoublePredicate filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public DoubleList filter(final int fromIndex, final int toIndex, DoublePredicate filter, final int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
+    }
+
+    public <T> ObjectList<T> mapToObj(final DoubleFunction<? extends T> mapper) {
+        return mapToObj(0, size, mapper);
+    }
+
+    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final DoubleFunction<? extends T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1189,6 +1206,28 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
         return multiset;
     }
+
+    //    public Seq<Double> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<Double> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<Double> toSeq(final IntFunction<Collection<Double>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<Double> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Double>> supplier) {
+    //        final Collection<Double> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
 
     public DoubleStream stream() {
         return DoubleStream.of(elementData, 0, size());

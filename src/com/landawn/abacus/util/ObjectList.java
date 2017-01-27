@@ -92,7 +92,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
     public static <T> ObjectList<T> empty() {
-        return new ObjectList<T>((T[]) N.EMPTY_OBJECT_ARRAY);
+        return new ObjectList<>((T[]) N.EMPTY_OBJECT_ARRAY);
     }
 
     /**
@@ -102,7 +102,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
     public static <T> ObjectList<T> of(T... a) {
-        return new ObjectList<T>(a);
+        return new ObjectList<>(a);
     }
 
     /**
@@ -113,7 +113,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
     public static <T> ObjectList<T> of(T[] a, int size) {
-        return new ObjectList<T>(a, size);
+        return new ObjectList<>(a, size);
     }
 
     public static <T> ObjectList<T> from(Collection<? extends T> c) {
@@ -206,10 +206,10 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
 
     public static <T> ObjectList<T> repeat(T element, int len) {
         if (element == null) {
-            return new ObjectList<T>((T[]) new Object[len]);
+            return new ObjectList<>((T[]) new Object[len]);
         }
 
-        return new ObjectList<T>(Array.repeat(element, len));
+        return new ObjectList<>(Array.repeat(element, len));
     }
 
     /**
@@ -417,7 +417,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
 
     @Override
     public boolean removeIf(Predicate<? super T> p) {
-        final ObjectList<T> tmp = new ObjectList<T>(size());
+        final ObjectList<T> tmp = new ObjectList<>(size());
 
         for (int i = 0; i < size; i++) {
             if (p.test(elementData[i]) == false) {
@@ -617,12 +617,12 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     @Override
-    public boolean disjoint(final Object[] b) {
-        if (N.isNullOrEmpty(b)) {
+    public boolean disjoint(final Object[] a) {
+        if (N.isNullOrEmpty(a)) {
             return true;
         }
 
-        return disjoint(of(b));
+        return disjoint(of(a));
     }
 
     public int occurrencesOf(final Object objectToFind) {
@@ -637,16 +637,16 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      */
     public ObjectList<T> intersection(ObjectList<?> b) {
         final Multiset<?> bOccurrences = b.toMultiset();
-    
-        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(getComponentType(), N.min(9, size(), b.size())));
-    
+
+        final ObjectList<T> result = new ObjectList<>((T[]) N.newArray(getComponentType(), N.min(9, size(), b.size())));
+
         for (int i = 0, len = size(); i < len; i++) {
             if (bOccurrences.getAndRemove(elementData[i]) > 0) {
-                c.add(elementData[i]);
+                result.add(elementData[i]);
             }
         }
-    
-        return c;
+
+        return result;
     }
 
     /**
@@ -658,15 +658,15 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public ObjectList<T> difference(ObjectList<?> b) {
         final Multiset<?> bOccurrences = b.toMultiset();
 
-        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(getComponentType(), N.min(size(), N.max(9, size() - b.size()))));
+        final ObjectList<T> result = new ObjectList<>((T[]) N.newArray(getComponentType(), N.min(size(), N.max(9, size() - b.size()))));
 
         for (int i = 0, len = size(); i < len; i++) {
             if (bOccurrences.getAndRemove(elementData[i]) < 1) {
-                c.add(elementData[i]);
+                result.add(elementData[i]);
             }
         }
 
-        return c;
+        return result;
     }
 
     /**
@@ -678,17 +678,17 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public ObjectList<T> symmetricDifference(ObjectList<T> b) {
         final Multiset<T> bOccurrences = b.toMultiset();
 
-        final ObjectList<T> c = new ObjectList<T>((T[]) N.newArray(getComponentType(), N.max(9, Math.abs(size() - b.size()))));
+        final ObjectList<T> result = new ObjectList<>((T[]) N.newArray(getComponentType(), N.max(9, Math.abs(size() - b.size()))));
 
         for (int i = 0, len = size(); i < len; i++) {
             if (bOccurrences.getAndRemove(elementData[i]) < 1) {
-                c.add(elementData[i]);
+                result.add(elementData[i]);
             }
         }
 
         for (int i = 0, len = b.size(); i < len; i++) {
             if (bOccurrences.getAndRemove(b.elementData[i]) > 0) {
-                c.add(b.elementData[i]);
+                result.add(b.elementData[i]);
             }
 
             if (bOccurrences.isEmpty()) {
@@ -696,7 +696,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
             }
         }
 
-        return c;
+        return result;
     }
 
     public int indexOf(Object e) {
@@ -928,7 +928,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public Double sumDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? 0d : Stream.of(elementData, fromIndex, toIndex).sumDouble(mapper);
+        return fromIndex == toIndex ? 0d : N.sumDouble(elementData, fromIndex, toIndex, mapper);
     }
 
     public OptionalDouble averageInt() {
@@ -991,7 +991,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public OptionalDouble averageDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? OptionalDouble.empty() : Stream.of(elementData, fromIndex, toIndex).averageDouble(mapper);
+        return fromIndex == toIndex ? OptionalDouble.empty() : N.averageDouble(elementData, fromIndex, toIndex, mapper);
     }
 
     @Override
@@ -1039,7 +1039,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
     }
 
-    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
+    public <R> R forEach(final R seed, BiFunction<? super T, R, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
         return forEach(0, size(), seed, accumulator, predicate);
     }
 
@@ -1053,7 +1053,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public <R> R forEach(final int fromIndex, final int toIndex, final R seed, BiFunction<R, ? super T, R> accumulator,
+    public <R> R forEach(final int fromIndex, final int toIndex, final R seed, BiFunction<? super T, R, R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
         if (fromIndex <= toIndex) {
             checkIndex(fromIndex, toIndex);
@@ -1066,7 +1066,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         if (size > 0) {
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    result = accumulator.apply(result, elementData[i]);
+                    result = accumulator.apply(elementData[i], result);
 
                     if (predicate.test(elementData[i], result) == false) {
                         break;
@@ -1074,7 +1074,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
                 }
             } else {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
-                    result = accumulator.apply(result, elementData[i]);
+                    result = accumulator.apply(elementData[i], result);
 
                     if (predicate.test(elementData[i], result) == false) {
                         break;
@@ -1270,14 +1270,14 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public ObjectList<T> filter(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public ObjectList<T> filter(final int fromIndex, final int toIndex, Predicate<? super T> filter, final int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
     public <U> ObjectList<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
@@ -1287,7 +1287,12 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public <U> ObjectList<T> filter(final int fromIndex, final int toIndex, final U seed, final BiPredicate<? super T, ? super U> predicate) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, seed, predicate));
+        return filter(fromIndex, toIndex, new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, seed);
+            }
+        });
     }
 
     public <R> ObjectList<R> map(final Function<? super T, ? extends R> func) {
@@ -1297,13 +1302,13 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public <R> ObjectList<R> map(final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
         checkIndex(fromIndex, toIndex);
 
-        final R[] res = (R[]) new Object[size()];
+        final ObjectList<R> result = new ObjectList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
-            res[i - fromIndex] = func.apply(elementData[i]);
+            result.add(func.apply(elementData[i]));
         }
 
-        return ObjectList.of(res);
+        return result;
     }
 
     public BooleanList mapToBoolean(final ToBooleanFunction<? super T> func) {
@@ -1581,7 +1586,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     public ObjectList<T> copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
-        return new ObjectList<T>(N.copyOfRange(elementData, fromIndex, toIndex));
+        return new ObjectList<>(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
     @Override
@@ -1744,6 +1749,28 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return multiset;
     }
 
+    //    public Seq<T> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<T> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<T> toSeq(final IntFunction<Collection<T>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<T> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<T>> supplier) {
+    //        final Collection<T> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
+
     public Stream<T> stream() {
         return Stream.of(elementData, 0, size());
     }
@@ -1761,6 +1788,10 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     //    public ObjectListBuilder<T> __(Consumer<? super ObjectList<T>> func) {
     //        return Builder.of(this).__(func);
     //    }
+
+    public T[] toArray(Class<T[]> cls) {
+        return N.copyOfRange(elementData, 0, size, cls);
+    }
 
     @Override
     public int hashCode() {

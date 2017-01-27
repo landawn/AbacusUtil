@@ -1234,11 +1234,11 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
+    public <U> U forEach(U seed, BiFunction<? super T, U, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
         U result = seed;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(result, elements[i]);
+            result = accumulator.apply(elements[i], result);
 
             if (predicate.test(elements[i], result) == false) {
                 break;

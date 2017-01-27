@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BooleanConsumer;
+import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
 import com.landawn.abacus.util.function.IndexedBooleanConsumer;
@@ -530,15 +531,15 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      */
     public BooleanList intersection(BooleanList b) {
         final Multiset<Boolean> bOccurrences = b.toMultiset();
-    
+
         final BooleanList c = new BooleanList(N.min(9, size(), b.size()));
-    
+
         for (int i = 0, len = size(); i < len; i++) {
             if (bOccurrences.getAndRemove(elementData[i]) > 0) {
                 c.add(elementData[i]);
             }
         }
-    
+
         return c;
     }
 
@@ -816,14 +817,30 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter, int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
+    }
+
+    public <T> ObjectList<T> mapToObj(final BooleanFunction<? extends T> mapper) {
+        return mapToObj(0, size, mapper);
+    }
+
+    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final BooleanFunction<? extends T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1044,6 +1061,28 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
         return multiset;
     }
+
+    //    public Seq<Boolean> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<Boolean> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<Boolean> toSeq(final IntFunction<Collection<Boolean>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<Boolean> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Boolean>> supplier) {
+    //        final Collection<Boolean> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
 
     //    public BooleanListBuilder __() {
     //        return Builder.of(this);

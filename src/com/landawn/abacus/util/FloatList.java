@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.FloatConsumer;
+import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.IndexedFloatConsumer;
@@ -939,14 +940,30 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     public FloatList filter(final int fromIndex, final int toIndex, FloatPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public FloatList filter(final int fromIndex, final int toIndex, FloatPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
+    }
+
+    public <T> ObjectList<T> mapToObj(final FloatFunction<? extends T> mapper) {
+        return mapToObj(0, size, mapper);
+    }
+
+    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final FloatFunction<? extends T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1207,6 +1224,28 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
 
         return multiset;
     }
+
+    //    public Seq<Float> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<Float> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<Float> toSeq(final IntFunction<Collection<Float>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<Float> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Float>> supplier) {
+    //        final Collection<Float> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
 
     public FloatStream stream() {
         return FloatStream.of(elementData, 0, size());

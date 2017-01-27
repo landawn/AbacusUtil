@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.CharConsumer;
+import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.IndexedCharConsumer;
@@ -943,14 +944,30 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     public CharList filter(final int fromIndex, final int toIndex, CharPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public CharList filter(final int fromIndex, final int toIndex, CharPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
+    }
+
+    public <T> ObjectList<T> mapToObj(final CharFunction<? extends T> mapper) {
+        return mapToObj(0, size, mapper);
+    }
+
+    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final CharFunction<? extends T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1192,6 +1209,28 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
         return multiset;
     }
+
+    //    public Seq<Character> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<Character> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<Character> toSeq(final IntFunction<Collection<Character>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<Character> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Character>> supplier) {
+    //        final Collection<Character> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
 
     public CharStream stream() {
         return CharStream.of(elementData, 0, size());

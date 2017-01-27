@@ -26,6 +26,7 @@ import java.util.Set;
 import com.landawn.abacus.util.function.IndexedShortConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ShortConsumer;
+import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.stream.ShortStream;
@@ -581,15 +582,15 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
      */
     public ShortList intersection(ShortList b) {
         final Multiset<Short> bOccurrences = b.toMultiset();
-    
+
         final ShortList c = new ShortList(N.min(9, size(), b.size()));
-    
+
         for (int i = 0, len = size(); i < len; i++) {
             if (bOccurrences.getAndRemove(elementData[i]) > 0) {
                 c.add(elementData[i]);
             }
         }
-    
+
         return c;
     }
 
@@ -915,14 +916,30 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     public ShortList filter(final int fromIndex, final int toIndex, ShortPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public ShortList filter(final int fromIndex, final int toIndex, ShortPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
+    }
+
+    public <T> ObjectList<T> mapToObj(final ShortFunction<? extends T> mapper) {
+        return mapToObj(0, size, mapper);
+    }
+
+    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final ShortFunction<? extends T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1183,6 +1200,28 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
 
         return multiset;
     }
+
+    //    public Seq<Short> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<Short> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<Short> toSeq(final IntFunction<Collection<Short>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<Short> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Short>> supplier) {
+    //        final Collection<Short> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
 
     public ShortStream stream() {
         return ShortStream.of(elementData, 0, size());

@@ -26,6 +26,7 @@ import java.util.Set;
 import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.LongConsumer;
+import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.stream.LongStream;
@@ -965,14 +966,30 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     public LongList filter(final int fromIndex, final int toIndex, LongPredicate filter) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter));
+        return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public LongList filter(final int fromIndex, final int toIndex, LongPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex);
 
-        return of(N.filter(elementData, fromIndex, toIndex, filter, max));
+        return N.filter(elementData, fromIndex, toIndex, filter, max);
+    }
+
+    public <T> ObjectList<T> mapToObj(final LongFunction<? extends T> mapper) {
+        return mapToObj(0, size, mapper);
+    }
+
+    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final LongFunction<? extends T> mapper) {
+        checkIndex(fromIndex, toIndex);
+
+        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
     }
 
     @Override
@@ -1237,6 +1254,28 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
 
         return multiset;
     }
+
+    //    public Seq<Long> toSeq() {
+    //        return toSeq(0, size());
+    //    }
+    //
+    //    public Seq<Long> toSeq(final int fromIndex, final int toIndex) {
+    //        return Seq.of(toList(fromIndex, toIndex));
+    //    }
+    //
+    //    public Seq<Long> toSeq(final IntFunction<Collection<Long>> supplier) {
+    //        return toSeq(0, size(), supplier);
+    //    }
+    //
+    //    public Seq<Long> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Long>> supplier) {
+    //        final Collection<Long> c = supplier.apply(toIndex - fromIndex);
+    //
+    //        for (int i = fromIndex; i < toIndex; i++) {
+    //            c.add(elementData[i]);
+    //        }
+    //
+    //        return Seq.of(c);
+    //    }
 
     public LongStream stream() {
         return LongStream.of(elementData, 0, size());

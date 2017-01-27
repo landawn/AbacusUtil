@@ -162,6 +162,14 @@ import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToBooleanFunction;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.ImmutableIterator;
@@ -11966,11 +11974,11 @@ public final class N {
         return entity;
     }
 
-    public static <T> List<T> map2Entity(final Class<T> targetClass, final List<Map<String, Object>> mList) {
+    public static <T> List<T> map2Entity(final Class<T> targetClass, final Collection<Map<String, Object>> mList) {
         return map2Entity(targetClass, mList, N.isDirtyMarker(targetClass) == false, true);
     }
 
-    public static <T> List<T> map2Entity(final Class<T> targetClass, final List<Map<String, Object>> mList, final boolean igoreNullProperty,
+    public static <T> List<T> map2Entity(final Class<T> targetClass, final Collection<Map<String, Object>> mList, final boolean igoreNullProperty,
             final boolean ignoreUnknownProperty) {
         checkEntityClass(targetClass);
 
@@ -12187,26 +12195,28 @@ public final class N {
         return resultMap;
     }
 
-    public static List<Map<String, Object>> entity2Map(final List<?> entityList) {
+    public static List<Map<String, Object>> entity2Map(final Collection<?> entityList) {
         return entity2Map(entityList, null);
     }
 
-    public static List<Map<String, Object>> entity2Map(final List<?> entityList, final boolean ignoreNullProperty) {
+    public static List<Map<String, Object>> entity2Map(final Collection<?> entityList, final boolean ignoreNullProperty) {
         return entity2Map(entityList, ignoreNullProperty, null);
     }
 
-    public static List<Map<String, Object>> entity2Map(final List<?> entityList, final Collection<String> ignoredPropNames) {
-        final boolean ignoreNullProperty = N.isNullOrEmpty(entityList) ? true : entityList.get(0) instanceof DirtyMarker == false;
+    public static List<Map<String, Object>> entity2Map(final Collection<?> entityList, final Collection<String> ignoredPropNames) {
+        final boolean ignoreNullProperty = N.isNullOrEmpty(entityList) ? true
+                : (entityList instanceof ArrayList ? ((ArrayList<?>) entityList).get(0) : entityList.iterator().next()) instanceof DirtyMarker == false;
 
         return entity2Map(entityList, ignoreNullProperty, ignoredPropNames);
     }
 
-    public static List<Map<String, Object>> entity2Map(final List<?> entityList, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames) {
+    public static List<Map<String, Object>> entity2Map(final Collection<?> entityList, final boolean ignoreNullProperty,
+            final Collection<String> ignoredPropNames) {
         return entity2Map(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
-    public static List<Map<String, Object>> entity2Map(final List<?> entityList, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames,
-            final NamingPolicy keyNamingPolicy) {
+    public static List<Map<String, Object>> entity2Map(final Collection<?> entityList, final boolean ignoreNullProperty,
+            final Collection<String> ignoredPropNames, final NamingPolicy keyNamingPolicy) {
         final List<Map<String, Object>> resultList = new ArrayList<>(entityList.size());
 
         for (Object entity : entityList) {
@@ -12426,26 +12436,27 @@ public final class N {
         return resultMap;
     }
 
-    public static List<Map<String, Object>> deepEntity2Map(final List<?> entityList) {
+    public static List<Map<String, Object>> deepEntity2Map(final Collection<?> entityList) {
         return deepEntity2Map(entityList, null);
     }
 
-    public static List<Map<String, Object>> deepEntity2Map(final List<?> entityList, final boolean ignoreNullProperty) {
+    public static List<Map<String, Object>> deepEntity2Map(final Collection<?> entityList, final boolean ignoreNullProperty) {
         return deepEntity2Map(entityList, ignoreNullProperty, null);
     }
 
-    public static List<Map<String, Object>> deepEntity2Map(final List<?> entityList, final Collection<String> ignoredPropNames) {
-        final boolean ignoreNullProperty = N.isNullOrEmpty(entityList) ? true : entityList.get(0) instanceof DirtyMarker == false;
+    public static List<Map<String, Object>> deepEntity2Map(final Collection<?> entityList, final Collection<String> ignoredPropNames) {
+        final boolean ignoreNullProperty = N.isNullOrEmpty(entityList) ? true
+                : (entityList instanceof ArrayList ? ((ArrayList<?>) entityList).get(0) : entityList.iterator().next()) instanceof DirtyMarker == false;
 
         return deepEntity2Map(entityList, ignoreNullProperty, ignoredPropNames);
     }
 
-    public static List<Map<String, Object>> deepEntity2Map(final List<?> entityList, final boolean ignoreNullProperty,
+    public static List<Map<String, Object>> deepEntity2Map(final Collection<?> entityList, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames) {
         return deepEntity2Map(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
-    public static List<Map<String, Object>> deepEntity2Map(final List<?> entityList, final boolean ignoreNullProperty,
+    public static List<Map<String, Object>> deepEntity2Map(final Collection<?> entityList, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames, final NamingPolicy keyNamingPolicy) {
         final List<Map<String, Object>> resultList = new ArrayList<>(entityList.size());
 
@@ -12797,26 +12808,27 @@ public final class N {
         return resultMap;
     }
 
-    public static List<Map<String, Object>> entity2FlatMap(final List<?> entityList) {
+    public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList) {
         return entity2FlatMap(entityList, null);
     }
 
-    public static List<Map<String, Object>> entity2FlatMap(final List<?> entityList, final boolean ignoreNullProperty) {
+    public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList, final boolean ignoreNullProperty) {
         return entity2FlatMap(entityList, ignoreNullProperty, null);
     }
 
-    public static List<Map<String, Object>> entity2FlatMap(final List<?> entityList, final Collection<String> ignoredPropNames) {
-        final boolean ignoreNullProperty = N.isNullOrEmpty(entityList) ? true : entityList.get(0) instanceof DirtyMarker == false;
+    public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList, final Collection<String> ignoredPropNames) {
+        final boolean ignoreNullProperty = N.isNullOrEmpty(entityList) ? true
+                : (entityList instanceof ArrayList ? ((ArrayList<?>) entityList).get(0) : entityList.iterator().next()) instanceof DirtyMarker == false;
 
         return entity2FlatMap(entityList, ignoreNullProperty, ignoredPropNames);
     }
 
-    public static List<Map<String, Object>> entity2FlatMap(final List<?> entityList, final boolean ignoreNullProperty,
+    public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames) {
         return entity2FlatMap(entityList, ignoreNullProperty, ignoredPropNames, NamingPolicy.CAMEL_CASE);
     }
 
-    public static List<Map<String, Object>> entity2FlatMap(final List<?> entityList, final boolean ignoreNullProperty,
+    public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList, final boolean ignoreNullProperty,
             final Collection<String> ignoredPropNames, final NamingPolicy keyNamingPolicy) {
         final List<Map<String, Object>> resultList = new ArrayList<>(entityList.size());
 
@@ -21283,7 +21295,7 @@ public final class N {
         }
     }
 
-    public static <T, R> R forEach(final T[] a, final R seed, final BiFunction<R, ? super T, R> accumulator,
+    public static <T, R> R forEach(final T[] a, final R seed, final BiFunction<? super T, R, R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(a)) {
             return seed;
@@ -21302,7 +21314,7 @@ public final class N {
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
+    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final BiFunction<? super T, R, R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return seed;
@@ -21533,7 +21545,7 @@ public final class N {
         }
     }
 
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, BiFunction<R, ? super T, R> accumulator,
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, BiFunction<? super T, R, R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(c)) {
             return seed;
@@ -21553,7 +21565,7 @@ public final class N {
      * @return
      */
     public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final int fromIndex, final int toIndex, final R seed,
-            final BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
+            final BiFunction<? super T, R, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
         if (fromIndex <= toIndex) {
             N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
         } else {
@@ -21571,7 +21583,7 @@ public final class N {
 
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    result = accumulator.apply(result, list.get(i));
+                    result = accumulator.apply(list.get(i), result);
 
                     if (predicate.test(list.get(i), result) == false) {
                         break;
@@ -21579,7 +21591,7 @@ public final class N {
                 }
             } else {
                 for (int i = fromIndex - 1; i >= toIndex; i--) {
-                    result = accumulator.apply(result, list.get(i));
+                    result = accumulator.apply(list.get(i), result);
 
                     if (predicate.test(list.get(i), result) == false) {
                         break;
@@ -21600,7 +21612,7 @@ public final class N {
                 while (iter.hasNext()) {
                     next = iter.next();
 
-                    result = accumulator.apply(result, next);
+                    result = accumulator.apply(next, result);
 
                     if (predicate.test(next, result) == false) {
                         break;
@@ -21627,7 +21639,7 @@ public final class N {
                 }
 
                 for (int i = a.length - 1; i >= 0; i--) {
-                    result = accumulator.apply(result, a[i]);
+                    result = accumulator.apply(a[i], result);
 
                     if (predicate.test(a[i], result) == false) {
                         break;
@@ -21745,23 +21757,23 @@ public final class N {
         return result;
     }
 
-    public static boolean[] filter(final boolean[] a, final BooleanPredicate filter) {
+    public static BooleanList filter(final boolean[] a, final BooleanPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_BOOLEAN_ARRAY;
+            return BooleanList.empty();
         }
 
         return filter(a, 0, a.length, filter);
     }
 
-    public static boolean[] filter(final boolean[] a, final BooleanPredicate filter, final int max) {
+    public static BooleanList filter(final boolean[] a, final BooleanPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_BOOLEAN_ARRAY;
+            return BooleanList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static boolean[] filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    public static BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -21777,42 +21789,42 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static boolean[] filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter, final int max) {
+    public static BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return N.EMPTY_BOOLEAN_ARRAY;
+            return BooleanList.empty();
         }
 
-        final BooleanList list = BooleanList.of(new boolean[min(9, max, (toIndex - fromIndex))], 0);
+        final BooleanList result = new BooleanList(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                list.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return list.trimToSize().array();
+        return result;
     }
 
-    public static char[] filter(final char[] a, final CharPredicate filter) {
+    public static CharList filter(final char[] a, final CharPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_CHAR_ARRAY;
+            return CharList.empty();
         }
 
         return filter(a, 0, a.length, filter);
     }
 
-    public static char[] filter(final char[] a, final CharPredicate filter, final int max) {
+    public static CharList filter(final char[] a, final CharPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_CHAR_ARRAY;
+            return CharList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static char[] filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter) {
+    public static CharList filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -21828,42 +21840,42 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static char[] filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter, final int max) {
+    public static CharList filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return N.EMPTY_CHAR_ARRAY;
+            return CharList.empty();
         }
 
-        final CharList list = CharList.of(new char[min(9, max, (toIndex - fromIndex))], 0);
+        final CharList result = new CharList(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                list.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return list.trimToSize().array();
+        return result;
     }
 
-    public static byte[] filter(final byte[] a, final BytePredicate filter) {
+    public static ByteList filter(final byte[] a, final BytePredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_BYTE_ARRAY;
+            return ByteList.empty();
         }
 
         return filter(a, 0, a.length, filter);
     }
 
-    public static byte[] filter(final byte[] a, final BytePredicate filter, final int max) {
+    public static ByteList filter(final byte[] a, final BytePredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_BYTE_ARRAY;
+            return ByteList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static byte[] filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter) {
+    public static ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -21879,42 +21891,42 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static byte[] filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter, final int max) {
+    public static ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return N.EMPTY_BYTE_ARRAY;
+            return ByteList.empty();
         }
 
-        final ByteList list = ByteList.of(new byte[min(9, max, (toIndex - fromIndex))], 0);
+        final ByteList result = new ByteList(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                list.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return list.trimToSize().array();
+        return result;
     }
 
-    public static short[] filter(final short[] a, final ShortPredicate filter) {
+    public static ShortList filter(final short[] a, final ShortPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_SHORT_ARRAY;
+            return ShortList.empty();
         }
 
         return filter(a, 0, a.length, filter);
     }
 
-    public static short[] filter(final short[] a, final ShortPredicate filter, final int max) {
+    public static ShortList filter(final short[] a, final ShortPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_SHORT_ARRAY;
+            return ShortList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static short[] filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter) {
+    public static ShortList filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -21930,42 +21942,42 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static short[] filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter, final int max) {
+    public static ShortList filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return N.EMPTY_SHORT_ARRAY;
+            return ShortList.empty();
         }
 
-        final ShortList list = ShortList.of(new short[min(9, max, (toIndex - fromIndex))], 0);
+        final ShortList result = new ShortList(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                list.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return list.trimToSize().array();
+        return result;
     }
 
-    public static int[] filter(final int[] a, final IntPredicate filter) {
+    public static IntList filter(final int[] a, final IntPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_INT_ARRAY;
+            return IntList.empty();
         }
 
         return filter(a, 0, a.length, filter);
     }
 
-    public static int[] filter(final int[] a, final IntPredicate filter, final int max) {
+    public static IntList filter(final int[] a, final IntPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_INT_ARRAY;
+            return IntList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static int[] filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter) {
+    public static IntList filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -21981,42 +21993,42 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static int[] filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter, final int max) {
+    public static IntList filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return N.EMPTY_INT_ARRAY;
+            return IntList.empty();
         }
 
-        final IntList list = IntList.of(new int[min(9, max, (toIndex - fromIndex))], 0);
+        final IntList result = new IntList(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                list.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return list.trimToSize().array();
+        return result;
     }
 
-    public static long[] filter(final long[] a, final LongPredicate filter) {
+    public static LongList filter(final long[] a, final LongPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_LONG_ARRAY;
+            return LongList.empty();
         }
 
         return filter(a, 0, a.length, filter);
     }
 
-    public static long[] filter(final long[] a, final LongPredicate filter, final int max) {
+    public static LongList filter(final long[] a, final LongPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_LONG_ARRAY;
+            return LongList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static long[] filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter) {
+    public static LongList filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -22032,42 +22044,42 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static long[] filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter, final int max) {
+    public static LongList filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return N.EMPTY_LONG_ARRAY;
+            return LongList.empty();
         }
 
-        final LongList list = LongList.of(new long[min(9, max, (toIndex - fromIndex))], 0);
+        final LongList result = new LongList(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                list.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return list.trimToSize().array();
+        return result;
     }
 
-    public static float[] filter(final float[] a, final FloatPredicate filter) {
+    public static FloatList filter(final float[] a, final FloatPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_FLOAT_ARRAY;
+            return FloatList.empty();
         }
 
         return filter(a, 0, a.length, filter);
     }
 
-    public static float[] filter(final float[] a, final FloatPredicate filter, final int max) {
+    public static FloatList filter(final float[] a, final FloatPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_FLOAT_ARRAY;
+            return FloatList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static float[] filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter) {
+    public static FloatList filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -22083,42 +22095,42 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static float[] filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter, final int max) {
+    public static FloatList filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return N.EMPTY_FLOAT_ARRAY;
+            return FloatList.empty();
         }
 
-        final FloatList list = FloatList.of(new float[min(9, max, (toIndex - fromIndex))], 0);
+        final FloatList result = new FloatList(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                list.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return list.trimToSize().array();
+        return result;
     }
 
-    public static double[] filter(final double[] a, final DoublePredicate filter) {
+    public static DoubleList filter(final double[] a, final DoublePredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_DOUBLE_ARRAY;
+            return DoubleList.empty();
         }
 
         return filter(a, 0, a.length, filter);
     }
 
-    public static double[] filter(final double[] a, final DoublePredicate filter, final int max) {
+    public static DoubleList filter(final double[] a, final DoublePredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return N.EMPTY_DOUBLE_ARRAY;
+            return DoubleList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static double[] filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter) {
+    public static DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -22134,42 +22146,42 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static double[] filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter, final int max) {
+    public static DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return N.EMPTY_DOUBLE_ARRAY;
+            return DoubleList.empty();
         }
 
-        final DoubleList list = DoubleList.of(new double[min(9, max, (toIndex - fromIndex))], 0);
+        final DoubleList result = new DoubleList(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                list.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return list.trimToSize().array();
+        return result;
     }
 
-    public static <T> T[] filter(final T[] a, final Predicate<? super T> filter) {
+    public static <T> ObjectList<T> filter(final T[] a, final Predicate<? super T> filter) {
         if (N.isNullOrEmpty(a)) {
-            return a;
+            return ObjectList.empty();
         }
 
         return filter(a, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> T[] filter(final T[] a, final Predicate<? super T> filter, final int max) {
+    public static <T> ObjectList<T> filter(final T[] a, final Predicate<? super T> filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return a;
+            return ObjectList.empty();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static <T> T[] filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T> ObjectList<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -22184,7 +22196,125 @@ public final class N {
      * @param max
      * @return
      */
-    public static <T> T[] filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
+    public static <T> ObjectList<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return ObjectList.empty();
+        }
+
+        final ObjectList<T> result = new ObjectList<>(min(9, max, (toIndex - fromIndex)));
+
+        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+            if (filter.test(a[i])) {
+                result.add(a[i]);
+                cnt++;
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> ObjectList<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter) {
+        if (N.isNullOrEmpty(c)) {
+            return ObjectList.empty();
+        }
+
+        return filter(c, filter, Integer.MAX_VALUE);
+    }
+
+    public static <T> ObjectList<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max) {
+        if (N.isNullOrEmpty(c)) {
+            return ObjectList.empty();
+        }
+
+        return filter(c, 0, c.size(), filter, max);
+    }
+
+    public static <T> ObjectList<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+        return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
+    public static <T> ObjectList<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+            final int max) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return ObjectList.empty();
+        }
+
+        final ObjectList<T> result = new ObjectList<>(min(9, max, (toIndex - fromIndex)));
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+            T e = null;
+
+            for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
+                e = list.get(i);
+
+                if (filter.test(e)) {
+                    result.add(e);
+                    cnt++;
+                }
+            }
+        } else {
+            int idx = 0;
+            int cnt = 0;
+            for (T e : c) {
+                if (cnt >= max) {
+                    break;
+                }
+
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                if (filter.test(e)) {
+                    result.add(e);
+                    cnt++;
+                }
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> T[] filter2(final T[] a, final Predicate<? super T> filter) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
+        return filter2(a, filter, Integer.MAX_VALUE);
+    }
+
+    public static <T> T[] filter2(final T[] a, final Predicate<? super T> filter, final int max) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+
+        return filter2(a, 0, a.length, filter, max);
+    }
+
+    public static <T> T[] filter2(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+        return filter2(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param filter
+     * @param max
+     * @return
+     */
+    public static <T> T[] filter2(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
@@ -22207,25 +22337,25 @@ public final class N {
         return result;
     }
 
-    public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter2(final T[] a, final Predicate<? super T> filter, final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
-        return filter(a, filter, Integer.MAX_VALUE, supplier);
+        return filter2(a, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter2(final T[] a, final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
-        return filter(a, 0, a.length, filter, max, supplier);
+        return filter2(a, 0, a.length, filter, max, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+    public static <T, R extends Collection<T>> R filter2(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
             final IntFunction<R> supplier) {
-        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
+        return filter2(a, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
     /**
@@ -22240,7 +22370,7 @@ public final class N {
      * @param supplier
      * @return
      */
-    public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max,
+    public static <T, R extends Collection<T>> R filter2(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max,
             final IntFunction<R> supplier) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
@@ -22248,75 +22378,73 @@ public final class N {
             return supplier.apply(0);
         }
 
-        final R outputResult = supplier.apply(N.min(64, toIndex - fromIndex));
+        final R result = supplier.apply(N.min(64, toIndex - fromIndex));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
-                outputResult.add(a[i]);
+                result.add(a[i]);
                 cnt++;
             }
         }
 
-        return outputResult;
+        return result;
     }
 
-    public static <T> List<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter) {
+    public static <T> List<T> filter2(final Collection<? extends T> c, final Predicate<? super T> filter) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
-        return filter(c, filter, Integer.MAX_VALUE);
+        return filter2(c, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> List<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max) {
+    public static <T> List<T> filter2(final Collection<? extends T> c, final Predicate<? super T> filter, final int max) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
-        return filter(c, 0, c.size(), filter, max);
+        return filter2(c, 0, c.size(), filter, max);
     }
 
-    public static <T> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
-        return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
+    public static <T> List<T> filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+        return filter2(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+    public static <T> List<T> filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
             final int max) {
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
         }
-
-        return filter(c, fromIndex, toIndex, filter, max, new IntFunction<List<T>>() {
-            @Override
-            public List<T> apply(int len) {
-                return new ArrayList<>(len);
-            }
-        });
+        
+        @SuppressWarnings("rawtypes")
+        final IntFunction<List<T>> supplier = (IntFunction) IntFunction.LIST_FACTORY;
+                
+        return filter2(c, fromIndex, toIndex, filter, max, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter2(final Collection<? extends T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
 
-        return filter(c, filter, Integer.MAX_VALUE, supplier);
+        return filter2(c, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max,
+    public static <T, R extends Collection<T>> R filter2(final Collection<? extends T> c, final Predicate<? super T> filter, final int max,
             final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
 
-        return filter(c, 0, c.size(), filter, max, supplier);
+        return filter2(c, 0, c.size(), filter, max, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    public static <T, R extends Collection<T>> R filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Predicate<? super T> filter, final IntFunction<R> supplier) {
-        return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
+        return filter2(c, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    public static <T, R extends Collection<T>> R filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
@@ -22324,10 +22452,10 @@ public final class N {
             return supplier.apply(0);
         }
 
-        final R outputResult = supplier.apply(N.min(64, toIndex - fromIndex));
+        final R result = supplier.apply(N.min(64, toIndex - fromIndex));
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-            return outputResult;
+            return result;
         }
 
         if (c instanceof List && c instanceof RandomAccess) {
@@ -22338,7 +22466,7 @@ public final class N {
                 e = list.get(i);
 
                 if (filter.test(e)) {
-                    outputResult.add(e);
+                    result.add(e);
                     cnt++;
                 }
             }
@@ -22355,7 +22483,7 @@ public final class N {
                 }
 
                 if (filter.test(e)) {
-                    outputResult.add(e);
+                    result.add(e);
                     cnt++;
                 }
 
@@ -22365,89 +22493,1370 @@ public final class N {
             }
         }
 
-        return outputResult;
+        return result;
     }
 
-    static <T, U> T[] filter(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter) {
+    //    static <T, U> T[] filter2(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return a;
+    //        }
+    //
+    //        return filter2(a, 0, a.length, seed, filter);
+    //    }
+    //
+    //    static <T, U> T[] filter2(final T[] a, final int fromIndex, final int toIndex, final U seed, final BiPredicate<? super T, ? super U> filter) {
+    //        return filter2(a, fromIndex, toIndex, new Predicate<T>() {
+    //            @Override
+    //            public boolean test(T value) {
+    //                return filter.test(value, seed);
+    //            }
+    //        });
+    //    }
+    //
+    //    static <T, U, R extends Collection<T>> R filter2(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return supplier.apply(0);
+    //        }
+    //
+    //        return filter2(a, 0, a.length, seed, filter, supplier);
+    //    }
+    //
+    //    static <T, U, R extends Collection<T>> R filter2(final T[] a, final int fromIndex, final int toIndex, final U seed,
+    //            final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
+    //        return filter2(a, fromIndex, toIndex, new Predicate<T>() {
+    //            @Override
+    //            public boolean test(T value) {
+    //                return filter.test(value, seed);
+    //            }
+    //        }, supplier);
+    //    }
+    //
+    //    static <T, U> List<T> filter2(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return new ArrayList<>();
+    //        }
+    //
+    //        return filter2(c, new Predicate<T>() {
+    //            @Override
+    //            public boolean test(T value) {
+    //                return filter.test(value, seed);
+    //            }
+    //        });
+    //    }
+    //
+    //    static <T, U> List<T> filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
+    //            final BiPredicate<? super T, ? super U> filter) {
+    //        return filter2(c, fromIndex, toIndex, new Predicate<T>() {
+    //            @Override
+    //            public boolean test(T value) {
+    //                return filter.test(value, seed);
+    //            }
+    //        });
+    //    }
+    //
+    //    static <T, U, R extends Collection<T>> R filter2(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter,
+    //            final IntFunction<R> supplier) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return supplier.apply(0);
+    //        }
+    //
+    //        return filter2(c, new Predicate<T>() {
+    //            @Override
+    //            public boolean test(T value) {
+    //                return filter.test(value, seed);
+    //            }
+    //        }, supplier);
+    //    }
+    //
+    //    static <T, U, R extends Collection<T>> R filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
+    //            final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
+    //        return filter2(c, fromIndex, toIndex, new Predicate<T>() {
+    //            @Override
+    //            public boolean test(T value) {
+    //                return filter.test(value, seed);
+    //            }
+    //        }, supplier);
+    //    }
+
+    public static <T> BooleanList mapToBoolean(final T[] a, final ToBooleanFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return a;
+            return BooleanList.empty();
         }
 
-        return filter(a, 0, a.length, seed, filter);
+        return mapToBoolean(a, 0, a.length, func);
     }
 
-    static <T, U> T[] filter(final T[] a, final int fromIndex, final int toIndex, final U seed, final BiPredicate<? super T, ? super U> filter) {
-        return filter(a, fromIndex, toIndex, new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return filter.test(value, seed);
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> BooleanList mapToBoolean(final T[] a, final int fromIndex, final int toIndex, final ToBooleanFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return BooleanList.empty();
+        }
+
+        final BooleanList result = new BooleanList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.applyAsBoolean(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T> BooleanList mapToBoolean(final Collection<? extends T> c, final ToBooleanFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return BooleanList.empty();
+        }
+
+        return mapToBoolean(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> BooleanList mapToBoolean(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final ToBooleanFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return BooleanList.empty();
+        }
+
+        final BooleanList result = new BooleanList(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.applyAsBoolean(list.get(i)));
             }
-        });
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.applyAsBoolean(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
-    static <T, U, R extends Collection<T>> R filter(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
+    public static <T> CharList mapToChar(final T[] a, final ToCharFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return CharList.empty();
+        }
+
+        return mapToChar(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> CharList mapToChar(final T[] a, final int fromIndex, final int toIndex, final ToCharFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return CharList.empty();
+        }
+
+        final CharList result = new CharList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.applyAsChar(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T> CharList mapToChar(final Collection<? extends T> c, final ToCharFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return CharList.empty();
+        }
+
+        return mapToChar(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> CharList mapToChar(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToCharFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return CharList.empty();
+        }
+
+        final CharList result = new CharList(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.applyAsChar(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.applyAsChar(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> ByteList mapToByte(final T[] a, final ToByteFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return ByteList.empty();
+        }
+
+        return mapToByte(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> ByteList mapToByte(final T[] a, final int fromIndex, final int toIndex, final ToByteFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return ByteList.empty();
+        }
+
+        final ByteList result = new ByteList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.applyAsByte(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T> ByteList mapToByte(final Collection<? extends T> c, final ToByteFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return ByteList.empty();
+        }
+
+        return mapToByte(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> ByteList mapToByte(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToByteFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return ByteList.empty();
+        }
+
+        final ByteList result = new ByteList(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.applyAsByte(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.applyAsByte(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> ShortList mapToShort(final T[] a, final ToShortFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return ShortList.empty();
+        }
+
+        return mapToShort(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> ShortList mapToShort(final T[] a, final int fromIndex, final int toIndex, final ToShortFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return ShortList.empty();
+        }
+
+        final ShortList result = new ShortList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.applyAsShort(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T> ShortList mapToShort(final Collection<? extends T> c, final ToShortFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return ShortList.empty();
+        }
+
+        return mapToShort(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> ShortList mapToShort(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToShortFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return ShortList.empty();
+        }
+
+        final ShortList result = new ShortList(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.applyAsShort(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.applyAsShort(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> IntList mapToInt(final T[] a, final ToIntFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return IntList.empty();
+        }
+
+        return mapToInt(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> IntList mapToInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return IntList.empty();
+        }
+
+        final IntList result = new IntList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.applyAsInt(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T> IntList mapToInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return IntList.empty();
+        }
+
+        return mapToInt(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> IntList mapToInt(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return IntList.empty();
+        }
+
+        final IntList result = new IntList(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.applyAsInt(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.applyAsInt(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> LongList mapToLong(final T[] a, final ToLongFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return LongList.empty();
+        }
+
+        return mapToLong(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> LongList mapToLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return LongList.empty();
+        }
+
+        final LongList result = new LongList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.applyAsLong(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T> LongList mapToLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return LongList.empty();
+        }
+
+        return mapToLong(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> LongList mapToLong(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return LongList.empty();
+        }
+
+        final LongList result = new LongList(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.applyAsLong(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.applyAsLong(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> FloatList mapToFloat(final T[] a, final ToFloatFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return FloatList.empty();
+        }
+
+        return mapToFloat(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> FloatList mapToFloat(final T[] a, final int fromIndex, final int toIndex, final ToFloatFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return FloatList.empty();
+        }
+
+        final FloatList result = new FloatList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.applyAsFloat(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T> FloatList mapToFloat(final Collection<? extends T> c, final ToFloatFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return FloatList.empty();
+        }
+
+        return mapToFloat(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> FloatList mapToFloat(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToFloatFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return FloatList.empty();
+        }
+
+        final FloatList result = new FloatList(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.applyAsFloat(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.applyAsFloat(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> DoubleList mapToDouble(final T[] a, final ToDoubleFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return DoubleList.empty();
+        }
+
+        return mapToDouble(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> DoubleList mapToDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return DoubleList.empty();
+        }
+
+        final DoubleList result = new DoubleList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.applyAsDouble(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T> DoubleList mapToDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return DoubleList.empty();
+        }
+
+        return mapToDouble(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T> DoubleList mapToDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return DoubleList.empty();
+        }
+
+        final DoubleList result = new DoubleList(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.applyAsDouble(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.applyAsDouble(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R> ObjectList<R> map(final T[] a, final Function<? super T, ? extends R> func) {
+        if (N.isNullOrEmpty(a)) {
+            return ObjectList.empty();
+        }
+
+        return map(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T, R> ObjectList<R> map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return ObjectList.empty();
+        }
+
+        final ObjectList<R> result = new ObjectList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.apply(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T, R> ObjectList<R> map(final Collection<? extends T> c, final Function<? super T, ? extends R> func) {
+        if (N.isNullOrEmpty(c)) {
+            return ObjectList.empty();
+        }
+
+        return map(c, 0, c.size(), func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T, R> ObjectList<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends R> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return ObjectList.empty();
+        }
+
+        final ObjectList<R> result = new ObjectList<>(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.apply(list.get(i)));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.apply(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T, R> List<R> map2(final T[] a, final Function<? super T, ? extends R> func) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        return map2(a, 0, a.length, func);
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T, R> List<R> map2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return new ArrayList<>();
+        }
+
+        final List<R> result = new ArrayList<>(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.apply(a[i]));
+        }
+
+        return result;
+    }
+
+    public static <T, R, C extends Collection<R>> C map2(final T[] a, final Function<? super T, ? extends R> func, final IntFunction<C> supplier) {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
-        return filter(a, 0, a.length, seed, filter, supplier);
+        return map2(a, 0, a.length, func, supplier);
     }
 
-    static <T, U, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final U seed,
-            final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
-        return filter(a, fromIndex, toIndex, new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return filter.test(value, seed);
-            }
-        }, supplier);
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @param max
+     * @param supplier
+     * @return
+     */
+    public static <T, R, C extends Collection<R>> C map2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func,
+            final IntFunction<C> supplier) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(func.apply(a[i]));
+        }
+
+        return result;
     }
 
-    static <T, U> List<T> filter(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter) {
+    public static <T, R> List<R> map2(final Collection<? extends T> c, final Function<? super T, ? extends R> func) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
-        return filter(c, new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return filter.test(value, seed);
-            }
-        });
+        return map2(c, 0, c.size(), func);
     }
 
-    static <T, U> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
-            final BiPredicate<? super T, ? super U> filter) {
-        return filter(c, fromIndex, toIndex, new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return filter.test(value, seed);
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func 
+     * @return
+     */
+    public static <T, R> List<R> map2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return new ArrayList<>();
+        }
+
+        final List<R> result = new ArrayList<>(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.apply(list.get(i)));
             }
-        });
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.apply(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
-    static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter,
-            final IntFunction<R> supplier) {
+    public static <T, R, C extends Collection<R>> C map2(final Collection<? extends T> c, final Function<? super T, ? extends R> func,
+            final IntFunction<C> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
 
-        return filter(c, new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return filter.test(value, seed);
-            }
-        }, supplier);
+        return map2(c, 0, c.size(), func, supplier);
     }
 
-    static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
-            final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
-        return filter(c, fromIndex, toIndex, new Predicate<T>() {
-            @Override
-            public boolean test(T value) {
-                return filter.test(value, seed);
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param func
+     * @param max
+     * @param supplier
+     * @return
+     */
+    public static <T, R, C extends Collection<R>> C map2(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Function<? super T, ? extends R> func, final IntFunction<C> supplier) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return supplier.apply(0);
+        }
+
+        final C result = supplier.apply(toIndex - fromIndex);
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result.add(func.apply(list.get(i)));
             }
-        }, supplier);
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result.add(func.apply(e));
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> Long sumInt(final T[] a, final ToIntFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return 0L;
+        }
+
+        return sumInt(a, 0, a.length, func);
+    }
+
+    public static <T> Long sumInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return 0L;
+        }
+
+        long result = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result += func.applyAsInt(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <T> Long sumInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return 0L;
+        }
+
+        return sumInt(c, 0, c.size(), func);
+    }
+
+    public static <T> Long sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (fromIndex == toIndex) {
+            return 0L;
+        }
+
+        long result = 0;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result += func.applyAsInt(list.get(i));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result += func.applyAsInt(e);
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> Long sumLong(final T[] a, final ToLongFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return 0L;
+        }
+
+        return sumLong(a, 0, a.length, func);
+    }
+
+    public static <T> Long sumLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return 0L;
+        }
+
+        long result = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result += func.applyAsLong(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <T> Long sumLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return 0L;
+        }
+
+        return sumLong(c, 0, c.size(), func);
+    }
+
+    public static <T> Long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (fromIndex == toIndex) {
+            return 0L;
+        }
+
+        long result = 0;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result += func.applyAsLong(list.get(i));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result += func.applyAsLong(e);
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> Double sumDouble(final T[] a, final ToDoubleFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return 0D;
+        }
+
+        return sumDouble(a, 0, a.length, func);
+    }
+
+    public static <T> Double sumDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return 0D;
+        }
+
+        double result = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result += func.applyAsDouble(a[i]);
+        }
+
+        return result;
+    }
+
+    public static <T> Double sumDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return 0D;
+        }
+
+        return sumDouble(c, 0, c.size(), func);
+    }
+
+    public static <T> Double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (fromIndex == toIndex) {
+            return 0D;
+        }
+
+        double result = 0;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result += func.applyAsDouble(list.get(i));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                result += func.applyAsDouble(e);
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static <T> OptionalDouble averageInt(final T[] a, final ToIntFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageInt(a, 0, a.length, func);
+    }
+
+    public static <T> OptionalDouble averageInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return OptionalDouble.empty();
+        }
+
+        double result = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result += func.applyAsInt(a[i]);
+        }
+
+        return OptionalDouble.of(result / (toIndex - fromIndex));
+    }
+
+    public static <T> OptionalDouble averageInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageInt(c, 0, c.size(), func);
+    }
+
+    public static <T> OptionalDouble averageInt(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (fromIndex == toIndex) {
+            return OptionalDouble.empty();
+        }
+
+        return OptionalDouble.of(sumInt(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
+    }
+
+    public static <T> OptionalDouble averageLong(final T[] a, final ToLongFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageLong(a, 0, a.length, func);
+    }
+
+    public static <T> OptionalDouble averageLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return OptionalDouble.empty();
+        }
+
+        double result = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result += func.applyAsLong(a[i]);
+        }
+
+        return OptionalDouble.of(result / (toIndex - fromIndex));
+    }
+
+    public static <T> OptionalDouble averageLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageLong(c, 0, c.size(), func);
+    }
+
+    public static <T> OptionalDouble averageLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final ToLongFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (fromIndex == toIndex) {
+            return OptionalDouble.empty();
+        }
+
+        return OptionalDouble.of(sumLong(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
+    }
+
+    public static <T> OptionalDouble averageDouble(final T[] a, final ToDoubleFunction<? super T> func) {
+        if (N.isNullOrEmpty(a)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageDouble(a, 0, a.length, func);
+    }
+
+    public static <T> OptionalDouble averageDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return OptionalDouble.empty();
+        }
+
+        double result = 0;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result += func.applyAsDouble(a[i]);
+        }
+
+        return OptionalDouble.of(result / (toIndex - fromIndex));
+    }
+
+    public static <T> OptionalDouble averageDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
+        if (N.isNullOrEmpty(c)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageDouble(c, 0, c.size(), func);
+    }
+
+    public static <T> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final ToDoubleFunction<? super T> func) {
+        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (fromIndex == toIndex) {
+            return OptionalDouble.empty();
+        }
+
+        return OptionalDouble.of(sumDouble(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
     }
 
     /**
@@ -24514,7 +25923,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.isNullOrEmpty(a) ? a : N.EMPTY_BOOLEAN_ARRAY;
         }
-    
+
         return BooleanList.of(a).intersection(BooleanList.of(b)).trimToSize().array();
     }
 
@@ -24529,7 +25938,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.EMPTY_CHAR_ARRAY;
         }
-    
+
         return CharList.of(a).intersection(CharList.of(b)).trimToSize().array();
     }
 
@@ -24544,7 +25953,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.EMPTY_BYTE_ARRAY;
         }
-    
+
         return ByteList.of(a).intersection(ByteList.of(b)).trimToSize().array();
     }
 
@@ -24559,7 +25968,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.EMPTY_SHORT_ARRAY;
         }
-    
+
         return ShortList.of(a).intersection(ShortList.of(b)).trimToSize().array();
     }
 
@@ -24585,7 +25994,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.EMPTY_INT_ARRAY;
         }
-    
+
         return IntList.of(a).intersection(IntList.of(b)).trimToSize().array();
     }
 
@@ -24600,7 +26009,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.EMPTY_LONG_ARRAY;
         }
-    
+
         return LongList.of(a).intersection(LongList.of(b)).trimToSize().array();
     }
 
@@ -24615,7 +26024,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.EMPTY_FLOAT_ARRAY;
         }
-    
+
         return FloatList.of(a).intersection(FloatList.of(b)).trimToSize().array();
     }
 
@@ -24630,7 +26039,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.EMPTY_DOUBLE_ARRAY;
         }
-    
+
         return DoubleList.of(a).intersection(DoubleList.of(b)).trimToSize().array();
     }
 
@@ -24645,7 +26054,7 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return N.isNullOrEmpty(a) ? a : (T[]) N.newArray(a.getClass().getComponentType(), 0);
         }
-    
+
         return (T[]) ObjectList.of(a).intersection(ObjectList.of(b)).trimToSize().array();
     }
 
@@ -24660,17 +26069,17 @@ public final class N {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return new ArrayList<>();
         }
-    
+
         final Multiset<Object> bOccurrences = Multiset.from(b);
-    
+
         final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
-    
+
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) > 0) {
                 result.add(e);
             }
         }
-    
+
         return result;
     }
 
