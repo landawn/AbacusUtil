@@ -817,8 +817,8 @@ final class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapSupplier) {
-        final M result = mapSupplier.get();
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
         char element = 0;
 
         while (elements.hasNext()) {
@@ -831,8 +831,8 @@ final class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier) {
-        final Multimap<K, U, V> result = mapSupplier.get();
+            Supplier<Multimap<K, U, V>> mapFactory) {
+        final Multimap<K, U, V> result = mapFactory.get();
         char element = 0;
 
         while (elements.hasNext()) {

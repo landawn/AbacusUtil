@@ -262,11 +262,11 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
@@ -283,12 +283,12 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 
@@ -301,12 +301,12 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     /**
      * 
      * @param keyMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Supplier)
      */
     public abstract <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyMapper,
-            Supplier<Multimap<K, Float, V>> mapSupplier);
+            Supplier<Multimap<K, Float, V>> mapFactory);
 
     /**
      * 
@@ -321,12 +321,12 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier);
+            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract FloatMatrix toMatrix();
 

@@ -260,12 +260,12 @@ public abstract class DoubleStream
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper,
-            Supplier<M> mapSupplier);
+            Supplier<M> mapFactory);
 
     /**
      * 
@@ -282,12 +282,12 @@ public abstract class DoubleStream
      * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 
@@ -300,12 +300,12 @@ public abstract class DoubleStream
     /**
      * 
      * @param keyMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Supplier)
      */
     public abstract <K, V extends Collection<Double>> Multimap<K, Double, V> toMultimap(DoubleFunction<? extends K> keyMapper,
-            Supplier<Multimap<K, Double, V>> mapSupplier);
+            Supplier<Multimap<K, Double, V>> mapFactory);
 
     /**
      * 
@@ -320,12 +320,12 @@ public abstract class DoubleStream
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier);
+            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract DoubleMatrix toMatrix();
 

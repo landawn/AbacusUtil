@@ -1198,8 +1198,8 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapSupplier) {
-        final M result = mapSupplier.get();
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
@@ -1210,8 +1210,8 @@ final class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier) {
-        final Multimap<K, U, V> result = mapSupplier.get();
+            Supplier<Multimap<K, U, V>> mapFactory) {
+        final Multimap<K, U, V> result = mapFactory.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.put(keyMapper.apply(elements[i]), valueMapper.apply(elements[i]));

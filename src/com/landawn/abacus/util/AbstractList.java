@@ -446,7 +446,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         };
     }
 
-    protected <K, U, V extends Collection<U>> IntFunction<Multimap<K, U, V>> createMultimapSupplier() {
+    protected <K, U, V extends Collection<U>> IntFunction<Multimap<K, U, V>> createMultimapFactory() {
         return new IntFunction<Multimap<K, U, V>>() {
             @Override
             public Multimap<K, U, V> apply(int len) {

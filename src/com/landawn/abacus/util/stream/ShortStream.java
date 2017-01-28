@@ -226,11 +226,11 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+    public abstract <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
@@ -247,12 +247,12 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 
@@ -265,12 +265,12 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     /**
      * 
      * @param keyMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Supplier)
      */
     public abstract <K, V extends Collection<Short>> Multimap<K, Short, V> toMultimap(ShortFunction<? extends K> keyMapper,
-            Supplier<Multimap<K, Short, V>> mapSupplier);
+            Supplier<Multimap<K, Short, V>> mapFactory);
 
     /**
      * 
@@ -285,12 +285,12 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier);
+            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract ShortMatrix toMatrix();
 

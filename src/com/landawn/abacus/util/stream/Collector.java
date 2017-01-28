@@ -34,7 +34,7 @@ import com.landawn.abacus.util.function.Supplier;
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
- * 
+ *
  * A <a href="package-summary.html#Reduction">mutable reduction operation</a> that
  * accumulates input elements into a mutable result container, optionally transforming
  * the accumulated result into a final representation after all input elements

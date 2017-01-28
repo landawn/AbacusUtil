@@ -1510,14 +1510,14 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier) {
-        return collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapSupplier));
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+        return collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
     }
 
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
-            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier) {
-        return collect(Collectors.toMultimap(keyMapper, valueMapper, mapSupplier));
+            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory) {
+        return collect(Collectors.toMultimap(keyMapper, valueMapper, mapFactory));
     }
 
     @Override

@@ -932,8 +932,8 @@ final class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapSupplier) {
-        final M result = mapSupplier.get();
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
         long element = 0;
 
         while (elements.hasNext()) {
@@ -946,8 +946,8 @@ final class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier) {
-        final Multimap<K, U, V> result = mapSupplier.get();
+            Supplier<Multimap<K, U, V>> mapFactory) {
+        final Multimap<K, U, V> result = mapFactory.get();
         long element = 0;
 
         while (elements.hasNext()) {

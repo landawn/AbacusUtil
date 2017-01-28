@@ -829,8 +829,8 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapSupplier) {
-        final M result = mapSupplier.get();
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
         short element = 0;
 
         while (elements.hasNext()) {
@@ -843,8 +843,8 @@ final class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier) {
-        final Multimap<K, U, V> result = mapSupplier.get();
+            Supplier<Multimap<K, U, V>> mapFactory) {
+        final Multimap<K, U, V> result = mapFactory.get();
         short element = 0;
 
         while (elements.hasNext()) {

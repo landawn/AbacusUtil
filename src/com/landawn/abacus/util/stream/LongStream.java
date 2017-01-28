@@ -263,11 +263,11 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+    public abstract <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
@@ -284,12 +284,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 
@@ -302,12 +302,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     /**
      * 
      * @param keyMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Supplier)
      */
     public abstract <K, V extends Collection<Long>> Multimap<K, Long, V> toMultimap(LongFunction<? extends K> keyMapper,
-            Supplier<Multimap<K, Long, V>> mapSupplier);
+            Supplier<Multimap<K, Long, V>> mapFactory);
 
     /**
      * 
@@ -322,12 +322,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier);
+            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract LongMatrix toMatrix();
 

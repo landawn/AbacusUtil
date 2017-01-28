@@ -818,8 +818,8 @@ final class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapSupplier) {
-        final M result = mapSupplier.get();
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
         byte element = 0;
 
         while (elements.hasNext()) {
@@ -832,8 +832,8 @@ final class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier) {
-        final Multimap<K, U, V> result = mapSupplier.get();
+            Supplier<Multimap<K, U, V>> mapFactory) {
+        final Multimap<K, U, V> result = mapFactory.get();
         byte element = 0;
 
         while (elements.hasNext()) {

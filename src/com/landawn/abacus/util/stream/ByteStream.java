@@ -221,11 +221,11 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, Supplier<M> mapSupplier);
+    public abstract <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
@@ -242,12 +242,12 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     /**
      * 
@@ -260,12 +260,12 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     /**
      * 
      * @param keyMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Supplier)
      */
     public abstract <K, V extends Collection<Byte>> Multimap<K, Byte, V> toMultimap(ByteFunction<? extends K> keyMapper,
-            Supplier<Multimap<K, Byte, V>> mapSupplier);
+            Supplier<Multimap<K, Byte, V>> mapFactory);
 
     /**
      * 
@@ -280,12 +280,12 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapSupplier);
+            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract ByteMatrix toMatrix();
 

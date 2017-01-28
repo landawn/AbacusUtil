@@ -848,9 +848,9 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(final IntFunction<? extends K> keyMapper, final IntFunction<? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapSupplier) {
+            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
 
         final Function<? super Integer, ? extends K> keyMapper2 = new Function<Integer, K>() {
@@ -867,14 +867,14 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
             }
         };
 
-        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapSupplier);
+        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final IntFunction<? extends K> keyMapper, final IntFunction<? extends U> valueMapper,
-            final Supplier<Multimap<K, U, V>> mapSupplier) {
+            final Supplier<Multimap<K, U, V>> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyMapper, valueMapper, mapSupplier);
+            return sequential().toMultimap(keyMapper, valueMapper, mapFactory);
         }
 
         final Function<? super Integer, ? extends K> keyMapper2 = new Function<Integer, K>() {
@@ -891,7 +891,7 @@ final class ParallelIteratorIntStream extends AbstractIntStream {
             }
         };
 
-        return boxed().toMultimap(keyMapper2, valueMapper2, mapSupplier);
+        return boxed().toMultimap(keyMapper2, valueMapper2, mapFactory);
     }
 
     @Override

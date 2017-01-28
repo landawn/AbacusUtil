@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -146,12 +145,10 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Long>>>() {
-            @Override
-            public Map<K, List<Long>> get() {
-                return new HashMap<>();
-            }
-        });
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, List<Long>>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, mapFactory);
     }
 
     @Override
@@ -163,39 +160,33 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
     public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
@@ -204,8 +195,8 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public <K, V extends Collection<Long>> Multimap<K, Long, V> toMultimap(LongFunction<? extends K> keyMapper, Supplier<Multimap<K, Long, V>> mapSupplier) {
-        return toMultimap(keyMapper, LongFunction.BOX, mapSupplier);
+    public <K, V extends Collection<Long>> Multimap<K, Long, V> toMultimap(LongFunction<? extends K> keyMapper, Supplier<Multimap<K, Long, V>> mapFactory) {
+        return toMultimap(keyMapper, LongFunction.BOX, mapFactory);
     }
 
     @Override

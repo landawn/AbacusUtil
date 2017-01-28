@@ -15,7 +15,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -137,12 +136,10 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier) {
-        return toMap(classifier, new Supplier<Map<K, List<Float>>>() {
-            @Override
-            public Map<K, List<Float>> get() {
-                return new HashMap<>();
-            }
-        });
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, List<Float>>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, mapFactory);
     }
 
     @Override
@@ -164,39 +161,33 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
-        return toMap(classifier, downstream, new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        });
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
     public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, valueMapper, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapSupplier) {
+    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapSupplier);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        return toMap(keyMapper, valueMapper, mergeFunction, new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        });
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
@@ -205,9 +196,8 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyMapper,
-            Supplier<Multimap<K, Float, V>> mapSupplier) {
-        return toMultimap(keyMapper, FloatFunction.BOX, mapSupplier);
+    public <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyMapper, Supplier<Multimap<K, Float, V>> mapFactory) {
+        return toMultimap(keyMapper, FloatFunction.BOX, mapFactory);
     }
 
     @Override

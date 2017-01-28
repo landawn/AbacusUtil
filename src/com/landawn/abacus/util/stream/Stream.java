@@ -533,12 +533,12 @@ public abstract class Stream<T>
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     public abstract <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy2(Function<? super T, ? extends K> keyMapper,
-            Function<? super T, ? extends U> valueMapper, Supplier<M> mapSupplier);
+            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory);
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
@@ -765,12 +765,12 @@ public abstract class Stream<T>
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            Supplier<M> mapSupplier);
+            Supplier<M> mapFactory);
 
     /**
      * 
@@ -788,12 +788,12 @@ public abstract class Stream<T>
      * @param keyMapper
      * @param valueMapper
      * @param mergeFunction
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier);
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     public abstract <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
 
@@ -801,12 +801,12 @@ public abstract class Stream<T>
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     public abstract <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            Supplier<M> mapSupplier);
+            Supplier<M> mapFactory);
 
     /**
      * 
@@ -819,12 +819,12 @@ public abstract class Stream<T>
     /**
      * 
      * @param keyMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     public abstract <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyMapper,
-            Supplier<Multimap<K, T, V>> mapSupplier);
+            Supplier<Multimap<K, T, V>> mapFactory);
 
     /**
      * 
@@ -839,12 +839,12 @@ public abstract class Stream<T>
      * 
      * @param keyMapper
      * @param valueMapper
-     * @param mapSupplier
+     * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
     public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
-            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapSupplier);
+            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract Matrix<T> toMatrix(Class<T> type);
 
