@@ -20,14 +20,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedBooleanConsumer;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.Collector;
+import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1060,6 +1068,111 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         }
 
         return multiset;
+    }
+
+    public <K> Map<K, List<Boolean>> toMap(BooleanFunction<? extends K> classifier) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, List<Boolean>>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, mapFactory);
+    }
+
+    public <K, M extends Map<K, List<Boolean>>> M toMap(BooleanFunction<? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<Boolean, ?, List<Boolean>> downstream = Collectors.toList();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @SuppressWarnings("hiding")
+    public <K, A, D> Map<K, D> toMap(BooleanFunction<? extends K> classifier, Collector<Boolean, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @SuppressWarnings("hiding")
+    public <K, A, D, M extends Map<K, D>> M toMap(final BooleanFunction<? extends K> classifier, final Collector<Boolean, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, Boolean> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+
+        for (int i = 0; i < size; i++) {
+            key = N.requireNonNull(classifier.apply(elementData[i]), "element cannot be mapped to a null key");
+
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, elementData[i]);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Seq.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+
+        for (int i = 0; i < size; i++) {
+            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+        }
+
+        return result;
+    }
+
+    public <K, U> Map<K, List<U>> toMap2(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper) {
+        return toMap(keyMapper, (Collector<Boolean, ?, List<U>>) (Collector<?, ?, ?>) mapping(valueMapper, Collectors.toList()));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, M extends Map<K, List<U>>> M toMap2(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper,
+            Supplier<M> mapFactory) {
+        return toMap(keyMapper, (Collector<Boolean, ?, List<U>>) (Collector) mapping(valueMapper, Collectors.toList()), mapFactory);
+    }
+
+    private <U, A, R> Collector<Boolean, ?, R> mapping(final BooleanFunction<? extends U> mapper, final Collector<? super U, A, R> downstream) {
+        return Collectors.mapping(new Function<Boolean, U>() {
+            @Override
+            public U apply(Boolean t) {
+                return mapper.apply(t);
+            }
+        }, downstream);
     }
 
     //    public Seq<Boolean> toSeq() {

@@ -21,14 +21,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongUnaryOperator;
+import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.Collector;
+import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.LongStream;
 
 /**
@@ -1253,6 +1261,110 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         }
 
         return multiset;
+    }
+
+    public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, List<Long>>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, mapFactory);
+    }
+
+    public <K, M extends Map<K, List<Long>>> M toMap(LongFunction<? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<Long, ?, List<Long>> downstream = Collectors.toList();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @SuppressWarnings("hiding")
+    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @SuppressWarnings("hiding")
+    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, Long> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        K key = null;
+        A v = null;
+
+        for (int i = 0; i < size; i++) {
+            key = N.requireNonNull(classifier.apply(elementData[i]), "element cannot be mapped to a null key");
+
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, elementData[i]);
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        Seq.replaceAll(intermediate, function);
+
+        return result;
+    }
+
+    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+
+        for (int i = 0; i < size; i++) {
+            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+        }
+
+        return result;
+    }
+
+    public <K, U> Map<K, List<U>> toMap2(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
+        return toMap(keyMapper, (Collector<Long, ?, List<U>>) (Collector<?, ?, ?>) mapping(valueMapper, Collectors.toList()));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public <K, U, M extends Map<K, List<U>>> M toMap2(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+        return toMap(keyMapper, (Collector<Long, ?, List<U>>) (Collector) mapping(valueMapper, Collectors.toList()), mapFactory);
+    }
+
+    private <U, A, R> Collector<Long, ?, R> mapping(final LongFunction<? extends U> mapper, final Collector<? super U, A, R> downstream) {
+        return Collectors.mapping(new Function<Long, U>() {
+            @Override
+            public U apply(Long t) {
+                return mapper.apply(t);
+            }
+        }, downstream);
     }
 
     //    public Seq<Long> toSeq() {
