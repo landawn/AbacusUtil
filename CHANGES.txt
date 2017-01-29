@@ -1,6 +1,6 @@
 ========Changes in 0.9.45=========================================================================
 
-1, Add toMap/toMap2 to Seq and ObjectList for more functional programming even without stream API on Android.
+1, Add toMap/toMap2 to IntList/LongList/.../ObjectList and Seq for more functional programming even without stream API on Android.
 
 3, Improvements and bug fix.
 
