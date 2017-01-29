@@ -1591,15 +1591,29 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     @Override
+    public ObjectList<T> copy() {
+        return new ObjectList<>(N.copyOfRange(elementData, 0, size));
+    }
+
+    @Override
     public ObjectList<T> copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return new ObjectList<>(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
     @Override
-    public ObjectList<T> copy() {
-        return new ObjectList<>(N.copyOfRange(elementData, 0, size));
+    public ObjectList<T> copy(final int from, final int to, final int step) {
+        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+
+        return new ObjectList<>(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override

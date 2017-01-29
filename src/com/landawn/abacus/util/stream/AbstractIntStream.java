@@ -113,6 +113,34 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
+    public IntStream step(final long step) {
+        N.checkArgument(step > 0, "'step' can't be 0 or negative: %s", step);
+
+        if (step == 1) {
+            return this;
+        }
+
+        final long skip = step - 1;
+        final ImmutableIntIterator iter = this.intIterator();
+
+        final IntIterator intIterator = new ImmutableIntIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public int next() {
+                final int next = iter.next();
+                iter.skip(skip);
+                return next;
+            }
+        };
+
+        return newStream(intIterator, sorted);
+    }
+
+    @Override
     public Stream<IntStream> split(final int size) {
         return split0(size).map(new Function<IntList, IntStream>() {
             @Override

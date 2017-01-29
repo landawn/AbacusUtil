@@ -424,6 +424,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      */
     S limit(long maxSize);
 
+    S step(long step);
+
     /**
      * Returns the count of elements in this stream.  This is a special case of
      * a <a href="package-summary.html#Reduction">reduction</a> and is

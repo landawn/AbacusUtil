@@ -1254,15 +1254,29 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     @Override
+    public IntList copy() {
+        return new IntList(N.copyOfRange(elementData, 0, size));
+    }
+
+    @Override
     public IntList copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return new IntList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
     @Override
-    public IntList copy() {
-        return new IntList(N.copyOfRange(elementData, 0, size));
+    public IntList copy(final int from, final int to, final int step) {
+        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+
+        return new IntList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override

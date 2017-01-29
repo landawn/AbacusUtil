@@ -1105,15 +1105,29 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     @Override
+    public LongList copy() {
+        return new LongList(N.copyOfRange(elementData, 0, size));
+    }
+
+    @Override
     public LongList copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return new LongList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
     @Override
-    public LongList copy() {
-        return new LongList(N.copyOfRange(elementData, 0, size));
+    public LongList copy(final int from, final int to, final int step) {
+        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+
+        return new LongList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override

@@ -114,6 +114,34 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public FloatStream step(final long step) {
+        N.checkArgument(step > 0, "'step' can't be 0 or negative: %s", step);
+
+        if (step == 1) {
+            return this;
+        }
+
+        final long skip = step - 1;
+        final ImmutableFloatIterator iter = this.floatIterator();
+
+        final FloatIterator floatIterator = new ImmutableFloatIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public float next() {
+                final float next = iter.next();
+                iter.skip(skip);
+                return next;
+            }
+        };
+
+        return newStream(floatIterator, sorted);
+    }
+
+    @Override
     public Stream<FloatStream> split(final int size) {
         return split0(size).map(new Function<FloatList, FloatStream>() {
             @Override

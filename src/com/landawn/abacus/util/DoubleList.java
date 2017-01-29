@@ -1065,15 +1065,29 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     @Override
+    public DoubleList copy() {
+        return new DoubleList(N.copyOfRange(elementData, 0, size));
+    }
+
+    @Override
     public DoubleList copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return new DoubleList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
     @Override
-    public DoubleList copy() {
-        return new DoubleList(N.copyOfRange(elementData, 0, size));
+    public DoubleList copy(final int from, final int to, final int step) {
+        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+
+        return new DoubleList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override

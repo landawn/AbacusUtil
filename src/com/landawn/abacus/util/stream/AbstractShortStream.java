@@ -113,6 +113,34 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream step(final long step) {
+        N.checkArgument(step > 0, "'step' can't be 0 or negative: %s", step);
+
+        if (step == 1) {
+            return this;
+        }
+
+        final long skip = step - 1;
+        final ImmutableShortIterator iter = this.shortIterator();
+
+        final ShortIterator shortIterator = new ImmutableShortIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public short next() {
+                final short next = iter.next();
+                iter.skip(skip);
+                return next;
+            }
+        };
+
+        return newStream(shortIterator, sorted);
+    }
+
+    @Override
     public Stream<ShortStream> split(final int size) {
         return split0(size).map(new Function<ShortList, ShortStream>() {
             @Override

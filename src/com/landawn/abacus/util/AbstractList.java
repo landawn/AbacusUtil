@@ -259,6 +259,12 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
 
     /**
      * 
+     * @return a copy of this List
+     */
+    public abstract L copy();
+
+    /**
+     * 
      * @param fromIndex
      * @param toIndex
      * @return
@@ -267,9 +273,12 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
 
     /**
      * 
-     * @return a copy of this List
+     * @param from
+     * @param to
+     * @param step
+     * @return
      */
-    public abstract L copy();
+    public abstract L copy(final int from, final int to, final int step);
 
     /**
      * Returns consecutive sub lists of this list, each of the same size (the final list may be smaller),
@@ -414,7 +423,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         return new IntFunction<List<T>>() {
             @Override
             public List<T> apply(int len) {
-                return new java.util.ArrayList<T>(len);
+                return new java.util.ArrayList<>(len);
             }
         };
     }
@@ -423,7 +432,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         return new IntFunction<Set<T>>() {
             @Override
             public Set<T> apply(int len) {
-                return new HashSet<T>(N.initHashCapacity(len));
+                return new HashSet<>(N.initHashCapacity(len));
             }
         };
     }
@@ -432,7 +441,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         return new IntFunction<Multiset<T>>() {
             @Override
             public Multiset<T> apply(int len) {
-                return new Multiset<T>(N.initHashCapacity(len));
+                return new Multiset<>(N.initHashCapacity(len));
             }
         };
     }
@@ -441,7 +450,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         return new IntFunction<Map<K, V>>() {
             @Override
             public Map<K, V> apply(int len) {
-                return new HashMap<K, V>(N.initHashCapacity(len));
+                return new HashMap<>(N.initHashCapacity(len));
             }
         };
     }
@@ -450,7 +459,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         return new IntFunction<Multimap<K, U, V>>() {
             @Override
             public Multimap<K, U, V> apply(int len) {
-                return new Multimap<K, U, V>(N.initHashCapacity(len));
+                return new Multimap<>(N.initHashCapacity(len));
             }
         };
     }

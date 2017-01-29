@@ -17341,20 +17341,28 @@ public final class N {
      * @param to
      * @param step
      * @return
+     * @see N#copyOfRange(int[], int, int, int)
      */
-    public static boolean[] copyOfRange(final boolean[] original, final int from, final int to, final int step) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static boolean[] copyOfRange(final boolean[] original, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_BOOLEAN_ARRAY;
         }
 
         if (step == 1) {
             return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final boolean[] copy = new boolean[newLength];
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final boolean[] copy = new boolean[len];
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -17388,20 +17396,28 @@ public final class N {
      * @param to
      * @param step
      * @return
+     * @see N#copyOfRange(int[], int, int, int)
      */
-    public static char[] copyOfRange(final char[] original, final int from, final int to, final int step) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static char[] copyOfRange(final char[] original, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_CHAR_ARRAY;
         }
 
         if (step == 1) {
             return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final char[] copy = new char[newLength];
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final char[] copy = new char[len];
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -17435,20 +17451,28 @@ public final class N {
      * @param to
      * @param step
      * @return
+     * @see N#copyOfRange(int[], int, int, int)
      */
-    public static byte[] copyOfRange(final byte[] original, final int from, final int to, final int step) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static byte[] copyOfRange(final byte[] original, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_BYTE_ARRAY;
         }
 
         if (step == 1) {
             return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final byte[] copy = new byte[newLength];
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final byte[] copy = new byte[len];
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -17482,20 +17506,28 @@ public final class N {
      * @param to
      * @param step
      * @return
+     * @see N#copyOfRange(int[], int, int, int)
      */
-    public static short[] copyOfRange(final short[] original, final int from, final int to, final int step) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static short[] copyOfRange(final short[] original, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_SHORT_ARRAY;
         }
 
         if (step == 1) {
             return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final short[] copy = new short[newLength];
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final short[] copy = new short[len];
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -17524,25 +17556,44 @@ public final class N {
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
      * 
+     * <pre>
+     * <code>
+     * int[] a = { 0, 1, 2, 3, 4, 5 };
+     * N.copyOfRange(a, 1, 5, 1)); // [1, 2, 3, 4]
+     * N.copyOfRange(a, 1, 5, 2); // [1, 3]
+     * 
+     * N.copyOfRange(a, 5, 1, -1); // [5, 4, 3, 2]
+     * N.copyOfRange(a, 5, 1, -2); // [5, 3]
+     * N.copyOfRange(a, 5, -1, -1); // [5, 4, 3, 2, 1, 0]
+     * N.copyOfRange(a, 6, -1, -1); // [5, 4, 3, 2, 1, 0]
+     * </code>
+     * </pre>
      * @param original
      * @param from
      * @param to
      * @param step
      * @return
      */
-    public static int[] copyOfRange(final int[] original, final int from, final int to, final int step) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static int[] copyOfRange(final int[] original, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_INT_ARRAY;
         }
 
         if (step == 1) {
             return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final int[] copy = new int[newLength];
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final int[] copy = new int[len];
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -17576,20 +17627,28 @@ public final class N {
      * @param to
      * @param step
      * @return
+     * @see N#copyOfRange(int[], int, int, int)
      */
-    public static long[] copyOfRange(final long[] original, final int from, final int to, final int step) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static long[] copyOfRange(final long[] original, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_LONG_ARRAY;
         }
 
         if (step == 1) {
             return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final long[] copy = new long[newLength];
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final long[] copy = new long[len];
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -17623,20 +17682,28 @@ public final class N {
      * @param to
      * @param step
      * @return
+     * @see N#copyOfRange(int[], int, int, int)
      */
-    public static float[] copyOfRange(final float[] original, final int from, final int to, final int step) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static float[] copyOfRange(final float[] original, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_FLOAT_ARRAY;
         }
 
         if (step == 1) {
             return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final float[] copy = new float[newLength];
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final float[] copy = new float[len];
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -17670,20 +17737,28 @@ public final class N {
      * @param to
      * @param step
      * @return
+     * @see N#copyOfRange(int[], int, int, int)
      */
-    public static double[] copyOfRange(final double[] original, final int from, final int to, final int step) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static double[] copyOfRange(final double[] original, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_DOUBLE_ARRAY;
         }
 
         if (step == 1) {
             return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final double[] copy = new double[newLength];
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final double[] copy = new double[len];
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -17742,20 +17817,28 @@ public final class N {
      * @param to
      * @param step
      * @return
+     * @see N#copyOfRange(int[], int, int, int)
      */
-    public static <T> T[] copyOfRange(final T[] original, final int from, final int to, final int step, final Class<? extends T[]> newType) {
-        if (step < 1) {
-            throw new IllegalArgumentException("The parameter 'step' can't be zero or less than zero");
+    public static <T> T[] copyOfRange(final T[] original, int from, final int to, final int step, final Class<? extends T[]> newType) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, original.length);
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return Object[].class.equals(newType) ? (T[]) new Object[0] : (T[]) N.newArray(newType.getComponentType(), 0);
         }
 
         if (step == 1) {
-            return copyOfRange(original, from, to, newType);
+            return copyOfRange(original, from, to);
         }
 
-        final int newLength = to == from ? 0 : (to - from - 1) / step + 1;
-        final T[] copy = Object[].class.equals(newType) ? (T[]) new Object[newLength] : (T[]) N.newArray(newType.getComponentType(), newLength);
+        from = from > to ? N.min(original.length - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        final T[] copy = Object[].class.equals(newType) ? (T[]) new Object[len] : (T[]) N.newArray(newType.getComponentType(), len);
 
-        for (int i = 0, j = from, len = copy.length; i < len; i++, j += step) {
+        for (int i = 0, j = from; i < len; i++, j += step) {
             copy[i] = original[j];
         }
 
@@ -22415,10 +22498,10 @@ public final class N {
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return new ArrayList<>();
         }
-        
+
         @SuppressWarnings("rawtypes")
         final IntFunction<List<T>> supplier = (IntFunction) IntFunction.LIST_FACTORY;
-                
+
         return filter2(c, fromIndex, toIndex, filter, max, supplier);
     }
 
@@ -26440,9 +26523,9 @@ public final class N {
      */
     public static <T> List<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<>(b);
+            return N.isNullOrEmpty(b) ? new ArrayList<>() : new ArrayList<>(b);
         } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<>(a);
+            return N.isNullOrEmpty(a) ? new ArrayList<>() : new ArrayList<>(a);
         }
 
         //        final List<T> result = difference(a, b);

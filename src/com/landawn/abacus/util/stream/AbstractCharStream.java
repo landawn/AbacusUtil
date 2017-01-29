@@ -113,6 +113,34 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public CharStream step(final long step) {
+        N.checkArgument(step > 0, "'step' can't be 0 or negative: %s", step);
+
+        if (step == 1) {
+            return this;
+        }
+
+        final long skip = step - 1;
+        final ImmutableCharIterator iter = this.charIterator();
+
+        final CharIterator charIterator = new ImmutableCharIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public char next() {
+                final char next = iter.next();
+                iter.skip(skip);
+                return next;
+            }
+        };
+
+        return newStream(charIterator, sorted);
+    }
+
+    @Override
     public Stream<CharStream> split(final int size) {
         return split0(size).map(new Function<CharList, CharStream>() {
             @Override

@@ -920,15 +920,29 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
+    public BooleanList copy() {
+        return new BooleanList(N.copyOfRange(elementData, 0, size));
+    }
+
+    @Override
     public BooleanList copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
     @Override
-    public BooleanList copy() {
-        return new BooleanList(N.copyOfRange(elementData, 0, size));
+    public BooleanList copy(final int from, final int to, final int step) {
+        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+
+        return new BooleanList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override

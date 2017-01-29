@@ -1055,15 +1055,29 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     @Override
+    public ShortList copy() {
+        return new ShortList(N.copyOfRange(elementData, 0, size));
+    }
+
+    @Override
     public ShortList copy(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return new ShortList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
 
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
     @Override
-    public ShortList copy() {
-        return new ShortList(N.copyOfRange(elementData, 0, size));
+    public ShortList copy(final int from, final int to, final int step) {
+        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+
+        return new ShortList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override

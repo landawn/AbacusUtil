@@ -113,6 +113,34 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public LongStream step(final long step) {
+        N.checkArgument(step > 0, "'step' can't be 0 or negative: %s", step);
+
+        if (step == 1) {
+            return this;
+        }
+
+        final long skip = step - 1;
+        final ImmutableLongIterator iter = this.longIterator();
+
+        final LongIterator longIterator = new ImmutableLongIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public long next() {
+                final long next = iter.next();
+                iter.skip(skip);
+                return next;
+            }
+        };
+
+        return newStream(longIterator, sorted);
+    }
+
+    @Override
     public Stream<LongStream> split(final int size) {
         return split0(size).map(new Function<LongList, LongStream>() {
             @Override
