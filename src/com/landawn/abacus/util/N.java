@@ -17846,6 +17846,65 @@ public final class N {
     }
 
     /**
+     * @see Arrays#copyOfRange(T[], int, int)
+     * @param c
+     * @param from
+     * @param to
+     * @return
+     */
+    public static <T> List<T> copyOfRange(final List<T> c, final int from, final int to) {
+        N.checkIndex(from, to, c.size());
+
+        final List<T> result = new ArrayList<>(to - from);
+
+        result.addAll(c.subList(from, to));
+
+        return result;
+    }
+
+    /**
+     * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
+     * 
+     * @param c
+     * @param from
+     * @param to
+     * @param step
+     * @return
+     */
+    public static <T> List<T> copyOfRange(final List<T> c, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, c.size());
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return new ArrayList<>();
+        }
+
+        if (step == 1) {
+            return copyOfRange(c, from, to);
+        }
+
+        from = from > to ? N.min(c.size() - 1, from) : from;
+        final int len = (to - from) / step + ((to - from) % step == 0 ? 0 : 1);
+        List<T> result = null;
+
+        if (c instanceof RandomAccess) {
+            result = new ArrayList<>(len);
+
+            for (int i = 0, j = from; i < len; i++, j += step) {
+                result.add(c.get(j));
+            }
+        } else {
+            final T[] a = (T[]) c.toArray();
+            result = N.asList2(N.copyOfRange(a, from, to, step));
+        }
+
+        return result;
+    }
+
+    /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
      * 
      * @param original
@@ -26523,9 +26582,9 @@ public final class N {
      */
     public static <T> List<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? new ArrayList<>() : new ArrayList<>(b);
+            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<T>(b);
         } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? new ArrayList<>() : new ArrayList<>(a);
+            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<T>(a);
         }
 
         //        final List<T> result = difference(a, b);
