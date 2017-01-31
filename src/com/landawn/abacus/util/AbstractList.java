@@ -415,6 +415,10 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
 
     public abstract Multiset<E> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<E>> supplier);
 
+    public void println() {
+        N.println(toString());
+    }
+
     protected void checkIndex(final int fromIndex, final int toIndex) {
         N.checkIndex(fromIndex, toIndex, size());
     }

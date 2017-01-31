@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Haiyang Li.
+ * Copyright (c) 2017, Haiyang Li.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
@@ -700,6 +701,62 @@ public class Seq<T> implements Collection<T> {
         return N.mapToDouble(coll, func);
     }
 
+    public <R> ObjectList<R> flatMap(final Function<? super T, ? extends ObjectList<R>> func) {
+        final ObjectList<R> result = new ObjectList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public <R> ObjectList<R> flatMap2(final Function<? super T, ? extends Collection<R>> func) {
+        final ObjectList<R> result = new ObjectList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            final Collection<R> c = func.apply(e);
+
+            for (R e2 : c) {
+                result.add(e2);
+            }
+        }
+
+        return result;
+    }
+
+    public <R> ObjectList<R> flatMap3(final Function<? super T, ? extends R[]> func) {
+        final ObjectList<R> result = new ObjectList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public ObjectList<T> merge(final Collection<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return Seq.merge(this, b, nextSelector);
+    }
+
+    public <B, R> ObjectList<R> zipWith(final Collection<B> b, final BiFunction<? super T, ? super B, R> zipFunction) {
+        return Seq.zip(this, b, zipFunction);
+    }
+
+    public <B, R> ObjectList<R> zipWith(final Collection<B> b, final T valueForNoneA, final B valueForNoneB,
+            final BiFunction<? super T, ? super B, R> zipFunction) {
+        return Seq.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
+    }
+
+    public <B, C, R> ObjectList<R> zipWith(final Collection<B> b, final Collection<C> c, final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
+        return Seq.zip(this, b, c, zipFunction);
+    }
+
+    public <B, C, R> ObjectList<R> zipWith(final Collection<B> b, final Collection<C> c, final T valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+            final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
+        return Seq.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
     public void reverse() {
         if (size() > 1) {
             if (coll instanceof List) {
@@ -1145,6 +1202,138 @@ public class Seq<T> implements Collection<T> {
     @Override
     public String toString() {
         return coll.toString();
+    }
+
+    public void println() {
+        N.println(toString());
+    }
+
+    public static <T> ObjectList<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
+            final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        final ObjectList<T> result = new ObjectList<>(a.size() + b.size());
+        final Iterator<? extends T> iterA = a.iterator();
+        final Iterator<? extends T> iterB = b.iterator();
+
+        T nextA = null;
+        T nextB = null;
+        boolean hasNextA = false;
+        boolean hasNextB = false;
+
+        while (iterA.hasNext() || iterB.hasNext()) {
+            if (hasNextA) {
+                if (iterB.hasNext()) {
+                    if (nextSelector.apply(nextA, (nextB = iterB.next())) == Nth.FIRST) {
+                        hasNextA = false;
+                        hasNextB = true;
+                        result.add(nextA);
+                    } else {
+                        result.add(nextB);
+                    }
+                } else {
+                    hasNextA = false;
+                    result.add(nextA);
+                }
+            } else if (hasNextB) {
+                if (iterA.hasNext()) {
+                    if (nextSelector.apply((nextA = iterA.next()), nextB) == Nth.FIRST) {
+                        result.add(nextA);
+                    } else {
+                        hasNextA = true;
+                        hasNextB = false;
+                        result.add(nextB);
+                    }
+                } else {
+                    hasNextB = false;
+                    result.add(nextB);
+                }
+            } else if (iterA.hasNext()) {
+                if (iterB.hasNext()) {
+                    if (nextSelector.apply((nextA = iterA.next()), (nextB = iterB.next())) == Nth.FIRST) {
+                        hasNextB = true;
+                        result.add(nextA);
+                    } else {
+                        hasNextA = true;
+                        result.add(nextB);
+                    }
+                } else {
+                    result.add(iterA.next());
+                }
+            } else {
+                result.add(iterB.next());
+            }
+        }
+
+        return result;
+    }
+
+    public static <A, B, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        final ObjectList<R> result = new ObjectList<>(N.min(a.size(), b.size()));
+
+        final Iterator<A> iterA = a.iterator();
+        final Iterator<B> iterB = b.iterator();
+
+        if (a.size() <= b.size()) {
+            while (iterA.hasNext()) {
+                result.add(zipFunction.apply(iterA.next(), iterB.next()));
+            }
+        } else {
+            while (iterB.hasNext()) {
+                result.add(zipFunction.apply(iterA.next(), iterB.next()));
+            }
+        }
+
+        return result;
+    }
+
+    public static <A, B, C, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        final ObjectList<R> result = new ObjectList<>(N.min(a.size(), b.size()));
+
+        final Iterator<A> iterA = a.iterator();
+        final Iterator<B> iterB = b.iterator();
+        final Iterator<C> iterC = c.iterator();
+
+        while (iterA.hasNext() && iterB.hasNext() && iterC.hasNext()) {
+            result.add(zipFunction.apply(iterA.next(), iterB.next(), iterC.next()));
+        }
+
+        return result;
+    }
+
+    public static <A, B, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
+            final BiFunction<? super A, ? super B, R> zipFunction) {
+        final ObjectList<R> result = new ObjectList<>(N.max(a.size(), b.size()));
+
+        final Iterator<A> iterA = a.iterator();
+        final Iterator<B> iterB = b.iterator();
+
+        if (a.size() >= b.size()) {
+            while (iterA.hasNext()) {
+                result.add(zipFunction.apply(iterA.next(), iterB.hasNext() ? iterB.next() : valueForNoneB));
+            }
+        } else {
+            while (iterB.hasNext()) {
+                result.add(zipFunction.apply(iterA.hasNext() ? iterA.next() : valueForNoneA, iterB.next()));
+            }
+        }
+
+        return result;
+    }
+
+    public static <A, B, C, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
+            final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        final ObjectList<R> result = new ObjectList<>(N.max(a.size(), b.size(), c.size()));
+
+        final Iterator<A> iterA = a.iterator();
+        final Iterator<B> iterB = b.iterator();
+        final Iterator<C> iterC = c.iterator();
+
+        while (iterA.hasNext() || iterB.hasNext() || iterC.hasNext()) {
+            result.add(zipFunction.apply(iterA.hasNext() ? iterA.next() : valueForNoneA, iterB.hasNext() ? iterB.next() : valueForNoneB,
+                    iterC.hasNext() ? iterC.next() : valueForNoneC));
+        }
+
+        return result;
     }
 
     static class SubCollection<E> implements Collection<E> {

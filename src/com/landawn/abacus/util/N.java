@@ -3167,7 +3167,7 @@ public final class N {
     }
 
     public static int initHashCapacity(final int size) {
-        return size > MAX_HASH_LENGTH ? size : (int) (size * 1.25);
+        return size < MAX_HASH_LENGTH ? (int) (size * 1.25) + 1 : Integer.MAX_VALUE;
     }
 
     public static <T> ArrayList<T> newArrayList() {
@@ -3363,7 +3363,7 @@ public final class N {
         return multiMap;
     }
 
-    static final int MAX_HASH_LENGTH = (int) (Integer.MAX_VALUE / 1.25);
+    static final int MAX_HASH_LENGTH = (int) (Integer.MAX_VALUE / 1.25) - 1;
 
     public static DataSet newDataSet(final String keyColumnName, final String valueColumnName, final Map<?, ?> m) {
         return newDataSet(null, null, keyColumnName, valueColumnName, m);
@@ -17902,6 +17902,44 @@ public final class N {
         }
 
         return result;
+    }
+
+    /**
+    *
+    * @param str
+    * @param from
+    * @param to
+    * @return
+    */
+    public static String copyOfRange(final String str, final int from, final int to) {
+        return str.substring(from, to);
+    }
+
+    /**
+    *
+    * @param str
+    * @param from
+    * @param to
+    * @param step
+    * @return
+    * @see N#copyOfRange(int[], int, int, int)
+    */
+    public static String copyOfRange(final String str, int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, str.length());
+
+        if (step == 0) {
+            throw new IllegalArgumentException("The input parameter 'by' can't be zero");
+        }
+
+        if (from == to || from < to != step > 0) {
+            return N.EMPTY_STRING;
+        }
+
+        if (step == 1) {
+            return copyOfRange(str, from, to);
+        }
+
+        return N.newString(copyOfRange(N.getCharsForReadOnly(str), from, to, step), true);
     }
 
     /**

@@ -2,13 +2,21 @@
 
 1, Add toMap/toMap2 to IntList/LongList/.../ObjectList and Seq for more functional programming even without stream API on Android.
 
-2, Add copy(from, to, step) to IntList/LongList/.../ObjectList
+2, Add flatMap/flatMap2/flatMa3 to ObjectList and Seq for more functional programming even without stream API on Android.
 
-3, Add step(long step) to ByteStream/IntStream/.../Stream.
+3, Add merge/zip/zipWith to Seq for more functional programming even without stream API on Android.
 
-4, Improve N.copyOfRange(from, to, step) to support backwards copy.
+4, Add copy(from, to, step) to IntList/LongList/.../ObjectList
 
-5, Improvements and bug fix.
+5, Add step(long step) to ByteStream/IntStream/.../Stream.
+
+6, Improve N.copyOfRange(from, to, step) to support backwards copy.
+
+7, Add Maps to import the useful default Map methods from JDK 1.8 for programming on JDK 7 and Android.
+
+8, Add println to IntList/LongList/.../ObjectList and Seq.
+
+9, Improvements and bug fix.
 
 ========Changes in 0.9.44=========================================================================
 1, Add method: add/subtract/multipliedBy/dividedBy to f.
