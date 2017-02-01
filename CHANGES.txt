@@ -2,7 +2,7 @@
 
 1, Add toMap/toMap2 to IntList/LongList/.../ObjectList and Seq for more functional programming even without stream API on Android.
 
-2, Add flatMap/flatMap2/flatMa3 to ObjectList and Seq for more functional programming even without stream API on Android.
+2, Add flatMap/flatMap2/flatMa3/reduce to ObjectList and Seq for more functional programming even without stream API on Android.
 
 3, Add merge/zip/zipWith to Seq for more functional programming even without stream API on Android.
 
@@ -14,9 +14,11 @@
 
 7, Add Maps to import the useful default Map methods from JDK 1.8 for programming on JDK 7 and Android.
 
-8, Add println to IntList/LongList/.../ObjectList and Seq.
+8, Add Tuple
 
-9, Improvements and bug fix.
+9, Add println to IntList/LongList/.../ObjectList and Seq.
+
+10, Improvements and bug fix.
 
 ========Changes in 0.9.44=========================================================================
 1, Add method: add/subtract/multipliedBy/dividedBy to f.

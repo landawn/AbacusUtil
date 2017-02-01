@@ -735,6 +735,81 @@ public class Seq<T> implements Collection<T> {
         return result;
     }
 
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalNullable.empty();
+     *    }
+     *
+     *    final Iterator<T> iter = iterator();
+     *    T result = iter.next();
+     *
+     *    while (iter.hasNext()) {
+     *        result = accumulator.apply(result, iter.next());
+     *    }
+     *
+     *    return OptionalNullable.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalNullable<T> reduce(BinaryOperator<T> accumulator) {
+        if (isEmpty()) {
+            return OptionalNullable.empty();
+        }
+
+        final Iterator<T> iter = iterator();
+        T result = iter.next();
+
+        while (iter.hasNext()) {
+            result = accumulator.apply(result, iter.next());
+        }
+
+        return OptionalNullable.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     final Iterator<T> iter =  iterator();
+     *     U result = identity;
+     * 
+     *     while (iter.hasNext()) {
+     *         result = accumulator.apply(result, iter.next());
+     *     }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        final Iterator<T> iter = iterator();
+        U result = identity;
+
+        while (iter.hasNext()) {
+            result = accumulator.apply(result, iter.next());
+        }
+
+        return result;
+    }
+
     public ObjectList<T> merge(final Collection<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         return Seq.merge(this, b, nextSelector);
     }
@@ -1287,7 +1362,7 @@ public class Seq<T> implements Collection<T> {
 
     public static <A, B, C, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        final ObjectList<R> result = new ObjectList<>(N.min(a.size(), b.size()));
+        final ObjectList<R> result = new ObjectList<>(N.min(a.size(), b.size(), c.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();

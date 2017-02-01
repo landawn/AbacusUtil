@@ -62,116 +62,6 @@ public final class Maps {
     }
 
     /**
-     * Performs the given action for each entry in this map until all entries
-     * have been processed or the action throws an exception.   Unless
-     * otherwise specified by the implementing class, actions are performed in
-     * the order of entry set iteration (if an iteration order is specified.)
-     * Exceptions thrown by the action are relayed to the caller.
-     *
-     * @implSpec
-     * The default implementation is equivalent to, for this {@code map}:
-     * <pre> {@code
-     * for (Map.Entry<K, V> entry : map.entrySet())
-     *     action.accept(entry.getKey(), entry.getValue());
-     * }</pre>
-     *
-     * The default implementation makes no guarantees about synchronization
-     * or atomicity properties of this method. Any implementation providing
-     * atomicity guarantees must override this method and document its
-     * concurrency properties.
-     *
-     * @param action The action to be performed for each entry
-     * @throws NullPointerException if the specified action is null
-     * @throws ConcurrentModificationException if an entry is found to be
-     * removed during iteration
-     * @since 1.8
-     */
-    public static <K, V> void forEach(final Map<K, V> map, final BiConsumer<? super K, ? super V> action) {
-        N.requireNonNull(action);
-
-        K k = null;
-        V v = null;
-
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            try {
-                k = entry.getKey();
-                v = entry.getValue();
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-
-            action.accept(k, v);
-        }
-    }
-
-    /**
-     * Replaces each entry's value with the result of invoking the given
-     * function on that entry until all entries have been processed or the
-     * function throws an exception.  Exceptions thrown by the function are
-     * relayed to the caller.
-     *
-     * @implSpec
-     * <p>The default implementation is equivalent to, for this {@code map}:
-     * <pre> {@code
-     * for (Map.Entry<K, V> entry : map.entrySet())
-     *     entry.setValue(function.apply(entry.getKey(), entry.getValue()));
-     * }</pre>
-     *
-     * <p>The default implementation makes no guarantees about synchronization
-     * or atomicity properties of this method. Any implementation providing
-     * atomicity guarantees must override this method and document its
-     * concurrency properties.
-     *
-     * @param function the function to apply to each entry
-     * @throws UnsupportedOperationException if the {@code set} operation
-     * is not supported by this map's entry set iterator.
-     * @throws ClassCastException if the class of a replacement value
-     * prevents it from being stored in this map
-     * @throws NullPointerException if the specified function is null, or the
-     * specified replacement value is null, and this map does not permit null
-     * values
-     * @throws ClassCastException if a replacement value is of an inappropriate
-     *         type for this map
-     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if function or a replacement value is null,
-     *         and this map does not permit null keys or values
-     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws IllegalArgumentException if some property of a replacement value
-     *         prevents it from being stored in this map
-     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ConcurrentModificationException if an entry is found to be
-     * removed during iteration
-     * @since 1.8
-     */
-    public static <K, V> void replaceAll(final Map<K, V> map, final BiFunction<? super K, ? super V, ? extends V> function) {
-        N.requireNonNull(function);
-
-        K k = null;
-        V v = null;
-
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            try {
-                k = entry.getKey();
-                v = entry.getValue();
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-
-            // ise thrown from function is not a cme.
-            v = function.apply(k, v);
-
-            try {
-                entry.setValue(v);
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-        }
-    }
-
-    /**
      * If the specified key is not already associated with a value (or is mapped
      * to {@code null}) associates it with the given value and returns
      * {@code null}, else returns the current value.
@@ -270,54 +160,6 @@ public final class Maps {
     }
 
     /**
-     * Replaces the entry for the specified key only if it is
-     * currently mapped to some value.
-     *
-     * @implSpec
-     * The default implementation is equivalent to, for this {@code map}:
-     *
-     * <pre> {@code
-     * if (map.containsKey(key)) {
-     *     return map.put(key, value);
-     * } else
-     *     return null;
-     * }</pre>
-     *
-     * <p>The default implementation makes no guarantees about synchronization
-     * or atomicity properties of this method. Any implementation providing
-     * atomicity guarantees must override this method and document its
-     * concurrency properties.
-      *
-     * @param key key with which the specified value is associated
-     * @param value value to be associated with the specified key
-     * @return the previous value associated with the specified key, or
-     *         {@code null} if there was no mapping for the key.
-     *         (A {@code null} return can also indicate that the map
-     *         previously associated {@code null} with the key,
-     *         if the implementation supports null values.)
-     * @throws UnsupportedOperationException if the {@code put} operation
-     *         is not supported by this map
-     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws ClassCastException if the class of the specified key or value
-     *         prevents it from being stored in this map
-     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key or value is null,
-     *         and this map does not permit null keys or values
-     * @throws IllegalArgumentException if some property of the specified key
-     *         or value prevents it from being stored in this map
-     * @since 1.8
-     */
-    public static <K, V> V replace(final Map<K, V> map, final K key, final V value) {
-        V curValue = null;
-
-        if (((curValue = map.get(key)) != null) || map.containsKey(key)) {
-            curValue = map.put(key, value);
-        }
-
-        return curValue;
-    }
-
-    /**
      * Replaces the entry for the specified key only if currently
      * mapped to the specified value.
      *
@@ -368,6 +210,164 @@ public final class Maps {
 
         map.put(key, newValue);
         return true;
+    }
+
+    /**
+     * Replaces the entry for the specified key only if it is
+     * currently mapped to some value.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code map}:
+     *
+     * <pre> {@code
+     * if (map.containsKey(key)) {
+     *     return map.put(key, value);
+     * } else
+     *     return null;
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+      *
+     * @param key key with which the specified value is associated
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with the specified key, or
+     *         {@code null} if there was no mapping for the key.
+     *         (A {@code null} return can also indicate that the map
+     *         previously associated {@code null} with the key,
+     *         if the implementation supports null values.)
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this map
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified key or value
+     *         prevents it from being stored in this map
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified key or value is null,
+     *         and this map does not permit null keys or values
+     * @throws IllegalArgumentException if some property of the specified key
+     *         or value prevents it from being stored in this map
+     * @since 1.8
+     */
+    public static <K, V> V replace(final Map<K, V> map, final K key, final V value) {
+        V curValue = null;
+
+        if (((curValue = map.get(key)) != null) || map.containsKey(key)) {
+            curValue = map.put(key, value);
+        }
+
+        return curValue;
+    }
+
+    /**
+     * Replaces each entry's value with the result of invoking the given
+     * function on that entry until all entries have been processed or the
+     * function throws an exception.  Exceptions thrown by the function are
+     * relayed to the caller.
+     *
+     * @implSpec
+     * <p>The default implementation is equivalent to, for this {@code map}:
+     * <pre> {@code
+     * for (Map.Entry<K, V> entry : map.entrySet())
+     *     entry.setValue(function.apply(entry.getKey(), entry.getValue()));
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param function the function to apply to each entry
+     * @throws UnsupportedOperationException if the {@code set} operation
+     * is not supported by this map's entry set iterator.
+     * @throws ClassCastException if the class of a replacement value
+     * prevents it from being stored in this map
+     * @throws NullPointerException if the specified function is null, or the
+     * specified replacement value is null, and this map does not permit null
+     * values
+     * @throws ClassCastException if a replacement value is of an inappropriate
+     *         type for this map
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if function or a replacement value is null,
+     *         and this map does not permit null keys or values
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException if some property of a replacement value
+     *         prevents it from being stored in this map
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ConcurrentModificationException if an entry is found to be
+     * removed during iteration
+     * @since 1.8
+     */
+    public static <K, V> void replaceAll(final Map<K, V> map, final BiFunction<? super K, ? super V, ? extends V> function) {
+        N.requireNonNull(function);
+
+        K k = null;
+        V v = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            try {
+                k = entry.getKey();
+                v = entry.getValue();
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+
+            // ise thrown from function is not a cme.
+            v = function.apply(k, v);
+
+            try {
+                entry.setValue(v);
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+        }
+    }
+
+    /**
+     * Performs the given action for each entry in this map until all entries
+     * have been processed or the action throws an exception.   Unless
+     * otherwise specified by the implementing class, actions are performed in
+     * the order of entry set iteration (if an iteration order is specified.)
+     * Exceptions thrown by the action are relayed to the caller.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code map}:
+     * <pre> {@code
+     * for (Map.Entry<K, V> entry : map.entrySet())
+     *     action.accept(entry.getKey(), entry.getValue());
+     * }</pre>
+     *
+     * The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param action The action to be performed for each entry
+     * @throws NullPointerException if the specified action is null
+     * @throws ConcurrentModificationException if an entry is found to be
+     * removed during iteration
+     * @since 1.8
+     */
+    public static <K, V> void forEach(final Map<K, V> map, final BiConsumer<? super K, ? super V> action) {
+        N.requireNonNull(action);
+
+        K k = null;
+        V v = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            try {
+                k = entry.getKey();
+                v = entry.getValue();
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+
+            action.accept(k, v);
+        }
     }
 
     /**

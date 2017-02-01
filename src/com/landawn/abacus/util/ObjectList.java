@@ -1497,6 +1497,77 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return result;
     }
 
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalNullable.empty();
+     *    }
+     *
+     *    T result = elementData[0];
+     *
+     *    for (int i = 1; i < size; i++) {
+     *        result = accumulator.apply(result, elementData[i]);
+     *    }
+     *
+     *    return OptionalNullable.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalNullable<T> reduce(BinaryOperator<T> accumulator) {
+        if (isEmpty()) {
+            return OptionalNullable.empty();
+        }
+
+        T result = elementData[0];
+
+        for (int i = 1; i < size; i++) {
+            result = accumulator.apply(result, elementData[i]);
+        }
+
+        return OptionalNullable.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     U result = identity;
+     * 
+     *     for (int i = 0; i < size; i++) {
+     *         result = accumulator.apply(result, elementData[i]);
+     *    }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        U result = identity;
+
+        for (int i = 0; i < size; i++) {
+            result = accumulator.apply(result, elementData[i]);
+        }
+
+        return result;
+    }
+
     @Override
     public ObjectList<T> distinct(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);

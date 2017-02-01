@@ -42,22 +42,22 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
     }
 
     public static <L, R> Pair<L, R> of(final L l, final R r) {
-        return new Pair<L, R>(l, r);
+        return new Pair<>(l, r);
     }
 
     public static <T> Pair<T, T> from(T[] a) {
         if (N.isNullOrEmpty(a)) {
-            return new Pair<T, T>(null, null);
+            return new Pair<>(null, null);
         } else if (a.length == 1) {
-            return new Pair<T, T>(a[0], null);
+            return new Pair<>(a[0], null);
         } else {
-            return new Pair<T, T>(a[0], a[1]);
+            return new Pair<>(a[0], a[1]);
         }
     }
 
     public static <T> Pair<T, T> from(Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
-            return new Pair<T, T>(null, null);
+            return new Pair<>(null, null);
         } else if (c.size() == 1) {
             return new Pair<T, T>(c.iterator().next(), null);
         } else {
@@ -133,6 +133,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return new Pair<>(this.left, this.right);
     }
 
+    public Pair<R, L> swap() {
+        return new Pair<>(this.right, this.left);
+    }
+
     public Pair0<L, R> __() {
         return Pair0.of(left, right);
     }
@@ -182,22 +186,22 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         }
 
         public static <L, R> Pair0<L, R> of(final L l, final R r) {
-            return new Pair0<L, R>(l, r);
+            return new Pair0<>(l, r);
         }
 
         public static <T> Pair0<T, T> from(T[] a) {
             if (N.isNullOrEmpty(a)) {
-                return new Pair0<T, T>(null, null);
+                return new Pair0<>(null, null);
             } else if (a.length == 1) {
-                return new Pair0<T, T>(a[0], null);
+                return new Pair0<>(a[0], null);
             } else {
-                return new Pair0<T, T>(a[0], a[1]);
+                return new Pair0<>(a[0], a[1]);
             }
         }
 
         public static <T> Pair0<T, T> from(Collection<? extends T> c) {
             if (N.isNullOrEmpty(c)) {
-                return new Pair0<T, T>(null, null);
+                return new Pair0<>(null, null);
             } else if (c.size() == 1) {
                 return new Pair0<T, T>(c.iterator().next(), null);
             } else {
@@ -232,6 +236,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         @Deprecated
         public R setValue(R value) {
             throw new UnsupportedOperationException();
+        }
+
+        public Pair0<R, L> swap() {
+            return new Pair0<>(this.right, this.left);
         }
 
         public Pair<L, R> __() {

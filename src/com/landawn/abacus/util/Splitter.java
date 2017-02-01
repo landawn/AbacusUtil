@@ -383,7 +383,7 @@ public final class Splitter {
                     strEntry = str.split(keyValueDelimiterRegex, 2);
 
                     if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + strEntry);
+                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
                     }
 
                     if (trim) {
@@ -429,7 +429,7 @@ public final class Splitter {
                     strEntry = str.split(keyValueDelimiterRegex, 2);
 
                     if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + strEntry);
+                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
                     }
 
                     if (trim) {
@@ -476,7 +476,7 @@ public final class Splitter {
                     strEntry = str.split(keyValueDelimiterRegex, 2);
 
                     if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + strEntry);
+                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
                     }
 
                     if (trim) {
@@ -523,7 +523,7 @@ public final class Splitter {
                     strEntry = str.split(keyValueDelimiterRegex, 2);
 
                     if (strEntry.length != 2) {
-                        throw new IllegalArgumentException("Invalid map entry String: " + strEntry);
+                        throw new IllegalArgumentException("Invalid map entry String: " + N.toString(strEntry));
                     }
 
                     if (trim) {
