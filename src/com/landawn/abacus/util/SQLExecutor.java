@@ -75,6 +75,9 @@ import com.landawn.abacus.util.stream.Stream;
  * <br />========================================================================
  * <pre>
  * <code>
+        static final DataSource dataSource = JdbcUtil.createDataSource(...);
+        static final SQLExecutor sqlExecutor = new SQLExecutor(dataSource);
+        ...
         Account account = createAccount();
 
         // create
@@ -140,6 +143,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  * 
+ * @see <a href="./JdbcUtil.html">JdbcUtil</a>
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/7/docs/api/java/sql/Connection.html</a>
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/7/docs/api/java/sql/Statement.html</a>
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/7/docs/api/java/sql/PreparedStatement.html</a>
@@ -1884,7 +1888,7 @@ public final class SQLExecutor implements Closeable {
 
             for (int i = 0; i < columnCount; i++) {
                 columnNameList.add(columnLabelList.get(i));
-                columnList.add(new ArrayList<Object>());
+                columnList.add(new ArrayList<>());
             }
 
             stream.forEach(new Consumer<Object[]>() {
@@ -1948,7 +1952,7 @@ public final class SQLExecutor implements Closeable {
 
             for (int i = 0; i < columnCount; i++) {
                 columnNameList.add(columnLabelList.get(i));
-                columnList.add(new ArrayList<Object>());
+                columnList.add(new ArrayList<>());
             }
 
             stream.forEach(new Consumer<Object[]>() {
@@ -2088,7 +2092,7 @@ public final class SQLExecutor implements Closeable {
             return N.asList(iterate(conn, sql, statementSetter, jdbcSettings, parameters));
         } else {
             final List<RowIterator> iterators = new ArrayList<>();
-            final Holder<Throwable> errorHolder = new Holder<Throwable>();
+            final Holder<Throwable> errorHolder = new Holder<>();
             final AtomicInteger activeThreadNum = new AtomicInteger(0);
 
             for (String dataSource : jdbcSettings.getQueryWithDataSources()) {
@@ -2194,7 +2198,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         final List<RowIterator> iterators = new ArrayList<>();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final AtomicInteger activeThreadNum = new AtomicInteger(0);
 
         for (String e : sqls) {
@@ -3467,7 +3471,7 @@ public final class SQLExecutor implements Closeable {
 
             for (int i = 0; i < columnCount; i++) {
                 columnNameList.add(columnLabelList.get(i));
-                columnList.add(new ArrayList<Object>());
+                columnList.add(new ArrayList<>());
             }
 
             long offset = jdbcSettings.getOffset();

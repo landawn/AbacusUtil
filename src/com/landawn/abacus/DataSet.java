@@ -818,11 +818,11 @@ public interface DataSet extends Iterable<Object[]> {
      */
     void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action, boolean shareRowArray);
 
-    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
 
-    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
+    <R> R forEach(R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
 
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
 
     /**
      * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
@@ -834,15 +834,15 @@ public interface DataSet extends Iterable<Object[]> {
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
+    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
             boolean shareRowArray);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
+    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
             boolean shareRowArray);
 
-    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
+    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<? super Object[], R, R> accumulator,
             BiPredicate<? super Object[], ? super R> predicate);
 
     /**
@@ -857,7 +857,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
+    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<? super Object[], R, R> accumulator,
             BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
 
     /**
@@ -1784,48 +1784,50 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * 
      * @param columnName specifying the column to group by.
-     * @param collectorColumnName specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, String collectorColumnName, String resultColumnName, Collector<Object, ?, ?> collector);
+    DataSet groupBy(String columnName, String aggregateResultColumnName, String aggregateOnColumnName, Collector<Object, ?, ?> collector);
 
     /**
      * 
      * @param columnName specifying the column to group by.
-     * @param collectorColumnNames specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, Collection<String> collectorColumnNames, String resultColumnName, Collector<? super Object[], ?, ?> collector);
+    DataSet groupBy(String columnName, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Collector<? super Object[], ?, ?> collector);
 
     /**
      * 
      * @param columnName specifying the column to group by. 
      * @param keyMapper don't change value of the input parameter.
-     * @param collectorColumnName specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, Function<?, ?> keyMapper, String collectorColumnName, String resultColumnName, Collector<Object, ?, ?> collector);
+    DataSet groupBy(String columnName, Function<?, ?> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
+            Collector<Object, ?, ?> collector);
 
     /**
      * 
      * @param columnName specifying the column to group by.
      * @param keyMapper don't change value of the input parameter.
-     * @param collectorColumnNames specifying the columns to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, Function<?, ?> keyMapper, Collection<String> collectorColumnNames, String resultColumnName,
+    DataSet groupBy(String columnName, Function<?, ?> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
             Collector<? super Object[], ?, ?> collector);
 
     /**
@@ -1852,13 +1854,13 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName specifying the column to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param collectorColumnName specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String collectorColumnName, String resultColumnName,
+    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String aggregateResultColumnName, String aggregateOnColumnName,
             Collector<Object, ?, ?> collector);
 
     /**
@@ -1866,13 +1868,13 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName specifying the column to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param collectorColumnNames specifying the columns to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Collection<String> collectorColumnNames, String resultColumnName,
+    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
             Collector<? super Object[], ?, ?> collector);
 
     /**
@@ -1881,14 +1883,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param fromRowIndex
      * @param toRowIndex
      * @param keyMapper don't change value of the input parameter.
-     * @param collectorColumnName specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyMapper, String collectorColumnName, String resultColumnName,
-            Collector<Object, ?, ?> collector);
+    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyMapper, String aggregateResultColumnName,
+            String aggregateOnColumnName, Collector<Object, ?, ?> collector);
 
     /**
      * 
@@ -1896,14 +1898,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param fromRowIndex
      * @param toRowIndex
      * @param keyMapper don't change value of the input parameter.
-     * @param collectorColumnNames specifying the columns to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyMapper, Collection<String> collectorColumnNames,
-            String resultColumnName, Collector<? super Object[], ?, ?> collector);
+    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyMapper, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
      *
@@ -1924,51 +1926,51 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * 
      * @param columnNames specifying the columns to group by.
-     * @param collectorColumnName specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, String collectorColumnName, String resultColumnName, Collector<Object, ?, ?> collector);
+    DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName, Collector<Object, ?, ?> collector);
 
     /**
      * 
      * @param columnNames specifying the columns to group by.
-     * @param collectorColumnNames specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Collection<String> collectorColumnNames, String resultColumnName,
+    DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
             Collector<? super Object[], ?, ?> collector);
 
     /**
      * 
      * @param columnNames specifying the columns to group by. 
      * @param keyMapper don't change value of the input parameter.
-     * @param collectorColumnName specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyMapper, String collectorColumnName, String resultColumnName,
+    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
             Collector<Object, ?, ?> collector);
 
     /**
      * 
      * @param columnNames specifying the columns to group by. 
      * @param keyMapper don't change value of the input parameter.
-     * @param collectorColumnNames specifying the columns to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyMapper, Collection<String> collectorColumnNames, String resultColumnName,
-            Collector<? super Object[], ?, ?> collector);
+    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyMapper, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
      *
@@ -1994,13 +1996,13 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames specifying the columns to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param collectorColumnName specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String collectorColumnName, String resultColumnName,
+    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName, String aggregateOnColumnName,
             Collector<Object, ?, ?> collector);
 
     /**
@@ -2008,14 +2010,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames specifying the columns to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param collectorColumnNames specifying the columns to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Collection<String> collectorColumnNames, String resultColumnName,
-            Collector<? super Object[], ?, ?> collector);
+    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
      * 
@@ -2023,14 +2025,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param fromRowIndex
      * @param toRowIndex
      * @param keyMapper don't change value of the input parameter.
-     * @param collectorColumnName specifying the column to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyMapper, String collectorColumnName,
-            String resultColumnName, Collector<Object, ?, ?> collector);
+    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyMapper, String aggregateResultColumnName,
+            String aggregateOnColumnName, Collector<Object, ?, ?> collector);
 
     /**
      * 
@@ -2038,14 +2040,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param fromRowIndex
      * @param toRowIndex
      * @param keyMapper don't change value of the input parameter.
-     * @param collectorColumnNames specifying the columns to apply the collector.
-     * @param resultColumnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyMapper,
-            Collection<String> collectorColumnNames, String resultColumnName, Collector<? super Object[], ?, ?> collector);
+    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyMapper, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
      *
@@ -3013,6 +3015,20 @@ public interface DataSet extends Iterable<Object[]> {
      * @return a copy of this DataSet
      */
     DataSet copy(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+
+    /**
+     * Deeply copy each element in this <code>DataSet</code> by Serialization/Deserialization.
+     * 
+     * @return
+     */
+    DataSet clone();
+
+    /**
+     * Deeply copy each element in this <code>DataSet</code> by Serialization/Deserialization.
+     * 
+     * @return
+     */
+    DataSet clone(boolean freeze);
 
     /**
      * Returns a new <code>DataSet</code> that is limited to the rows where there is a match in both <code>this DataSet</code> and <code>right DataSet</code>.

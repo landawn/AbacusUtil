@@ -1,3 +1,19 @@
+
+========Changes in 0.9.46=========================================================================
+
+1, Import BigIntegerMath to Math2 and re-organize the API.
+
+2, Add clone to DataSet.
+
+3, Refactoring DataSet.groupBy: switch the positions of parameters 'resultColumnName' and 'collectorColumnName(s)'.
+
+4, Refactoring DataSet.forEach: 
+		Change: "forEach(..., BiFunction<R, ? super Object[], R> accumulator...)" 
+		to: "forEach(..., BiFunction<? super Object[], R, R> accumulator...)" 
+   to keep consistent the forEach method in other APIs 
+
+5, Improvements and bug fix.
+
 ========Changes in 0.9.45=========================================================================
 
 1, Add toMap/toMap2 to IntList/LongList/.../ObjectList and Seq for more functional programming even without stream API on Android.
@@ -21,6 +37,7 @@
 10, Improvements and bug fix.
 
 ========Changes in 0.9.44=========================================================================
+
 1, Add method: add/subtract/multipliedBy/dividedBy to f.
 
 2, Remove CharStream/ByteStream/ShortStream/FloatStream/... from library abacus-android-*.jar to reduce the API size.

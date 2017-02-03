@@ -23,11 +23,16 @@ import static java.lang.Double.longBitsToDouble;
 import static java.lang.Math.abs;
 import static java.lang.Math.getExponent;
 import static java.lang.Math.min;
+import static java.math.RoundingMode.CEILING;
+import static java.math.RoundingMode.FLOOR;
 import static java.math.RoundingMode.HALF_EVEN;
 import static java.math.RoundingMode.HALF_UP;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  Note: A lot of codes in this classed are copied from Google Guava and Apache Common Math under under the Apache License, Version 2.0.
@@ -112,7 +117,7 @@ public final class Math2 {
     static final long[] halfPowersOf10 = { 3L, 31L, 316L, 3162L, 31622L, 316227L, 3162277L, 31622776L, 316227766L, 3162277660L, 31622776601L, 316227766016L,
             3162277660168L, 31622776601683L, 316227766016837L, 3162277660168379L, 31622776601683793L, 316227766016837933L, 3162277660168379331L };
 
-    static final long[] factorials = { 1L, 1L, 1L * 2, 1L * 2 * 3, 1L * 2 * 3 * 4, 1L * 2 * 3 * 4 * 5, 1L * 2 * 3 * 4 * 5 * 6, 1L * 2 * 3 * 4 * 5 * 6 * 7,
+    static final long[] long_factorials = { 1L, 1L, 1L * 2, 1L * 2 * 3, 1L * 2 * 3 * 4, 1L * 2 * 3 * 4 * 5, 1L * 2 * 3 * 4 * 5 * 6, 1L * 2 * 3 * 4 * 5 * 6 * 7,
             1L * 2 * 3 * 4 * 5 * 6 * 7 * 8, 1L * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9, 1L * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 10,
             1L * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 10 * 11, 1L * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 10 * 11 * 12,
             1L * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 10 * 11 * 12 * 13, 1L * 2 * 3 * 4 * 5 * 6 * 7 * 8 * 9 * 10 * 11 * 12 * 13 * 14,
@@ -231,6 +236,14 @@ public final class Math2 {
 
     public static boolean isPowerOfTwo(double x) {
         return x > 0.0 && isFinite(x) && isPowerOfTwo(getSignificand(x));
+    }
+
+    /**
+     * Returns {@code true} if {@code x} represents a power of two.
+     */
+    public static boolean isPowerOfTwo(BigInteger x) {
+        N.requireNonNull(x);
+        return x.signum() > 0 && x.getLowestSetBit() == x.bitLength() - 1;
     }
 
     public static double log(double a) {
@@ -372,6 +385,53 @@ public final class Math2 {
         return increment ? exponent + 1 : exponent;
     }
 
+    /**
+     * Returns the base-2 logarithm of {@code x}, rounded according to the specified rounding mode.
+     *
+     * @throws IllegalArgumentException if {@code x <= 0}
+     * @throws ArithmeticException if {@code mode} is {@link RoundingMode#UNNECESSARY} and {@code x}
+     *     is not a power of two
+     */
+    @SuppressWarnings("fallthrough")
+    // TODO(kevinb): remove after this warning is disabled globally
+    public static int log2(BigInteger x, RoundingMode mode) {
+        checkPositive("x", N.requireNonNull(x));
+        int logFloor = x.bitLength() - 1;
+        switch (mode) {
+            case UNNECESSARY:
+                checkRoundingUnnecessary(isPowerOfTwo(x)); // fall through
+            case DOWN:
+            case FLOOR:
+                return logFloor;
+
+            case UP:
+            case CEILING:
+                return isPowerOfTwo(x) ? logFloor : logFloor + 1;
+
+            case HALF_DOWN:
+            case HALF_UP:
+            case HALF_EVEN:
+                if (logFloor < SQRT2_PRECOMPUTE_THRESHOLD) {
+                    BigInteger halfPower = SQRT2_PRECOMPUTED_BITS.shiftRight(SQRT2_PRECOMPUTE_THRESHOLD - logFloor);
+                    if (x.compareTo(halfPower) <= 0) {
+                        return logFloor;
+                    } else {
+                        return logFloor + 1;
+                    }
+                }
+                // Since sqrt(2) is irrational, log2(x) - logFloor cannot be exactly 0.5
+                //
+                // To determine which side of logFloor.5 the logarithm is,
+                // we compare x^2 to 2^(2 * logFloor + 1).
+                BigInteger x2 = x.pow(2);
+                int logX2Floor = x2.bitLength() - 1;
+                return (logX2Floor < 2 * logFloor + 1) ? logFloor : logFloor + 1;
+
+            default:
+                throw new AssertionError();
+        }
+    }
+
     public static int log10(int x, RoundingMode mode) {
         checkPositive("x", x);
         int logFloor = log10Floor(x);
@@ -448,6 +508,96 @@ public final class Math2 {
     public static double log10(double x) {
         return Math.log10(x);
     }
+
+    /*
+     * The maximum number of bits in a square root for which we'll precompute an explicit half power
+     * of two. This can be any value, but higher values incur more class load time and linearly
+     * increasing memory consumption.
+     */
+    static final int SQRT2_PRECOMPUTE_THRESHOLD = 256;
+
+    static final BigInteger SQRT2_PRECOMPUTED_BITS = new BigInteger("16a09e667f3bcc908b2fb1366ea957d3e3adec17512775099da2f590b0667322a", 16);
+
+    /**
+     * Returns the base-10 logarithm of {@code x}, rounded according to the specified rounding mode.
+     *
+     * @throws IllegalArgumentException if {@code x <= 0}
+     * @throws ArithmeticException if {@code mode} is {@link RoundingMode#UNNECESSARY} and {@code x}
+     *     is not a power of ten
+     */
+    @SuppressWarnings("fallthrough")
+    public static int log10(BigInteger x, RoundingMode mode) {
+        checkPositive("x", x);
+        if (fitsInLong(x)) {
+            return log10(x.longValue(), mode);
+        }
+
+        int approxLog10 = (int) (log2(x, FLOOR) * LN_2 / LN_10);
+        BigInteger approxPow = BigInteger.TEN.pow(approxLog10);
+        int approxCmp = approxPow.compareTo(x);
+
+        /*
+         * We adjust approxLog10 and approxPow until they're equal to floor(log10(x)) and
+         * 10^floor(log10(x)).
+         */
+
+        if (approxCmp > 0) {
+            /*
+             * The code is written so that even completely incorrect approximations will still yield the
+             * correct answer eventually, but in practice this branch should almost never be entered, and
+             * even then the loop should not run more than once.
+             */
+            do {
+                approxLog10--;
+                approxPow = approxPow.divide(BigInteger.TEN);
+                approxCmp = approxPow.compareTo(x);
+            } while (approxCmp > 0);
+        } else {
+            BigInteger nextPow = BigInteger.TEN.multiply(approxPow);
+            int nextCmp = nextPow.compareTo(x);
+            while (nextCmp <= 0) {
+                approxLog10++;
+                approxPow = nextPow;
+                approxCmp = nextCmp;
+                nextPow = BigInteger.TEN.multiply(approxPow);
+                nextCmp = nextPow.compareTo(x);
+            }
+        }
+
+        int floorLog = approxLog10;
+        BigInteger floorPow = approxPow;
+        int floorCmp = approxCmp;
+
+        switch (mode) {
+            case UNNECESSARY:
+                checkRoundingUnnecessary(floorCmp == 0);
+                // fall through
+            case FLOOR:
+            case DOWN:
+                return floorLog;
+
+            case CEILING:
+            case UP:
+                return floorPow.equals(x) ? floorLog : floorLog + 1;
+
+            case HALF_DOWN:
+            case HALF_UP:
+            case HALF_EVEN:
+                // Since sqrt(10) is irrational, log10(x) - floorLog can never be exactly 0.5
+                BigInteger x2 = x.pow(2);
+                BigInteger halfPowerSquared = floorPow.pow(2).multiply(BigInteger.TEN);
+                return (x2.compareTo(halfPowerSquared) <= 0) ? floorLog : floorLog + 1;
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    static boolean fitsInLong(BigInteger x) {
+        return x.bitLength() <= Long.SIZE - 1;
+    }
+
+    private static final double LN_10 = Math.log(10);
+    private static final double LN_2 = Math.log(2);
 
     public static int pow(int b, int k) {
         checkNonNegative("exponent", k);
@@ -541,6 +691,10 @@ public final class Math2 {
         return 1L << -Long.numberOfLeadingZeros(x - 1);
     }
 
+    public static BigInteger ceilingPowerOfTwo(BigInteger x) {
+        return BigInteger.ZERO.setBit(log2(x, RoundingMode.CEILING));
+    }
+
     /**
      * Returns the largest power of two less than or equal to {@code x}.  This is equivalent to
      * {@code checkedPow(2, log2(x, FLOOR))}.
@@ -554,6 +708,10 @@ public final class Math2 {
         // Long.highestOneBit was buggy on GWT.  We've fixed it, but I'm not certain when the fix will
         // be released.
         return 1L << ((Long.SIZE - 1) - Long.numberOfLeadingZeros(x));
+    }
+
+    public static BigInteger floorPowerOfTwo(BigInteger x) {
+        return BigInteger.ZERO.setBit(log2(x, RoundingMode.FLOOR));
     }
 
     /**
@@ -672,6 +830,86 @@ public final class Math2 {
             default:
                 throw new AssertionError();
         }
+    }
+
+    public static BigInteger sqrt(BigInteger x, RoundingMode mode) {
+        checkNonNegative("x", x);
+        if (fitsInLong(x)) {
+            return BigInteger.valueOf(sqrt(x.longValue(), mode));
+        }
+        BigInteger sqrtFloor = sqrtFloor(x);
+        switch (mode) {
+            case UNNECESSARY:
+                checkRoundingUnnecessary(sqrtFloor.pow(2).equals(x)); // fall through
+            case FLOOR:
+            case DOWN:
+                return sqrtFloor;
+            case CEILING:
+            case UP:
+                int sqrtFloorInt = sqrtFloor.intValue();
+                boolean sqrtFloorIsExact = (sqrtFloorInt * sqrtFloorInt == x.intValue()) // fast check mod 2^32
+                        && sqrtFloor.pow(2).equals(x); // slow exact check
+                return sqrtFloorIsExact ? sqrtFloor : sqrtFloor.add(BigInteger.ONE);
+            case HALF_DOWN:
+            case HALF_UP:
+            case HALF_EVEN:
+                BigInteger halfSquare = sqrtFloor.pow(2).add(sqrtFloor);
+                /*
+                 * We wish to test whether or not x <= (sqrtFloor + 0.5)^2 = halfSquare + 0.25. Since both x
+                 * and halfSquare are integers, this is equivalent to testing whether or not x <=
+                 * halfSquare.
+                 */
+                return (halfSquare.compareTo(x) >= 0) ? sqrtFloor : sqrtFloor.add(BigInteger.ONE);
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    private static BigInteger sqrtFloor(BigInteger x) {
+        /*
+         * Adapted from Hacker's Delight, Figure 11-1.
+         *
+         * Using DoubleUtils.bigToDouble, getting a double approximation of x is extremely fast, and
+         * then we can get a double approximation of the square root. Then, we iteratively improve this
+         * guess with an application of Newton's method, which sets guess := (guess + (x / guess)) / 2.
+         * This iteration has the following two properties:
+         *
+         * a) every iteration (except potentially the first) has guess >= floor(sqrt(x)). This is
+         * because guess' is the arithmetic mean of guess and x / guess, sqrt(x) is the geometric mean,
+         * and the arithmetic mean is always higher than the geometric mean.
+         *
+         * b) this iteration converges to floor(sqrt(x)). In fact, the number of correct digits doubles
+         * with each iteration, so this algorithm takes O(log(digits)) iterations.
+         *
+         * We start out with a double-precision approximation, which may be higher or lower than the
+         * true value. Therefore, we perform at least one Newton iteration to get a guess that's
+         * definitely >= floor(sqrt(x)), and then continue the iteration until we reach a fixed point.
+         */
+        BigInteger sqrt0;
+        int log2 = log2(x, FLOOR);
+        if (log2 < Double.MAX_EXPONENT) {
+            sqrt0 = sqrtApproxWithDoubles(x);
+        } else {
+            int shift = (log2 - SIGNIFICAND_BITS) & ~1; // even!
+            /*
+             * We have that x / 2^shift < 2^54. Our initial approximation to sqrtFloor(x) will be
+             * 2^(shift/2) * sqrtApproxWithDoubles(x / 2^shift).
+             */
+            sqrt0 = sqrtApproxWithDoubles(x.shiftRight(shift)).shiftLeft(shift >> 1);
+        }
+        BigInteger sqrt1 = sqrt0.add(x.divide(sqrt0)).shiftRight(1);
+        if (sqrt0.equals(sqrt1)) {
+            return sqrt0;
+        }
+        do {
+            sqrt0 = sqrt1;
+            sqrt1 = sqrt0.add(x.divide(sqrt0)).shiftRight(1);
+        } while (sqrt1.compareTo(sqrt0) < 0);
+        return sqrt0;
+    }
+
+    private static BigInteger sqrtApproxWithDoubles(BigInteger x) {
+        return roundToBigInteger(Math.sqrt(bigToDouble(x)), HALF_EVEN);
     }
 
     /**
@@ -797,6 +1035,12 @@ public final class Math2 {
                 throw new AssertionError();
         }
         return increment ? div + signum : div;
+    }
+
+    public static BigInteger divide(BigInteger p, BigInteger q, RoundingMode mode) {
+        BigDecimal pDec = new BigDecimal(p);
+        BigDecimal qDec = new BigDecimal(q);
+        return pDec.divide(qDec, 0, mode).toBigIntegerExact();
     }
 
     /**
@@ -1216,6 +1460,33 @@ public final class Math2 {
     }
 
     /**
+     * Returns the {@code int} value that is equal to {@code value}, if possible.
+     *
+     * @param value any value in the range of the {@code int} type
+     * @return the {@code int} value that equals {@code value}
+     * @throws IllegalArgumentException if {@code value} is greater than {@link Integer#MAX_VALUE} or
+     *     less than {@link Integer#MIN_VALUE}
+     */
+    public static int castExact(long value) {
+        int result = (int) value;
+        if (result != value) {
+            // don't use checkArgument here, to avoid boxing
+            throw new IllegalArgumentException("Out of range: " + value);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the sum of {@code a} and {@code b} unless it would overflow or underflow in which case
+     * {@code Integer.MAX_VALUE} or {@code Integer.MIN_VALUE} is returned, respectively.
+     *
+     * @since 20.0
+     */
+    public static int saturatedAdd(int a, int b) {
+        return saturatedCast((long) a + b);
+    }
+
+    /**
      * Returns the sum of {@code a} and {@code b} unless it would overflow or underflow in which case
      * {@code Long.MAX_VALUE} or {@code Long.MIN_VALUE} is returned, respectively.
      *
@@ -1234,6 +1505,16 @@ public final class Math2 {
 
     /**
      * Returns the difference of {@code a} and {@code b} unless it would overflow or underflow in
+     * which case {@code Integer.MAX_VALUE} or {@code Integer.MIN_VALUE} is returned, respectively.
+     *
+     * @since 20.0
+     */
+    public static int saturatedSubtract(int a, int b) {
+        return saturatedCast((long) a - b);
+    }
+
+    /**
+     * Returns the difference of {@code a} and {@code b} unless it would overflow or underflow in
      * which case {@code Long.MAX_VALUE} or {@code Long.MIN_VALUE} is returned, respectively.
      *
      * @since 20.0
@@ -1247,6 +1528,16 @@ public final class Math2 {
         }
         // we did over/under flow
         return Long.MAX_VALUE + ((naiveDifference >>> (Long.SIZE - 1)) ^ 1);
+    }
+
+    /**
+     * Returns the product of {@code a} and {@code b} unless it would overflow or underflow in which
+     * case {@code Integer.MAX_VALUE} or {@code Integer.MIN_VALUE} is returned, respectively.
+     *
+     * @since 20.0
+     */
+    public static int saturatedMultiply(int a, int b) {
+        return saturatedCast((long) a * b);
     }
 
     /**
@@ -1272,6 +1563,58 @@ public final class Math2 {
             return result;
         }
         return limit;
+    }
+
+    /**
+     * Returns the {@code b} to the {@code k}th power, unless it would overflow or underflow in which
+     * case {@code Integer.MAX_VALUE} or {@code Integer.MIN_VALUE} is returned, respectively.
+     *
+     * @since 20.0
+     */
+    public static int saturatedPow(int b, int k) {
+        checkNonNegative("exponent", k);
+        switch (b) {
+            case 0:
+                return (k == 0) ? 1 : 0;
+            case 1:
+                return 1;
+            case (-1):
+                return ((k & 1) == 0) ? 1 : -1;
+            case 2:
+                if (k >= Integer.SIZE - 1) {
+                    return Integer.MAX_VALUE;
+                }
+                return 1 << k;
+            case (-2):
+                if (k >= Integer.SIZE) {
+                    return Integer.MAX_VALUE + (k & 1);
+                }
+                return ((k & 1) == 0) ? 1 << k : -1 << k;
+            default:
+                // continue below to handle the general case
+        }
+        int accum = 1;
+        // if b is negative and k is odd then the limit is MIN otherwise the limit is MAX
+        int limit = Integer.MAX_VALUE + ((b >>> Integer.SIZE - 1) & (k & 1));
+        while (true) {
+            switch (k) {
+                case 0:
+                    return accum;
+                case 1:
+                    return saturatedMultiply(accum, b);
+                default:
+                    if ((k & 1) != 0) {
+                        accum = saturatedMultiply(accum, b);
+                    }
+                    k >>= 1;
+                    if (k > 0) {
+                        if (-FLOOR_SQRT_MAX_INT > b | b > FLOOR_SQRT_MAX_INT) {
+                            return limit;
+                        }
+                        b *= b;
+                    }
+            }
+        }
     }
 
     /**
@@ -1329,6 +1672,24 @@ public final class Math2 {
     }
 
     /**
+     * Returns the {@code int} nearest in value to {@code value}.
+     *
+     * @param value any {@code long} value
+     * @return the same value cast to {@code int} if it is in the range of the {@code int} type,
+     *     {@link Integer#MAX_VALUE} if it is too large, or {@link Integer#MIN_VALUE} if it is too
+     *     small
+     */
+    public static int saturatedCast(long value) {
+        if (value > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        if (value < Integer.MIN_VALUE) {
+            return Integer.MIN_VALUE;
+        }
+        return (int) value;
+    }
+
+    /**
      * Returns {@code n!}, that is, the product of the first {@code n} positive
      * integers, {@code 1} if {@code n == 0}, or {@link Integer#MAX_VALUE} if the
      * result does not fit in a {@code int}.
@@ -1348,7 +1709,7 @@ public final class Math2 {
      */
     public static long factorial2(int n) {
         checkNonNegative("n", n);
-        return (n < factorials.length) ? factorials[n] : Long.MAX_VALUE;
+        return (n < long_factorials.length) ? long_factorials[n] : Long.MAX_VALUE;
     }
 
     /**
@@ -1372,6 +1733,94 @@ public final class Math2 {
                 accum *= i;
             }
             return accum * everySixteenthFactorial[n >> 4];
+        }
+    }
+
+    /**
+     * Returns {@code n!}, that is, the product of the first {@code n} positive integers, or {@code 1}
+     * if {@code n == 0}.
+     *
+     * <p><b>Warning:</b> the result takes <i>O(n log n)</i> space, so use cautiously.
+     *
+     * <p>This uses an efficient binary recursive algorithm to compute the factorial with balanced
+     * multiplies. It also removes all the 2s from the intermediate products (shifting them back in at
+     * the end).
+     *
+     * @throws IllegalArgumentException if {@code n < 0}
+     */
+    public static BigInteger factorial5(int n) {
+        checkNonNegative("n", n);
+
+        // If the factorial is small enough, just use LongMath to do it.
+        if (n < long_factorials.length) {
+            return BigInteger.valueOf(long_factorials[n]);
+        }
+
+        // Pre-allocate space for our list of intermediate BigIntegers.
+        int approxSize = divide(n * log2(n, CEILING), Long.SIZE, CEILING);
+        ArrayList<BigInteger> bignums = new ArrayList<>(approxSize);
+
+        // Start from the pre-computed maximum long factorial.
+        int startingNumber = long_factorials.length;
+        long product = long_factorials[startingNumber - 1];
+        // Strip off 2s from this value.
+        int shift = Long.numberOfTrailingZeros(product);
+        product >>= shift;
+
+        // Use floor(log2(num)) + 1 to prevent overflow of multiplication.
+        int productBits = log2(product, FLOOR) + 1;
+        int bits = log2(startingNumber, FLOOR) + 1;
+        // Check for the next power of two boundary, to save us a CLZ operation.
+        int nextPowerOfTwo = 1 << (bits - 1);
+
+        // Iteratively multiply the longs as big as they can go.
+        for (long num = startingNumber; num <= n; num++) {
+            // Check to see if the floor(log2(num)) + 1 has changed.
+            if ((num & nextPowerOfTwo) != 0) {
+                nextPowerOfTwo <<= 1;
+                bits++;
+            }
+            // Get rid of the 2s in num.
+            int tz = Long.numberOfTrailingZeros(num);
+            long normalizedNum = num >> tz;
+            shift += tz;
+            // Adjust floor(log2(num)) + 1.
+            int normalizedBits = bits - tz;
+            // If it won't fit in a long, then we store off the intermediate product.
+            if (normalizedBits + productBits >= Long.SIZE) {
+                bignums.add(BigInteger.valueOf(product));
+                product = 1;
+                productBits = 0;
+            }
+            product *= normalizedNum;
+            productBits = log2(product, FLOOR) + 1;
+        }
+        // Check for leftovers.
+        if (product > 1) {
+            bignums.add(BigInteger.valueOf(product));
+        }
+        // Efficiently multiply all the intermediate products together.
+        return listProduct(bignums).shiftLeft(shift);
+    }
+
+    static BigInteger listProduct(List<BigInteger> nums) {
+        return listProduct(nums, 0, nums.size());
+    }
+
+    static BigInteger listProduct(List<BigInteger> nums, int start, int end) {
+        switch (end - start) {
+            case 0:
+                return BigInteger.ONE;
+            case 1:
+                return nums.get(start);
+            case 2:
+                return nums.get(start).multiply(nums.get(start + 1));
+            case 3:
+                return nums.get(start).multiply(nums.get(start + 1)).multiply(nums.get(start + 2));
+            default:
+                // Otherwise, split the list in half and recursively do this.
+                int m = (end + start) >>> 1;
+                return listProduct(nums, start, m).multiply(listProduct(nums, m, end));
         }
     }
 
@@ -1425,8 +1874,8 @@ public final class Math2 {
             case 1:
                 return n;
             default:
-                if (n < factorials.length) {
-                    return factorials[n] / (factorials[k] * factorials[n - k]);
+                if (n < long_factorials.length) {
+                    return long_factorials[n] / (long_factorials[k] * long_factorials[n - k]);
                 } else if (k >= biggestBinomials.length || n > biggestBinomials[k]) {
                     return Long.MAX_VALUE;
                 } else if (k < biggestSimpleBinomials.length && n <= biggestSimpleBinomials[k]) {
@@ -1470,6 +1919,57 @@ public final class Math2 {
                     return multiplyFraction(result, numerator, denominator);
                 }
         }
+    }
+
+    /**
+     * Returns {@code n} choose {@code k}, also known as the binomial coefficient of {@code n} and
+     * {@code k}, that is, {@code n! / (k! (n - k)!)}.
+     *
+     * <p><b>Warning:</b> the result can take as much as <i>O(k log n)</i> space.
+     *
+     * @throws IllegalArgumentException if {@code n < 0}, {@code k < 0}, or {@code k > n}
+     */
+    public static BigInteger binomial5(int n, int k) {
+        checkNonNegative("n", n);
+        checkNonNegative("k", k);
+        N.checkArgument(k <= n, "k (%s) > n (%s)", k, n);
+        if (k > (n >> 1)) {
+            k = n - k;
+        }
+        if (k < biggestBinomials.length && n <= biggestBinomials[k]) {
+            return BigInteger.valueOf(binomial(n, k));
+        }
+
+        BigInteger accum = BigInteger.ONE;
+
+        long numeratorAccum = n;
+        long denominatorAccum = 1;
+
+        int bits = log2(n, RoundingMode.CEILING);
+
+        int numeratorBits = bits;
+
+        for (int i = 1; i < k; i++) {
+            int p = n - i;
+            int q = i + 1;
+
+            // log2(p) >= bits - 1, because p >= n/2
+
+            if (numeratorBits + bits >= Long.SIZE - 1) {
+                // The numerator is as big as it can get without risking overflow.
+                // Multiply numeratorAccum / denominatorAccum into accum.
+                accum = accum.multiply(BigInteger.valueOf(numeratorAccum)).divide(BigInteger.valueOf(denominatorAccum));
+                numeratorAccum = p;
+                denominatorAccum = q;
+                numeratorBits = bits;
+            } else {
+                // We can definitely multiply into the long accumulators without overflowing them.
+                numeratorAccum *= p;
+                denominatorAccum *= q;
+                numeratorBits += bits;
+            }
+        }
+        return accum.multiply(BigInteger.valueOf(numeratorAccum)).divide(BigInteger.valueOf(denominatorAccum));
     }
 
     /**
@@ -1686,8 +2186,6 @@ public final class Math2 {
         BigInteger result = BigInteger.valueOf(significand).shiftLeft(exponent - SIGNIFICAND_BITS);
         return (x < 0) ? result.negate() : result;
     }
-
-    private static final double LN_2 = Math.log(2);
 
     static final int MAX_FACTORIAL = 170;
 
