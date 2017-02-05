@@ -41,6 +41,80 @@ public final class IEEE754rUtil {
 
     /**
      * <p>
+     * Gets the minimum of two <code>float</code> values.
+     * </p>
+     * 
+     * <p>
+     * NaN is only returned if all numbers are NaN as per IEEE-754r.
+     * </p>
+     * 
+     * @param a
+     *            value 1
+     * @param b
+     *            value 2
+     * @return the smallest of the values
+     */
+    public static float min(final float a, final float b) {
+        if (Float.isNaN(a)) {
+            return b;
+        } else if (Float.isNaN(b)) {
+            return a;
+        } else {
+            return Math.min(a, b);
+        }
+    }
+
+    /**
+     * <p>
+     * Gets the minimum of three <code>float</code> values.
+     * </p>
+     * 
+     * <p>
+     * NaN is only returned if all numbers are NaN as per IEEE-754r.
+     * </p>
+     * 
+     * @param a
+     *            value 1
+     * @param b
+     *            value 2
+     * @param c
+     *            value 3
+     * @return the smallest of the values
+     */
+    public static float min(final float a, final float b, final float c) {
+        return min(min(a, b), c);
+    }
+
+    /**
+     * <p>
+     * Returns the minimum value in an array.
+     * </p>
+     * 
+     * @param array
+     *            an array, must not be null or empty
+     * @return the minimum value in the array
+     * @throws IllegalArgumentException
+     *             if <code>array</code> is <code>null</code>
+     * @throws IllegalArgumentException
+     *             if <code>array</code> is empty
+     */
+    public static float min(final float... array) {
+        // Validates input
+        if (N.isNullOrEmpty(array)) {
+            throw new IllegalArgumentException("Array cannot be null or empty.");
+        }
+    
+        // Finds and returns min
+        float min = array[0];
+        for (int i = 1; i < array.length; i++) {
+            min = min(array[i], min);
+        }
+    
+        return min;
+    }
+
+    /**
+     * <p>
      * Gets the minimum of two <code>double</code> values.
      * </p>
      * 
@@ -106,80 +180,6 @@ public final class IEEE754rUtil {
 
         // Finds and returns min
         double min = array[0];
-        for (int i = 1; i < array.length; i++) {
-            min = min(array[i], min);
-        }
-
-        return min;
-    }
-
-    /**
-     * <p>
-     * Gets the minimum of two <code>float</code> values.
-     * </p>
-     * 
-     * <p>
-     * NaN is only returned if all numbers are NaN as per IEEE-754r.
-     * </p>
-     * 
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @return the smallest of the values
-     */
-    public static float min(final float a, final float b) {
-        if (Float.isNaN(a)) {
-            return b;
-        } else if (Float.isNaN(b)) {
-            return a;
-        } else {
-            return Math.min(a, b);
-        }
-    }
-
-    /**
-     * <p>
-     * Gets the minimum of three <code>float</code> values.
-     * </p>
-     * 
-     * <p>
-     * NaN is only returned if all numbers are NaN as per IEEE-754r.
-     * </p>
-     * 
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @param c
-     *            value 3
-     * @return the smallest of the values
-     */
-    public static float min(final float a, final float b, final float c) {
-        return min(min(a, b), c);
-    }
-
-    /**
-     * <p>
-     * Returns the minimum value in an array.
-     * </p>
-     * 
-     * @param array
-     *            an array, must not be null or empty
-     * @return the minimum value in the array
-     * @throws IllegalArgumentException
-     *             if <code>array</code> is <code>null</code>
-     * @throws IllegalArgumentException
-     *             if <code>array</code> is empty
-     */
-    public static float min(final float... array) {
-        // Validates input
-        if (N.isNullOrEmpty(array)) {
-            throw new IllegalArgumentException("Array cannot be null or empty.");
-        }
-
-        // Finds and returns min
-        float min = array[0];
         for (int i = 1; i < array.length; i++) {
             min = min(array[i], min);
         }

@@ -26620,9 +26620,9 @@ public final class N {
      */
     public static <T> List<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<T>(b);
+            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<>(b);
         } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<T>(a);
+            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<>(a);
         }
 
         //        final List<T> result = difference(a, b);
@@ -32066,178 +32066,113 @@ public final class N {
         return Math.min(a, b);
     }
 
-    //    /**
-    //     * <p>
-    //     * Gets the minimum of three <code>char</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the smallest of the values
-    //     */
-    //    public static char min(char a, char b, char c) {
-    //        if (b < a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c < a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the minimum of three <code>byte</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the smallest of the values
-    //     */
-    //    public static byte min(byte a, byte b, byte c) {
-    //        if (b < a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c < a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the minimum of three <code>short</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the smallest of the values
-    //     */
-    //    public static short min(short a, short b, short c) {
-    //        if (b < a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c < a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the minimum of three <code>int</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the smallest of the values
-    //     */
-    //    public static int min(int a, int b, int c) {
-    //        if (b < a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c < a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the minimum of three <code>long</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the smallest of the values
-    //     */
-    //    public static long min(long a, long b, long c) {
-    //        if (b < a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c < a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the minimum of three <code>float</code> values.
-    //     * </p>
-    //     *
-    //     * <p>
-    //     * If any value is <code>NaN</code>, <code>NaN</code> is returned. Infinity
-    //     * is handled.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the smallest of the values
-    //     * @see IEEE754rUtil#min(float, float, float) for a version of this method
-    //     *      that handles NaN differently
-    //     */
-    //    public static float min(float a, float b, float c) {
-    //        return Math.min(Math.min(a, b), c);
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the minimum of three <code>double</code> values.
-    //     * </p>
-    //     *
-    //     * <p>
-    //     * If any value is <code>NaN</code>, <code>NaN</code> is returned. Infinity
-    //     * is handled.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the smallest of the values
-    //     * @see IEEE754rUtil#min(double, double, double) for a version of this
-    //     *      method that handles NaN differently
-    //     */
-    //    public static double min(double a, double b, double c) {
-    //        return Math.min(Math.min(a, b), c);
-    //    }
+    /**
+     * <p>
+     * Gets the minimum of three <code>char</code> values.
+     * </p>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static char min(final char a, final char b, final char c) {
+        final char m = (a <= b) ? a : b;
+
+        return (m <= c) ? m : c;
+    }
+
+    /**
+     * <p>
+     * Gets the minimum of three <code>byte</code> values.
+     * </p>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static byte min(final byte a, final byte b, final byte c) {
+        final byte m = (a <= b) ? a : b;
+
+        return (m <= c) ? m : c;
+    }
+
+    /**
+     * <p>
+     * Gets the minimum of three <code>short</code> values.
+     * </p>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static short min(final short a, final short b, final short c) {
+        final short m = (a <= b) ? a : b;
+
+        return (m <= c) ? m : c;
+    }
+
+    /**
+     * <p>
+     * Gets the minimum of three <code>int</code> values.
+     * </p>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static int min(final int a, final int b, final int c) {
+        final int m = (a <= b) ? a : b;
+
+        return (m <= c) ? m : c;
+    }
+
+    /**
+     * <p>
+     * Gets the minimum of three <code>long</code> values.
+     * </p>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static long min(final long a, final long b, final long c) {
+        final long m = (a <= b) ? a : b;
+
+        return (m <= c) ? m : c;
+    }
+
+    /**
+     * <p>
+     * Gets the minimum of three <code>float</code> values.
+     * </p>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static float min(final float a, final float b, final float c) {
+        return Math.min(Math.min(a, b), c);
+    }
+
+    /**
+     * <p>
+     * Gets the minimum of three <code>double</code> values.
+     * </p>
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static double min(final double a, final double b, final double c) {
+        return Math.min(Math.min(a, b), c);
+    }
 
     /**
      * <p>
@@ -32628,9 +32563,7 @@ public final class N {
      * </p>
      *
      * @param a
-     *            value 1
      * @param b
-     *            value 2
      * @return the largest of the values
      */
     public static char max(final char a, final char b) {
@@ -32643,9 +32576,7 @@ public final class N {
      * </p>
      *
      * @param a
-     *            value 1
      * @param b
-     *            value 2
      * @return the largest of the values
      */
     public static byte max(final byte a, final byte b) {
@@ -32658,9 +32589,7 @@ public final class N {
      * </p>
      *
      * @param a
-     *            value 1
      * @param b
-     *            value 2
      * @return the largest of the values
      */
     public static short max(final short a, final short b) {
@@ -32673,9 +32602,7 @@ public final class N {
      * </p>
      *
      * @param a
-     *            value 1
      * @param b
-     *            value 2
      * @return the largest of the values
      */
     public static int max(final int a, final int b) {
@@ -32688,9 +32615,7 @@ public final class N {
      * </p>
      *
      * @param a
-     *            value 1
      * @param b
-     *            value 2
      * @return the largest of the values
      */
     public static long max(final long a, final long b) {
@@ -32703,9 +32628,7 @@ public final class N {
      * </p>
      *
      * @param a
-     *            value 1
      * @param b
-     *            value 2
      * @return the largest of the values
      */
     public static float max(final float a, final float b) {
@@ -32718,187 +32641,106 @@ public final class N {
      * </p>
      *
      * @param a
-     *            value 1
      * @param b
-     *            value 2
      * @return the largest of the values
      */
     public static double max(final double a, final double b) {
         return Math.max(a, b);
     }
 
-    //    /**
-    //     * <p>
-    //     * Gets the maximum of three <code>char</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the largest of the values
-    //     */
-    //    public static char max(char a, char b, char c) {
-    //        if (b > a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c > a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the maximum of three <code>byte</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the largest of the values
-    //     */
-    //    public static byte max(byte a, byte b, byte c) {
-    //        if (b > a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c > a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the maximum of three <code>short</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the largest of the values
-    //     */
-    //    public static short max(short a, short b, short c) {
-    //        if (b > a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c > a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the maximum of three <code>int</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the largest of the values
-    //     */
-    //    public static int max(int a, int b, int c) {
-    //        if (b > a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c > a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the maximum of three <code>long</code> values.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the largest of the values
-    //     */
-    //    public static long max(long a, long b, long c) {
-    //        if (b > a) {
-    //            a = b;
-    //        }
-    //
-    //        if (c > a) {
-    //            a = c;
-    //        }
-    //
-    //        return a;
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the maximum of three <code>float</code> values.
-    //     * </p>
-    //     *
-    //     * <p>
-    //     * If any value is <code>NaN</code>, <code>NaN</code> is returned. Infinity
-    //     * is handled.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the largest of the values
-    //     * @see IEEE754rUtil#max(float, float, float) for a version of this method
-    //     *      that handles NaN differently
-    //     */
-    //    public static float max(float a, float b, float c) {
-    //        return Math.max(Math.max(a, b), c);
-    //    }
-    //
-    //    /**
-    //     * <p>
-    //     * Gets the maximum of three <code>double</code> values.
-    //     * </p>
-    //     *
-    //     * <p>
-    //     * If any value is <code>NaN</code>, <code>NaN</code> is returned. Infinity
-    //     * is handled.
-    //     * </p>
-    //     *
-    //     * @param a
-    //     *            value 1
-    //     * @param b
-    //     *            value 2
-    //     * @param c
-    //     *            value 3
-    //     * @return the largest of the values
-    //     * @see IEEE754rUtil#max(double, double, double) for a version of this
-    //     *      method that handles NaN differently
-    //     */
-    //    public static double max(double a, double b, double c) {
-    //        return Math.max(Math.max(a, b), c);
-    //    }
+    /**
+     * Gets the maximum of three <code>char</code> values.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static char max(final char a, final char b, final char c) {
+        final char m = (a >= b) ? a : b;
+
+        return (m >= c) ? m : c;
+    }
+
+    /**
+     * Gets the maximum of three <code>byte</code> values.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static byte max(final byte a, final byte b, final byte c) {
+        final byte m = (a >= b) ? a : b;
+
+        return (m >= c) ? m : c;
+    }
+
+    /**
+     * Gets the maximum of three <code>short</code> values.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static short max(final short a, final short b, final short c) {
+        final short m = (a >= b) ? a : b;
+
+        return (m >= c) ? m : c;
+    }
+
+    /**
+     * Gets the maximum of three <code>int</code> values.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static int max(final int a, final int b, final int c) {
+        final int m = (a >= b) ? a : b;
+
+        return (m >= c) ? m : c;
+    }
+
+    /**
+     * Gets the maximum of three <code>long</code> values.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static long max(final long a, final long b, final long c) {
+        final long m = (a >= b) ? a : b;
+
+        return (m >= c) ? m : c;
+    }
+
+    /**
+     * Gets the maximum of three <code>float</code> values.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static float max(final float a, final float b, final float c) {
+        return Math.max(Math.max(a, b), c);
+    }
+
+    /**
+     * Gets the maximum of three <code>double</code> values.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
+    public static double max(final double a, final double b, final double c) {
+        return Math.max(Math.max(a, b), c);
+    }
 
     /**
      * <p>

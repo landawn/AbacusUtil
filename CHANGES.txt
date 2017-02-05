@@ -1,7 +1,14 @@
 
+========Changes in 0.9.47=========================================================================
+
+1, Add more min(a, b, c)/max(a, b, c) to N.
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.46=========================================================================
 
-1, Import BigIntegerMath to Math2 and re-organize the API.
+1, Import BigIntegerMath from Google Guava to Math2 and re-organize the API.
 
 2, Add clone to DataSet.
 
